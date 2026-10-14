@@ -548,6 +548,22 @@
   <img src="icons/avvio.png" alt="">
 </div>
 <script>
+  // Se qualcosa va in errore, la pagina lo scrive a schermo invece di
+  // bloccarsi in silenzio: così si vede che cosa è successo davvero.
+  window.addEventListener('error', function(e){
+    try{
+      var d=document.getElementById('guasto');
+      if(!d){
+        d=document.createElement('div'); d.id='guasto';
+        d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#5A1410;'+
+          'color:#FFD9D4;font:12px/1.4 monospace;padding:10px 12px;max-height:38vh;overflow:auto;'+
+          'border-top:2px solid #FF6B5E';
+        d.onclick=function(){ d.remove(); };
+        document.body.appendChild(d);
+      }
+      d.textContent += (e.message||'errore')+'  ·  riga '+(e.lineno||'?')+'\n';
+    }catch(_){}
+  });
   // via comunque, qualunque cosa succeda al resto della pagina
   setTimeout(function(){ var a=document.getElementById('avvio'); if(a)a.remove(); }, 1600);
   document.addEventListener('touchstart', function(){
@@ -4576,7 +4592,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='30';
+  var VERSIONE='31';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
