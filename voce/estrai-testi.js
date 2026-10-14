@@ -74,7 +74,7 @@ for (let m = 10; m <= 500; m += 10) agg('m-' + m, 'a ' + m + ' metri');
  ['solo-cultura', 'Va bene: ti dico solo i luoghi da vedere.'],
  ['tutto', 'Va bene: ti dico tutto, anche negozi e fermate.'],
  ['testo-grande', 'Ho ingrandito il testo.'],
- ['non-coperta', 'Qui la guida non arriva ancora: per ora racconta Roma, Napoli, Torre del Greco e Venafro. Puoi sceglierne una e ascoltarla da casa.'],
+ ['non-coperta', "Qui intorno non trovo nulla da raccontare. Prova a camminare un po': appena passi davanti a qualcosa, te lo dico."],
  ['lungo', 'Il percorso è lungo'],
  ['comincia-a', 'e comincia a'],
  ['come-cammini', 'Vuoi camminare libero, o seguire un percorso?'],
@@ -94,7 +94,8 @@ for (let m = 10; m <= 500; m += 10) agg('m-' + m, 'a ' + m + ' metri');
  ['scelte-aiuto', 'Dì: chiama, per il 112. Commissariato. Pronto soccorso. Farmacia. Portami a casa. Oppure: mi hanno rubato il portafoglio.'],
  ['derubato', "Mi dispiace. Dì chiama per il 112, oppure commissariato e ti ci porto. Per bloccare le carte chiama la tua banca: il numero è dietro la carta, e se non ce l'hai, il numero verde del tuo circuito."],
  ['da-qui-passa', 'Da qui passa un percorso. Dì percorso, se vuoi seguirlo.'],
- ['tutto-detto', 'Di questo ti ho detto tutto.']
+ ['tutto-detto', 'Di questo ti ho detto tutto.'],
+ ['e-lontano', 'È lontano: se è urgente, chiama il 112.']
 ].forEach(([k, t]) => agg('frase-' + k, t));
 
 fs.writeFileSync(path.join(__dirname, 'testi.json'), JSON.stringify(clip, null, 1), 'utf8');

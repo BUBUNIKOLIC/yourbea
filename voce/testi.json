@@ -15053,7 +15053,7 @@
  },
  {
   "id": "frase-non-coperta",
-  "testo": "Qui la guida non arriva ancora: per ora racconta Roma, Napoli, Torre del Greco e Venafro. Puoi sceglierne una e ascoltarla da casa."
+  "testo": "Qui intorno non trovo nulla da raccontare. Prova a camminare un po': appena passi davanti a qualcosa, te lo dico."
  },
  {
   "id": "frase-lungo",
@@ -15134,5 +15134,9 @@
  {
   "id": "frase-tutto-detto",
   "testo": "Di questo ti ho detto tutto."
+ },
+ {
+  "id": "frase-e-lontano",
+  "testo": "È lontano: se è urgente, chiama il 112."
  }
 ]

@@ -4564,7 +4564,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='38';
+  var VERSIONE='39';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4825,8 +4825,12 @@
     return null;
   }
 
+  var zittoFino=0;
   function narrate(items){
     if(pending||!S.pronto)return;
+    // se ti sto portando da qualche parte, o se e' appena successo qualcosa,
+    // non e' il momento di raccontare chiese
+    if(meta||Date.now()<zittoFino)return;
     // quanto lontano si annuncia dipende da quanto conta il luogo: i Fori
     // Imperiali hanno un punto solo e dalla strada stanno a duecento metri,
     // e con il raggio fisso non venivano mai nominati
@@ -5401,6 +5405,10 @@
       var d=dist(S.lat,S.lon,p.lat,p.lon);
       if(d<dmin){dmin=d;mig=p;}
     });
+    // i nostri dati coprono tutta l'Italia: senza questo limite a Roma
+    // rispondeva «la farmacia più vicina» indicandone una in Campania, a
+    // novantacinque chilometri. A piedi vale solo quello che sta vicino.
+    if(dmin>1500)return null;
     return mig?{p:mig,d:dmin}:null;
   }
   var meta=null, metaUltimo=0, metaUltimaDist=0, partenza=null;
@@ -5490,12 +5498,36 @@
     'ufficio postale':'amenity:post_office', banca:'amenity:bank',
     ospedale:'amenity:hospital', municipio:'amenity:townhall',
     distributore:'amenity:fuel', chiesa:'amenity:place_of_worship',
-    museo:'tourism:museum'
+    museo:'tourism:museum', commissariato:'amenity:police'
+  };
+  /* Photon cerca per nome, non per vicinanza: con q='pronto soccorso' non
+     trova niente, perché nessun ospedale si chiama così. Per ogni tipo
+     servono le parole con cui quel posto è scritto davvero sulla mappa. */
+  var PAROLE_PHOTON={
+    'pronto soccorso':['ospedale','policlinico','pronto soccorso'],
+    ospedale:['ospedale','policlinico'],
+    commissariato:['polizia','carabinieri','questura','commissariato'],
+    fermata:['fermata','bus'],
+    'posteggio taxi':['taxi'],
+    'ufficio postale':['poste','ufficio postale']
   };
   function cercaInPhoton(tipo,cb){
+    var parole=PAROLE_PHOTON[tipo]||[tipo];
+    var i=0, migliore=null;
+    (function giro(){
+      if(i>=parole.length){ cb(migliore); return; }
+      unGiroPhoton(tipo,parole[i++],function(r){
+        if(r && (!migliore || r.d<migliore.d)) migliore=r;
+        // se ne ho trovato uno a due passi non serve cercare altro
+        if(migliore && migliore.d<300){ cb(migliore); return; }
+        giro();
+      });
+    })();
+  }
+  function unGiroPhoton(tipo,parola,cb){
     var tag=TAG_PHOTON[tipo];
     if(!tag||!window.fetch){cb(null);return;}
-    var u='https://photon.komoot.io/api/?q='+encodeURIComponent(tipo)+
+    var u='https://photon.komoot.io/api/?q='+encodeURIComponent(parola)+
           '&lat='+S.lat+'&lon='+S.lon+'&limit=10&osm_tag='+encodeURIComponent(tag);
     var stop=null,orologio=null;
     try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},7000); }catch(e){}
@@ -5514,7 +5546,8 @@
             mig={n:nome,lat:la,lon:lo,t:tipo,k:0,d:''};
           }
         });
-        if(mig&&dmin<4000)cb({p:mig,d:dmin}); else cb(null);
+        var limite=(tipo==='commissariato'||tipo==='ospedale'||tipo==='pronto soccorso')?12000:4000;
+        if(mig&&dmin<limite)cb({p:mig,d:dmin}); else cb(null);
       })
       .catch(function(){ if(orologio)clearTimeout(orologio); cb(null); });
   }
@@ -5557,6 +5590,7 @@
      posizione alla centrale, perché l'AML è obbligatorio su tutti gli
      smartphone europei dal 2022 — e il commissariato più vicino. */
   function derubato(){
+    zittoFino=Date.now()+90000;
     whatEl.textContent='Furto';
     whereEl.textContent='cosa fare adesso';
     bodyEl.className='body';
@@ -5612,13 +5646,19 @@
   }
   function vaiVerso(v){
     meta=v.p; metaUltimo=0; metaUltimaDist=v.d;
+    zittoFino=Date.now()+60000;
     var rel=norm(bear(S.lat,S.lon,meta.lat,meta.lon)-S.hd);
     var sp='Ti porto a '+meta.n+': '+side(rel)+', '+metres(v.d)+'.';
+    // oltre i due chilometri e mezzo a piedi si sente, e va detto
+    var lontano=v.d>2500;
+    if(lontano) sp+=' È lontano: se è urgente, chiama il 112.';
     whereEl.textContent=side(rel)+', '+metres(v.d);
     whatEl.textContent='→ '+meta.n;
     bodyEl.className='body'; bodyEl.textContent=meta.d||'';
     liveEl.textContent=sp;
-    dire(['frase-ti-porto-a',poiId(meta)+'-nome',dirId(rel),metriId(v.d)],sp);
+    var voci=['frase-ti-porto-a',poiId(meta)+'-nome',dirId(rel),metriId(v.d)];
+    if(lontano)voci.push('frase-e-lontano');
+    dire(voci,sp);
   }
   function guidaVersoMeta(){
     if(!meta)return;
