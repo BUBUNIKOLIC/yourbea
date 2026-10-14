@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Yourbea — prova del telefono</title>
+<style>
+  body{margin:0;padding:18px;background:#0B0D10;color:#E8E7E3;
+       font-family:-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5}
+  h1{font-size:22px;margin:0 0 4px}
+  p.sub{color:#8F98A3;margin:0 0 18px;font-size:15px}
+  .r{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-top:1px solid #20242A}
+  .r b{flex:1}
+  .ok{color:#6BD67A} .no{color:#FF6B5E} .mezzo{color:#E7C65A}
+  .seg{font-size:22px;line-height:1.2;width:28px}
+  button{width:100%;padding:17px;margin:16px 0 6px;font-size:18px;border:none;border-radius:14px;
+    background:linear-gradient(180deg,#6FD3E6,#3FA7BF);color:#04161B;font-weight:700}
+  pre{background:#14181E;border:1px solid #20242A;border-radius:12px;padding:12px;
+      font-size:12px;overflow:auto;color:#9AA3AD;white-space:pre-wrap;word-break:break-all}
+</style>
+</head>
+<body>
+<h1>Prova del telefono</h1>
+<p class="sub">Tocca il tasto e aspetta. Poi mandami quello che c'è scritto in fondo.</p>
+
+<div id="esiti"></div>
+<button id="via">Fai la prova</button>
+<pre id="riassunto">—</pre>
+
+<script>
+var righe=[];
+function segna(nome, esito, nota){
+  righe.push((esito===true?'OK  ':(esito===false?'NO  ':'??  '))+nome+(nota?' — '+nota:''));
+  var d=document.createElement('div'); d.className='r';
+  d.innerHTML='<span class="seg '+(esito===true?'ok':(esito===false?'no':'mezzo'))+'">'+
+              (esito===true?'✓':(esito===false?'✗':'!'))+'</span><b>'+nome+
+              (nota?'<br><span style="color:#8F98A3;font-size:14px">'+nota+'</span>':'')+'</b>';
+  document.getElementById('esiti').appendChild(d);
+  document.getElementById('riassunto').textContent=righe.join('\n');
+}
+
+document.getElementById('via').onclick=function(){
+  document.getElementById('esiti').innerHTML=''; righe=[];
+
+  segna('Telefono e browser', null, navigator.userAgent);
+  segna('Schermo', null, window.innerWidth+'×'+window.innerHeight);
+
+  try{ localStorage.setItem('p','1'); localStorage.removeItem('p'); segna('Memoria della pagina', true); }
+  catch(e){ segna('Memoria della pagina', false, 'bloccata: ' + e.message); }
+
+  segna('Posizione disponibile', !!navigator.geolocation);
+  segna('Riconoscimento vocale', !!(window.SpeechRecognition||window.webkitSpeechRecognition),
+        (window.SpeechRecognition||window.webkitSpeechRecognition)?'':'su questo browser i comandi a voce non ci sono');
+  segna('Voce del telefono', !!window.speechSynthesis);
+  segna('Service worker', 'serviceWorker' in navigator);
+
+  // la voce incisa
+  var a=new Audio('voce/clip/it/frase-aiuto.m4a');
+  a.addEventListener('canplaythrough', function(){ segna('Voce incisa (file audio)', true); });
+  a.addEventListener('error', function(){ segna('Voce incisa (file audio)', false, 'il file non arriva'); });
+  a.load();
+
+  // i dati dell'app
+  fetch('lingue/en.json').then(function(r){ segna('File delle lingue', r.ok, 'risposta '+r.status); })
+    .catch(function(e){ segna('File delle lingue', false, e.message); });
+  fetch('luoghi/campania.json').then(function(r){ segna('Luoghi scaricati', r.ok, 'risposta '+r.status); })
+    .catch(function(e){ segna('Luoghi scaricati', false, e.message); });
+
+  // la posizione vera
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(p){
+      segna('Posizione ottenuta', true, p.coords.latitude.toFixed(4)+', '+p.coords.longitude.toFixed(4));
+    }, function(e){
+      segna('Posizione ottenuta', false, 'errore '+e.code+': '+e.message);
+    }, {timeout:10000});
+  }
+
+  // l'app si carica?
+  var f=document.createElement('iframe');
+  f.style.cssText='width:1px;height:1px;opacity:0;position:absolute';
+  f.src='index.html?prova=1';
+  f.onload=function(){
+    try{
+      var v=f.contentDocument.getElementById('versione');
+      segna('L’app si apre', true, v?v.textContent:'versione non leggibile');
+    }catch(e){ segna('L’app si apre', null, 'caricata, ma non posso leggerla da qui'); }
+  };
+  f.onerror=function(){ segna('L’app si apre', false); };
+  document.body.appendChild(f);
+};
+</script>
+</body>
+</html>
