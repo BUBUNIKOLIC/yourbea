@@ -5,117 +5,151 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Yourbea — installa la guida</title>
 <link rel="icon" href="icons/icon-192.png">
+<meta name="description" content="Yourbea: cammini e la città si racconta. Guida vocale per non vedenti e turisti, 31 città italiane.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
   :root{
-    --bg:#0B0D10; --ink:#E8E7E3; --muted:#8F98A3; --wire:rgba(255,255,255,.08);
-    --neon:#5BE3FF; --ambra:#E7B96B; --vetro:rgba(28,32,38,.72);
+    --bg:#070A0E; --ink:#E9E8E4; --muted:#8F98A3; --wire:rgba(255,255,255,.08);
+    --neon:#5BE3FF; --oro:#E7C65A; --oro-scuro:#C9A227; --vetro:rgba(22,27,34,.78);
   }
   *{box-sizing:border-box}
   html,body{margin:0;min-height:100%}
   body{
     background:
-      linear-gradient(rgba(91,227,255,.02) 1px, transparent 1px) 0 0/100% 4px,
-      radial-gradient(1100px 620px at 50% -10%, rgba(91,227,255,.13) 0%, transparent 60%),
-      radial-gradient(800px 500px at 85% 110%, rgba(231,185,107,.07) 0%, transparent 60%),
-      var(--bg);
+      radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.11) 0%, transparent 56%),
+      radial-gradient(900px 600px at 88% 8%, rgba(201,162,39,.08) 0%, transparent 52%),
+      linear-gradient(180deg,#0D1218 0%,#070A0E 100%);
+    background-attachment:fixed;
     color:var(--ink); font-family:"Source Sans 3",system-ui,sans-serif; line-height:1.55;
   }
-  main{max-width:620px;margin:0 auto;padding:34px 18px 70px}
+  main{max-width:640px;margin:0 auto;padding:30px 18px 80px}
 
-  .testa{text-align:center;margin-bottom:30px}
-  .testa img{width:112px;height:112px;border-radius:26px;box-shadow:0 0 50px rgba(91,227,255,.22), 0 18px 40px rgba(0,0,0,.55)}
-  .testa h1{font-family:"Bodoni Moda",Georgia,serif;font-size:42px;margin:16px 0 2px;letter-spacing:.01em;
-    text-shadow:0 0 26px rgba(91,227,255,.22)}
-  .testa .claim{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.24em;
-    text-transform:uppercase;color:var(--neon);opacity:.8}
-  .testa p{color:var(--muted);font-size:16px;margin:14px auto 0;max-width:460px}
+  /* l'insegna */
+  .testa{text-align:center;margin-bottom:26px}
+  .insegna{width:min(86vw,440px);height:auto;filter:drop-shadow(0 22px 56px rgba(0,0,0,.6))}
+  .testa p{color:var(--muted);font-size:17px;margin:18px auto 0;max-width:470px}
+  .testa b{color:var(--ink);font-weight:600}
+
+  /* i numeri */
+  .numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 26px}
+  .numeri div{background:var(--vetro);border:1px solid var(--wire);border-radius:16px;
+    padding:14px 8px;text-align:center}
+  .numeri b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:27px;color:var(--oro);line-height:1}
+  .numeri span{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
 
   .carta{position:relative;overflow:hidden;background:var(--vetro);
     -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-    border:1px solid var(--wire);border-radius:26px;padding:24px 22px;margin-bottom:18px;
-    box-shadow:0 0 0 1px rgba(91,227,255,.07) inset, 0 20px 44px rgba(0,0,0,.45)}
+    border:1px solid var(--wire);border-radius:24px;padding:24px 22px;margin-bottom:16px;
+    box-shadow:0 0 0 1px rgba(91,227,255,.06) inset, 0 20px 46px rgba(0,0,0,.5)}
   .carta::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;
-    background:linear-gradient(90deg,transparent,var(--neon),rgba(231,185,107,.6),transparent);opacity:.6}
-  .carta.spenta{opacity:.72}
-  .tag{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--ambra);margin-bottom:6px}
-  .carta h2{font-family:"Bodoni Moda",Georgia,serif;font-weight:700;font-size:27px;margin:0 0 6px}
-  .carta p{margin:0 0 16px;color:var(--muted);font-size:15.5px}
+    background:linear-gradient(90deg,transparent,var(--neon),rgba(231,198,90,.65),transparent);opacity:.6}
+  .carta h2{font-family:"Bodoni Moda",Georgia,serif;font-size:27px;margin:4px 0 8px;line-height:1.15}
+  .carta p{margin:0 0 14px;color:#C9CFD6}
+  .tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.17em;
+    text-transform:uppercase;color:var(--neon);border:1px solid rgba(91,227,255,.3);
+    border-radius:999px;padding:4px 11px;margin-bottom:6px}
+  .tag.oro{color:var(--oro);border-color:rgba(231,198,90,.35)}
 
-  a.bottone{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;
-    background:linear-gradient(180deg,#5BE3FF 0%,#2FB7D6 100%);color:#042027;font-weight:700;font-size:19px;
-    padding:18px;border-radius:18px;margin:2px 0 16px;border:1px solid #7cf0ff;
-    box-shadow:0 0 28px rgba(91,227,255,.28), 0 1px 0 rgba(255,255,255,.35) inset;
-    transition:transform .12s ease}
-  a.bottone:active{transform:translateY(1px) scale(.995)}
-  a.secondo{background:rgba(255,255,255,.04);color:var(--ink);border-color:var(--wire);
-    box-shadow:none;font-weight:600}
-  a.secondo:hover{border-color:rgba(91,227,255,.4)}
+  .bottone{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:19px;
+    padding:18px;border-radius:16px;margin:4px 0 16px;
+    background:linear-gradient(180deg,#6FD3E6,#3FA7BF);color:#04161B;
+    box-shadow:0 14px 34px rgba(79,175,196,.3)}
+  .bottone.secondo{background:linear-gradient(180deg,rgba(231,198,90,.9),rgba(201,162,39,.9));color:#1A1407;
+    box-shadow:0 14px 34px rgba(201,162,39,.22)}
 
   ol{margin:0;padding-left:0;list-style:none;counter-reset:p}
-  ol li{counter-increment:p;position:relative;padding-left:44px;margin-bottom:12px;font-size:15.5px}
-  ol li::before{content:counter(p);position:absolute;left:0;top:-1px;width:30px;height:30px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:13px;
-    color:var(--neon);background:rgba(91,227,255,.10);border:1px solid rgba(91,227,255,.35)}
-  .nota{font-size:13.5px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--wire)}
-  .link{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--neon);word-break:break-all;opacity:.85}
-  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
-  @media (max-width:420px){ .testa h1{font-size:36px} .carta h2{font-size:24px} }
+  ol li{counter-increment:p;position:relative;padding:11px 0 11px 46px;border-top:1px solid var(--wire)}
+  ol li:first-child{border-top:none}
+  ol li::before{content:counter(p);position:absolute;left:0;top:10px;width:30px;height:30px;
+    border-radius:50%;display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;
+    font-size:13px;color:var(--neon);border:1px solid rgba(91,227,255,.3);background:rgba(91,227,255,.07)}
+  ol b{color:#fff}
+  .gesto{display:inline-block;background:rgba(255,255,255,.07);border:1px solid var(--wire);
+    border-radius:8px;padding:1px 7px;font-size:15px}
+
+  .cosa{display:grid;gap:12px;margin:4px 0 2px}
+  .cosa div{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+  .cosa .em{font-size:22px;line-height:1.2}
+  .cosa b{display:block;margin-bottom:2px}
+  .cosa span{color:var(--muted);font-size:15.5px}
+
+  .link{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+    text-align:center;word-break:break-all;margin-top:-6px}
+  .avviso{font-size:14.5px;color:var(--muted);border-left:3px solid rgba(231,198,90,.45);
+    padding-left:12px;margin:14px 0 0}
+  footer{margin-top:34px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+    letter-spacing:.1em;color:#6E7682;line-height:2}
 </style>
 </head>
 <body>
 <main>
+
   <div class="testa">
-    <img src="icons/icon-512.png" alt="">
-    <h1>Yourbea</h1>
-    <div class="claim">La bellezza intorno a te</div>
-    <p>Italia: la bellezza intorno a te a te. Cammini e la città si racconta: cosa ammirare, da che parte, a quanti metri. A voce, anche a schermo spento.</p>
+    <img class="insegna" src="icons/avvio.png" alt="Yourbea — la bellezza intorno a te">
+    <p>Cammini, e la città ti si racconta da sola: <b>quello che hai davanti</b>, da che parte e a quanti metri. Senza toccare lo schermo.</p>
   </div>
 
-  <div class="carta" id="c-android">
-    <div class="tag">Android</div>
-    <h2>Scarica e installa</h2>
-    <p>Un file solo, due megabyte.</p>
+  <div class="numeri">
+    <div><b>952</b><span>luoghi</span></div>
+    <div><b>31</b><span>città</span></div>
+    <div><b>102</b><span>passeggiate</span></div>
+  </div>
+
+  <div class="carta">
+    <span class="tag">Android</span>
+    <h2>Scarica l'app</h2>
+    <p>Due megabyte. Chi ha già la versione vecchia la ritrova aggiornata.</p>
     <a class="bottone" href="Yourbea.apk" download>⬇ Scarica Yourbea</a>
     <ol>
       <li>Tocca il tasto: il telefono scarica <b>Yourbea.apk</b>.</li>
-      <li>Apri il file (lo trovi nelle notifiche o in «Download»).</li>
-      <li>Consenti l'installazione da questa origine, quando lo chiede.</li>
-      <li>Tocca <b>Installa</b>: l'icona compare fra le app.</li>
+      <li>Apri il file scaricato. Android chiede il permesso di installare da questa origine: è normale per le app fuori dal Play Store.</li>
+      <li>Tocca <b>Installa</b>, poi <b>Apri</b>.</li>
+      <li>Alla prima apertura dà il permesso alla <b>posizione</b> e al <b>microfono</b>: senza quelli non può parlarti né sentirti.</li>
     </ol>
-    <p class="nota">L'avviso «non proviene dal Play Store» è normale per le prove: l'app è firmata e non chiede nessun dato.</p>
   </div>
 
-  <div class="carta" id="c-iphone">
-    <div class="tag">iPhone · iPad</div>
-    <h2>Aggiungi alla Home</h2>
-    <p>Niente da scaricare: su iPhone l'app si aggiunge dal browser.</p>
+  <div class="carta">
+    <span class="tag oro">iPhone · iPad</span>
+    <h2>Mettila sulla Home</h2>
+    <p>Su iPhone non si scarica nessun file: si aggiunge dal browser e diventa un'icona come un'app vera.</p>
     <a class="bottone secondo" href="https://bubunikolic.github.io/yourbea/">Apri Yourbea in Safari</a>
-    <p class="nota-link">bubunikolic.github.io/yourbea</p>
     <ol>
-      <li>Apri il link <b>con Safari</b>: dentro WhatsApp il tasto per aggiungerla non compare.</li>
-      <li>Tocca <b>Condividi</b>, il quadrato con la freccia.</li>
-      <li>Scegli <b>Aggiungi a schermata Home</b>.</li>
-      <li>Tocca <b>Aggiungi</b>: diventa un'app.</li>
+      <li>Apri questo link <b>con Safari</b>. Se lo apri dentro WhatsApp o Instagram il passaggio dopo non compare: tocca <span class="gesto">⋯</span> e scegli <b>Apri in Safari</b>.</li>
+      <li>In basso tocca <b>Condividi</b>, il quadrato con la freccia che esce <span class="gesto">↑</span>.</li>
+      <li>Scorri l'elenco e scegli <b>Aggiungi a schermata Home</b>.</li>
+      <li>In alto a destra tocca <b>Aggiungi</b>: l'icona compare fra le altre app.</li>
+      <li>Aprila <b>da quell'icona</b>, non da Safari, e dai il permesso a <b>posizione</b> e <b>microfono</b>.</li>
     </ol>
+    <p class="avviso">Se i comandi vocali non rispondono, usa il tasto 🎙 in basso: su alcuni iPhone il riconoscimento della voce nelle app aggiunte alla Home va richiesto a ogni apertura.</p>
+  </div>
+
+  <div class="carta">
+    <span class="tag">Cosa sa fare</span>
+    <h2>Tre cose, bene</h2>
+    <div class="cosa">
+      <div><span class="em">👁</span><div><b>Per chi non vede</b><span>Tutto parlato, comandi a voce, e lo schermo non serve. Dice che cosa passi, da che parte e a quanti metri.</span></div></div>
+      <div><span class="em">🏛</span><div><b>Per chi guarda</b><span>Il dettaglio che fa la differenza — un portale, un balcone, una facciata — e per i grandi monumenti la spiegazione da manuale.</span></div></div>
+      <div><span class="em">🆘</span><div><b>Quando serve aiuto</b><span>Un tasto dice dove sei, via e civico, chiama il 112 o ti porta al commissariato, alla farmacia, a casa.</span></div></div>
+    </div>
   </div>
 
   <div class="carta spenta">
-    <div class="tag">Oppure</div>
+    <span class="tag">Oppure</span>
     <h2>Senza installare niente</h2>
-    <p>Funziona uguale aprendo il link, su qualsiasi telefono.</p>
-    <a class="bottone secondo" href="./">Apri la guida</a>
-    <div class="link">bubunikolic.github.io/yourbea/</div>
+    <p>Funziona anche solo aprendo il link, su qualsiasi telefono.</p>
+    <a class="bottone secondo" href="https://bubunikolic.github.io/yourbea/">Apri la guida</a>
+    <div class="link">bubunikolic.github.io/yourbea</div>
   </div>
 
-  <footer>Roma · Firenze · Venezia · Milano · Torino · Genova · Bologna · Verona · Siena · Padova · Lucca · Mantova · Ferrara · Ravenna · Urbino · Assisi · Orvieto · Matera · Siracusa · Lecce · Bari · Palermo · Catania · Cagliari · Trieste · Rimini · Napoli · Parma · Spoleto · Torre del Greco · Venafro<br><span style="opacity:.65">e in tutta Italia per farmacie, fermate e pronto soccorso</span></footer>
+  <footer>
+    ROMA · FIRENZE · VENEZIA · MILANO · TORINO · GENOVA · BOLOGNA · VERONA · SIENA · PADOVA ·
+    LUCCA · MANTOVA · FERRARA · RAVENNA · URBINO · ASSISI · ORVIETO · MATERA · SIRACUSA · LECCE ·
+    BARI · PALERMO · CATANIA · CAGLIARI · TRIESTE · RIMINI · NAPOLI · PARMA · SPOLETO ·
+    TORRE DEL GRECO · VENAFRO<br>
+    <span style="opacity:.6">e in tutta Italia per farmacie, fermate, pronto soccorso</span>
+  </footer>
+
 </main>
-<script>
-  var ios=/iPhone|iPad|iPod/i.test(navigator.userAgent), android=/Android/i.test(navigator.userAgent);
-  var a=document.getElementById('c-android'), i=document.getElementById('c-iphone');
-  if(ios){ a.classList.add('spenta'); i.parentNode.insertBefore(i,a); }
-  else if(!android){ a.classList.add('spenta'); i.classList.add('spenta'); }
-</script>
 </body>
 </html>
