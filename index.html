@@ -4564,14 +4564,19 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='39';
+  var VERSIONE='40';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
-    // se arriva una versione nuova, si prende e si ricarica una volta sola
+    // se arriva una versione nuova, si prende e si ricarica una volta sola —
+    // ma non mentre sta camminando: ricaricare in mezzo alla strada spegne la
+    // guida, perde la posizione e lo riporta alla schermata d'ingresso.
+    // La versione nuova la prende alla prossima apertura.
     var ricaricato=false;
     navigator.serviceWorker.addEventListener('controllerchange',function(){
-      if(ricaricato)return; ricaricato=true;
+      if(ricaricato)return;
+      try{ if(S&&S.live)return; }catch(e){}
+      ricaricato=true;
       location.reload();
     });
     navigator.serviceWorker.getRegistration().then(function(r){
