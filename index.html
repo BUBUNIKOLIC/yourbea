@@ -4576,7 +4576,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='26';
+  var VERSIONE='27';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5079,7 +5079,7 @@
   }
 
   /* ---------- posizione reale ---------- */
-  var watchId=null,wakeLock=null;
+  var watchId=null,wakeLock=null,percorsiOrdinati=false;
   function startLive(){
     if(!navigator.geolocation){statusEl.textContent='GPS non disponibile in questo browser';return;}
     statusEl.textContent='cerco la posizione…';
@@ -5104,6 +5104,7 @@
       statusEl.textContent='posizione attiva · precisione '+Math.round(S.acc||0)+' m';
       // dove non abbiamo schede, i luoghi arrivano da Wikipedia mano a mano
       caricaRegione();
+      if(!percorsiOrdinati){ percorsiOrdinati=true; try{ordinaPercorsi();}catch(e){} }
       controllaSosta();
       if(around().length<4)caricaDintorni();
       if(mappa&&!seguiMappa===false){} 
@@ -5269,20 +5270,40 @@
     });
     return {r:mig,d:dmin};
   }
+  // in che città sta un percorso: serve a non mettere in cima Torre del Greco
+  // solo perché è il primo dell'archivio
+  function cittaDi(r){
+    var la=r.p[0][0], lo=r.p[0][1], mig=null, dmin=Infinity;
+    for(var i=0;i<CITTA.length;i++){
+      var d=dist(la,lo,CITTA[i].lat,CITTA[i].lon);
+      if(d<dmin){dmin=d;mig=CITTA[i];}
+    }
+    return (mig&&dmin<25000)?mig.n:'';
+  }
   function ordinaPercorsi(){
     var sel=el('route');
-    var ord=(S.pronto?ROUTES:ROUTES.slice()).map(function(r){
+    var ord=ROUTES.map(function(r){
       var dmin=Infinity;
       r.p.forEach(function(pt){var d=dist(S.lat,S.lon,pt[0],pt[1]); if(d<dmin)dmin=d;});
-      return {r:r,d:dmin};
+      return {r:r,d:dmin,c:cittaDi(r)};
     });
-    if(S.pronto)ord.sort(function(a,b){return a.d-b.d;});
+    if(S.pronto) ord.sort(function(a,b){return a.d-b.d;});
+    else         ord.sort(function(a,b){ return (a.c+a.r.n).localeCompare(b.c+b.r.n); });
     sel.textContent='';
+    var cittaPrima=null;
     ord.forEach(function(o){
+      // senza posizione si raggruppa per città, così si capisce dove si sta scegliendo
+      if(!S.pronto && o.c && o.c!==cittaPrima){
+        cittaPrima=o.c;
+        var g=document.createElement('option');
+        g.disabled=true; g.value='';
+        g.textContent='— '+o.c.toUpperCase()+' —';
+        sel.appendChild(g);
+      }
       var op=document.createElement('option');
       op.value=o.r.id;
       var partenza=dist(S.lat,S.lon,o.r.p[0][0],o.r.p[0][1]);
-      op.textContent=(o.r.tema?'['+o.r.tema+'] ':'')+o.r.n
+      op.textContent=(S.pronto?'':'   ')+o.r.n
         +' — '+inCifre(lunghezzaPercorso(o.r))
         +(S.pronto?(', parte a '+inCifre(partenza)+' da te'):'');
       sel.appendChild(op);
