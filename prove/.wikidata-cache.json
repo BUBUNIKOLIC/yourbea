@@ -858,5 +858,607 @@
   "lat": 41.903044,
   "lon": 12.466307,
   "scarto": 4
+ },
+ "Piazza del Campidoglio": {
+  "nostroLat": 41.89323,
+  "nostroLon": 12.48297,
+  "niente": true
+ },
+ "Scalinata di Trinità dei Monti": {
+  "nostroLat": 41.90607,
+  "nostroLon": 12.48281,
+  "niente": true
+ },
+ "Piazza del Popolo": {
+  "nostroLat": 41.91075,
+  "nostroLon": 12.47636,
+  "niente": true
+ },
+ "Ara Pacis Augustae": {
+  "nostroLat": 41.90615,
+  "nostroLon": 12.4755,
+  "niente": true
+ },
+ "Mausoleo di Augusto": {
+  "nostroLat": 41.90603,
+  "nostroLon": 12.47603,
+  "niente": true
+ },
+ "Palazzo Farnese": {
+  "nostroLat": 41.89468,
+  "nostroLon": 12.47104,
+  "qid": "Q848386",
+  "lat": 41.894694444444,
+  "lon": 12.470805555556,
+  "scarto": 19
+ },
+ "Campo de' Fiori": {
+  "nostroLat": 41.89558,
+  "nostroLon": 12.47216,
+  "qid": "Q28303",
+  "lat": 41.89566377507976,
+  "lon": 12.472046538447032,
+  "scarto": 13
+ },
+ "Largo di Torre Argentina": {
+  "nostroLat": 41.8954,
+  "nostroLon": 12.47689,
+  "qid": "Q1541068",
+  "lat": 41.89528,
+  "lon": 12.47694,
+  "scarto": 14
+ },
+ "Chiesa del Gesù": {
+  "nostroLat": 41.89592,
+  "nostroLon": 12.47981,
+  "qid": "Q719794",
+  "lat": 41.895833333333,
+  "lon": 12.479722222222,
+  "scarto": 12
+ },
+ "Basilica di Santa Maria sopra Minerva": {
+  "nostroLat": 41.89799,
+  "nostroLon": 12.47837,
+  "qid": "Q823685",
+  "lat": 41.898055555556,
+  "lon": 12.478333333333,
+  "scarto": 8
+ },
+ "Basilica di Sant'Andrea della Valle": {
+  "nostroLat": 41.896,
+  "nostroLon": 12.47433,
+  "niente": true
+ },
+ "Santa Maria in Aracoeli": {
+  "nostroLat": 41.89397,
+  "nostroLon": 12.48319,
+  "niente": true
+ },
+ "Santa Maria in Cosmedin": {
+  "nostroLat": 41.88813,
+  "nostroLon": 12.48172,
+  "niente": true
+ },
+ "Teatro di Marcello": {
+  "nostroLat": 41.89195,
+  "nostroLon": 12.47968,
+  "niente": true
+ },
+ "Portico d'Ottavia": {
+  "nostroLat": 41.89252,
+  "nostroLon": 12.47857,
+  "niente": true
+ },
+ "Isola Tiberina": {
+  "nostroLat": 41.89047,
+  "nostroLon": 12.47776,
+  "niente": true
+ },
+ "Palazzo del Quirinale": {
+  "nostroLat": 41.9007,
+  "nostroLon": 12.48612,
+  "qid": "Q60395043",
+  "lat": 41.899806,
+  "lon": 12.486472,
+  "scarto": 104
+ },
+ "Galleria Spada": {
+  "nostroLat": 41.89389,
+  "nostroLon": 12.4722,
+  "qid": "Q3757699",
+  "lat": 41.894194444444,
+  "lon": 12.471944444444,
+  "scarto": 40
+ },
+ "Statua parlante di Pasquino": {
+  "nostroLat": 41.89772,
+  "nostroLon": 12.47231,
+  "niente": true
+ },
+ "Basilica di San Pietro in Vincoli": {
+  "nostroLat": 41.89386,
+  "nostroLon": 12.49316,
+  "qid": "Q542070",
+  "lat": 41.893872222222,
+  "lon": 12.493069444444,
+  "scarto": 8
+ },
+ "Basilica di San Pietro in Vaticano": {
+  "nostroLat": 41.90216,
+  "nostroLon": 12.45369,
+  "niente": true
+ },
+ "Basilica di Santa Maria Maggiore": {
+  "nostroLat": 41.89763,
+  "nostroLon": 12.49847,
+  "qid": "Q186282",
+  "lat": 41.8975,
+  "lon": 12.498611111111,
+  "scarto": 19
+ },
+ "Basilica di San Giovanni in Laterano": {
+  "nostroLat": 41.88585,
+  "nostroLon": 12.50559,
+  "niente": true
+ },
+ "Basilica di San Clemente": {
+  "nostroLat": 41.8892,
+  "nostroLon": 12.49754,
+  "niente": true
+ },
+ "Chiesa di San Luigi dei Francesi": {
+  "nostroLat": 41.89959,
+  "nostroLon": 12.47454,
+  "niente": true
+ },
+ "Sant'Ivo alla Sapienza": {
+  "nostroLat": 41.89819,
+  "nostroLon": 12.47488,
+  "niente": true
+ },
+ "Sant'Agnese in Agone": {
+  "nostroLat": 41.89876,
+  "nostroLon": 12.47256,
+  "niente": true
+ },
+ "San Carlo alle Quattro Fontane": {
+  "nostroLat": 41.90174,
+  "nostroLon": 12.4908,
+  "qid": "Q867329",
+  "lat": 41.90181,
+  "lon": 12.49074,
+  "scarto": 9
+ },
+ "Sant'Andrea al Quirinale": {
+  "nostroLat": 41.90067,
+  "nostroLon": 12.48935,
+  "qid": "Q1354667",
+  "lat": 41.900683,
+  "lon": 12.489344,
+  "scarto": 2
+ },
+ "Santa Maria della Vittoria": {
+  "nostroLat": 41.90472,
+  "nostroLon": 12.49419,
+  "qid": "Q863593",
+  "lat": 41.90465635461702,
+  "lon": 12.494335768061557,
+  "scarto": 14
+ },
+ "Santa Maria del Popolo": {
+  "nostroLat": 41.91122,
+  "nostroLon": 12.47639,
+  "qid": "Q869513",
+  "lat": 41.911448,
+  "lon": 12.476483,
+  "scarto": 26
+ },
+ "Santa Maria della Pace": {
+  "nostroLat": 41.89959,
+  "nostroLon": 12.47123,
+  "qid": "Q1514683",
+  "lat": 41.89973981776809,
+  "lon": 12.471490388643657,
+  "scarto": 27
+ },
+ "Tempietto del Bramante": {
+  "nostroLat": 41.88874,
+  "nostroLon": 12.46639,
+  "niente": true
+ },
+ "Basilica di Santa Maria in Trastevere": {
+  "nostroLat": 41.88942,
+  "nostroLon": 12.4695,
+  "niente": true
+ },
+ "Palazzo Barberini": {
+  "nostroLat": 41.90347,
+  "nostroLon": 12.49014,
+  "niente": true
+ },
+ "Palazzo di Propaganda Fide": {
+  "nostroLat": 41.9042,
+  "nostroLon": 12.48338,
+  "niente": true
+ },
+ "Palazzo Madama": {
+  "nostroLat": 41.89896,
+  "nostroLon": 12.47416,
+  "niente": true
+ },
+ "Palazzo della Consulta": {
+  "nostroLat": 41.89914,
+  "nostroLon": 12.48763,
+  "niente": true
+ },
+ "Palazzo Spada": {
+  "nostroLat": 41.89392,
+  "nostroLon": 12.47223,
+  "qid": "Q1058475",
+  "lat": 41.894349,
+  "lon": 12.472001,
+  "scarto": 51
+ },
+ "Piazza Venezia": {
+  "nostroLat": 41.89624,
+  "nostroLon": 12.48237,
+  "qid": "Q874832",
+  "lat": 41.89639,
+  "lon": 12.4825,
+  "scarto": 20
+ },
+ "Piazza della Rotonda": {
+  "nostroLat": 41.89929,
+  "nostroLon": 12.47687,
+  "qid": "Q3457157",
+  "lat": 41.89930556,
+  "lon": 12.47675,
+  "scarto": 10
+ },
+ "Piazza Sant'Ignazio": {
+  "nostroLat": 41.89934,
+  "nostroLon": 12.47969,
+  "qid": "Q1120890",
+  "lat": 41.89931,
+  "lon": 12.47965,
+  "scarto": 5
+ },
+ "Piazza Farnese": {
+  "nostroLat": 41.89506,
+  "nostroLon": 12.47126,
+  "qid": "Q2091963",
+  "lat": 41.89515739369608,
+  "lon": 12.471233537490352,
+  "scarto": 11
+ },
+ "Piazza Barberini": {
+  "nostroLat": 41.90375,
+  "nostroLon": 12.48872,
+  "niente": true
+ },
+ "Fontana del Mascherone": {
+  "nostroLat": 41.89387,
+  "nostroLon": 12.47021,
+  "niente": true
+ },
+ "Palazzo Zuccari, la casa dei mostri": {
+  "nostroLat": 41.90547,
+  "nostroLon": 12.48422,
+  "niente": true
+ },
+ "Arco del Passetto Farnese": {
+  "nostroLat": 41.89437,
+  "nostroLon": 12.46986,
+  "niente": true
+ },
+ "La gatta di via della Gatta": {
+  "nostroLat": 41.89682,
+  "nostroLon": 12.48065,
+  "niente": true
+ },
+ "Madama Lucrezia": {
+  "nostroLat": 41.89568,
+  "nostroLon": 12.48131,
+  "qid": "Q1115154",
+  "lat": 41.89583333,
+  "lon": 12.48166667,
+  "scarto": 34
+ },
+ "L'Abate Luigi": {
+  "nostroLat": 41.89597,
+  "nostroLon": 12.47463,
+  "niente": true
+ },
+ "La Porta Magica": {
+  "nostroLat": 41.8955,
+  "nostroLon": 12.50374,
+  "niente": true
+ },
+ "Casa dei Cavalieri di Rodi": {
+  "nostroLat": 41.89477,
+  "nostroLon": 12.48654,
+  "qid": "Q3661197",
+  "lat": 41.89476111,
+  "lon": 12.48653889,
+  "scarto": 1
+ },
+ "Arco degli Acetari": {
+  "nostroLat": 41.89622,
+  "nostroLon": 12.47133,
+  "qid": "Q138701047",
+  "lat": 41.896345498785614,
+  "lon": 12.47139780070916,
+  "scarto": 15
+ },
+ "Fontana del Facchino": {
+  "nostroLat": 41.8983,
+  "nostroLon": 12.48138,
+  "niente": true
+ },
+ "Fontana dei Libri": {
+  "nostroLat": 41.8984,
+  "nostroLon": 12.4742,
+  "niente": true
+ },
+ "Le Quattro Fontane": {
+  "nostroLat": 41.90197,
+  "nostroLon": 12.49074,
+  "niente": true
+ },
+ "Insula dell'Ara Coeli": {
+  "nostroLat": 41.89415,
+  "nostroLon": 12.48225,
+  "niente": true
+ },
+ "Obelisco di Montecitorio": {
+  "nostroLat": 41.90068,
+  "nostroLon": 12.47867,
+  "niente": true
+ },
+ "Passetto di Borgo": {
+  "nostroLat": 41.90327,
+  "nostroLon": 12.45813,
+  "qid": "Q1329589",
+  "lat": 41.903333333333,
+  "lon": 12.461666666667,
+  "scarto": 293
+ },
+ "Le piene del Tevere, alla Minerva": {
+  "nostroLat": 41.89798,
+  "nostroLon": 12.47836,
+  "niente": true
+ },
+ "Il buco della serratura dell'Aventino": {
+  "nostroLat": 41.88285,
+  "nostroLon": 12.47855,
+  "niente": true
+ },
+ "Terme di Caracalla": {
+  "nostroLat": 41.87883,
+  "nostroLon": 12.49247,
+  "qid": "Q502098",
+  "lat": 41.880264,
+  "lon": 12.492764,
+  "scarto": 161
+ },
+ "Circo Massimo": {
+  "nostroLat": 41.88616,
+  "nostroLon": 12.48531,
+  "qid": "Q207808",
+  "lat": 41.8859,
+  "lon": 12.4857,
+  "scarto": 43
+ },
+ "Piramide Cestia": {
+  "nostroLat": 41.87844,
+  "nostroLon": 12.48285,
+  "qid": "Q725404",
+  "lat": 41.876388888889,
+  "lon": 12.480833333333,
+  "scarto": 283
+ },
+ "Cimitero acattolico": {
+  "nostroLat": 41.87636,
+  "nostroLon": 12.47944,
+  "niente": true
+ },
+ "Terme di Diocleziano": {
+  "nostroLat": 41.90368,
+  "nostroLon": 12.49785,
+  "niente": true
+ },
+ "Palazzo Massimo alle Terme": {
+  "nostroLat": 41.9013,
+  "nostroLon": 12.49866,
+  "niente": true
+ },
+ "Galleria Borghese": {
+  "nostroLat": 41.91411,
+  "nostroLon": 12.49211,
+  "niente": true
+ },
+ "Villa Farnesina": {
+  "nostroLat": 41.89363,
+  "nostroLon": 12.46733,
+  "niente": true
+ },
+ "Domus Aurea": {
+  "nostroLat": 41.89126,
+  "nostroLon": 12.49511,
+  "niente": true
+ },
+ "Basilica dei Santi Quattro Coronati": {
+  "nostroLat": 41.88825,
+  "nostroLon": 12.4981,
+  "qid": "Q1536044",
+  "lat": 41.888333333333,
+  "lon": 12.498333333333,
+  "scarto": 21
+ },
+ "Basilica di Santo Stefano Rotondo": {
+  "nostroLat": 41.88465,
+  "nostroLon": 12.49681,
+  "qid": "Q919456",
+  "lat": 41.884522,
+  "lon": 12.496761,
+  "scarto": 15
+ },
+ "Basilica di Santa Sabina": {
+  "nostroLat": 41.88452,
+  "nostroLon": 12.47975,
+  "qid": "Q592244",
+  "lat": 41.884444444444,
+  "lon": 12.479722222222,
+  "scarto": 9
+ },
+ "Basilica di Santa Prassede": {
+  "nostroLat": 41.89624,
+  "nostroLon": 12.49867,
+  "qid": "Q733890",
+  "lat": 41.896111111111,
+  "lon": 12.498611111111,
+  "scarto": 15
+ },
+ "Fontana dell'Acqua Paola, il Fontanone": {
+  "nostroLat": 41.88881,
+  "nostroLon": 12.46429,
+  "niente": true
+ },
+ "Villa Bruno Prota": {
+  "nostroLat": 40.76711,
+  "nostroLon": 14.41207,
+  "niente": true
+ },
+ "Masseria di Donna Chiara": {
+  "nostroLat": 40.76053,
+  "nostroLon": 14.40794,
+  "niente": true
+ },
+ "Il campanile di Santa Croce": {
+  "nostroLat": 40.787,
+  "nostroLon": 14.3684,
+  "niente": true
+ },
+ "Duomo di Napoli": {
+  "nostroLat": 40.85265,
+  "nostroLon": 14.25987,
+  "niente": true
+ },
+ "Cappella Sansevero": {
+  "nostroLat": 40.8493,
+  "nostroLon": 14.25493,
+  "niente": true
+ },
+ "Chiesa del Gesù Nuovo": {
+  "nostroLat": 40.84756,
+  "nostroLon": 14.25187,
+  "niente": true
+ },
+ "Basilica di San Domenico Maggiore": {
+  "nostroLat": 40.84898,
+  "nostroLon": 14.25427,
+  "qid": "Q897603",
+  "lat": 40.848731,
+  "lon": 14.254407,
+  "scarto": 30
+ },
+ "Basilica di San Lorenzo Maggiore": {
+  "nostroLat": 40.85092,
+  "nostroLon": 14.25804,
+  "qid": "Q1084608",
+  "lat": 40.850930555556,
+  "lon": 14.258119444444,
+  "scarto": 7
+ },
+ "Pio Monte della Misericordia": {
+  "nostroLat": 40.85181,
+  "nostroLon": 14.26035,
+  "qid": "Q3737242",
+  "lat": 40.851871,
+  "lon": 14.260426,
+  "scarto": 9
+ },
+ "Castel Nuovo, il Maschio Angioino": {
+  "nostroLat": 40.83832,
+  "nostroLon": 14.25373,
+  "niente": true
+ },
+ "Castel dell'Ovo": {
+  "nostroLat": 40.82774,
+  "nostroLon": 14.24803,
+  "qid": "Q645041",
+  "lat": 40.828315,
+  "lon": 14.247656,
+  "scarto": 71
+ },
+ "Certosa di San Martino": {
+  "nostroLat": 40.84316,
+  "nostroLon": 14.24106,
+  "niente": true
+ },
+ "Galleria Umberto I": {
+  "nostroLat": 40.83851,
+  "nostroLon": 14.24924,
+  "niente": true
+ },
+ "Palazzo Reale": {
+  "nostroLat": 40.83648,
+  "nostroLon": 14.25032,
+  "niente": true
+ },
+ "Museo Archeologico Nazionale": {
+  "nostroLat": 40.85361,
+  "nostroLon": 14.25115,
+  "niente": true
+ },
+ "Piazza del Plebiscito": {
+  "nostroLat": 40.83588,
+  "nostroLon": 14.24865,
+  "niente": true
+ },
+ "Teatro di San Carlo": {
+  "nostroLat": 40.83735,
+  "nostroLon": 14.2498,
+  "niente": true
+ },
+ "Guglia di San Gennaro": {
+  "nostroLat": 40.85214,
+  "nostroLon": 14.26017,
+  "qid": "Q1255701",
+  "lat": 40.852125,
+  "lon": 14.26017,
+  "scarto": 2
+ },
+ "Statua del dio Nilo": {
+  "nostroLat": 40.84874,
+  "nostroLon": 14.25621,
+  "qid": "Q3968659",
+  "lat": 40.8488,
+  "lon": 14.2561,
+  "scarto": 11
+ },
+ "Teatro romano di Neapolis": {
+  "nostroLat": 40.85231,
+  "nostroLon": 14.25652,
+  "qid": "Q2202658",
+  "lat": 40.85235375,
+  "lon": 14.25668389,
+  "scarto": 15
+ },
+ "Basilica di Santa Chiara": {
+  "nostroLat": 40.84688,
+  "nostroLon": 14.25287,
+  "qid": "Q810104",
+  "lat": 40.84688,
+  "lon": 14.25287,
+  "scarto": 0
+ },
+ "Basilica di San Paolo Maggiore": {
+  "nostroLat": 40.85144,
+  "nostroLon": 14.25683,
+  "qid": "Q693174",
+  "lat": 40.85144,
+  "lon": 14.25683,
+  "scarto": 0
  }
 }
