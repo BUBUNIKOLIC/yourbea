@@ -19,6 +19,11 @@ const root = path.join(__dirname, '..');
 const src = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 const SOGLIA = 250;        // metri: sopra questo si guarda a mano
+/* Oltre questa distanza non è più una nostra coordinata sbagliata: è un
+   altro luogo con lo stesso nome. «Monumento ai caduti», «Edicola», «Banca
+   Intesa Sanpaolo» esistono in mezza Italia, e il candidato più vicino
+   trovato per nome sta a centinaia di chilometri: non dice niente su di noi. */
+const OMONIMO = 5000;
 const CACHE = path.join(__dirname, '.wikidata-cache.json');
 const TUTTI = process.argv.indexOf('--tutti') >= 0;
 const UA = 'yourbea-verifica/1.0 (guida vocale; uso personale)';
@@ -41,6 +46,13 @@ function dist(a1, o1, a2, o2) {
   const x = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(x));
 }
+
+/* La chiave tiene dentro la coordinata, se no due nostre schede con lo
+   stesso nome (San Lorenzo Maggiore a Napoli e a Milano) si sovrascrivono a
+   vicenda e il rapporto attribuisce a una lo scarto dell'altra: la prima
+   misura ne ha segnalate due a 656 km, che erano a 9 metri. Cambiando la
+   coordinata cambia la chiave, quindi un luogo spostato si rimisura da sé. */
+const chiaveDi = (p) => p.n + '@' + p.lat + ',' + p.lon;
 
 let cache = {};
 try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch (e) { cache = {}; }
@@ -82,23 +94,17 @@ async function coordinate(qids) {
 }
 
 (async () => {
-  const daFare = POI.filter((p) => {
-    if (TUTTI) return true;
-    const c = cache[p.n];
-    if (!c) return true;
-    // se abbiamo spostato il luogo da quando l'abbiamo misurato, si rimisura
-    return c.nostroLat !== p.lat || c.nostroLon !== p.lon;
-  });
+  const daFare = POI.filter((p) => TUTTI || !cache[chiaveDi(p)]);
 
   console.log('luoghi da misurare: ' + daFare.length + ' su ' + POI.length +
     (daFare.length ? ' (le risposte restano in prove/.wikidata-cache.json)' : ' — tutto già misurato'));
 
-  let lontani = [], muti = 0, misurati = 0;
+  let muti = 0, misurati = 0;
   for (const p of daFare) {
     const qids = await candidati(p.n);
     await attesa(120);
     if (!qids.length) {
-      cache[p.n] = { nostroLat: p.lat, nostroLon: p.lon, niente: true };
+      cache[chiaveDi(p)] = { niente: true };
       muti++;
       continue;
     }
@@ -108,25 +114,27 @@ async function coordinate(qids) {
       const d = dist(p.lat, p.lon, co[q].lat, co[q].lon);
       if (!meglio || d < meglio.d) meglio = { q, d, lat: co[q].lat, lon: co[q].lon };
     }
-    if (!meglio) { cache[p.n] = { nostroLat: p.lat, nostroLon: p.lon, niente: true }; muti++; continue; }
-    cache[p.n] = { nostroLat: p.lat, nostroLon: p.lon, qid: meglio.q, lat: meglio.lat, lon: meglio.lon, scarto: Math.round(meglio.d) };
+    if (!meglio) { cache[chiaveDi(p)] = { niente: true }; muti++; continue; }
+    cache[chiaveDi(p)] = { qid: meglio.q, lat: meglio.lat, lon: meglio.lon, scarto: Math.round(meglio.d) };
     misurati++;
-    if (meglio.d > SOGLIA) lontani.push({ n: p.n, d: Math.round(meglio.d), q: meglio.q, nostro: [p.lat, p.lon], loro: [meglio.lat, meglio.lon] });
     fs.writeFileSync(CACHE, JSON.stringify(cache, null, 1), 'utf8');
   }
 
-  // anche i luoghi già in cache contano nel conto finale
-  const tuttiScarti = POI.map((p) => cache[p.n]).filter((c) => c && typeof c.scarto === 'number');
-  const oltre = POI.filter((p) => cache[p.n] && cache[p.n].scarto > SOGLIA);
+  // il conto finale, su tutti i luoghi: quelli misurati ora e quelli già in cache
+  const conScarto = POI.map((p) => ({ p, c: cache[chiaveDi(p)] })).filter((x) => x.c && typeof x.c.scarto === 'number');
+  const sbagliate = conScarto.filter((x) => x.c.scarto > SOGLIA && x.c.scarto <= OMONIMO);
+  const omonimi = conScarto.filter((x) => x.c.scarto > OMONIMO);
+  const giuste = conScarto.filter((x) => x.c.scarto <= SOGLIA);
 
-  console.log('misurati ora: ' + misurati + ' | senza riscontro su Wikidata: ' + muti +
-    ' | con una coordinata da confrontare, in tutto: ' + tuttiScarti.length);
+  console.log('misurati ora: ' + misurati + ' | senza riscontro su Wikidata: ' + muti);
+  console.log('confrontabili in tutto: ' + conScarto.length + ' — in posizione: ' + giuste.length +
+    ' | da guardare: ' + sbagliate.length + ' | omonimi lontani, ignorati: ' + omonimi.length);
 
-  if (oltre.length) {
-    console.log('NO  ' + oltre.length + ' schede a più di ' + SOGLIA + ' m dal punto di Wikidata (guardare a mano: attenzione agli omonimi)');
-    oltre.sort((a, b) => cache[b.n].scarto - cache[a.n].scarto).slice(0, 15).forEach((p) => {
-      const c = cache[p.n];
-      console.log('      - ' + p.n + ': ' + c.scarto + ' m | nostro ' + p.lat + ',' + p.lon + ' | ' + c.qid + ' ' + c.lat.toFixed(5) + ',' + c.lon.toFixed(5));
+  if (sbagliate.length) {
+    console.log('NO  ' + sbagliate.length + ' schede fra ' + SOGLIA + ' m e ' + (OMONIMO / 1000) + ' km dal punto di Wikidata: da guardare a mano');
+    sbagliate.sort((a, b) => b.c.scarto - a.c.scarto).slice(0, 20).forEach((x) => {
+      console.log('      - ' + x.p.n + ': ' + x.c.scarto + ' m | nostro ' + x.p.lat + ',' + x.p.lon +
+        ' | ' + x.c.qid + ' ' + x.c.lat.toFixed(5) + ',' + x.c.lon.toFixed(5));
     });
     process.exit(1);
   }
