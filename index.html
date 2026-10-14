@@ -625,28 +625,28 @@
   <section class="controls">
     <button class="btn btn-go" id="start">Avvia</button>
     <button class="btn btn-tondo btn-parla" id="parla" hidden aria-label="Parla: dimmi un comando">🎙</button>
-    <button class="btn btn-tondo btn-aiuto" id="aiuto-subito" aria-label="Aiuto: polizia, furto, soccorso">🆘</button>
+    <button class="btn btn-tondo btn-aiuto" id="aiuto-subito" onclick="YB.apri()" aria-label="Aiuto: polizia, furto, soccorso">🆘</button>
     <button class="btn btn-tondo btn-altro" id="altro" aria-expanded="false" aria-controls="cassetto" aria-label="Altri comandi">⋯</button>
   </section>
 
   <section class="pannello-aiuto" id="pannello-aiuto" hidden aria-label="Aiuto immediato">
-    <button class="chiudi-x" id="chiudi-x" aria-label="Chiudi">✕</button>
+    <button class="chiudi-x" id="chiudi-x" onclick="YB.chiudi()" aria-label="Chiudi">✕</button>
     <h3>Aiuto</h3>
     <p class="dove-sei" id="dove-sei">cerco dove sei…</p>
-    <button class="btn btn-emergenza" id="chiama-112">📞 Chiama il 112 — soccorsi</button>
-    <button class="btn btn-contatto" id="chiama-contatto" hidden>📱 Chiama <span id="nome-contatto">il contatto</span></button>
-    <button class="btn" id="avvisa-contatto" hidden>📍 Manda la mia posizione</button>
-    <button class="btn" id="vai-polizia">🚓 Commissariato più vicino</button>
-    <button class="btn" id="vai-ps">🏥 Pronto soccorso più vicino</button>
-    <button class="btn" id="vai-farmacia">💊 Farmacia più vicina</button>
-    <button class="btn" id="vai-casa-2">🏠 Portami a casa</button>
+    <button class="btn btn-emergenza" id="chiama-112" onclick="YB.chiama112()">📞 Chiama il 112 — soccorsi</button>
+    <button class="btn btn-contatto" id="chiama-contatto" onclick="YB.chiamaContatto()" hidden>📱 Chiama <span id="nome-contatto">il contatto</span></button>
+    <button class="btn" id="avvisa-contatto" onclick="YB.posizioneAlContatto()" hidden>📍 Manda la mia posizione</button>
+    <button class="btn" id="vai-polizia" onclick="YB.vaiA('commissariato')">🚓 Commissariato più vicino</button>
+    <button class="btn" id="vai-ps" onclick="YB.vaiA('pronto soccorso')">🏥 Pronto soccorso più vicino</button>
+    <button class="btn" id="vai-farmacia" onclick="YB.vaiA('farmacia')">💊 Farmacia più vicina</button>
+    <button class="btn" id="vai-casa-2" onclick="YB.vaiCasa()">🏠 Portami a casa</button>
     <div class="riga-indirizzo">
       <input id="indirizzo" type="text" inputmode="text" autocomplete="street-address"
              placeholder="Scrivi un indirizzo o un albergo" aria-label="Indirizzo dove vuoi andare">
-      <button class="btn btn-vai" id="vai-indirizzo" aria-label="Portami a questo indirizzo">→</button>
+      <button class="btn btn-vai" id="vai-indirizzo" onclick="YB.vaiIndirizzo()" aria-label="Portami a questo indirizzo">→</button>
     </div>
-    <button class="btn" id="furto-qui">👛 Mi hanno rubato il portafoglio</button>
-    <button class="btn" id="chiudi-aiuto">Chiudi</button>
+    <button class="btn" id="furto-qui" onclick="YB.furto()">👛 Mi hanno rubato il portafoglio</button>
+    <button class="btn" id="chiudi-aiuto" onclick="YB.chiudi()">Chiudi</button>
   </section>
 
   <div class="status" id="status">in attesa</div>
@@ -4576,7 +4576,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='29';
+  var VERSIONE='30';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4603,90 +4603,60 @@
     }).catch(function(){});
   })();
 
+
+  /* ---------- l'aiuto: comandi indipendenti ----------
+     Ogni tasto chiama direttamente la sua funzione dall'HTML. Se un pezzo di
+     codice più avanti va in errore, questi continuano a funzionare. */
+  window.YB = window.YB || {};
+  YB.apri = function(){
+    var pan=document.getElementById('pannello-aiuto');
+    if(!pan)return;
+    pan.hidden=false;
+    try{ audio(); }catch(e){}
+    var d=document.getElementById('dove-sei'); if(d)d.textContent='cerco dove sei…';
+    try{
+      stradaDiQui(function(via){
+        var t = via ? ('Sei in '+via+'.') : 'La strada non la so dire.';
+        if(d)d.textContent=t;
+        try{ speak(t, true); }catch(e){}
+      });
+    }catch(e){ if(d)d.textContent='—'; }
+    try{
+      var ok=(typeof soccorso!=='undefined' && soccorso && soccorso.tel);
+      var bc=document.getElementById('chiama-contatto'), ba=document.getElementById('avvisa-contatto');
+      var nm=document.getElementById('nome-contatto');
+      if(bc)bc.hidden=!ok; if(ba)ba.hidden=!ok;
+      if(ok&&nm)nm.textContent=soccorso.nome||'il contatto';
+    }catch(e){}
+  };
+  YB.chiudi = function(){
+    var pan=document.getElementById('pannello-aiuto');
+    if(pan)pan.hidden=true;
+    return false;
+  };
+  YB.chiama112 = function(){
+    try{ dire(['frase-chiamo-112'],'Chiamo il 112.',true); }catch(e){}
+    setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} }, 700);
+  };
+  YB.chiamaContatto = function(){
+    if(typeof soccorso==='undefined'||!soccorso||!soccorso.tel)return;
+    setTimeout(function(){ try{ location.href='tel:'+soccorso.tel; }catch(e){} }, 300);
+  };
+  YB.vaiA = function(tipo){ YB.chiudi(); try{ portamiA(tipo); }catch(e){} };
+  YB.vaiCasa = function(){ YB.chiudi(); try{ portamiACasa(); }catch(e){} };
+  YB.furto = function(){ YB.chiudi(); try{ derubato(); }catch(e){} };
+  YB.posizioneAlContatto = function(){ YB.chiudi(); try{ vienimiAPrendere(); }catch(e){} };
+  YB.vaiIndirizzo = function(){
+    var c=document.getElementById('indirizzo'); if(!c)return;
+    var t=(c.value||'').trim(); if(t.length<4)return;
+    YB.chiudi(); try{ portamiAIndirizzo(t); }catch(e){}
+  };
+
   /* ---------- il tasto dell'aiuto ----------
      Deve funzionare al primo tocco e senza leggere: il 112 riceve la
      posizione da solo (AML, obbligatorio sugli smartphone europei dal 2022),
      e intanto l'app dice ad alta voce via e civico. */
-  (function(){
-    var b=el('aiuto-subito'), pan=el('pannello-aiuto');
-    if(!b||!pan)return;
-    // si apre anche dicendo «aiuto»: e allora legge le scelte ad alta voce
-    window.apriAiuto=function(parlando){
-      apri();
-      mostraContatto();
-      if(parlando){
-        setTimeout(function(){
-          var scelte='Dì: chiama, per il 112. Commissariato. Pronto soccorso. Farmacia. '+
-                     'Portami a casa. Oppure: mi hanno rubato il portafoglio.';
-          liveEl.textContent=scelte;
-          dire(['frase-scelte-aiuto'],scelte,true);
-        }, 2200);
-      }
-      return true;
-    };
-    function apri(){
-      pan.hidden=false;
-      try{ history.pushState({aiuto:1},''); }catch(e){}
-      var d=el('dove-sei'); if(d)d.textContent='cerco dove sei…';
-      stradaDiQui(function(via){
-        var testo = via ? ('Sei in '+via+'.') : 'La strada non la so dire.';
-        if(d)d.textContent=testo;
-        speak(testo, true);
-      });
-    }
-    b.addEventListener('click',function(){ audio(); apri(); mostraContatto(); });
-    // il contatto registrato: chiamarlo o mandargli dove sei
-    function mostraContatto(){
-      var ok = (typeof soccorso!=='undefined' && soccorso && soccorso.tel);
-      var bc=el('chiama-contatto'), ba=el('avvisa-contatto'), nm=el('nome-contatto');
-      if(bc)bc.hidden=!ok;
-      if(ba)ba.hidden=!ok;
-      if(ok&&nm)nm.textContent=soccorso.nome||'il contatto';
-    }
-    var bc=el('chiama-contatto');
-    if(bc)bc.addEventListener('click',function(){
-      if(typeof soccorso==='undefined'||!soccorso||!soccorso.tel)return;
-      dire(['frase-chiamo'],'Chiamo adesso.',true);
-      setTimeout(function(){ try{ location.href='tel:'+soccorso.tel; }catch(e){} },800);
-    });
-    var ba=el('avvisa-contatto');
-    if(ba)ba.addEventListener('click',function(){ pan.hidden=true; vienimiAPrendere(); });
-    function chiudi(){ pan.hidden=true; if(history.state&&history.state.aiuto)history.back(); }
-    el('chiudi-aiuto').addEventListener('click',chiudi);
-    el('chiudi-x').addEventListener('click',chiudi);
-    window.chiudiAiuto=function(){ pan.hidden=true; return true; };
-    // e il tasto indietro di Android chiude il pannello invece di uscire
-    window.addEventListener('popstate',function(){ if(!pan.hidden)pan.hidden=true; });
-    el('chiama-112').addEventListener('click',function(){
-      dire(['frase-chiamo-112'],'Chiamo il 112.',true);
-      setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} },900);
-    });
-    el('vai-polizia').addEventListener('click',function(){
-      pan.hidden=true; portamiA('commissariato');
-    });
-    el('vai-ps').addEventListener('click',function(){
-      pan.hidden=true; portamiA('pronto soccorso');
-    });
-    el('vai-farmacia').addEventListener('click',function(){
-      pan.hidden=true; portamiA('farmacia');
-    });
-    el('vai-casa-2').addEventListener('click',function(){
-      pan.hidden=true; portamiACasa();
-    });
-    function vaiAScritto(){
-      var c=el('indirizzo'); if(!c)return;
-      var t=(c.value||'').trim();
-      if(t.length<4)return;
-      pan.hidden=true;
-      portamiAIndirizzo(t);
-    }
-    var bi=el('vai-indirizzo'); if(bi)bi.addEventListener('click',vaiAScritto);
-    var ci=el('indirizzo');
-    if(ci)ci.addEventListener('keydown',function(e){ if(e.key==='Enter')vaiAScritto(); });
-    el('furto-qui').addEventListener('click',function(){
-      pan.hidden=true; derubato();
-    });
-  })();
+  // (i tasti dell'aiuto sono collegati direttamente nell'HTML, sopra)
 
   /* ---------- la bussola e il cassetto dei comandi ---------- */
   (function(){
