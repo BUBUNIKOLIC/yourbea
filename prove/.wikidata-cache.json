@@ -1,0 +1,339 @@
+{
+ "Basilica di Santa Croce": {
+  "nostroLat": 40.78706,
+  "nostroLon": 14.36831,
+  "qid": "Q3635748",
+  "lat": 40.7871,
+  "lon": 14.36858,
+  "scarto": 23
+ },
+ "Palazzo Baronale, oggi Municipio": {
+  "nostroLat": 40.78668,
+  "nostroLon": 14.36569,
+  "niente": true
+ },
+ "Chiesa di Maria SS. Assunta": {
+  "nostroLat": 40.78634,
+  "nostroLon": 14.36712,
+  "qid": "Q16550884",
+  "lat": 38.01611,
+  "lon": 15.130105,
+  "scarto": 314930
+ },
+ "Chiesa del SS. Sacramento e San Michele Arcangelo": {
+  "nostroLat": 40.78859,
+  "nostroLon": 14.36718,
+  "niente": true
+ },
+ "Chiesa di Santa Maria del Principio": {
+  "nostroLat": 40.78956,
+  "nostroLon": 14.36469,
+  "niente": true
+ },
+ "Chiesa di Santa Maria di Costantinopoli": {
+  "nostroLat": 40.78673,
+  "nostroLon": 14.3669,
+  "niente": true
+ },
+ "Chiesa di Santa Maria delle Grazie": {
+  "nostroLat": 40.78931,
+  "nostroLon": 14.36656,
+  "niente": true
+ },
+ "Monastero degli Zoccolanti": {
+  "nostroLat": 40.78948,
+  "nostroLon": 14.3669,
+  "qid": "Q3860415",
+  "lat": 40.7893,
+  "lon": 14.3659,
+  "scarto": 87
+ },
+ "Chiesa di Santa Maria del Carmine": {
+  "nostroLat": 40.78506,
+  "nostroLon": 14.37294,
+  "qid": "Q1042634",
+  "lat": 43.767777777778,
+  "lon": 11.243611111111,
+  "scarto": 419795
+ },
+ "Museo del Corallo e Istituto d'Arte Degni": {
+  "nostroLat": 40.7852,
+  "nostroLon": 14.3733,
+  "niente": true
+ },
+ "Chiesa di Santa Maria del Pianto": {
+  "nostroLat": 40.78491,
+  "nostroLon": 14.37359,
+  "qid": "Q3673749",
+  "lat": 40.86763889,
+  "lon": 14.28335556,
+  "scarto": 11928
+ },
+ "Chiesa di Santa Maria di Portosalvo": {
+  "nostroLat": 40.78544,
+  "nostroLon": 14.36356,
+  "qid": "Q1256390",
+  "lat": 40.842819,
+  "lon": 14.257547,
+  "scarto": 10968
+ },
+ "Porto del Corallo": {
+  "nostroLat": 40.7858,
+  "nostroLon": 14.36154,
+  "niente": true
+ },
+ "Contrada Calastro": {
+  "nostroLat": 40.78551,
+  "nostroLon": 14.36002,
+  "niente": true
+ },
+ "Chiesa di San Pietro a Calastro": {
+  "nostroLat": 40.79117,
+  "nostroLon": 14.35829,
+  "niente": true
+ },
+ "Palazzo Vallelonga": {
+  "nostroLat": 40.79177,
+  "nostroLon": 14.36439,
+  "niente": true
+ },
+ "Villa comunale Ciaravolo": {
+  "nostroLat": 40.78997,
+  "nostroLon": 14.36547,
+  "niente": true
+ },
+ "Chiesa di Santa Teresa": {
+  "nostroLat": 40.79149,
+  "nostroLon": 14.36459,
+  "niente": true
+ },
+ "Chiesa di Santa Maria del Popolo": {
+  "nostroLat": 40.79344,
+  "nostroLon": 14.36231,
+  "niente": true
+ },
+ "Chiesa della SS. Annunziata ai Cappuccini": {
+  "nostroLat": 40.78824,
+  "nostroLon": 14.37063,
+  "niente": true
+ },
+ "Chiesa di San Giuseppe alle Paludi": {
+  "nostroLat": 40.78331,
+  "nostroLon": 14.36919,
+  "qid": "Q121887682",
+  "lat": 40.783278,
+  "lon": 14.369239,
+  "scarto": 5
+ },
+ "Villa romana di Sora": {
+  "nostroLat": 40.77828,
+  "nostroLon": 14.37469,
+  "niente": true
+ },
+ "Terme romane": {
+  "nostroLat": 40.77824,
+  "nostroLon": 14.37546,
+  "qid": "Q56549775",
+  "lat": 40.96806,
+  "lon": 15.82708,
+  "scarto": 123864
+ },
+ "Chiesa e convento di Sant'Antonio di Padova": {
+  "nostroLat": 40.78164,
+  "nostroLon": 14.38173,
+  "niente": true
+ },
+ "Villa del Cardinale": {
+  "nostroLat": 40.7839,
+  "nostroLon": 14.3785,
+  "qid": "Q16621620",
+  "lat": 43.17911,
+  "lon": 12.307992,
+  "scarto": 316557
+ },
+ "Museo del Corallo, collezione Liverino": {
+  "nostroLat": 40.80357,
+  "nostroLon": 14.38514,
+  "niente": true
+ },
+ "Villa delle Ginestre": {
+  "nostroLat": 40.77744,
+  "nostroLon": 14.41436,
+  "niente": true
+ },
+ "Camaldoli della Torre": {
+  "nostroLat": 40.78259,
+  "nostroLon": 14.41388,
+  "niente": true
+ },
+ "San Michele al Colle Sant'Alfonso": {
+  "nostroLat": 40.78045,
+  "nostroLon": 14.40435,
+  "niente": true
+ },
+ "Chiesa di Santa Maria La Bruna": {
+  "nostroLat": 40.76769,
+  "nostroLon": 14.40431,
+  "niente": true
+ },
+ "Villa Macrina, biblioteca comunale": {
+  "nostroLat": 40.76986,
+  "nostroLon": 14.4058,
+  "niente": true
+ },
+ "Villa Prota": {
+  "nostroLat": 40.76211,
+  "nostroLon": 14.42351,
+  "niente": true
+ },
+ "Santuario del Buon Consiglio": {
+  "nostroLat": 40.76531,
+  "nostroLon": 14.41706,
+  "qid": "Q3949609",
+  "lat": 40.76541,
+  "lon": 14.4171,
+  "scarto": 12
+ },
+ "Bocche eruttive del 1794": {
+  "nostroLat": 40.81125,
+  "nostroLon": 14.39889,
+  "niente": true
+ },
+ "Bocche del 1861": {
+  "nostroLat": 40.80821,
+  "nostroLon": 14.39723,
+  "niente": true
+ },
+ "Piazzale Seggiovia": {
+  "nostroLat": 40.81982,
+  "nostroLon": 14.41259,
+  "niente": true
+ },
+ "Colosseo": {
+  "nostroLat": 41.89021,
+  "nostroLon": 12.49223,
+  "qid": "Q10285",
+  "lat": 41.890277777778,
+  "lon": 12.492222222222,
+  "scarto": 8
+ },
+ "Arco di Costantino": {
+  "nostroLat": 41.8894,
+  "nostroLon": 12.4906,
+  "qid": "Q5786",
+  "lat": 41.889828,
+  "lon": 12.490605,
+  "scarto": 48
+ },
+ "Tempio di Venere e Roma": {
+  "nostroLat": 41.8906,
+  "nostroLon": 12.4886,
+  "niente": true
+ },
+ "Basilica di Massenzio": {
+  "nostroLat": 41.89213,
+  "nostroLon": 12.488,
+  "niente": true
+ },
+ "Foro Romano": {
+  "nostroLat": 41.8925,
+  "nostroLon": 12.4853,
+  "niente": true
+ },
+ "Foro di Nerva e le Colonnacce": {
+  "nostroLat": 41.89365,
+  "nostroLon": 12.4878,
+  "niente": true
+ },
+ "Foro di Augusto": {
+  "nostroLat": 41.894,
+  "nostroLon": 12.4868,
+  "niente": true
+ },
+ "Colonna Traiana": {
+  "nostroLat": 41.8958,
+  "nostroLon": 12.4845,
+  "niente": true
+ },
+ "Mercati di Traiano": {
+  "nostroLat": 41.89565,
+  "nostroLon": 12.4859,
+  "qid": "Q478642",
+  "lat": 41.895611,
+  "lon": 12.486194,
+  "scarto": 25
+ },
+ "Vittoriano": {
+  "nostroLat": 41.8947,
+  "nostroLon": 12.4833,
+  "qid": "Q506234",
+  "lat": 41.89472222222222,
+  "lon": 12.483055555555556,
+  "scarto": 20
+ },
+ "Palazzo Venezia": {
+  "nostroLat": 41.8963,
+  "nostroLon": 12.4818,
+  "qid": "Q1123879",
+  "lat": 41.8962,
+  "lon": 12.4815,
+  "scarto": 27
+ },
+ "Basilica di San Marco": {
+  "nostroLat": 41.896,
+  "nostroLon": 12.4815,
+  "qid": "Q1479910",
+  "lat": 41.895724,
+  "lon": 12.481448,
+  "scarto": 31
+ },
+ "Palazzo Doria Pamphilj": {
+  "nostroLat": 41.8971,
+  "nostroLon": 12.4813,
+  "qid": "Q1203458",
+  "lat": 41.897669,
+  "lon": 12.481145,
+  "scarto": 65
+ },
+ "Tempio di Adriano": {
+  "nostroLat": 41.8993,
+  "nostroLon": 12.479,
+  "niente": true
+ },
+ "Sant'Ignazio di Loyola": {
+  "nostroLat": 41.899,
+  "nostroLon": 12.4785,
+  "niente": true
+ },
+ "Galleria Alberto Sordi": {
+  "nostroLat": 41.9,
+  "nostroLon": 12.4798,
+  "niente": true
+ },
+ "Colonna di Marco Aurelio": {
+  "nostroLat": 41.9003,
+  "nostroLon": 12.4796,
+  "niente": true
+ },
+ "Palazzo Chigi": {
+  "nostroLat": 41.9009,
+  "nostroLon": 12.4795,
+  "niente": true
+ },
+ "Palazzo Wedekind": {
+  "nostroLat": 41.9002,
+  "nostroLon": 12.4793,
+  "qid": "Q1056799",
+  "lat": 41.90085961538108,
+  "lon": 12.479477707718118,
+  "scarto": 75
+ },
+ "Palazzo Montecitorio": {
+  "nostroLat": 41.9006,
+  "nostroLon": 12.4786,
+  "qid": "Q781417",
+  "lat": 41.901061270150876,
+  "lon": 12.478650254303798,
+  "scarto": 51
+ }
+}
