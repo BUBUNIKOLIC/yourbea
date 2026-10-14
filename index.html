@@ -339,11 +339,12 @@
     box-shadow:0 10px 26px rgba(224,86,74,.3)}
   /* a tutto schermo: così nessun tasto può finire sotto la barra dei comandi */
   .pannello-aiuto{
-    display:flex;flex-direction:column;gap:11px;margin:0 0 16px;
+    display:flex;flex-direction:column;gap:11px;margin:22px 0 10px;
     padding:18px 16px 20px;border-radius:22px;
     background:linear-gradient(180deg, #1F0F0F 0%, #130A0B 100%);
     border:1px solid rgba(224,86,74,.45);
     box-shadow:0 18px 44px rgba(0,0,0,.5);
+    scroll-margin-top:12px;
   }
   .pannello-aiuto h3{font-family:"Playfair Display",Georgia,serif;font-size:24px;margin:0;padding-right:54px}
   .chiudi-x{align-self:flex-end;flex:0 0 auto;margin-bottom:-38px;
@@ -577,25 +578,7 @@
     <div class="claim">La bellezza intorno a te</div>
   </header>
 
-  <section class="pannello-aiuto" id="pannello-aiuto" hidden aria-label="Aiuto immediato">
-    <button class="chiudi-x" id="chiudi-x" onclick="YB.chiudi()" aria-label="Chiudi">✕</button>
-    <h3>Aiuto</h3>
-    <p class="dove-sei" id="dove-sei">cerco dove sei…</p>
-    <button class="btn btn-emergenza" id="chiama-112" onclick="YB.chiama112()">📞 Chiama il 112 — soccorsi</button>
-    <button class="btn btn-contatto" id="chiama-contatto" onclick="YB.chiamaContatto()" hidden>📱 Chiama <span id="nome-contatto">il contatto</span></button>
-    <button class="btn" id="avvisa-contatto" onclick="YB.posizioneAlContatto()" hidden>📍 Manda la mia posizione</button>
-    <button class="btn" id="vai-polizia" onclick="YB.vaiA('commissariato')">🚓 Commissariato più vicino</button>
-    <button class="btn" id="vai-ps" onclick="YB.vaiA('pronto soccorso')">🏥 Pronto soccorso più vicino</button>
-    <button class="btn" id="vai-farmacia" onclick="YB.vaiA('farmacia')">💊 Farmacia più vicina</button>
-    <button class="btn" id="vai-casa-2" onclick="YB.vaiCasa()">🏠 Portami a casa</button>
-    <div class="riga-indirizzo">
-      <input id="indirizzo" type="text" inputmode="text" autocomplete="street-address"
-             placeholder="Scrivi un indirizzo o un albergo" aria-label="Indirizzo dove vuoi andare">
-      <button class="btn btn-vai" id="vai-indirizzo" onclick="YB.vaiIndirizzo()" aria-label="Portami a questo indirizzo">→</button>
-    </div>
-    <button class="btn" id="furto-qui" onclick="YB.furto()">👛 Mi hanno rubato il portafoglio</button>
-    <button class="btn" id="chiudi-aiuto" onclick="YB.chiudi()">Chiudi</button>
-  </section>
+
 
   <section class="say" id="say">
     <div class="bussola" id="bussola" hidden aria-hidden="true">
@@ -627,7 +610,7 @@
   <section class="controls">
     <button class="btn btn-go" id="start">Avvia</button>
     <button class="btn btn-tondo btn-parla" id="parla" hidden aria-label="Parla: dimmi un comando">🎙</button>
-    <button class="btn btn-tondo btn-aiuto" id="aiuto-subito" onclick="YB.apri()" aria-label="Aiuto: polizia, furto, soccorso">🆘</button>
+    <button class="btn btn-tondo btn-aiuto" id="aiuto-subito" onclick="YB.vaiAiuto()" aria-label="Aiuto: polizia, furto, soccorso">🆘</button>
     <button class="btn btn-tondo btn-altro" id="altro" aria-expanded="false" aria-controls="cassetto" aria-label="Altri comandi">⋯</button>
   </section>
 
@@ -644,6 +627,24 @@
   <section>
     <h2 class="eyebrow"><span>Intorno a te</span><span id="count"></span></h2>
     <div class="list" id="list"></div>
+  </section>
+
+  <section class="pannello-aiuto" id="pannello-aiuto" aria-label="Aiuto">
+    <h3>Aiuto</h3>
+    <p class="dove-sei" id="dove-sei">cerco dove sei…</p>
+    <button class="btn btn-emergenza" id="chiama-112" onclick="YB.chiama112()">📞 Chiama il 112 — soccorsi</button>
+    <button class="btn btn-contatto" id="chiama-contatto" onclick="YB.chiamaContatto()" hidden>📱 Chiama <span id="nome-contatto">il contatto</span></button>
+    <button class="btn" id="avvisa-contatto" onclick="YB.posizioneAlContatto()" hidden>📍 Manda la mia posizione</button>
+    <button class="btn" id="vai-polizia" onclick="YB.vaiA('commissariato')">🚓 Commissariato più vicino</button>
+    <button class="btn" id="vai-ps" onclick="YB.vaiA('pronto soccorso')">🏥 Pronto soccorso più vicino</button>
+    <button class="btn" id="vai-farmacia" onclick="YB.vaiA('farmacia')">💊 Farmacia più vicina</button>
+    <button class="btn" id="vai-casa-2" onclick="YB.vaiCasa()">🏠 Portami a casa</button>
+    <div class="riga-indirizzo">
+      <input id="indirizzo" type="text" inputmode="text" autocomplete="street-address"
+             placeholder="Scrivi un indirizzo o un albergo" aria-label="Indirizzo dove vuoi andare">
+      <button class="btn btn-vai" id="vai-indirizzo" onclick="YB.vaiIndirizzo()" aria-label="Portami a questo indirizzo">→</button>
+    </div>
+    <button class="btn" id="furto-qui" onclick="YB.furto()">👛 Mi hanno rubato il portafoglio</button>
   </section>
 
   <p class="versione" id="versione">versione —</p>
@@ -4556,7 +4557,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='32';
+  var VERSIONE='33';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4588,11 +4589,15 @@
      Ogni tasto chiama direttamente la sua funzione dall'HTML. Se un pezzo di
      codice più avanti va in errore, questi continuano a funzionare. */
   window.YB = window.YB || {};
+  YB.vaiAiuto = function(){
+    var pan=document.getElementById('pannello-aiuto');
+    if(!pan)return;
+    try{ pan.scrollIntoView({block:'start'}); }catch(e){ location.hash='#pannello-aiuto'; }
+    YB.apri();
+  };
   YB.apri = function(){
     var pan=document.getElementById('pannello-aiuto');
     if(!pan)return;
-    pan.hidden=false;
-    try{ window.scrollTo(0,0); }catch(e){}
     try{ audio(); }catch(e){}
     var d=document.getElementById('dove-sei'); if(d)d.textContent='cerco dove sei…';
     try{
@@ -4610,11 +4615,7 @@
       if(ok&&nm)nm.textContent=soccorso.nome||'il contatto';
     }catch(e){}
   };
-  YB.chiudi = function(){
-    var pan=document.getElementById('pannello-aiuto');
-    if(pan)pan.hidden=true;
-    return false;
-  };
+  YB.chiudi = function(){ return false; };   // non c'è più niente da chiudere
   YB.chiama112 = function(){
     try{ dire(['frase-chiamo-112'],'Chiamo il 112.',true); }catch(e){}
     setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} }, 700);
