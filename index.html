@@ -202,7 +202,8 @@
   /* la schermata d'avvio: l'insegna per un attimo, poi si entra */
   #avvio{position:fixed;inset:0;z-index:200;display:grid;place-items:center;
     background:radial-gradient(900px 600px at 50% 32%, #1A2029 0%, #090B0E 70%);
-    animation:viaAvvio .5s ease-in 1.25s forwards}
+    transition:opacity .4s ease-in}
+  #avvio.via{opacity:0;pointer-events:none}
   #avvio img{width:min(78vw,420px);height:auto;filter:drop-shadow(0 20px 50px rgba(0,0,0,.6));
     animation:entraAvvio .7s ease-out}
   @keyframes entraAvvio{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
@@ -543,9 +544,16 @@
 </style>
 </head>
 <body>
-<div id="avvio" aria-hidden="true">
+<div id="avvio" aria-hidden="true" onclick="this.remove()">
   <img src="icons/avvio.png" alt="">
 </div>
+<script>
+  // via comunque, qualunque cosa succeda al resto della pagina
+  setTimeout(function(){ var a=document.getElementById('avvio'); if(a)a.remove(); }, 1600);
+  document.addEventListener('touchstart', function(){
+    var a=document.getElementById('avvio'); if(a)a.remove();
+  }, {once:true, passive:true});
+</script>
 
 <div id="porta" role="dialog" aria-label="Scegli come usare la guida">
   <div class="porta-testa">
@@ -4558,17 +4566,17 @@
 
 
 
-  // tolta di mezzo appena finita: se no si prende i tocchi
+  // l'avvio è già stato tolto dal codice in cima alla pagina: qui si
+  // controlla solo che non sia rimasto nulla di traverso
   (function(){
-    var a=el('avvio'); if(!a)return;
-    setTimeout(function(){ a.style.display='none'; }, 1900);
+    var a=el('avvio'); if(a)a.remove();
   })();
 
 
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='25';
+  var VERSIONE='26';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
