@@ -99,5 +99,27 @@ for (let m = 10; m <= 500; m += 10) agg('m-' + m, 'a ' + m + ' metri');
  ['apro-auto', 'Apro la navigazione in auto.']
 ].forEach(([k, t]) => agg('frase-' + k, t));
 
+/* Rete di sicurezza: ogni frase detta nel codice come
+     dire(['frase-qualcosa'],'Testo da dire')
+   entra nell'elenco da sola. Il 14/10 mancava «frase-scegli-percorso»:
+   la clip non c'era, l'app ripiegava sulla voce del telefono e si
+   sentivano due voci diverse nello stesso annuncio. */
+let raccolte = 0;
+const re = /dire\(\s*\[\s*'(frase-[a-z0-9\-]+)'\s*\]\s*,\s*('((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")/g;
+let m;
+while ((m = re.exec(src))) {
+  const id = m[1];
+  const testo = (m[3] !== undefined ? m[3] : m[4]).replace(/\\(['"\\])/g, '$1');
+  if (!vis.has(id)) { agg(id, testo); raccolte++; }
+}
+
+// e se nel codice resta citata una frase che nessuno sa incidere, lo dico
+const citate = new Set((src.match(/'frase-[a-z0-9\-]+'/g) || []).map((x) => x.slice(1, -1)));
+const orfane = [...citate].filter((id) => !vis.has(id));
+if (orfane.length) {
+  console.log('ATTENZIONE: frasi citate nel codice e senza testo da incidere:');
+  orfane.forEach((o) => console.log('  -', o));
+}
+
 fs.writeFileSync(path.join(__dirname, 'testi.json'), JSON.stringify(clip, null, 1), 'utf8');
-console.log('luoghi:', POI.length, '| percorsi:', ROUTES.length, '| clip da generare:', clip.length);
+console.log('luoghi:', POI.length, '| percorsi:', ROUTES.length, '| clip da generare:', clip.length, '| frasi raccolte dal codice:', raccolte);

@@ -15142,5 +15142,9 @@
  {
   "id": "frase-apro-auto",
   "testo": "Apro la navigazione in auto."
+ },
+ {
+  "id": "frase-scegli-percorso",
+  "testo": "Scegli prima un percorso."
  }
 ]

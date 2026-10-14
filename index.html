@@ -4062,7 +4062,7 @@
       var frase=S.route.n+'. Lungo '+inCifre(km)+', comincia a '+inCifre(partenza)+' da te.';
       liveEl.textContent=frase;
       statusEl.textContent='lungo '+inCifre(km)+' · inizio a '+inCifre(partenza);
-      if(S.voice)dire(['percorso-'+S.route.id,'frase-lungo',dlId(km),'frase-comincia-a',dlId(partenza)],frase);
+      if(S.voice)dire(['percorso-'+S.route.id,'frase-lungo',dlId(km),'frase-comincia-a',dlId(partenza)],frase,GUIDA);
     }
     var p=S.route.p[0];
     if(!S.live){S.lat=p[0];S.lon=p[1];S.hd=bear(p[0],p[1],S.route.p[1][0],S.route.p[1][1]);}
@@ -4206,7 +4206,19 @@
       var vs=window.speechSynthesis.getVoices().filter(function(v){
         return new RegExp('^'+radice,'i').test(v.lang.replace('_','-'));
       });
-      if(vs.length)u.voice=vs[0];
+      /* Le clip sono incise con Alice. Se il ripiego prende un'altra voce
+         del telefono si sentono due persone diverse raccontare la stessa
+         citta': Vince l'ha sentito subito — «una voce piu matura dice che
+         deve trovare la posizione, l'altra piu giovane diceva di partire».
+         Quindi fra le voci italiane si cerca Alice, e solo se non c'e' si
+         prende la prima. */
+      if(vs.length){
+        var alice=null;
+        for(var vi=0;vi<vs.length;vi++){
+          if(/alice/i.test(vs[vi].name||'')){ alice=vs[vi]; break; }
+        }
+        u.voice = alice || vs[0];
+      }
       window.speechSynthesis.speak(u);
     }catch(e){}
   }
@@ -4270,51 +4282,114 @@
     // la riserva non deve crescere all'infinito
     var k=Object.keys(riserva); if(k.length>12)delete riserva[k[0]];
   }
-  function dire(ids,testo,urgente){
-    if(staParlando && !urgente){ inCoda={ids:ids,testo:testo}; return; }
+  /* ---------- la scala delle priorita' (voluta da Vince, 14/10) ----------
+     3 EMERGENZA — 112, furto, aiuto, «chiamo», «sei arrivato»: interrompe
+       qualunque cosa stia parlando, e non aspetta mai dietro a niente.
+     2 GUIDA — direzione e metri verso la meta, «ti porto a», le risposte ai
+       comandi: interrompe il racconto, mai l'emergenza.
+     1 RACCONTO — monumenti, schede, elenchi: non interrompe niente, e se
+       arriva mentre parla qualcosa di piu' importante si BUTTA. Una scheda
+       detta venti secondi dopo che sei passato oltre e' peggio del silenzio.
+     In coda si tiene al piu' una frase, e solo una di livello pari o
+     superiore puo' prendere il suo posto. */
+  var EMERGENZA=3, GUIDA=2, RACCONTO=1;
+  function livelloDi(x){
+    if(x===EMERGENZA||x==='emergenza')return EMERGENZA;
+    if(x===true||x===GUIDA||x==='guida')return GUIDA; // true: le chiamate vecchie con «urgente»
+    return RACCONTO;
+  }
+  var livelloInCorso=0;
+
+  /* ---------- un turno per ogni annuncio ----------
+     Ogni annuncio prende un numero. Le clip e i ripieghi di un annuncio
+     superato non parlano più e non richiamano più niente.
+     Senza questo accadevano due cose, entrambe viste il 14/10:
+     - la voce di ripiego di un annuncio vecchio partiva sopra la clip di
+       quello nuovo → due voci diverse insieme (la sorella di Vince);
+     - se il telefono rifiutava la riproduzione, `staParlando` restava vero
+       per sempre e da quel momento ogni annuncio finiva in coda senza mai
+       parlare: l'app sembrava bloccata (Gabri). */
+  var turno=0;
+  function zittisci(){
+    turno++;
+    if(inCorso){
+      try{inCorso.pause();}catch(e){}
+      try{inCorso.onended=null;inCorso.onerror=null;}catch(e){}
+      inCorso=null;
+    }
+    if(window.speechSynthesis)try{window.speechSynthesis.cancel();}catch(e){}
+  }
+  function finito(mio){
+    if(mio!==turno)return;
+    staParlando=false;
+    livelloInCorso=0;
+    if(inCoda){ var c=inCoda; inCoda=null; dire(c.ids,c.testo,c.liv); }
+  }
+  // il ripiego con la voce del telefono: solo se il turno è ancora suo
+  function ripiego(mio,testo){
+    if(mio!==turno)return;
+    speak(testo);
+    setTimeout(function(){ finito(mio); }, Math.min(16000,1200+(testo||'').length*55));
+  }
+  function dire(ids,testo,livello){
+    var liv=livelloDi(livello);
+    if(staParlando){
+      var accoda=function(){
+        if(!inCoda||liv>=inCoda.liv)inCoda={ids:ids,testo:testo,liv:liv};
+      };
+      // piu' basso di quello che sta parlando: il racconto si butta, il
+      // resto aspetta il suo turno
+      if(liv<livelloInCorso){ if(liv===RACCONTO)return; accoda(); return; }
+      // pari livello: non si taglia a meta' una frase per dirne una uguale,
+      // tranne fra emergenze, dove l'ultima conta piu' di quella in corso
+      if(liv===livelloInCorso && liv!==EMERGENZA){ accoda(); return; }
+    }
+    if(liv===EMERGENZA)inCoda=null; // l'emergenza non si trascina dietro niente
     ultimaFrase={ids:ids,testo:testo};
+    zittisci();
+    var mio=turno;
+    livelloInCorso=liv;
+    staParlando=true;
+    // rete ferma, clip che non parte, audio negato: se entro mezzo minuto
+    // non si è chiuso niente, il turno si libera da solo e la guida riparla.
+    setTimeout(function(){ if(mio===turno&&staParlando)finito(mio); },30000);
     if(LINGUA!=='it'){
       var tr=inLingua(ids,testo);
-      staParlando=true;
       liveEl.textContent=tr.t;
       speak(tr.t, tr.italiano);
-      setTimeout(function(){
-        staParlando=false;
-        if(inCoda){ var c=inCoda; inCoda=null; dire(c.ids,c.testo); }
-      }, Math.min(16000, 1200+tr.t.length*55));
+      setTimeout(function(){ finito(mio); }, Math.min(16000, 1200+tr.t.length*55));
       return;
     }
-    staParlando=true;
     try{
-      if(window.speechSynthesis)window.speechSynthesis.cancel();
-      if(inCorso){try{inCorso.pause();}catch(e){} inCorso=null;}
-      var i=0,fallita=false,saltate=0;
+      var i=0,saltate=0;
       (function next(){
-        if(fallita)return;
-        if(i>=ids.length){inCorso=null;setTimeout(function(){
-          staParlando=false;
-          if(inCoda){ var c=inCoda; inCoda=null; dire(c.ids,c.testo); }
-        },350);return;}
-        var mio=i;
+        if(mio!==turno)return;
+        if(i>=ids.length){inCorso=null;setTimeout(function(){finito(mio);},350);return;}
         var a=prontaOCrea(ids[i++]);
         inCorso=a;
         // mentre questa suona, la prossima si scarica: era questo che faceva
         // sembrare la voce interrotta quando la rete è lenta
         if(ids[i])preparaClip(ids[i]);
-        a.onended=next;
+        a.onended=function(){ if(mio===turno)next(); };
         a.onerror=function(){
           // la clip non è arrivata: si salta quel pezzo e si prosegue,
           // invece di ricominciare tutto con la voce del telefono
-          if(fallita)return;
+          if(mio!==turno)return;
           saltate++;
           if(saltate<=2 && i<ids.length){ next(); return; }
-          fallita=true;inCorso=null;staParlando=false;speak(testo);
-          if(inCoda){ var c=inCoda; inCoda=null; setTimeout(function(){dire(c.ids,c.testo);},400); }
+          inCorso=null; ripiego(mio,testo);
         };
         var pr=a.play();
-        if(pr&&pr.catch)pr.catch(function(){ if(!fallita){fallita=true;inCorso=null;speak(testo);} });
+        if(pr&&pr.catch)pr.catch(function(err){
+          if(mio!==turno)return;
+          // pause() fa rifiutare la promessa con AbortError: è
+          // l'interruzione normale, non un guasto. Lì non si ripiega.
+          if(err&&err.name==='AbortError')return;
+          try{a.pause();}catch(e){}
+          inCorso=null; ripiego(mio,testo);
+        });
       })();
-    }catch(e){ speak(testo); }
+    }catch(e){ ripiego(mio,testo); }
   }
 
   function serveQui(p){
@@ -4565,7 +4640,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='42';
+  var VERSIONE='43';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4612,7 +4687,7 @@
       var scelte='Aiuto. Dì chiama per il 112, oppure commissariato, pronto soccorso, '+
                  'farmacia, portami a casa. Oppure: mi hanno rubato il portafoglio.';
       try{ liveEl.textContent=scelte; }catch(e){}
-      try{ dire(['frase-scelte-aiuto'],scelte,true); }catch(e){ try{ speak(scelte,true); }catch(_){} }
+      try{ dire(['frase-scelte-aiuto'],scelte,EMERGENZA); }catch(e){ try{ speak(scelte,true); }catch(_){} }
     }, 2600);
   };
   YB.apri = function(){
@@ -4637,7 +4712,7 @@
   };
   YB.chiudi = function(){ return false; };   // non c'è più niente da chiudere
   YB.chiama112 = function(){
-    try{ dire(['frase-chiamo-112'],'Chiamo il 112.',true); }catch(e){}
+    try{ dire(['frase-chiamo-112'],'Chiamo il 112.',EMERGENZA); }catch(e){}
     setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} }, 700);
   };
   YB.chiamaContatto = function(){
@@ -4703,16 +4778,30 @@
     return 'a '+nome+' chilometr'+(k===1?'o':'i')+(mezzo?' e mezzo':'');
   }
   function dlId(m){return 'dl-'+passoLargo(m);}
+  var ultimoLontano=0, apertoDa=0;
   function narraLontani(){
     if(pending||!S.voice)return false;
+    // l'annuncio d'apertura dura una decina di secondi: finche' parla lui,
+    // nessun monumento gli si mette sopra
+    if(apertoDa && Date.now()-apertoDa < 11000) return false;
     var c=POI.filter(function(p){return p.f&&!giaDetto(p);}).map(function(p){
       return {p:p,m:dist(S.lat,S.lon,p.lat,p.lon),rel:norm(bear(S.lat,S.lon,p.lat,p.lon)-S.hd)};
     }).filter(function(o){
       // i riferimenti lontani si dicono solo se li hai davanti e a portata
       // d'orecchio: niente annunci di cose a tre chilometri alle spalle
       return o.m<1200 && Math.abs(o.rel)<100;
-    }).sort(function(a,b){return a.m-b.m;});
+    }).sort(function(a,b){
+      // prima l'importanza, poi la distanza: all'EUR, aprendo l'app, deve
+      // dire il Palazzo della Civilta Italiana, non la prima cosa che
+      // capita a tiro
+      var d=peso(b.p)-peso(a.p);
+      return d!==0 ? d : (a.m-b.m);
+    });
     if(!c.length)return false;
+    // e uno per volta: senza questa pausa ne annunciava tre in cinque
+    // secondi, uno per ciclo di render, tutti sopra l'annuncio d'apertura
+    if(Date.now()-ultimoLontano < 30000) return false;
+    ultimoLontano=Date.now();
     var o=c[0];
     segnaDetto(o.p);
     var head=side(o.rel)+', '+distanzaLarga(o.m);
@@ -4832,11 +4921,20 @@
   }
 
   var zittoFino=0;
+  /* I luoghi presi in diretta hanno per tipo la parola «luogo», che e' quello
+     che ci risulta e non si inventa. Ma non si dice: «Obelisco di Marconi.
+     luogo.» non aggiunge nulla e sembra un errore. */
+  function tipoDa(p){
+    var t=(p.t||'').trim();
+    if(!t || t==='luogo' || t==='place') return '';
+    return t;
+  }
   function narrate(items){
     if(pending||!S.pronto)return;
     // se ti sto portando da qualche parte, o se e' appena successo qualcosa,
     // non e' il momento di raccontare chiese
     if(meta||Date.now()<zittoFino)return;
+    if(apertoDa && Date.now()-apertoDa < 11000) return;
     // quanto lontano si annuncia dipende da quanto conta il luogo: i Fori
     // Imperiali hanno un punto solo e dalla strada stanno a duecento metri,
     // e con il raggio fisso non venivano mai nominati
@@ -4858,14 +4956,18 @@
     puntaBussola(versoAffidabile()?o.rel:null, o.m);
     whatEl.textContent=o.p.n;
     bodyEl.className='body idle';
-    bodyEl.textContent=o.p.t+(o.p.y?' · '+o.p.y:'')+' — vuoi saperne di più?';
+    bodyEl.textContent=(tipoDa(o.p)||o.p.n)+(o.p.y?' · '+o.p.y:'')+' — vuoi saperne di più?';
     choiceEl.hidden=false;
 
-    var sp=head+', '+o.p.n+'. '+o.p.t+(o.p.y?' del '+o.p.y:'')+'. Vuoi approfondire, o andiamo avanti?';
+    var introd=tipoDa(o.p);
+    var sp=head+', '+o.p.n+'.'+(introd?' '+introd+(o.p.y?' del '+o.p.y:'')+'.':'')+' Vuoi approfondire, o andiamo avanti?';
     liveEl.textContent=sp;
     earcon(o.rel,o.m,o.p.k);
     if(S.voice)setTimeout(function(){
-      dire([versoAffidabile()?dirId(o.rel):cardId(o.p),metriId(o.m),poiId(o.p)+'-nome',poiId(o.p)+'-intro','frase-chiedi'],sp);
+      var voci=[versoAffidabile()?dirId(o.rel):cardId(o.p),metriId(o.m),poiId(o.p)+'-nome'];
+      if(introd)voci.push(poiId(o.p)+'-intro');
+      voci.push('frase-chiedi');
+      dire(voci,sp);
     },430);
 
     // se nessuno risponde, si prosegue da soli: non si resta piantati camminando
@@ -4920,7 +5022,7 @@
     whereEl.textContent=side(o.rel)+', '+metres(o.m);
     whatEl.textContent=o.p.n;
     bodyEl.className='body idle';
-    bodyEl.textContent=o.p.t+(o.p.y?' · '+o.p.y:'')+' — cammina, te lo racconto quando ci sei';
+    bodyEl.textContent=(tipoDa(o.p)||o.p.n)+(o.p.y?' · '+o.p.y:'')+' — cammina, te lo racconto quando ci sei';
   }
   function render(){var items=around();
     // se si sta parlando di un luogo, la direzione e i metri si aggiornano
@@ -5136,9 +5238,9 @@
     var p=S.route.p,guard=0;
     while(guard++<80){
       if(S.seg>=p.length-1)return false;
-      var a=p[S.seg],b=p[S.seg+1],L=dist(a[0],a[1],b[0],b[1]),rest=(1-S.frac)*L;
-      if(L<1){S.seg++;S.frac=0;continue;}
-      if(step<rest){S.frac+=step/L;break;}
+      var a=p[S.seg],b=p[S.seg+1],lungo=dist(a[0],a[1],b[0],b[1]),rest=(1-S.frac)*lungo;
+      if(lungo<1){S.seg++;S.frac=0;continue;}
+      if(step<rest){S.frac+=step/lungo;break;}
       step-=rest;S.seg++;S.frac=0;
     }
     var a2=p[Math.min(S.seg,p.length-2)],b2=p[Math.min(S.seg+1,p.length-1)];
@@ -5162,7 +5264,7 @@
       if(!S.route){
         S.sim=false; this.setAttribute('aria-pressed','false');
         statusEl.textContent='scegli prima un percorso qui sotto';
-        dire(['frase-scegli-percorso'],'Scegli prima un percorso.');
+        dire(['frase-scegli-percorso'],'Scegli prima un percorso.',GUIDA);
         return;
       }
       S.said={};S.seg=0;S.frac=0;S.pronto=true;
@@ -5184,8 +5286,8 @@
     audio();
     if(S.voice){S.said={};accendiRadio();avviaAscolto();
       var bp=el('parla'); if(bp)bp.hidden=false;
-      if(window.urbeaNativo){ var b2=el('parla'); if(b2)b2.hidden=false; }dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.');}
-    else{ spegniRadio(); fermaAscolto(); var bp2=el('parla'); if(bp2)bp2.hidden=true; if(inCorso){try{inCorso.pause();}catch(e){} inCorso=null;} if(window.speechSynthesis)window.speechSynthesis.cancel(); }
+      if(window.urbeaNativo){ var b2=el('parla'); if(b2)b2.hidden=false; }dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.',GUIDA);}
+    else{ spegniRadio(); fermaAscolto(); var bp2=el('parla'); if(bp2)bp2.hidden=true; zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }
     render();
   });
 
@@ -5368,7 +5470,7 @@
                       : 'Ci siamo, ti ho trovato. Cammina pure.';
           try{ liveEl.textContent=t; }catch(e){}
           if(via) speak(t, true);
-          else    dire(['frase-ci-siamo'],t,true);
+          else    dire(['frase-ci-siamo'],t,GUIDA);
         });
       }
       render();
@@ -5427,7 +5529,7 @@
     whatEl.textContent='→ '+nome;
     bodyEl.className='body'; bodyEl.textContent=descrizione||'';
     liveEl.textContent=sp;
-    dire(['frase-ti-porto-a',dirId(rel),metriId(metaUltimaDist)],sp);
+    dire(['frase-ti-porto-a',dirId(rel),metriId(metaUltimaDist)],sp,GUIDA);
     return true;
   }
   // un indirizzo detto a voce: prima si cerca fra i luoghi nostri, poi sulla mappa libera
@@ -5444,10 +5546,10 @@
       var rel=norm(bear(S.lat,S.lon,mig.lat,mig.lon)-S.hd);
       var sp='Ti porto a '+mig.n+': '+side(rel)+', '+metres(dmin)+'.';
       liveEl.textContent=sp;
-      dire(['frase-ti-porto-a',poiId(mig)+'-nome',dirId(rel),metriId(dmin)],sp);
+      dire(['frase-ti-porto-a',poiId(mig)+'-nome',dirId(rel),metriId(dmin)],sp,GUIDA);
       return true;
     }
-    dire(['frase-cerco'],'Cerco l\'indirizzo, un momento.');
+    dire(['frase-cerco'],'Cerco l\'indirizzo, un momento.',GUIDA);
     // prima Photon: Nominatim rifiuta molte richieste
     var up='https://photon.komoot.io/api/?q='+encodeURIComponent(testo)+
            '&lat='+S.lat+'&lon='+S.lon+'&limit=1';
@@ -5466,9 +5568,9 @@
       +'&q='+encodeURIComponent(testo)
       +'&viewbox='+(S.lon-0.08)+','+(S.lat+0.06)+','+(S.lon+0.08)+','+(S.lat-0.06)+'&bounded=1';
     fetch(url).then(function(r){return r.json();}).then(function(j){
-      if(!j||!j.length){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.'); return; }
+      if(!j||!j.length){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); return; }
       portamiAlPunto(parseFloat(j[0].lat),parseFloat(j[0].lon),j[0].display_name.split(',').slice(0,2).join(', '));
-    }).catch(function(){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.'); });
+    }).catch(function(){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); });
     }
     return true;
   }
@@ -5605,7 +5707,7 @@
     var base='Dì chiama: il 112 riceve la tua posizione da solo. Oppure dì commissariato '+
              'e ti ci porto. Per le carte, il numero sta dietro la carta.';
     bodyEl.textContent=base; liveEl.textContent=base;
-    dire(['frase-derubato'],base,true);
+    dire(['frase-derubato'],base,EMERGENZA);
     // e intanto si cerca l'indirizzo esatto: serve per dirlo al telefono
     stradaDiQui(function(via){
       if(!via)return;
@@ -5624,10 +5726,10 @@
     // non si ordina niente al posto suo: si apre l'app del taxi con la posizione
     // gia' dentro, e la corsa la conferma lui
     if(!S.pronto){
-      dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.');
+      dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.',GUIDA);
       return true;
     }
-    dire(['frase-apro-taxi'],'Apro il taxi con la tua posizione. La corsa la confermi tu.');
+    dire(['frase-apro-taxi'],'Apro il taxi con la tua posizione. La corsa la confermi tu.',GUIDA);
     var u='https://m.uber.com/ul/?action=setPickup&pickup[latitude]='+S.lat+
           '&pickup[longitude]='+S.lon;
     setTimeout(function(){
@@ -5642,7 +5744,7 @@
     var v=piuVicinoDiTipo(tipo);
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
-      dire(['frase-cerco'],"Cerco l'indirizzo, un momento.");
+      dire(['frase-cerco'],"Cerco l'indirizzo, un momento.",GUIDA);
       cercaInPhoton(tipo,function(r){
         if(mia!==richiestaN)return;           // nel frattempo ha chiesto altro
         if(r){ vaiVerso(r); return; }
@@ -5683,7 +5785,7 @@
     if(d<22){
       var fine='Sei arrivato: '+meta.n+'.';
       liveEl.textContent=fine;
-      dire(['frase-sei-arrivato',poiId(meta)+'-nome'],fine);
+      dire(['frase-sei-arrivato',poiId(meta)+'-nome'],fine,EMERGENZA);
       meta=null; return;
     }
     var ora=Date.now();
@@ -5692,7 +5794,7 @@
     metaUltimo=ora; metaUltimaDist=d;
     var sp=versoTesto+', '+metres(d)+'.';
     liveEl.textContent=sp;
-    dire([versoAffidabile()?dirId(rel):('card-'+cardinale(meta.lat,meta.lon).replace(/ /g,'-')),metriId(d)],sp);
+    dire([versoAffidabile()?dirId(rel):('card-'+cardinale(meta.lat,meta.lon).replace(/ /g,'-')),metriId(d)],sp,GUIDA);
   }
 
 
@@ -5707,7 +5809,7 @@
     var s2=el('segna-casa'); if(s2)s2.textContent=casa?'Cambia casa':'Segna casa qui';
   }
   function segnaCasaQui(){
-    if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.'); return; }
+    if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.',GUIDA); return; }
     casa={lat:S.lat,lon:S.lon,n:'casa'};
     try{ localStorage.setItem('urbea-casa',JSON.stringify(casa)); }catch(e){}
     leggiCasa();
@@ -5722,16 +5824,16 @@
     if(bch)bch.addEventListener('click',function(){audio();chiediChiChiamare(false);});
     aggiornaChiChiamare();
     statusEl.textContent='casa segnata qui';
-    dire(['frase-casa-segnata'],'Ho segnato casa qui. Quando vuoi tornare, dimmi: portami a casa.');
+    dire(['frase-casa-segnata'],'Ho segnato casa qui. Quando vuoi tornare, dimmi: portami a casa.',GUIDA);
   }
   function portamiACasa(){
-    if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».'); return true; }
+    if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».',GUIDA); return true; }
     return portamiAlPunto(casa.lat,casa.lon,'casa');
   }
   /* In auto non serve la guida a piedi: serve la navigazione del telefono,
      che conosce i sensi unici. Noi apriamo quella con casa già dentro. */
   function portamiInAuto(lat,lon,nome){
-    dire(['frase-apro-auto'],'Apro la navigazione in auto.');
+    dire(['frase-apro-auto'],'Apro la navigazione in auto.',GUIDA);
     var android=/Android/i.test(navigator.userAgent);
     var u=android
       ? 'google.navigation:q='+lat+','+lon+'&mode=d'
@@ -5745,7 +5847,7 @@
     return true;
   }
   function portamiACasaInAuto(){
-    if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».'); return true; }
+    if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».',GUIDA); return true; }
     return portamiInAuto(casa.lat,casa.lon,'casa');
   }
 
@@ -5777,7 +5879,7 @@
     if(poiManda)vienimiAPrendere();
   }
   function vienimiAPrendere(){
-    if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.'); return true; }
+    if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.',GUIDA); return true; }
     var dove='https://www.openstreetmap.org/?mlat='+S.lat.toFixed(5)+'&mlon='+S.lon.toFixed(5)+'#map=18/'+S.lat.toFixed(5)+'/'+S.lon.toFixed(5);
     var vicino=around()[0];
     var rif=vicino? (' Sono vicino a '+vicino.p.n+'.') : '';
@@ -5786,7 +5888,7 @@
     whereEl.textContent='RICHIESTA DI AIUTO';
     whatEl.textContent='Vienimi a prendere';
     bodyEl.className='body'; bodyEl.textContent=testo;
-    dire(['frase-vengo-a-prenderti'],'Sto preparando il messaggio: tocca Invia per mandarlo. Se preferisci, dimmi: chiama.');
+    dire(['frase-vengo-a-prenderti'],'Sto preparando il messaggio: tocca Invia per mandarlo. Se preferisci, dimmi: chiama.',EMERGENZA);
     var tel=soccorso&&soccorso.tel?soccorso.tel:'';
     // su Android il messaggio si apre già scritto: resta da toccare Invia
     var url='sms:'+tel+(/Android/i.test(navigator.userAgent)?'?':'&')+'body='+encodeURIComponent(testo);
@@ -5834,7 +5936,7 @@
     }
     if(ha('chiudi','annulla','lascia perdere','niente')&&typeof window.chiudiAiuto==='function'){
       var pa=el('pannello-aiuto');
-      if(pa&&!pa.hidden){ window.chiudiAiuto(); dire(['frase-lascio-perdere'],'Va bene, lascio perdere.'); return true; }
+      if(pa&&!pa.hidden){ window.chiudiAiuto(); dire(['frase-lascio-perdere'],'Va bene, lascio perdere.',GUIDA); return true; }
     }
     if(ha('ancora','di piu','dimmi ancora','continua','vai avanti col racconto','approfondisci ancora')){
       if(window.ancoraDiPiu())return true;
@@ -5909,7 +6011,7 @@
       return chiamaTaxi();
     }
     if(ha('ambulanza','chiama il 112','chiama il 118','chiama i soccorsi','numero di emergenza')){
-      dire(['frase-chiamo-112'],'Chiamo il 112.');
+      dire(['frase-chiamo-112'],'Chiamo il 112.',EMERGENZA);
       setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} },1100);
       return true;
     }
@@ -5925,11 +6027,11 @@
     }
     if(ha('chiama','telefona')){
       if(soccorso&&soccorso.tel){
-        dire(['frase-chiamo'],'Chiamo adesso.');
+        dire(['frase-chiamo'],'Chiamo adesso.',EMERGENZA);
         setTimeout(function(){ try{ location.href='tel:'+soccorso.tel; }catch(e){} },900);
         return true;
       }
-      dire(['frase-nessun-numero'],'Non ho un numero da chiamare: va registrato prima.');
+      dire(['frase-nessun-numero'],'Non ho un numero da chiamare: va registrato prima.',EMERGENZA);
       return true;
     }
     // «portami a casa in auto»: va guardato prima, se no vince quello a piedi
@@ -5947,36 +6049,38 @@
     }
     if(ha('torna indietro','riportami indietro','torna al punto di partenza','riportami alla partenza')){
       if(partenza){ return portamiAlPunto(partenza.lat,partenza.lon,'il punto di partenza'); }
-      dire(['frase-niente-partenza'],'Non ho segnato un punto di partenza.');
+      dire(['frase-niente-partenza'],'Non ho segnato un punto di partenza.',GUIDA);
       return true;
     }
     var m=t.match(/(?:portami|accompagnami|voglio andare|andare)\s+(?:in|a|al|alla|allo|ai|alle|verso)\s+(.{3,})/);
     if(m){ return portamiAIndirizzo(m[1]); }
     if(ha('lascia perdere','annulla','non importa','basta cosi')){
-      if(meta){ meta=null; dire(['frase-lascio-perdere'],'Va bene, lascio perdere.'); return true; }
+      if(meta){ meta=null; dire(['frase-lascio-perdere'],'Va bene, lascio perdere.',GUIDA); return true; }
     }
     if(ha('solo monumenti','solo i monumenti','niente negozi','niente servizi','solo cultura')){
       S.racconta='cultura'; S.said={};
-      dire(['frase-solo-cultura'],'Va bene: ti dico solo i luoghi da vedere.');
+      dire(['frase-solo-cultura'],'Va bene: ti dico solo i luoghi da vedere.',GUIDA);
       render(); return true;
     }
     if(ha('anche i servizi','anche i negozi','dimmi tutto','anche le farmacie','tutto')){
       S.racconta='tutto'; S.said={};
-      dire(['frase-tutto'],'Va bene: ti dico tutto, anche negozi e fermate.');
+      dire(['frase-tutto'],'Va bene: ti dico tutto, anche negozi e fermate.',GUIDA);
       render(); return true;
     }
     if(ha('ingrandisci','piu grande','caratteri grandi','non ci vedo','testo grande')){
       testoPiuGrande();
-      dire(['frase-testo-grande'],'Ho ingrandito il testo.');
+      dire(['frase-testo-grande'],'Ho ingrandito il testo.',GUIDA);
       return true;
     }
     if(ha('comandi','che posso dire','cosa posso dire','istruzioni','che si dice')){
-      dire(['frase-aiuto'],'Puoi dire: approfondisci, avanti, ripeti, dove sono, oppure ferma.');
+      dire(['frase-aiuto'],'Puoi dire: approfondisci, avanti, ripeti, dove sono, oppure ferma.',GUIDA);
       return true;
     }
     if(ha('ferma','basta','silenzio','stop','zitto')){
-      if(inCorso){try{inCorso.pause();}catch(e){} inCorso=null;}
-      if(window.speechSynthesis)window.speechSynthesis.cancel();
+      // zittisci() alza il turno: la sequenza in corso si ferma davvero e
+      // lascia la guida libera di riparlare. Prima restava a metà e l'app
+      // non diceva più niente.
+      zittisci(); staParlando=false; livelloInCorso=0; inCoda=null;
       return true;
     }
     return false;
@@ -5995,7 +6099,7 @@
   // dentro il guscio iPhone il riconoscimento lo fa iOS e il testo torna qui
   window.urbeaComando=function(testo){
     var b=el('parla'); if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';}
-    if(!eseguiComando(testo||''))dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.');
+    if(!eseguiComando(testo||''))dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
   };
   function ascoltaUnaVolta(){
     if(window.urbeaNativo && window.urbeaAscolta){
@@ -6005,7 +6109,7 @@
     }
     var R=window.SpeechRecognition||window.webkitSpeechRecognition;
     var b=el('parla');
-    if(!R){ dire(['frase-niente-microfono'],'Questo telefono non capisce i comandi a voce.'); return; }
+    if(!R){ dire(['frase-niente-microfono'],'Questo telefono non capisce i comandi a voce.',GUIDA); return; }
     try{
       if(ascolto){ try{ascoltoAcceso=false;ascolto.stop();}catch(e){} ascolto=null; }
       var r=new R();
@@ -6016,7 +6120,7 @@
           var res=e.results[i];
           for(var k=0;k<res.length;k++){ if(eseguiComando(res[k].transcript))return; }
         }
-        dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.');
+        dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
       };
       r.onerror=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} };
       r.onend=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} ascolto=null; if(ascoltoAcceso)avviaAscolto(); };
@@ -6185,13 +6289,14 @@
       // chi non vede. Da qui in poi l'app segue i passi e sa da che parte
       // sei girato, quindi può dire destra e sinistra invece dei cardinali.
       setTimeout(function(){ try{ if(!S.live)el('start').click(); }catch(e){} }, 150);
+      apertoDa=Date.now();
       // si dice subito che cosa sta succedendo, senza aspettare il GPS
       setTimeout(function(){
         var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
               'Senza premere tasti puoi comandarmi parlando: dì aiuto, dove sono, '+
               'oppure cosa c\'è qui intorno.';
         try{ liveEl.textContent=t; }catch(e){}
-        try{ dire(['frase-apertura'],t,true); }catch(e){ try{ speak(t); }catch(_){} }
+        try{ dire(['frase-apertura'],t,GUIDA); }catch(e){ try{ speak(t); }catch(_){} }
       }, 400);
       try{dovesiamo();}catch(e){}
       comandoDaFuori();
@@ -6223,7 +6328,7 @@
       if(t)t.hidden=true; if(c)c.hidden=true;
       el('porta-modo').hidden=false;
       if(modoVoce){
-        dire(['frase-come-cammini'],'Vuoi camminare libero, o seguire un percorso?');
+        dire(['frase-come-cammini'],'Vuoi camminare libero, o seguire un percorso?',GUIDA);
         // si risponde a voce: chi non vede non deve cercare un tasto
         try{avviaAscolto();}catch(e){}
         // e se non risponde nessuno, si parte lo stesso: meglio camminare
@@ -6231,7 +6336,7 @@
         attesa=setTimeout(function(){
           if(porta.hidden)return;
           S.libero=true; entra(true);
-          dire(['frase-parto-libero'],'Comincio col cammino libero. Quando vuoi, dimmi: percorsi.');
+          dire(['frase-parto-libero'],'Comincio col cammino libero. Quando vuoi, dimmi: percorsi.',GUIDA);
         },12000);
       }
     }
@@ -6239,7 +6344,7 @@
       S.modoVoce=true;
       S.libero = (letto('urbea-cammino')!=='percorso');
       entra(true);
-      dire(['frase-bentornato'],'Guida vocale attiva. Ti dico quello che passi, da che parte e a quanti metri.');
+      dire(['frase-bentornato'],'Guida vocale attiva. Ti dico quello che passi, da che parte e a quanti metri.',GUIDA);
     }
     // la porta risponde anche ai comandi a voce
     window.portaScegli=function(cosa){
