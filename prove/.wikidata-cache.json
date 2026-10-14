@@ -335,5 +335,528 @@
   "lat": 41.901061270150876,
   "lon": 12.478650254303798,
   "scarto": 51
+ },
+ "Studio medico": {
+  "nostroLat": 41.8096802,
+  "nostroLon": 12.4816136,
+  "niente": true
+ },
+ "Attraversamento di Via Francesco Sapori": {
+  "nostroLat": 41.81189,
+  "nostroLon": 12.48567,
+  "niente": true
+ },
+ "Fermata Sapori": {
+  "nostroLat": 41.81084,
+  "nostroLon": 12.48398,
+  "niente": true
+ },
+ "Attraversamento di Via Laurentina": {
+  "nostroLat": 41.82236,
+  "nostroLon": 12.4798,
+  "niente": true
+ },
+ "Fermata Laurentina/Silone": {
+  "nostroLat": 41.81294,
+  "nostroLon": 12.48602,
+  "niente": true
+ },
+ "Supermercato Ipercarni": {
+  "nostroLat": 41.8132953,
+  "nostroLon": 12.4863815,
+  "niente": true
+ },
+ "Ristorante": {
+  "nostroLat": 41.8132892,
+  "nostroLon": 12.4860131,
+  "niente": true
+ },
+ "Fermata Esercito/Cecchignola": {
+  "nostroLat": 41.81361,
+  "nostroLon": 12.48603,
+  "niente": true
+ },
+ "Fermata Laurentina/Cecchignola": {
+  "nostroLat": 41.8153,
+  "nostroLon": 12.48451,
+  "niente": true
+ },
+ "Distributore di benzina": {
+  "nostroLat": 41.8183061,
+  "nostroLon": 12.4828803,
+  "niente": true
+ },
+ "Fermata Laurentina/Umanesimo": {
+  "nostroLat": 41.81989,
+  "nostroLon": 12.48124,
+  "niente": true
+ },
+ "Ottica Ottica Pavese": {
+  "nostroLat": 41.820209,
+  "nostroLon": 12.4818748,
+  "niente": true
+ },
+ "Bar Zara": {
+  "nostroLat": 41.8204763,
+  "nostroLon": 12.4817657,
+  "niente": true
+ },
+ "Edicola": {
+  "nostroLat": 41.8210429,
+  "nostroLon": 12.481096,
+  "qid": "Q108700016",
+  "lat": 43.56307798866626,
+  "lon": 11.531094545755481,
+  "scarto": 208683
+ },
+ "Fermata Laurentina/Sommozzatori": {
+  "nostroLat": 41.82222,
+  "nostroLon": 12.48015,
+  "niente": true
+ },
+ "Bar Moreschi": {
+  "nostroLat": 41.8224214,
+  "nostroLon": 12.480049,
+  "niente": true
+ },
+ "Negozio di ferramenta e fai da te": {
+  "nostroLat": 41.8225699,
+  "nostroLon": 12.4801493,
+  "niente": true
+ },
+ "Abbazia delle Tre Fontane": {
+  "nostroLat": 41.83482,
+  "nostroLon": 12.48374,
+  "niente": true
+ },
+ "Laghetto dell'EUR": {
+  "nostroLat": 41.82859,
+  "nostroLon": 12.46664,
+  "niente": true
+ },
+ "Palazzo dello Sport, il PalaEur": {
+  "nostroLat": 41.82526,
+  "nostroLon": 12.46658,
+  "niente": true
+ },
+ "Palazzo della Civiltà Italiana": {
+  "nostroLat": 41.83671,
+  "nostroLon": 12.46512,
+  "niente": true
+ },
+ "Basilica dei Santi Pietro e Paolo": {
+  "nostroLat": 41.8337,
+  "nostroLon": 12.45931,
+  "niente": true
+ },
+ "Castello Pandone": {
+  "nostroLat": 41.48764,
+  "nostroLon": 14.04473,
+  "niente": true
+ },
+ "Chiesa dell'Annunziata": {
+  "nostroLat": 41.48668,
+  "nostroLon": 14.04441,
+  "qid": "Q63457618",
+  "lat": 41.48668611,
+  "lon": 14.04448056,
+  "scarto": 6
+ },
+ "Palazzo Caracciolo": {
+  "nostroLat": 41.486,
+  "nostroLon": 14.04512,
+  "qid": "Q1228171",
+  "lat": 40.85268,
+  "lon": 14.257257,
+  "scarto": 72626
+ },
+ "Municipio di Venafro": {
+  "nostroLat": 41.4857,
+  "nostroLon": 14.04503,
+  "qid": "Q134689092",
+  "lat": 41.4856986,
+  "lon": 14.0450274,
+  "scarto": 0
+ },
+ "Piazza Vittorio Veneto": {
+  "nostroLat": 41.48574,
+  "nostroLon": 14.04569,
+  "qid": "Q115035643",
+  "lat": 40.66665,
+  "lon": 16.60644,
+  "scarto": 233160
+ },
+ "Chiesa del Cristo": {
+  "nostroLat": 41.48601,
+  "nostroLon": 14.04353,
+  "qid": "Q769647",
+  "lat": 40.83499,
+  "lon": 14.235757,
+  "scarto": 74157
+ },
+ "Museo archeologico di Venafro": {
+  "nostroLat": 41.48532,
+  "nostroLon": 14.04238,
+  "niente": true
+ },
+ "Chiesa di San Francesco": {
+  "nostroLat": 41.48514,
+  "nostroLon": 14.04131,
+  "niente": true
+ },
+ "Teatro romano": {
+  "nostroLat": 41.48577,
+  "nostroLon": 14.03996,
+  "niente": true
+ },
+ "Cattedrale di Santa Maria Assunta": {
+  "nostroLat": 41.48376,
+  "nostroLon": 14.03819,
+  "niente": true
+ },
+ "Anfiteatro romano, il Verlasce": {
+  "nostroLat": 41.48274,
+  "nostroLon": 14.04594,
+  "niente": true
+ },
+ "Mura ciclopiche": {
+  "nostroLat": 41.48304,
+  "nostroLon": 14.03059,
+  "qid": "Q971697",
+  "lat": 42.8271,
+  "lon": 11.1593,
+  "scarto": 279898
+ },
+ "Farmacia Santa Daria": {
+  "nostroLat": 41.48133,
+  "nostroLon": 14.04618,
+  "niente": true
+ },
+ "Supermercato Prete": {
+  "nostroLat": 41.48372,
+  "nostroLon": 14.04862,
+  "niente": true
+ },
+ "Ufficio postale Poste Italiane": {
+  "nostroLat": 41.48597,
+  "nostroLon": 14.04767,
+  "niente": true
+ },
+ "Distributore Esso": {
+  "nostroLat": 41.48439,
+  "nostroLon": 14.04455,
+  "niente": true
+ },
+ "Distributore Eni Station": {
+  "nostroLat": 41.48668,
+  "nostroLon": 14.05335,
+  "niente": true
+ },
+ "Farmacia Sardella": {
+  "nostroLat": 41.48517,
+  "nostroLon": 14.04976,
+  "niente": true
+ },
+ "Farmacia Parafarmacia Salute e Benessere": {
+  "nostroLat": 41.47926,
+  "nostroLon": 14.0486,
+  "niente": true
+ },
+ "Farmacia Del Prete": {
+  "nostroLat": 41.48479,
+  "nostroLon": 14.04562,
+  "niente": true
+ },
+ "Stazione Venafro": {
+  "nostroLat": 41.48302,
+  "nostroLon": 14.04879,
+  "niente": true
+ },
+ "Supermercato Decò": {
+  "nostroLat": 40.78515,
+  "nostroLon": 14.37762,
+  "niente": true
+ },
+ "Ristorante Rosso": {
+  "nostroLat": 41.48164,
+  "nostroLon": 14.0381,
+  "niente": true
+ },
+ "Bar Passicrate": {
+  "nostroLat": 41.47927,
+  "nostroLon": 14.04749,
+  "niente": true
+ },
+ "Bar Laboratorio Artigianale Le Terrazze": {
+  "nostroLat": 41.48835,
+  "nostroLon": 14.05037,
+  "niente": true
+ },
+ "Bar Momà": {
+  "nostroLat": 41.47978,
+  "nostroLon": 14.04897,
+  "niente": true
+ },
+ "Bar L'altro mondo": {
+  "nostroLat": 41.48325,
+  "nostroLon": 14.04494,
+  "niente": true
+ },
+ "Scuola Istituto Omnicomprensivo A. Giordano": {
+  "nostroLat": 41.48997,
+  "nostroLon": 14.05217,
+  "niente": true
+ },
+ "Scuola Liceo Classico A. Giordano": {
+  "nostroLat": 41.48281,
+  "nostroLon": 14.03887,
+  "niente": true
+ },
+ "Scuola Istituto Comprensivo Giulio Testa": {
+  "nostroLat": 41.48041,
+  "nostroLon": 14.05051,
+  "niente": true
+ },
+ "Scuola Media Statale Leopoldo Pilla": {
+  "nostroLat": 41.48435,
+  "nostroLon": 14.04665,
+  "niente": true
+ },
+ "Stazione Torre del Greco": {
+  "nostroLat": 40.79341,
+  "nostroLon": 14.3698,
+  "niente": true
+ },
+ "Macelleria La nuova Salumeria": {
+  "nostroLat": 40.79254,
+  "nostroLon": 14.3692,
+  "niente": true
+ },
+ "Frutta e verdura L'angolo della frutta": {
+  "nostroLat": 40.79254,
+  "nostroLon": 14.36815,
+  "niente": true
+ },
+ "Supermercato Expert": {
+  "nostroLat": 40.78489,
+  "nostroLon": 14.37798,
+  "niente": true
+ },
+ "Ufficio Postale - Poste Italiane": {
+  "nostroLat": 40.78957,
+  "nostroLon": 14.36793,
+  "niente": true
+ },
+ "Banca di Credito Populare": {
+  "nostroLat": 40.79191,
+  "nostroLon": 14.3706,
+  "niente": true
+ },
+ "Abbigliamento Colè Abbigliamento": {
+  "nostroLat": 40.78095,
+  "nostroLon": 14.3821,
+  "niente": true
+ },
+ "Supermercato Spendibene": {
+  "nostroLat": 40.7824,
+  "nostroLon": 14.38398,
+  "niente": true
+ },
+ "Fermata Cozzolino - Osped. Maresca": {
+  "nostroLat": 40.7998,
+  "nostroLon": 14.37374,
+  "niente": true
+ },
+ "Fermata Cozzolino - Via Marconi": {
+  "nostroLat": 40.79752,
+  "nostroLon": 14.37605,
+  "niente": true
+ },
+ "Fermata De Nicola": {
+  "nostroLat": 40.79742,
+  "nostroLon": 14.37868,
+  "niente": true
+ },
+ "Fermata Via Litoranea": {
+  "nostroLat": 40.76581,
+  "nostroLon": 14.3899,
+  "niente": true
+ },
+ "Fermata Via Alcide De Gasperi": {
+  "nostroLat": 40.77098,
+  "nostroLon": 14.38571,
+  "niente": true
+ },
+ "Banca Intesa San Paolo": {
+  "nostroLat": 40.79059,
+  "nostroLon": 14.36289,
+  "niente": true
+ },
+ "Farmacia Farma Shop S.r.l. - La Sanitaria": {
+  "nostroLat": 40.79081,
+  "nostroLon": 14.36517,
+  "niente": true
+ },
+ "Supermercato Sole365": {
+  "nostroLat": 40.7784,
+  "nostroLon": 14.38619,
+  "niente": true
+ },
+ "Fermata Uscita Autostrada Torre del Greco": {
+  "nostroLat": 40.79137,
+  "nostroLon": 14.3821,
+  "niente": true
+ },
+ "Panificio Il Fornaio Brancaccio": {
+  "nostroLat": 40.77943,
+  "nostroLon": 14.3819,
+  "niente": true
+ },
+ "Abbigliamento Dorabella": {
+  "nostroLat": 40.7899,
+  "nostroLon": 14.36663,
+  "niente": true
+ },
+ "Stazione Via Sant'Antonio": {
+  "nostroLat": 40.78428,
+  "nostroLon": 14.38423,
+  "niente": true
+ },
+ "Fermata Torre del Greco": {
+  "nostroLat": 40.79659,
+  "nostroLon": 14.3779,
+  "niente": true
+ },
+ "Parrucchiere AMERIGO IL BARBIERE": {
+  "nostroLat": 40.78914,
+  "nostroLon": 14.36374,
+  "niente": true
+ },
+ "Chiesa di San Simeone, del Purgatorio": {
+  "nostroLat": 41.48609,
+  "nostroLon": 14.04595,
+  "niente": true
+ },
+ "Chiesa di San Sebastiano": {
+  "nostroLat": 41.48437,
+  "nostroLon": 14.04274,
+  "niente": true
+ },
+ "Chiesa del Carmine": {
+  "nostroLat": 41.4829,
+  "nostroLon": 14.03854,
+  "niente": true
+ },
+ "Cappella di San Donato": {
+  "nostroLat": 41.48182,
+  "nostroLon": 14.04576,
+  "qid": "Q24950464",
+  "lat": 41.48183,
+  "lon": 14.04578,
+  "scarto": 2
+ },
+ "Monumento ai caduti": {
+  "nostroLat": 41.48576,
+  "nostroLon": 14.04596,
+  "qid": "Q55740031",
+  "lat": 43.847638888889,
+  "lon": 10.977805555556,
+  "scarto": 363134
+ },
+ "Torre Bassano": {
+  "nostroLat": 40.77122,
+  "nostroLon": 14.38311,
+  "qid": "Q27994566",
+  "lat": 42.110932,
+  "lon": 14.708323,
+  "scarto": 151415
+ },
+ "Villa de Ruggiero": {
+  "nostroLat": 40.77393,
+  "nostroLon": 14.38078,
+  "niente": true
+ },
+ "Monumento dell'Epitaffio": {
+  "nostroLat": 40.77762,
+  "nostroLon": 14.3893,
+  "niente": true
+ },
+ "Cristo Redentore": {
+  "nostroLat": 40.78313,
+  "nostroLon": 14.36129,
+  "qid": "Q267210",
+  "lat": 39.98944444,
+  "lon": 15.72194444,
+  "scarto": 145150
+ },
+ "Chiesa di Sant'Anna": {
+  "nostroLat": 40.7896,
+  "nostroLon": 14.3646,
+  "niente": true
+ },
+ "Chiesa di San Biagio": {
+  "nostroLat": 40.7917,
+  "nostroLon": 14.35764,
+  "niente": true
+ },
+ "Chiesa dei Carmelitani Scalzi": {
+  "nostroLat": 40.79519,
+  "nostroLon": 14.36184,
+  "niente": true
+ },
+ "Basilica dei Santi Nicandro, Marciano e Daria": {
+  "nostroLat": 41.48973,
+  "nostroLon": 14.06022,
+  "niente": true
+ },
+ "Chiesa dei Santi Martino e Nicola": {
+  "nostroLat": 41.48035,
+  "nostroLon": 14.04951,
+  "niente": true
+ },
+ "Palazzina Liberty": {
+  "nostroLat": 41.4836,
+  "nostroLon": 14.0423,
+  "niente": true
+ },
+ "La Torricella": {
+  "nostroLat": 41.48808,
+  "nostroLon": 14.036,
+  "qid": "Q113290299",
+  "lat": 41.488077,
+  "lon": 14.033642,
+  "scarto": 196
+ },
+ "Pantheon": {
+  "nostroLat": 41.89862,
+  "nostroLon": 12.47683,
+  "qid": "Q99309",
+  "lat": 41.89861111111111,
+  "lon": 12.476944444444445,
+  "scarto": 10
+ },
+ "Fontana di Trevi": {
+  "nostroLat": 41.90098,
+  "nostroLon": 12.48328,
+  "qid": "Q185382",
+  "lat": 41.900932251961315,
+  "lon": 12.48331263850277,
+  "scarto": 6
+ },
+ "Piazza Navona": {
+  "nostroLat": 41.89893,
+  "nostroLon": 12.4731,
+  "qid": "Q463400",
+  "lat": 41.89871,
+  "lon": 12.47316,
+  "scarto": 25
+ },
+ "Castel Sant'Angelo": {
+  "nostroLat": 41.90308,
+  "nostroLon": 12.46633,
+  "qid": "Q486382",
+  "lat": 41.903044,
+  "lon": 12.466307,
+  "scarto": 4
  }
 }

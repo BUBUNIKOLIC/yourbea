@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
   :root{
     --bg:#15161A; --surface:#1E2024; --surface-2:#24272C;
@@ -540,6 +540,245 @@
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   :focus-visible{outline:3px solid var(--mare);outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ==================================================================
+     LA VESTE: strumento di bordo
+     Vince la chiama hi-tech cyborg. Non e' decorazione: l'idea e' che
+     l'app somigli a uno strumento che legge la citta' — telemetria in
+     alto, radar con l'ago, pannelli con l'angolo tagliato come una
+     piastra avvitata, e il colore che dice sempre di che si tratta:
+     ciano quello che sai, ambra quello che hai davanti, rosso l'aiuto.
+     Chi non vede non guarda niente di tutto questo, e per questo
+     nessuna di queste regole cambia una misura o un comportamento.
+     ================================================================== */
+  :root{
+    --nero:#070A0C; --piastra:#0D1317; --piastra-2:#111A20;
+    --ciano:#2FE3F2; --ciano-cupo:#0E6B77; --acido:#A8FF5B;
+    --ambra:#FFB23A; --rosso:#FF4733;
+    --filo:rgba(47,227,242,.22); --filo-forte:rgba(47,227,242,.5);
+    --tecnica:"Chakra Petch","IBM Plex Mono",monospace;
+    --taglio:14px;              /* quanto si taglia l'angolo */
+  }
+  /* il fondo: nero, una griglia appena accennata e due aloni freddi */
+  body{
+    background:
+      linear-gradient(rgba(47,227,242,.030) 1px, transparent 1px) 0 0/100% 46px,
+      linear-gradient(90deg, rgba(47,227,242,.030) 1px, transparent 1px) 0 0/46px 100%,
+      radial-gradient(900px 480px at 15% -8%, rgba(47,227,242,.10), transparent 62%),
+      radial-gradient(760px 420px at 92% 6%, rgba(168,255,91,.055), transparent 60%),
+      var(--nero);
+    color:#DFE9EC;
+  }
+  /* l'insegna: nome in alto, sottotitolo come riga di strumento */
+  header{justify-content:space-between;align-items:center;gap:10px;
+    border-bottom:1px solid var(--filo);padding-bottom:10px;position:relative}
+  header::after{content:"";position:absolute;left:0;bottom:-1px;width:84px;height:2px;
+    background:var(--ciano);box-shadow:0 0 14px var(--ciano)}
+  .wordmark{font-family:"Bodoni Moda",Georgia,serif;font-size:32px;
+    text-shadow:0 0 26px rgba(47,227,242,.28)}
+  .claim{font-family:var(--tecnica);font-weight:600;font-size:10px;letter-spacing:.26em;
+    color:var(--ciano);opacity:.85}
+
+  /* ogni piastra ha l'angolo in alto a destra tagliato */
+  .say, details.item, .strip, #mappa, .btn, select, #riga-contatto, .pannello-aiuto{
+    clip-path:polygon(0 0, calc(100% - var(--taglio)) 0, 100% var(--taglio), 100% 100%, 0 100%);
+    border-radius:0 !important;
+  }
+
+  /* il pannello che parla: la piastra principale */
+  .say{
+    background:
+      linear-gradient(180deg, rgba(47,227,242,.055), transparent 38%),
+      linear-gradient(180deg, var(--piastra-2), var(--piastra));
+    border:1px solid var(--filo); padding:20px 20px 18px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), 0 18px 46px rgba(0,0,0,.6),
+               inset 0 0 40px rgba(47,227,242,.05);
+    position:relative; overflow:hidden;
+  }
+  /* due righe di scansione, ferme: bastano a dire «schermo» */
+  .say::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,.022) 0 1px, transparent 1px 4px)}
+  /* la tacca in alto a sinistra, come su un quadrante */
+  .say::after{content:"";position:absolute;left:0;top:0;width:3px;height:46px;
+    background:var(--ambra);box-shadow:0 0 16px var(--ambra)}
+  .say .where{font-family:var(--tecnica);font-weight:700;font-size:11px;letter-spacing:.22em;
+    color:var(--ambra);background:none;border:0;padding:0;text-shadow:0 0 18px rgba(255,178,58,.35)}
+  .say .what{font-family:"Bodoni Moda",Georgia,serif;font-size:31px;color:#F2F7F8;
+    text-shadow:0 0 30px rgba(47,227,242,.18)}
+  .say .body{color:#BFD0D4;font-size:16.5px}
+  .say .body.idle, .say .idle{color:#6E8288}
+
+  /* la bussola diventa un radar */
+  .bussola{
+    width:70px;height:70px;border-radius:50%;
+    border:1px solid var(--filo-forte);
+    background:
+      radial-gradient(circle, rgba(47,227,242,.10) 0 28%, transparent 29%),
+      radial-gradient(circle, transparent 0 46%, rgba(47,227,242,.16) 47% 48%, transparent 49%),
+      radial-gradient(circle at 50% 50%, rgba(7,10,12,.92), rgba(7,10,12,.7));
+    box-shadow:0 0 26px rgba(47,227,242,.16) inset, 0 0 18px rgba(47,227,242,.10);
+  }
+  .bussola::before{content:"";position:absolute;inset:6px;border-radius:50%;
+    border-top:1px solid rgba(47,227,242,.35);
+    animation:scansione 3.6s linear infinite}
+  @keyframes scansione{to{transform:rotate(360deg)}}
+  .bussola .ago{font-size:28px;color:var(--ciano);
+    text-shadow:0 0 20px rgba(47,227,242,.75), 0 0 40px rgba(47,227,242,.35)}
+  .bussola .metri{font-family:var(--tecnica);font-weight:600;font-size:12px;
+    color:var(--ciano);letter-spacing:.08em;opacity:.9}
+
+  /* la striscia davanti: un visore con le tacche */
+  .strip{height:64px;border:1px solid var(--filo);
+    background:
+      repeating-linear-gradient(90deg, rgba(47,227,242,.14) 0 1px, transparent 1px 28px),
+      linear-gradient(180deg, rgba(13,19,23,.95), rgba(7,10,12,.95))}
+  .strip .ahead{width:1px;background:var(--acido);box-shadow:0 0 12px var(--acido)}
+  .pin b{font-family:var(--tecnica);font-weight:600;font-size:12px;color:#E6F6F8}
+  .pin span{font-family:var(--tecnica);font-size:10px;color:rgba(47,227,242,.75);letter-spacing:.06em}
+  .pin.near b{color:var(--ambra);text-shadow:0 0 14px rgba(255,178,58,.4)}
+
+  /* i tasti: piastre con il filo luminoso */
+  .btn{
+    font-family:var(--tecnica);font-weight:600;letter-spacing:.04em;
+    background:linear-gradient(180deg, rgba(47,227,242,.07), rgba(255,255,255,.012));
+    border:1px solid var(--filo); color:#DFF4F7; padding:16px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 10px 24px rgba(0,0,0,.45);
+    transition:border-color .14s, background .14s, box-shadow .14s;
+  }
+  .btn:hover{border-color:var(--filo-forte);
+    box-shadow:inset 0 0 22px rgba(47,227,242,.10), 0 10px 26px rgba(0,0,0,.5)}
+  .btn:active{transform:translateY(1px)}
+  .btn-go, .btn-yes{
+    background:linear-gradient(180deg, var(--ciano), #1299A8);
+    border:1px solid rgba(47,227,242,.8); color:#04181B; font-weight:700;
+    box-shadow:0 0 30px rgba(47,227,242,.3), inset 0 1px 0 rgba(255,255,255,.25)}
+  select{font-family:var(--tecnica);background:var(--piastra);border:1px solid var(--filo);color:#DFE9EC}
+
+  /* l'elenco: schede-strumento, con la distanza nel riquadro */
+  details.item{
+    background:linear-gradient(170deg, rgba(17,26,32,.92), rgba(9,13,16,.92));
+    border:1px solid var(--filo); box-shadow:0 10px 26px rgba(0,0,0,.45)}
+  details.item[open]{border-color:var(--filo-forte);
+    box-shadow:0 0 28px rgba(47,227,242,.10), 0 10px 26px rgba(0,0,0,.5)}
+  .nm{font-family:var(--tecnica);font-weight:600;font-size:16.5px;color:#E8F4F6}
+  .dir{font-family:var(--tecnica);font-weight:600;font-size:12.5px;color:var(--ciano);
+    background:rgba(47,227,242,.07);border:1px solid var(--filo);letter-spacing:.06em}
+  .item[data-close="1"]{box-shadow:inset 3px 0 0 var(--ambra), 0 10px 26px rgba(0,0,0,.45)}
+  .lavabadge{font-family:var(--tecnica);font-weight:700;font-size:9px;letter-spacing:.14em;
+    color:var(--nero);background:var(--ambra);border:0;padding:2px 6px;
+    box-shadow:0 0 16px rgba(255,178,58,.45)}
+  h2.eyebrow{font-family:var(--tecnica);font-weight:600;letter-spacing:.24em;color:var(--ciano);opacity:.8}
+  .detail{border-top:1px solid var(--filo)}
+  .meta{font-family:var(--tecnica);color:rgba(47,227,242,.7);letter-spacing:.06em}
+  .inside{background:rgba(47,227,242,.045);border-left:3px solid var(--ciano);border-radius:0}
+  .inside b{font-family:var(--tecnica);color:var(--ciano)}
+
+  /* la telemetria: la riga di stato diventa lettura di strumento */
+  #status{font-family:var(--tecnica);font-weight:600;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--acido);opacity:.85}
+
+  /* la mappa, incorniciata come un visore */
+  #mappa{border:1px solid var(--filo);box-shadow:0 0 34px rgba(47,227,242,.08), 0 18px 44px rgba(0,0,0,.6)}
+  #mappa .leaflet-control-zoom a{background:var(--piastra);color:var(--ciano);border-color:var(--filo)}
+
+  /* l'aiuto: qui il colore cambia, e si vede da lontano */
+  .pannello-aiuto{border:1px solid rgba(255,71,51,.35) !important;
+    background:linear-gradient(180deg, rgba(255,71,51,.07), rgba(10,7,7,.9)) !important;
+    box-shadow:inset 0 0 40px rgba(255,71,51,.06), 0 18px 46px rgba(0,0,0,.6)}
+  .pannello-aiuto .btn{border-color:rgba(255,71,51,.35);
+    background:linear-gradient(180deg, rgba(255,71,51,.10), rgba(255,255,255,.012));color:#FFE7E3}
+  .pannello-aiuto .btn:hover{border-color:rgba(255,71,51,.7);
+    box-shadow:inset 0 0 22px rgba(255,71,51,.12), 0 10px 26px rgba(0,0,0,.5)}
+  #chiama-112{background:linear-gradient(180deg, var(--rosso), #B81F10) !important;
+    border:1px solid rgba(255,71,51,.9) !important;color:#fff !important;font-weight:700;
+    box-shadow:0 0 30px rgba(255,71,51,.35), inset 0 1px 0 rgba(255,255,255,.2) !important}
+  #aiuto-subito, #sos{background:linear-gradient(180deg, var(--rosso), #B81F10);
+    border-color:rgba(255,71,51,.9); color:#fff; font-weight:700;
+    box-shadow:0 0 26px rgba(255,71,51,.3)}
+  #riga-contatto{border:1px solid var(--filo);background:var(--piastra)}
+  #riga-contatto .et{font-family:var(--tecnica);font-weight:600;color:var(--ciano);letter-spacing:.12em}
+  #riga-contatto input{font-family:var(--tecnica);background:var(--nero);
+    border:1px solid var(--filo);color:#E8F4F6;border-radius:0}
+  #riga-contatto input:focus{outline:none;border-color:var(--filo-forte);
+    box-shadow:0 0 0 1px var(--filo-forte), inset 0 0 20px rgba(47,227,242,.08)}
+
+  /* la porta d'ingresso: due piastre grandi, e il nome in mezzo al buio */
+  #porta{background:
+      radial-gradient(760px 420px at 50% 0%, rgba(47,227,242,.12), transparent 62%),
+      linear-gradient(rgba(47,227,242,.028) 1px, transparent 1px) 0 0/100% 46px,
+      linear-gradient(90deg, rgba(47,227,242,.028) 1px, transparent 1px) 0 0/46px 100%,
+      var(--nero)}
+  .porta-scelta{
+    clip-path:polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+    border:1px solid var(--filo) !important;border-radius:0 !important;
+    background:linear-gradient(170deg, rgba(17,26,32,.92), rgba(9,13,16,.92)) !important;
+    box-shadow:inset 0 0 40px rgba(47,227,242,.05), 0 18px 46px rgba(0,0,0,.6)}
+  .porta-scelta b{font-family:var(--tecnica);font-weight:700;color:#EAF7F9}
+  .porta-scelta span{color:#8FA3A9}
+  .porta-scelta:active{border-color:var(--filo-forte) !important}
+
+  /* su uno schermo piccolo si taglia meno e si stringe il passo */
+  @media (max-width:420px){
+    :root{--taglio:11px}
+    .wordmark{font-size:28px}
+    .claim{letter-spacing:.2em}
+  }
+  /* chi ha chiesto meno animazioni non vede il radar girare */
+  @media (prefers-reduced-motion:reduce){
+    .bussola::before{animation:none}
+  }
+
+
+  /* --- ritocchi dopo la prima prova a schermo di telefono --- */
+  /* la direzione finiva sotto il radar: gli si lascia il posto */
+  .say.con-bussola{padding-right:104px}
+  .say.con-bussola .where{max-width:calc(100% - 20px)}
+  .bussola{top:14px;right:14px}
+  .bussola .metri{bottom:-19px}
+  @media (max-width:420px){
+    .say.con-bussola{padding-right:96px}
+    .say .where{font-size:10.5px;letter-spacing:.16em}
+    .bussola{width:62px;height:62px}
+    .bussola .ago{font-size:24px}
+  }
+
+  /* la mappa chiara stonava col nero: si raffredda e si scurisce, ma
+     resta leggibile — le strade e i nomi devono restare chiari */
+  #mappa .leaflet-tile-pane{
+    filter:invert(1) hue-rotate(185deg) saturate(.55) brightness(.92) contrast(1.05);
+  }
+  #mappa .leaflet-popup-content-wrapper, #mappa .leaflet-popup-tip{
+    background:var(--piastra);color:#E8F4F6;border:1px solid var(--filo);border-radius:0}
+  #mappa .leaflet-control-attribution{background:rgba(7,10,12,.8);color:#5E737A}
+  #mappa .leaflet-control-attribution a{color:var(--ciano-cupo)}
+
+  /* l'insegna: il sottotitolo non deve sparire quando lo spazio è poco */
+  header{flex-wrap:wrap;row-gap:2px}
+  .claim{flex:0 0 auto;white-space:nowrap}
+  @media (max-width:420px){
+    header{justify-content:flex-start;align-items:baseline}
+    .wordmark{font-size:26px}
+    .claim{font-size:8.5px;letter-spacing:.16em}
+  }
+
+
+  /* «La bellezza intorno a te» spariva sotto i 380 pixel per una regola
+     vecchia, cioe' su quasi tutti i telefoni: e' il nome, resta */
+  @media (max-width:380px){
+    header .claim{display:block;font-size:8px;letter-spacing:.14em}
+  }
+  .claim{opacity:.85 !important;color:var(--ciano) !important;text-align:left}
+
+
+  /* anche i campi di scrittura seguono la veste */
+  input[type=text], input[type=tel], input[type=search], .pannello-aiuto input{
+    clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+    border-radius:0 !important; font-family:var(--tecnica);
+    background:var(--nero) !important; color:#E8F4F6 !important;
+    border:1px solid var(--filo) !important;
+  }
+  input::placeholder{color:#5E737A}
+
 </style>
 </head>
 <body>
@@ -4791,7 +5030,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='48';
+  var VERSIONE='49';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
