@@ -15144,6 +15144,18 @@
   "testo": "Apro la navigazione in auto."
  },
  {
+  "id": "frase-chi-chiamare",
+  "testo": "Scrivi il nome e il numero di chi deve venire a prenderti, poi premi Salva il contatto."
+ },
+ {
+  "id": "frase-manca-numero",
+  "testo": "Manca il numero di telefono."
+ },
+ {
+  "id": "frase-contatto-salvato",
+  "testo": "Ho salvato il contatto."
+ },
+ {
   "id": "frase-scegli-percorso",
   "testo": "Scegli prima un percorso."
  }

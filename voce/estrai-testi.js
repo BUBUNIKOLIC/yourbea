@@ -96,7 +96,10 @@ for (let m = 10; m <= 500; m += 10) agg('m-' + m, 'a ' + m + ' metri');
  ['da-qui-passa', 'Da qui passa un percorso. Dì percorso, se vuoi seguirlo.'],
  ['tutto-detto', 'Di questo ti ho detto tutto.'],
  ['e-lontano', 'È lontano: se è urgente, chiama il 112.'],
- ['apro-auto', 'Apro la navigazione in auto.']
+ ['apro-auto', 'Apro la navigazione in auto.'],
+ ['chi-chiamare', 'Scrivi il nome e il numero di chi deve venire a prenderti, poi premi Salva il contatto.'],
+ ['manca-numero', 'Manca il numero di telefono.'],
+ ['contatto-salvato', 'Ho salvato il contatto.']
 ].forEach(([k, t]) => agg('frase-' + k, t));
 
 /* Rete di sicurezza: ogni frase detta nel codice come

@@ -265,6 +265,12 @@
   #mappa{height:52vh;min-height:360px;max-height:560px;border-radius:20px;
     border:1px solid var(--bordo-luce);box-shadow:0 18px 44px rgba(0,0,0,.5)}
   #mappa.vuota{display:none}
+  #riga-contatto{display:flex;flex-direction:column;gap:8px;margin:10px 0;
+    padding:12px;border:1px solid var(--wire);border-radius:14px;background:#111418}
+  #riga-contatto[hidden]{display:none}
+  #riga-contatto .et{font-size:13px;color:#8A9199;letter-spacing:.04em;text-transform:uppercase}
+  #riga-contatto input{font-size:19px;padding:14px;border-radius:12px;
+    border:1px solid var(--wire);background:#0B0D0F;color:#E8E7E3}
 
   /* la striscia di quello che hai davanti */
   .strip{height:60px;border-radius:16px;border:1px solid var(--bordo-vetro);
@@ -604,6 +610,16 @@
     <button class="btn" id="segna-casa">Segna casa qui</button>
     <button class="btn btn-sos" id="sos">🆘 Vienimi a prendere</button>
     <button class="btn" id="chi-chiamare">Chi chiamare</button>
+    <!-- i campi stanno nella pagina: la finestrella di sistema prompt() dentro
+         il guscio dell'app iPhone non compare, e il numero non si poteva
+         registrare. Errore visto il 14/10: «prompt() is not supported». -->
+    <div id="riga-contatto" hidden>
+      <label class="et" for="contatto-nome">Chi deve venire a prenderti</label>
+      <input id="contatto-nome" type="text" autocomplete="name" placeholder="nome">
+      <label class="et" for="contatto-tel">Il suo numero</label>
+      <input id="contatto-tel" type="tel" autocomplete="tel" placeholder="numero di telefono">
+      <button class="btn btn-go" id="contatto-salva">Salva il contatto</button>
+    </div>
     <button class="btn" id="sim" aria-pressed="false">Simula</button>
     <button class="btn btn-install" id="install" hidden>Metti l'icona sul telefono</button>
   </section>
@@ -4640,7 +4656,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='43';
+  var VERSIONE='45';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5001,7 +5017,22 @@
   }
 
   function skipOn(){
-    if(!pending)return;
+    // prima non faceva nulla quando non c'era una domanda aperta: si premeva
+    // «vai oltre» e l'app restava zitta. Ora salta comunque al prossimo:
+    // segna come detto quello che hai davanti e cerca il successivo.
+    if(!pending){
+      var vicini=around();
+      if(vicini&&vicini.length){
+        segnaDetto(vicini[0].p);
+        bodyEl.className='body idle';
+        bodyEl.textContent='Andiamo avanti.';
+        if(S.voice)dire(['frase-avanti'],'Andiamo avanti.',RACCONTO);
+        render();
+      }else{
+        dire(['frase-niente-intorno'],'Qui intorno non ho niente da dirti.',RACCONTO);
+      }
+      return;
+    }
     var o=pending;
     closeChoice();
     bodyEl.className='body idle';
@@ -5012,6 +5043,21 @@
 
   el('more').addEventListener('click',function(){audio();deepen();});
   el('skip').addEventListener('click',function(){audio();skipOn();});
+  (function(){ var b=el('contatto-salva'); if(b)b.addEventListener('click',function(){audio();salvaContatto();}); })();
+  /* Questi due stavano dentro «segna casa qui»: chi non aveva mai segnato
+     casa premeva «vienimi a prendere» e «chi chiamare» e non succedeva
+     niente. Si registrano all'avvio, come tutti gli altri. */
+  (function(){
+    var bsos=el('sos');
+    if(bsos)bsos.addEventListener('click',function(){
+      audio();
+      if(!soccorso||!soccorso.tel){ chiediChiChiamare(true); return; }
+      vienimiAPrendere();
+    });
+    var bch=el('chi-chiamare');
+    if(bch)bch.addEventListener('click',function(){audio();chiediChiChiamare(false);});
+    try{ leggiSoccorso(); aggiornaChiChiamare(); }catch(e){}
+  })();
 
   var ultimoDisegno=0;
   function mostraAttesa(items){
@@ -5814,14 +5860,6 @@
     try{ localStorage.setItem('urbea-casa',JSON.stringify(casa)); }catch(e){}
     leggiCasa();
     leggiSoccorso();
-    var bsos=el('sos');
-    if(bsos)bsos.addEventListener('click',function(){
-      audio();
-      if(!soccorso||!soccorso.tel){ chiediChiChiamare(true); return; }
-      vienimiAPrendere();
-    });
-    var bch=el('chi-chiamare');
-    if(bch)bch.addEventListener('click',function(){audio();chiediChiChiamare(false);});
     aggiornaChiChiamare();
     statusEl.textContent='casa segnata qui';
     dire(['frase-casa-segnata'],'Ho segnato casa qui. Quando vuoi tornare, dimmi: portami a casa.',GUIDA);
@@ -5868,15 +5906,33 @@
     var b=el('chi-chiamare');
     if(b)b.textContent = (soccorso&&soccorso.tel) ? ('Chiama '+(soccorso.n||'il numero salvato')) : 'Chi chiamare';
   }
+  var contattoPoiManda=false;
   function chiediChiChiamare(poiManda){
-    var nome=prompt('Chi deve venire a prenderti? (nome)', soccorso?soccorso.n:'');
-    if(nome===null)return;
-    var tel=prompt('Il suo numero di telefono', soccorso?soccorso.tel:'');
-    if(tel===null)return;
+    contattoPoiManda=!!poiManda;
+    var riga=el('riga-contatto');
+    if(!riga){ return; }
+    riga.hidden=false;
+    var n=el('contatto-nome'), t=el('contatto-tel');
+    if(n)n.value=(soccorso&&soccorso.n)||'';
+    if(t)t.value=(soccorso&&soccorso.tel)||'';
+    statusEl.textContent='scrivi il nome e il numero, poi Salva';
+    dire(['frase-chi-chiamare'],'Scrivi il nome e il numero di chi deve venire a prenderti, poi premi Salva il contatto.',GUIDA);
+    try{ riga.scrollIntoView({block:'center',behavior:'smooth'}); if(n)n.focus(); }catch(e){}
+  }
+  function salvaContatto(){
+    var n=el('contatto-nome'), t=el('contatto-tel');
+    var nome=n?n.value:'', tel=t?t.value:'';
+    if(!(tel||'').replace(/[^+0-9]/g,'')){
+      statusEl.textContent='manca il numero';
+      dire(['frase-manca-numero'],'Manca il numero di telefono.',GUIDA);
+      return;
+    }
     segnaSoccorso(tel,nome);
     aggiornaChiChiamare();
+    var riga=el('riga-contatto'); if(riga)riga.hidden=true;
     statusEl.textContent='chiamerò '+(nome||tel);
-    if(poiManda)vienimiAPrendere();
+    dire(['frase-contatto-salvato'],'Ho salvato il contatto. Quando dici vienimi a prendere, scrivo a '+(nome||'quel numero')+'.',GUIDA);
+    if(contattoPoiManda){ contattoPoiManda=false; vienimiAPrendere(); }
   }
   function vienimiAPrendere(){
     if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.',GUIDA); return true; }

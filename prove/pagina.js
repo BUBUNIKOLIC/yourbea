@@ -53,4 +53,21 @@ if (/typeof\s+L\s*===?\s*['"]undefined['"]/.test(pagina)) {
   console.log('SI  Leaflet si controlla con !window.L');
 }
 
+/* VERSIONE e CACHE devono dire lo stesso numero: il service worker rinnova
+   quello che ha in memoria solo quando CACHE cambia. Se si pubblica una
+   versione nuova con la cache vecchia, i telefoni restano a quella prima e
+   l'aggiornamento non arriva a nessuno — senza un solo errore a schermo. */
+const mv = pagina.match(/var VERSIONE='(\d+)'/);
+const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const mc = sw.match(/const CACHE = 'yourbea-v(\d+)'/);
+if (!mv || !mc) {
+  guasti++;
+  console.log('NO  non trovo VERSIONE in index.html o CACHE in sw.js');
+} else if (mv[1] !== mc[1]) {
+  guasti++;
+  console.log('NO  VERSIONE dice ' + mv[1] + ' e la cache dice v' + mc[1] + ': allinearle prima di pubblicare');
+} else {
+  console.log('SI  VERSIONE e cache dicono entrambe ' + mv[1]);
+}
+
 process.exit(guasti ? 1 : 0);

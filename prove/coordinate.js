@@ -57,7 +57,10 @@ if (tondi.length) {
   console.log('SI  nessun segnaposto dimenticato nelle coordinate');
 }
 
-// 3. due luoghi diversi sullo stesso punto esatto: copia-incolla sfuggito
+// 3. due luoghi diversi sullo stesso punto esatto. Non sono per forza lo
+//    stesso posto scritto due volte: più spesso sono due luoghi veri, e uno
+//    dei due ha preso in prestito la coordinata dell'altro. Va misurata,
+//    non unita.
 const visti = new Map(), doppi = [];
 POI.forEach((p) => {
   const k = p.lat.toFixed(5) + '/' + p.lon.toFixed(5);
@@ -66,7 +69,7 @@ POI.forEach((p) => {
 });
 if (doppi.length) {
   guasti++;
-  console.log('NO  luoghi diversi con la stessa coordinata esatta: ' + doppi.length);
+  console.log('NO  luoghi diversi sulla stessa coordinata esatta (uno dei due è nel posto sbagliato): ' + doppi.length);
   doppi.slice(0, 10).forEach((d) => console.log('      - ' + d));
 } else {
   console.log('SI  nessun luogo copiato sulla coordinata di un altro');

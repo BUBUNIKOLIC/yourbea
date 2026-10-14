@@ -1,5 +1,5 @@
 /* Urbea — service worker: la città resta nel telefono */
-const CACHE = 'yourbea-v44';
+const CACHE = 'yourbea-v45';
 
 // la pagina può chiedere di passare subito alla versione nuova
 self.addEventListener('message', e => {
@@ -48,7 +48,8 @@ const ASSETS = [
   './voce/clip/it/dl-1500.m4a','./voce/clip/it/dl-200.m4a','./voce/clip/it/dl-2000.m4a','./voce/clip/it/dl-2500.m4a','./voce/clip/it/dl-300.m4a','./voce/clip/it/dl-3000.m4a',
   './voce/clip/it/dl-3500.m4a','./voce/clip/it/dl-400.m4a','./voce/clip/it/dl-4000.m4a','./voce/clip/it/dl-4500.m4a','./voce/clip/it/dl-500.m4a','./voce/clip/it/dl-5000.m4a',
   './voce/clip/it/dl-600.m4a','./voce/clip/it/dl-700.m4a','./voce/clip/it/dl-800.m4a','./voce/clip/it/dl-900.m4a','./voce/clip/it/card-a-est.m4a','./voce/clip/it/card-a-nord-est.m4a',
-  './voce/clip/it/card-a-nord-ovest.m4a','./voce/clip/it/card-a-nord.m4a','./voce/clip/it/card-a-ovest.m4a','./voce/clip/it/card-a-sud-est.m4a','./voce/clip/it/card-a-sud-ovest.m4a','./voce/clip/it/card-a-sud.m4a'
+  './voce/clip/it/card-a-nord-ovest.m4a','./voce/clip/it/card-a-nord.m4a','./voce/clip/it/card-a-ovest.m4a','./voce/clip/it/card-a-sud-est.m4a','./voce/clip/it/card-a-sud-ovest.m4a','./voce/clip/it/card-a-sud.m4a',
+  './voce/clip/it/frase-chi-chiamare.m4a','./voce/clip/it/frase-manca-numero.m4a','./voce/clip/it/frase-contatto-salvato.m4a'
 ];
 
 // la voce incisa: si scarica in sottofondo, senza far aspettare l'avvio
