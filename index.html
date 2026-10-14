@@ -4565,7 +4565,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='41';
+  var VERSIONE='42';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6173,12 +6173,11 @@
       porta.hidden=true;
       audio();
       S.racconta = modoVoce ? 'tutto' : 'cultura';
-      // chi guarda vuole la mappa davanti agli occhi, non in fondo alla pagina
-      if(!modoVoce){
-        var m=el('mappa'), say=document.querySelector('.say');
-        if(m&&say&&say.parentNode)say.parentNode.insertBefore(m,say);
-        setTimeout(function(){ if(mappa)mappa.invalidateSize(); },200);
-      }
+      // la mappa davanti agli occhi, non in fondo alla pagina: vale anche in
+      // guida vocale, perche' chi accompagna guarda
+      var m=el('mappa'), say=document.querySelector('.say');
+      if(m&&say&&say.parentNode)say.parentNode.insertBefore(m,say);
+      setTimeout(function(){ try{ if(mappa&&mappa.invalidateSize)mappa.invalidateSize(); }catch(e){} },200);
       ricorda('urbea-modo',modoVoce?'voce':'occhi');
       ricorda('urbea-cammino',S.libero?'libero':'percorso');
       if(modoVoce&&!S.voice)el('voice').click();
@@ -6195,6 +6194,25 @@
         try{ dire(['frase-apertura'],t,true); }catch(e){ try{ speak(t); }catch(_){} }
       }, 400);
       try{dovesiamo();}catch(e){}
+      comandoDaFuori();
+    }
+    /* Siri apre l'app con un comando nell'indirizzo: ?cmd=casa-auto.
+       Si aspetta la posizione, perche' senza quella non si va da nessuna
+       parte, e poi si fa. */
+    function comandoDaFuori(){
+      var c=(location.search.match(/[?&]cmd=([a-z-]+)/)||[])[1];
+      if(!c)return;
+      var tentativi=0;
+      (function aspetta(){
+        if(++tentativi>40)return;                 // venti secondi e poi basta
+        if(!S.pronto && c!=='aiuto' && c!=='auto'){ setTimeout(aspetta,500); return; }
+        try{
+          if(c==='casa') portamiACasa();
+          else if(c==='casa-auto') portamiACasaInAuto();
+          else if(c==='aiuto' && typeof window.apriAiuto==='function') window.apriAiuto(true);
+          else if(c==='intorno') eseguiComando('cosa c e qui intorno');
+        }catch(e){}
+      })();
     }
     function secondoPasso(modoVoce){
       passo=2;
