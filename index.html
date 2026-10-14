@@ -4557,7 +4557,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='33';
+  var VERSIONE='34';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4594,6 +4594,13 @@
     if(!pan)return;
     try{ pan.scrollIntoView({block:'start'}); }catch(e){ location.hash='#pannello-aiuto'; }
     YB.apri();
+    // e si dice ad alta voce che cosa c'è: chi non vede deve saperlo senza guardare
+    setTimeout(function(){
+      var scelte='Aiuto. Dì chiama per il 112, oppure commissariato, pronto soccorso, '+
+                 'farmacia, portami a casa. Oppure: mi hanno rubato il portafoglio.';
+      try{ liveEl.textContent=scelte; }catch(e){}
+      try{ dire(['frase-scelte-aiuto'],scelte,true); }catch(e){ try{ speak(scelte,true); }catch(_){} }
+    }, 2600);
   };
   YB.apri = function(){
     var pan=document.getElementById('pannello-aiuto');
