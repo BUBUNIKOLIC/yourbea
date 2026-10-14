@@ -4576,7 +4576,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='27';
+  var VERSIONE='28';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6203,6 +6203,25 @@
     });
     el('scelta-percorso').addEventListener('click',function(){
       S.libero=false;
+      // la posizione si chiede PRIMA di mostrare l'elenco: a un turista a
+      // Roma non interessa sapere che esiste una passeggiata a Torre del Greco
+      if(!S.pronto && navigator.geolocation){
+        var e2a=el('porta-elenco');
+        if(e2a){ e2a.textContent=''; var att=document.createElement('option');
+                 att.textContent='cerco dove sei…'; e2a.appendChild(att); e2a.hidden=false; }
+        navigator.geolocation.getCurrentPosition(function(pos){
+          S.lat=pos.coords.latitude; S.lon=pos.coords.longitude;
+          S.acc=pos.coords.accuracy||null; S.pronto=true;
+          try{caricaRegione();}catch(e){}
+          mostraElenco();
+        },function(){ mostraElenco(); },
+        {enableHighAccuracy:false,maximumAge:60000,timeout:8000});
+        el('scelta-libera').hidden=true; el('scelta-percorso').hidden=true;
+        return;
+      }
+      mostraElenco();
+    });
+    function mostraElenco(){
       ordinaPercorsi();
       var e2=el('porta-elenco'), sel=el('route');
       e2.textContent='';
@@ -6213,7 +6232,12 @@
       }
       e2.hidden=false; el('porta-via').hidden=false;
       el('scelta-libera').hidden=true; el('scelta-percorso').hidden=true;
-    });
+      if(S.pronto && S.modoVoce){
+        var primo=e2.options[0];
+        if(primo)dire(['frase-percorsi-vicini'],'Ecco i percorsi più vicini a te. Il primo è: '+
+                      primo.textContent.replace(/\s+/g,' ').trim());
+      }
+    }
     el('porta-via').addEventListener('click',function(){
       var v=el('porta-elenco').value, sel=el('route');
       sel.value=v; sel.dispatchEvent(new Event('change',{bubbles:true}));

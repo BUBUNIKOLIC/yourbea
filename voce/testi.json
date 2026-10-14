@@ -15108,6 +15108,10 @@
   "testo": "Chiamo il 112."
  },
  {
+  "id": "frase-percorsi-vicini",
+  "testo": "Ecco i percorsi più vicini a te."
+ },
+ {
   "id": "frase-scelte-aiuto",
   "testo": "Dì: chiama, per il 112. Commissariato. Pronto soccorso. Farmacia. Portami a casa. Oppure: mi hanno rubato il portafoglio."
  },
