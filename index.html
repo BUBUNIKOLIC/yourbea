@@ -346,21 +346,22 @@
   /* l'aiuto: sempre a portata, riconoscibile al tatto e al colore */
   .btn-aiuto{background:linear-gradient(180deg,#E0564A,#B3372C);border:none;color:#fff;
     box-shadow:0 10px 26px rgba(224,86,74,.3)}
+  /* a tutto schermo: così nessun tasto può finire sotto la barra dei comandi */
   .pannello-aiuto{
-    position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;flex-direction:column;gap:10px;
-    max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
-    padding:20px 16px calc(28px + env(safe-area-inset-bottom,0));
-    background:linear-gradient(180deg, rgba(26,12,12,.97), rgba(10,6,6,.99));
-    border-top:2px solid rgba(224,86,74,.5);border-radius:22px 22px 0 0;
-    box-shadow:0 -22px 54px rgba(0,0,0,.65);
+    position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;gap:11px;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:calc(18px + env(safe-area-inset-top,0)) 18px calc(28px + env(safe-area-inset-bottom,0));
+    background:linear-gradient(180deg, #1A0C0C 0%, #0A0607 100%);
   }
   .pannello-aiuto h3{font-family:"Playfair Display",Georgia,serif;font-size:24px;margin:0;padding-right:54px}
-  .chiudi-x{position:sticky;top:0;align-self:flex-end;margin:-6px -4px -40px 0;
-    width:46px;height:46px;border-radius:50%;font-size:20px;z-index:2;
-    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--fg)}
+  .chiudi-x{position:sticky;top:0;align-self:flex-end;flex:0 0 auto;
+    width:54px;height:54px;border-radius:50%;font-size:24px;z-index:2;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);color:var(--fg)}
   .pannello-aiuto .dove-sei{font-family:"IBM Plex Mono",monospace;font-size:14px;
     color:#F0C9C4;margin:0 0 4px;line-height:1.4}
-  .pannello-aiuto .btn{margin:0;border-radius:14px;padding:17px 14px;font-size:17px;text-align:left}
+  .pannello-aiuto .btn{margin:0;border-radius:16px;padding:19px 16px;font-size:18px;text-align:left;
+    flex:0 0 auto}
+  #chiudi-aiuto{margin-top:6px;font-size:19px;text-align:center}
   .btn-emergenza{background:linear-gradient(180deg,#E0564A,#B3372C);border:none;color:#fff;
     font-weight:700;font-size:19px}
   .btn-contatto{background:linear-gradient(180deg,#3FA7BF,#2B7F93);border:none;color:#04161B;
@@ -4567,7 +4568,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='24';
+  var VERSIONE='25';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4646,12 +4647,6 @@
     el('chiudi-aiuto').addEventListener('click',chiudi);
     el('chiudi-x').addEventListener('click',chiudi);
     window.chiudiAiuto=function(){ pan.hidden=true; return true; };
-    // toccando fuori dal pannello si chiude
-    document.addEventListener('click',function(e){
-      if(pan.hidden)return;
-      if(pan.contains(e.target)||e.target===b)return;
-      pan.hidden=true;
-    });
     // e il tasto indietro di Android chiude il pannello invece di uscire
     window.addEventListener('popstate',function(){ if(!pan.hidden)pan.hidden=true; });
     el('chiama-112').addEventListener('click',function(){
