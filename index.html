@@ -4030,7 +4030,14 @@
     if(a<115)return r>0?"proprio a destra":"proprio a sinistra";
     if(a<155)return r>0?"indietro a destra":"indietro a sinistra";
     return "alle tue spalle";}
-  function metres(m){return m<25?"a pochi passi":"a "+(Math.round(m/10)*10)+" metri";}
+  function metres(m){
+    if(m<25)return "a pochi passi";
+    if(m<1000)return "a "+(Math.round(m/10)*10)+" metri";
+    // oltre il chilometro si contano i chilometri: «a 94350 metri» non lo
+    // capisce nessuno
+    var k=m/1000;
+    return "a "+(k<10 ? k.toFixed(1).replace('.',',') : Math.round(k))+" chilometri";
+  }
 
   // nessuna città di partenza: finché non si sa dove sei, l'app non è da
   // nessuna parte — se no in cima compare sempre la stessa città
@@ -4557,7 +4564,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='35';
+  var VERSIONE='38';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -4906,6 +4913,17 @@
     bodyEl.textContent=o.p.t+(o.p.y?' · '+o.p.y:'')+' — cammina, te lo racconto quando ci sei';
   }
   function render(){var items=around();
+    // se si sta parlando di un luogo, la direzione e i metri si aggiornano
+    // mentre cammini: prima restavano quelli del momento dell'annuncio
+    if(pending && S.pronto){
+      var p=pending.p;
+      var m=dist(S.lat,S.lon,p.lat,p.lon);
+      var rel=norm(bear(S.lat,S.lon,p.lat,p.lon)-S.hd);
+      pending.m=m; pending.rel=rel;
+      var testa=(versoAffidabile()?side(rel):cardinale(p.lat,p.lon))+', '+metres(m);
+      if(whereEl.textContent!==testa)whereEl.textContent=testa;
+      puntaBussola(versoAffidabile()?rel:null, m);
+    }
     if(document.hidden){drawList(items);narrate(items);return;}
     if(!S.voice){drawStrip(items);muoviMappa();
       if(Date.now()-ultimoDisegno>4000){ultimoDisegno=Date.now();disegnaMappa();}}
@@ -6084,6 +6102,10 @@
       ricorda('urbea-modo',modoVoce?'voce':'occhi');
       ricorda('urbea-cammino',S.libero?'libero':'percorso');
       if(modoVoce&&!S.voice)el('voice').click();
+      // si parte da soli: nessuno deve cercare il tasto Avvia, men che meno
+      // chi non vede. Da qui in poi l'app segue i passi e sa da che parte
+      // sei girato, quindi può dire destra e sinistra invece dei cardinali.
+      setTimeout(function(){ try{ if(!S.live)el('start').click(); }catch(e){} }, 150);
       // si dice subito che cosa sta succedendo, senza aspettare il GPS
       setTimeout(function(){
         var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
