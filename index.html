@@ -4557,7 +4557,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='34';
+  var VERSIONE='35';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5038,7 +5038,7 @@
   }
 
   /* ---------- posizione reale ---------- */
-  var watchId=null,wakeLock=null,percorsiOrdinati=false;
+  var watchId=null,wakeLock=null,percorsiOrdinati=false,dettoPronto=false;
   function startLive(){
     if(!navigator.geolocation){statusEl.textContent='GPS non disponibile in questo browser';return;}
     statusEl.textContent='cerco la posizione…';
@@ -5332,6 +5332,17 @@
       statusEl.textContent = v.d<1500
         ? 'sei vicino a: '+v.r.n
         : 'posizione trovata — il percorso più vicino è a '+Math.round(v.d/1000)+' km';
+      // «ci siamo»: chi non vede deve sapere che l'app ha agganciato il GPS
+      if(!dettoPronto){
+        dettoPronto=true;
+        stradaDiQui(function(via){
+          var t = via ? ('Ci siamo. Sei in '+via+'. Cammina pure.')
+                      : 'Ci siamo, ti ho trovato. Cammina pure.';
+          try{ liveEl.textContent=t; }catch(e){}
+          if(via) speak(t, true);
+          else    dire(['frase-ci-siamo'],t,true);
+        });
+      }
       render();
     },function(){
       statusEl.textContent='posizione non disponibile — dimmi tu dove sei';
@@ -6073,6 +6084,14 @@
       ricorda('urbea-modo',modoVoce?'voce':'occhi');
       ricorda('urbea-cammino',S.libero?'libero':'percorso');
       if(modoVoce&&!S.voice)el('voice').click();
+      // si dice subito che cosa sta succedendo, senza aspettare il GPS
+      setTimeout(function(){
+        var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
+              'Senza premere tasti puoi comandarmi parlando: dì aiuto, dove sono, '+
+              'oppure cosa c\'è qui intorno.';
+        try{ liveEl.textContent=t; }catch(e){}
+        try{ dire(['frase-apertura'],t,true); }catch(e){ try{ speak(t); }catch(_){} }
+      }, 400);
       try{dovesiamo();}catch(e){}
     }
     function secondoPasso(modoVoce){

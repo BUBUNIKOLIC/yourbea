@@ -15108,6 +15108,14 @@
   "testo": "Chiamo il 112."
  },
  {
+  "id": "frase-apertura",
+  "testo": "Sto cercando la tua posizione. Appena la trovo partiamo. Senza premere tasti puoi comandarmi parlando: dì aiuto, dove sono, oppure cosa c'è qui intorno."
+ },
+ {
+  "id": "frase-ci-siamo",
+  "testo": "Ci siamo, ti ho trovato. Cammina pure."
+ },
+ {
   "id": "frase-percorsi-vicini",
   "testo": "Ecco i percorsi più vicini a te."
  },
