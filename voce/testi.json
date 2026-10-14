@@ -15138,5 +15138,9 @@
  {
   "id": "frase-e-lontano",
   "testo": "È lontano: se è urgente, chiama il 112."
+ },
+ {
+  "id": "frase-apro-auto",
+  "testo": "Apro la navigazione in auto."
  }
 ]

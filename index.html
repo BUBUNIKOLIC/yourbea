@@ -75,7 +75,8 @@
   #mappa .leaflet-control-attribution{font-size:9px;background:rgba(14,16,19,.7);color:#8A9199}
   #mappa .leaflet-control-attribution a{color:#9fb6c4}
   .eti{font:600 11px ui-sans-serif,system-ui,sans-serif;color:#E8E7E3;text-shadow:0 1px 3px #000}
-  body[data-voice="1"] #mappa{display:none}
+  /* la mappa resta: anche chi usa la guida vocale ha spesso accanto qualcuno
+     che vede, e chi vede la vuole. Prima era nascosta e non uscuva mai. */
   canvas#plan{width:100%;height:300px;display:block;background:var(--surface);
     border:1px solid var(--wire);border-radius:16px;touch-action:none}
 
@@ -4564,7 +4565,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='40';
+  var VERSIONE='41';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5518,16 +5519,18 @@
   };
   function cercaInPhoton(tipo,cb){
     var parole=PAROLE_PHOTON[tipo]||[tipo];
-    var i=0, migliore=null;
-    (function giro(){
-      if(i>=parole.length){ cb(migliore); return; }
-      unGiroPhoton(tipo,parole[i++],function(r){
+    var restano=parole.length, migliore=null, risposto=false;
+    function finito(){
+      if(risposto)return; risposto=true; cb(migliore);
+    }
+    // tutte insieme: in emergenza venti secondi d'attesa sono inaccettabili
+    parole.forEach(function(w){
+      unGiroPhoton(tipo,w,function(r){
         if(r && (!migliore || r.d<migliore.d)) migliore=r;
-        // se ne ho trovato uno a due passi non serve cercare altro
-        if(migliore && migliore.d<300){ cb(migliore); return; }
-        giro();
+        if(--restano<=0) finito();
       });
-    })();
+    });
+    setTimeout(finito, 8000);
   }
   function unGiroPhoton(tipo,parola,cb){
     var tag=TAG_PHOTON[tipo];
@@ -5632,14 +5635,19 @@
     },1400);
     return true;
   }
+  var richiestaN=0;
   function portamiA(tipo){
+    zittoFino=Date.now()+45000;
+    var mia=++richiestaN;
     var v=piuVicinoDiTipo(tipo);
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
       dire(['frase-cerco'],"Cerco l'indirizzo, un momento.");
       cercaInPhoton(tipo,function(r){
+        if(mia!==richiestaN)return;           // nel frattempo ha chiesto altro
         if(r){ vaiVerso(r); return; }
         cercaInOSM(tipo,function(r2){
+          if(mia!==richiestaN)return;
           if(!r2){ dire(['frase-niente-di-questi'],'Qui vicino non ne trovo.'); return; }
           vaiVerso(r2);
         });
@@ -5719,6 +5727,26 @@
   function portamiACasa(){
     if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».'); return true; }
     return portamiAlPunto(casa.lat,casa.lon,'casa');
+  }
+  /* In auto non serve la guida a piedi: serve la navigazione del telefono,
+     che conosce i sensi unici. Noi apriamo quella con casa già dentro. */
+  function portamiInAuto(lat,lon,nome){
+    dire(['frase-apro-auto'],'Apro la navigazione in auto.');
+    var android=/Android/i.test(navigator.userAgent);
+    var u=android
+      ? 'google.navigation:q='+lat+','+lon+'&mode=d'
+      : 'maps://?daddr='+lat+','+lon+'&dirflg=d';
+    var rete='https://www.google.com/maps/dir/?api=1&destination='+lat+','+lon+'&travelmode=driving';
+    setTimeout(function(){
+      try{ location.href=u; }catch(e){}
+      // se non c'è l'app delle mappe si apre quella del navigatore sul web
+      setTimeout(function(){ try{ if(!document.hidden) location.href=rete; }catch(e){} }, 1500);
+    },1200);
+    return true;
+  }
+  function portamiACasaInAuto(){
+    if(!casa){ dire(['frase-casa-non-segnata'],'Non so dove sia casa. Quando ci sei, tocca «Segna casa qui».'); return true; }
+    return portamiInAuto(casa.lat,casa.lon,'casa');
   }
 
 
@@ -5903,6 +5931,13 @@
       }
       dire(['frase-nessun-numero'],'Non ho un numero da chiamare: va registrato prima.');
       return true;
+    }
+    // «portami a casa in auto»: va guardato prima, se no vince quello a piedi
+    if((ha('in auto','in macchina','in automobile','guidando','con la macchina')) &&
+       (ha('casa','portami','andiamo','torniamo'))){
+      if(ha('casa'))return portamiACasaInAuto();
+      if(meta)return portamiInAuto(meta.lat,meta.lon,meta.n);
+      return portamiACasaInAuto();
     }
     if(ha('portami a casa','voglio andare a casa','andiamo a casa','casa mia','torniamo a casa','voglio tornare a casa')||haL('casa')){
       return portamiACasa();

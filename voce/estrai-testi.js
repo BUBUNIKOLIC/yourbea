@@ -95,7 +95,8 @@ for (let m = 10; m <= 500; m += 10) agg('m-' + m, 'a ' + m + ' metri');
  ['derubato', "Mi dispiace. Dì chiama per il 112, oppure commissariato e ti ci porto. Per bloccare le carte chiama la tua banca: il numero è dietro la carta, e se non ce l'hai, il numero verde del tuo circuito."],
  ['da-qui-passa', 'Da qui passa un percorso. Dì percorso, se vuoi seguirlo.'],
  ['tutto-detto', 'Di questo ti ho detto tutto.'],
- ['e-lontano', 'È lontano: se è urgente, chiama il 112.']
+ ['e-lontano', 'È lontano: se è urgente, chiama il 112.'],
+ ['apro-auto', 'Apro la navigazione in auto.']
 ].forEach(([k, t]) => agg('frase-' + k, t));
 
 fs.writeFileSync(path.join(__dirname, 'testi.json'), JSON.stringify(clip, null, 1), 'utf8');
