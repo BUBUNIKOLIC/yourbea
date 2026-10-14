@@ -348,12 +348,16 @@
     box-shadow:0 10px 26px rgba(224,86,74,.3)}
   .pannello-aiuto{
     position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;flex-direction:column;gap:10px;
-    padding:20px 16px calc(100px + env(safe-area-inset-bottom,0));
+    max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:20px 16px calc(28px + env(safe-area-inset-bottom,0));
     background:linear-gradient(180deg, rgba(26,12,12,.97), rgba(10,6,6,.99));
     border-top:2px solid rgba(224,86,74,.5);border-radius:22px 22px 0 0;
     box-shadow:0 -22px 54px rgba(0,0,0,.65);
   }
-  .pannello-aiuto h3{font-family:"Playfair Display",Georgia,serif;font-size:24px;margin:0}
+  .pannello-aiuto h3{font-family:"Playfair Display",Georgia,serif;font-size:24px;margin:0;padding-right:54px}
+  .chiudi-x{position:sticky;top:0;align-self:flex-end;margin:-6px -4px -40px 0;
+    width:46px;height:46px;border-radius:50%;font-size:20px;z-index:2;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--fg)}
   .pannello-aiuto .dove-sei{font-family:"IBM Plex Mono",monospace;font-size:14px;
     color:#F0C9C4;margin:0 0 4px;line-height:1.4}
   .pannello-aiuto .btn{margin:0;border-radius:14px;padding:17px 14px;font-size:17px;text-align:left}
@@ -617,6 +621,7 @@
   </section>
 
   <section class="pannello-aiuto" id="pannello-aiuto" hidden aria-label="Aiuto immediato">
+    <button class="chiudi-x" id="chiudi-x" aria-label="Chiudi">✕</button>
     <h3>Aiuto</h3>
     <p class="dove-sei" id="dove-sei">cerco dove sei…</p>
     <button class="btn btn-emergenza" id="chiama-112">📞 Chiama il 112 — soccorsi</button>
@@ -4580,6 +4585,7 @@
     };
     function apri(){
       pan.hidden=false;
+      try{ history.pushState({aiuto:1},''); }catch(e){}
       var d=el('dove-sei'); if(d)d.textContent='cerco dove sei…';
       stradaDiQui(function(via){
         var testo = via ? ('Sei in '+via+'.') : 'La strada non la so dire.';
@@ -4604,8 +4610,18 @@
     });
     var ba=el('avvisa-contatto');
     if(ba)ba.addEventListener('click',function(){ pan.hidden=true; vienimiAPrendere(); });
-    el('chiudi-aiuto').addEventListener('click',function(){ pan.hidden=true; });
+    function chiudi(){ pan.hidden=true; if(history.state&&history.state.aiuto)history.back(); }
+    el('chiudi-aiuto').addEventListener('click',chiudi);
+    el('chiudi-x').addEventListener('click',chiudi);
     window.chiudiAiuto=function(){ pan.hidden=true; return true; };
+    // toccando fuori dal pannello si chiude
+    document.addEventListener('click',function(e){
+      if(pan.hidden)return;
+      if(pan.contains(e.target)||e.target===b)return;
+      pan.hidden=true;
+    });
+    // e il tasto indietro di Android chiude il pannello invece di uscire
+    window.addEventListener('popstate',function(){ if(!pan.hidden)pan.hidden=true; });
     el('chiama-112').addEventListener('click',function(){
       dire(['frase-chiamo-112'],'Chiamo il 112.',true);
       setTimeout(function(){ try{ location.href='tel:112'; }catch(e){} },900);
