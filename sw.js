@@ -1,5 +1,10 @@
 /* Urbea — service worker: la città resta nel telefono */
 const CACHE = 'yourbea-v24';
+
+// la pagina può chiedere di passare subito alla versione nuova
+self.addEventListener('message', e => {
+  if (e.data && e.data.azione === 'subito') self.skipWaiting();
+});
 const ASSETS = [
   './',
   './index.html',

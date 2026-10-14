@@ -653,6 +653,7 @@
     <div class="list" id="list"></div>
   </section>
 
+  <p class="versione" id="versione">versione —</p>
   <p class="note">Roma · Firenze · Venezia · Milano · Torino · Genova · Bologna · Verona · Siena · Padova · Napoli · Parma · Spoleto</p>
 </main>
 
@@ -4560,6 +4561,37 @@
   (function(){
     var a=el('avvio'); if(!a)return;
     setTimeout(function(){ a.style.display='none'; }, 1900);
+  })();
+
+
+  /* ---------- la versione e l'aggiornamento ----------
+     Senza un numero visibile non si capisce che cosa sta girando sul
+     telefono: la copia salvata può restare indietro per giorni. */
+  var VERSIONE='24';
+  (function(){
+    var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
+    if(!('serviceWorker' in navigator))return;
+    // se arriva una versione nuova, si prende e si ricarica una volta sola
+    var ricaricato=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(ricaricato)return; ricaricato=true;
+      location.reload();
+    });
+    navigator.serviceWorker.getRegistration().then(function(r){
+      if(!r)return;
+      r.update();
+      setInterval(function(){ r.update(); }, 60*60*1000);
+      if(r.waiting&&r.waiting.postMessage)r.waiting.postMessage({azione:'subito'});
+      r.addEventListener('updatefound',function(){
+        var n=r.installing;
+        if(!n)return;
+        n.addEventListener('statechange',function(){
+          if(n.state==='installed'&&navigator.serviceWorker.controller){
+            if(n.postMessage)n.postMessage({azione:'subito'});
+          }
+        });
+      });
+    }).catch(function(){});
   })();
 
   /* ---------- il tasto dell'aiuto ----------
