@@ -4910,6 +4910,8 @@
 
   function dire(ids,testo,livello){
     var liv=livelloDi(livello);
+    if(window.diario)try{ window.diario('DIRE liv='+liv+' staParlando='+staParlando+
+      ' inCorso='+livelloInCorso+' altre='+altreCopieStannoParlando()+' | '+String(testo).slice(0,60)); }catch(e){}
     // un'altra copia dell'app sta parlando e questa e' in secondo piano:
     // due copie che parlano insieme sono due voci, e nessuna coda puo'
     // metterle d'accordo dall'interno
@@ -5247,7 +5249,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='84';
+  var VERSIONE='85';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6253,6 +6255,7 @@
       statusEl.textContent='cerco la posizione…';
       accendiRadio();
       window.__daNativo=function(pos){
+        if(window.diario)try{ window.diario('POSIZIONE dal guscio '+pos.coords.latitude.toFixed(5)+','+pos.coords.longitude.toFixed(5)+' prec '+Math.round(pos.coords.accuracy||0)); }catch(e){}
         S.live=true;S.sim=false;S.pronto=true;
         S.lat=pos.coords.latitude;S.lon=pos.coords.longitude;
         S.acc=pos.coords.accuracy||null;
