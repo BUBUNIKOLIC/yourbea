@@ -5397,7 +5397,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='96';
+  var VERSIONE='97';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5750,11 +5750,23 @@
     return t;
   }
   function narrate(items){
-    if(pending||!S.pronto)return;
+    /* IL DIARIO DICE PERCHE' TACE.
+       A Torino, in piazza Castello, con Palazzo Reale a 54 metri, l'app non
+       raccontava niente e dal codice non si capiva quale dei controlli la
+       fermasse. Indovinare costa piu' che scriverlo. */
+    function zitto(perche){ if(window.diario)try{ window.diario('NON RACCONTO: '+perche); }catch(e){} }
+    if(pending){
+      /* ma se te ne sei andato, la domanda non ha piu' senso: resterebbe
+         aperta ventisei secondi a tappare la bocca a tutto il resto */
+      if(dist(S.lat,S.lon,pending.p.lat,pending.p.lon)>160){ closeChoice(); }
+      else { zitto('c\'e una domanda aperta su '+pending.p.n); return; }
+    }
+    if(!S.pronto){ zitto('posizione non pronta'); return; }
     // se ti sto portando da qualche parte, o se e' appena successo qualcosa,
     // non e' il momento di raccontare chiese
-    if(meta||Date.now()<zittoFino)return;
-    if(apertoDa && Date.now()-apertoDa < 11000) return;
+    if(meta){ zitto('ti sto portando a '+meta.n); return; }
+    if(Date.now()<zittoFino){ zitto('silenzio chiesto per altri '+Math.round((zittoFino-Date.now())/1000)+' s'); return; }
+    if(apertoDa && Date.now()-apertoDa < 11000){ zitto('app aperta da poco'); return; }
     // quanto lontano si annuncia dipende da quanto conta il luogo: i Fori
     // Imperiali hanno un punto solo e dalla strada stanno a duecento metri,
     // e con il raggio fisso non venivano mai nominati
@@ -5774,7 +5786,11 @@
     var c=items.filter(function(o){
       return Math.abs(o.rel)<spread && o.m<quantoLontano(o.p) && !giaDetto(o.p);
     });
-    if(!c.length){narraLontani();return;}
+    if(!c.length){
+      if(items.length)zitto(items.length+' luoghi intorno ma nessuno dentro '+base+' m e '+spread+' gradi; il primo: '+
+        items[0].p.n+' a '+Math.round(items[0].m)+' m, '+Math.round(items[0].rel)+' gradi'+(giaDetto(items[0].p)?', gia detto':''));
+      narraLontani();return;
+    }
     var o=c[0];
     segnaDetto(o.p);
     pending=o;
@@ -6148,6 +6164,8 @@
      Si teneva dentro `stradaOra`, ma in Turismo nessuno chiede la via —
      quel campo resta vuoto e il filtro non aveva niente da confrontare. */
   var cittaOra='';
+  // la scheda del paese dove sei, e i paesi gia' presentati
+  var cittaScheda=null, cittaDette={};
   /* ---------- LE COSE GRANDI ----------
      Vince, 15/10: «un parco sì, le cose più grandi: la prefettura, la
      villa comunale, il gelataio, il bar, il ristorante».
@@ -6476,7 +6494,7 @@
     drawList(items);
     if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}
     try{ guardaLaStrada(); }catch(e){}
-    try{ scaricaIntorno(); avvisaServizi(); riferimentiLungoLaStrada(); stradaAlberata(); }catch(e){}}
+    try{ scaricaIntorno(); avvisaServizi(); presentaIlPaese(); riferimentiLungoLaStrada(); stradaAlberata(); }catch(e){}}
 
 
 
@@ -6593,6 +6611,17 @@
             var t=testi[x.title]||'';
             if(t && amministrativa(t)){
               if(window.diario)try{ window.diario('SCARTATA, e un comune o simile: '+x.title); }catch(e){}
+              /* MA LA SCHEDA DEL PAESE NON SI BUTTA.
+                 A Castelmezzano — ottocento abitanti, uno dei borghi piu'
+                 belli d'Italia — l'unica voce di Wikipedia e' il paese
+                 stesso, e scartandola l'app non diceva NIENTE. Quella
+                 scheda e' la cosa giusta da dire, ma al momento giusto e
+                 al suo posto: una volta, quando arrivi, «sei a
+                 Castelmezzano» e due righe — non come se fosse un
+                 monumento a quaranta metri sulla destra. */
+              if(!cittaScheda && dist(S.lat,S.lon,x.lat,x.lon)<900 && /comune italiano|^[^,.]{0,40}\u00e8 un/i.test(t)){
+                cittaScheda={n:x.title,d:t};
+              }
               return;                              // non e' un luogo: e' un'entita'
             }
             POI.push({n:x.title,lat:x.lat,lon:x.lon,t:'luogo',y:'',k:1,v:0,w:1,
@@ -6612,6 +6641,11 @@
      fine di una frase, non a meta' parola. */
   function pulisciTesto(t){
     var x=String(t||'')
+      /* «Castelmezzano (Castrëmënzànë nel dialetto locale)»: la forma
+         dialettale, la pronuncia e le lingue straniere fra parentesi sono
+         illeggibili per una voce sintetica — e inutili a chi ascolta
+         camminando. Via quelle, non le altre: «(1492)» serve. */
+      .replace(/\([^)]{0,90}(?:dialett|pronunc|AFI|IPA|in latino|in greco|in tedesco|in francese|in sloveno|in sardo|in siciliano|in napoletano|in friulano|in ladino)[^)]{0,90}\)/gi,' ')
       .replace(/\([^)]{0,3}\)/g,' ')          // le parentesi vuote o quasi
       .replace(/\[\d+\]/g,'')
       .replace(/\s+/g,' ')
@@ -6629,7 +6663,18 @@
        in JavaScript «è» non è una lettera di parola, quindi fra lo spazio e
        la «è» quel confine non esiste. Il filtro sembrava scritto e non
        filtrava niente — a Latina l'app continuava a raccontare il comune. */
-    return /(?:^|[\s,;:])(?:\u00e8|e')\s+(?:un|una|il|la)?\s*(?:comune|citt\u00e0|citta|provincia|regione|capoluogo|municipalit\u00e0)/i.test(String(t).slice(0,320));
+    /* anche al passato («era un circondario del Regno d'Italia»): a
+       Campobasso l'app aveva fra i luoghi il «Circondario di Campobasso» */
+    var testa=String(t).slice(0,320);
+    /* due prove, perche' una sola non basta:
+       1. «è un comune», «era una provincia» — il verbo seguito dalla cosa;
+       2. la parola amministrativa da sola, vicino all'inizio: «Il
+          circondario di Campobasso ERA UNO DEI circondari in cui era
+          suddivisa la provincia» non lo prende la prima prova, e l'app
+          annunciava «a trenta metri, Circondario di Campobasso. Vuoi
+          approfondire?». */
+    if(/(?:^|[\s,;:])(?:\u00e8|e'|era|fu)\s+(?:un|una|il|la|uno)?\s*(?:ex\s+)?(?:comune|citt\u00e0|citta|provincia|regione|capoluogo|municipalit\u00e0)/i.test(testa))return true;
+    return /(?:^|[\s,;:])(?:circondario|circondari|mandamento|distretto|comprensorio|unione dei comuni|unione di comuni|comunit\u00e0 montana|ex comune|comune soppresso|comune italiano|area geografica|regione storica)\b/i.test(testa);
   }
   // la scheda di un luogo preso da Wikipedia si scarica solo quando la chiede
   function schedaWikipedia(p,quando){
@@ -7808,9 +7853,79 @@
     'porta della citt\u00e0':1,'stazione':1,'faro':1,'ponte':1,'stadio':1,
     'centro culturale':1,'acquedotto':1,'riserva naturale':1,'spiaggia':1,
     'fiume':1,'bosco':1,'opera d\u2019arte':1,'punto panoramico':1};
+  /* Un nome che comincia con una di queste parole dice gia' che cos'e':
+     mettergli davanti il tipo e' una ripetizione. */
+  var DICE_COS_E=['cattedrale','basilica','chiesa','duomo','battistero','cappella',
+    'santuario','abbazia','convento','monastero','palazzo','palazzina','villa',
+    'piazza','piazzale','largo','castello','torre','teatro','museo','galleria',
+    'biblioteca','mercato','parco','giardino','ponte','porta','stazione','stadio',
+    'fontana','arco','tempio','terme','anfiteatro','monumento','cimitero','faro'];
+  function diceGiaCosE(nome){
+    var n=normalizza(nome).split(' ')[0];
+    return DICE_COS_E.indexOf(n)>=0;
+  }
+  /* QUELLO CHE RACCONTIAMO NOI NON SI DICE DUE VOLTE.
+     A Campobasso la chiesa del Sacro Cuore veniva annunciata dal racconto
+     (che ha la scheda e la domanda «vuoi approfondire?») e subito dopo dal
+     riferimento, con le stesse parole. E a Venafro il riferimento diceva
+     «Chiesa, dritto davanti» mentre a settanta metri avevamo la Chiesa del
+     Cristo con la sua scheda. Dove c'e' un nostro luogo, parla il racconto:
+     il riferimento serve a riempire i buchi, non a raddoppiare. */
+  function giaNostro(o){
+    var m0=o.punti?quantoDista(o):dist(S.lat,S.lon,o.lat,o.lon);
+    var suo=normalizza(o.nome||'');
+    for(var i=0;i<POI.length;i++){
+      var p=POI[i];
+      var d=o.punti?Infinity:dist(p.lat,p.lon,o.lat,o.lon);
+      if(o.punti){
+        for(var k=0;k<o.punti.length;k++){
+          var dd=dist(p.lat,p.lon,o.punti[k][0],o.punti[k][1]);
+          if(dd<d)d=dd;
+        }
+      }
+      if(d>80)continue;
+      if(!suo)return true;                       // senza nome: lascio parlare il nostro
+      var np=normalizza(p.n);
+      if(np.indexOf(suo)>=0 || suo.indexOf(np)>=0)return true;
+    }
+    return false;
+  }
   function daTurista(o){
     if(!TURISTICO[o.cosa])return false;
     return !!(o.nome || VALE_SENZA_NOME[o.cosa]);
+  }
+  /* «SEI A CASTELMEZZANO»: la presentazione del paese.
+     Si dice una volta per paese, in Turismo, quando non c'e' niente di
+     piu' vicino da raccontare. Nei borghi e' tutto quello che c'e'; nelle
+     citta' d'arte non arriva mai, perche' i monumenti parlano prima. */
+  function presentaIlPaese(){
+    if(!S.voice||S.racconta!=='cultura'||!cittaScheda)return;
+    if(cittaDette[cittaScheda.n])return;
+    if(meta||Date.now()<zittoFino)return;
+    if(apertoDa && Date.now()-apertoDa<9000)return;
+    // se c'e' un monumento qui intorno, parla lui
+    var vicini=around();
+    for(var i=0;i<vicini.length;i++){ if(vicini[i].m<260 && !giaDetto(vicini[i].p))return; }
+    cittaDette[cittaScheda.n]=1;
+    var t=String(cittaScheda.d||'');
+    /* «Sei a Castelmezzano. Castelmezzano è un comune...»: il nome detto
+       due volte di fila. Se la scheda comincia col nome del paese, si
+       attacca direttamente da li'. */
+    var senzaNome=t;
+    var nn=normalizza(cittaScheda.n);
+    if(normalizza(t).indexOf(nn)===0){
+      senzaNome=t.slice(cittaScheda.n.length).replace(/^[\s,:.;-]+/,'');
+      // «Sei a Castelmezzano, è un comune...» suona sgrammaticato detto a
+      // voce: togliendo il verbo viene «Sei a Castelmezzano: un comune...»
+      senzaNome=senzaNome.replace(/^(?:\u00e8|e')\s+/i,'');
+    }
+    // due frasi bastano: il resto si chiede
+    var punto=senzaNome.indexOf('. ', 150);
+    var breve=(punto>0 && punto<420) ? senzaNome.slice(0,punto+1) : senzaNome.slice(0,380);
+    var testo='Sei a '+cittaScheda.n+': '+breve;
+    try{ whatEl.textContent=cittaScheda.n; bodyEl.className='body'; bodyEl.textContent=t; }catch(e){}
+    liveEl.textContent=testo;
+    parlaLibero(testo,GUIDA);
   }
   var ultimoRiferimento=0;
   function riferimentiLungoLaStrada(){
@@ -7819,12 +7934,25 @@
     var turismo=(S.racconta==='cultura');
     if(!meta && !turismo && S.racconta!=='servizi')return;
     if(Date.now()-ultimoRiferimento<25000)return;
+    /* IL RIFERIMENTO PARLA QUANDO IL RACCONTO NON HA NIENTE DA DIRE.
+       Davanti al Duomo di Firenze l'app ha parlato di Casa Ghiberti,
+       perche' il riferimento e' pronto subito e il racconto aspetta i suoi
+       undici secondi d'apertura. In Turismo il monumento viene prima: se
+       c'e' un luogo nostro qui intorno ancora da raccontare, il
+       riferimento tace e aspetta il suo turno. */
+    if(turismo){
+      var vicini=around();
+      for(var z=0;z<vicini.length;z++){
+        if(vicini[z].m<260 && !giaDetto(vicini[z].p))return;
+      }
+    }
     var mig=null,dmin=Infinity,migGrande=null,dminG=Infinity;
     for(var i=0;i<INTORNO.length;i++){
       var o=INTORNO[i];
       if(!o.servizio)continue;            // qui servono i negozi, non gli attraversamenti
       if(!valeDirla(o))continue;
       if(turismo && !daTurista(o))continue;
+      if(turismo && giaNostro(o))continue;       // lo racconta il racconto, non il riferimento
       var m=quantoDista(o);
       // in Turismo un edificio con un nome si dice anche da lontano: lo vedi
       var limite=turismo?(o.grande?140:60):(o.grande?60:22);
@@ -7841,14 +7969,24 @@
     if(!mig)return;
     dettiServizi[mig.chiave]=Date.now();
     ultimoRiferimento=Date.now();
-    /* «Piazza, Piazza del Popolo» era il tipo detto due volte: se il nome
-       comincia col tipo, basta il nome. */
+    /* COME SI DICE IL NOME.
+       «Piazza, Piazza del Popolo» e «Chiesa, Cattedrale di Santa Maria del
+       Fiore» erano il tipo detto due volte: se il nome comincia già con una
+       parola che dice che cos'è — cattedrale, basilica, palazzo, piazza —
+       basta il nome. */
     var tipo=mig.o.cosa, nome=mig.o.nome||'';
     var testo;
-    if(nome && normalizza(nome).indexOf(normalizza(tipo))===0) testo=nome;
+    if(nome && (normalizza(nome).indexOf(normalizza(tipo))===0 || diceGiaCosE(nome))) testo=nome;
     else if(nome) testo=tipo.charAt(0).toUpperCase()+tipo.slice(1)+', '+nome;
     else testo=tipo.charAt(0).toUpperCase()+tipo.slice(1);
-    parlaLibero(testo+', '+side(mig.rel)+'.',GUIDA);
+    /* IN TURISMO UN RIFERIMENTO NON INTERROMPE IL RACCONTO.
+       A Venafro e a Campobasso la stessa chiesa veniva detta DUE volte: il
+       riferimento partiva a livello guida, tagliava a metà il racconto del
+       monumento, e il racconto — per la regola giusta di riprendere quello
+       che è stato interrotto — ripartiva da capo. In Turismo il
+       riferimento è racconto anche lui: aspetta, o si butta. In Utilità
+       resta guida, perché lì orientarsi viene prima. */
+    parlaLibero(testo+', '+side(mig.rel)+'.', turismo?RACCONTO:GUIDA);
   }
 
   function guidaVersoMeta(){
