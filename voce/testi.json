@@ -852,6 +852,10 @@
   "testo": "Galleria Colonna, in stile liberty, con la vetrata a Y e i mosaici pavimentali. Intitolata a Sordi dopo la sua morte."
  },
  {
+  "id": "poi-52-ancora",
+  "testo": "Da manuale: inaugurata nel 1922 come Galleria Colonna, su progetto di Dario Carbone, e' l'ultima delle gallerie commerciali ottocentesche italiane — quelle con la copertura in ferro e vetro, nate a Milano con la Vittorio Emanuele. Ha pianta a Y, tre ingressi e le vetrate liberty. Fu chiusa e abbandonata per anni, restaurata e riaperta nel 2003; nel 2003, alla morte dell'attore, fu intitolata ad Alberto Sordi, che era nato a Trastevere e aveva girato qui alcune scene. La copertura in vetro, vista da sotto, e' la cosa che vale."
+ },
+ {
   "id": "poi-53-nome",
   "testo": "Colonna di Marco Aurelio"
  },
@@ -902,6 +906,10 @@
  {
   "id": "poi-55-scheda",
   "testo": "Il portico è fatto con sedici colonne ioniche vere, prelevate dagli scavi della città etrusca di Veio."
+ },
+ {
+  "id": "poi-55-ancora",
+  "testo": "Da manuale: il palazzo su piazza Colonna fu rifatto nel 1838 da Pietro Camporese il Giovane, e il portico che lo caratterizza e' fatto con sedici colonne ioniche romane autentiche, portate da Veio, la citta' etrusca a nord di Roma: colonne di duemila anni rimontate per fare un porticato ottocentesco. Prese il nome dal banchiere Karl Wedekind che lo acquisto'. Dal 1946 ospita la redazione del Tempo, e il portico e' uno dei pochi spazi coperti pubblici del centro."
  },
  {
   "id": "poi-56-nome",
@@ -3300,6 +3308,10 @@
   "testo": "Di Ferdinando Fuga, sulla piazza del Quirinale: due ordini, portale centrale col balcone e lo stemma, e l'attico con i trofei. Oggi è la Corte costituzionale."
  },
  {
+  "id": "poi-222-ancora",
+  "testo": "Da manuale: Ferdinando Fuga lo costruisce fra il 1732 e il 1735 per Clemente Dodicesimo, come sede della Sacra Consulta, il tribunale dello Stato pontificio. La facciata sul Quirinale e' il suo capolavoro: due ordini sovrapposti, portale centrale con colonne e balcone, finestre con cornici diverse piano per piano, e il coronamento con i trofei d'armi. E' architettura di governo: misurata, chiara, senza invenzioni spettacolari. Dal 1955 e' la sede della Corte costituzionale, e per questo «la Consulta» in Italia significa la Corte."
+ },
+ {
   "id": "poi-223-nome",
   "testo": "Palazzo Spada"
  },
@@ -3336,6 +3348,10 @@
   "testo": "Il balcone di Palazzo Venezia, quello dei discorsi di Mussolini, che sporge sulla piazza."
  },
  {
+  "id": "poi-224-ancora",
+  "testo": "Da manuale: la piazza esisteva dal Quattrocento, piccola e irregolare davanti a Palazzo Venezia, e divenne questo slargo enorme fra il 1885 e il 1911 per fare posto al Vittoriano: furono demolite la torre di Paolo Terzo, il convento dell'Aracoeli e un intero quartiere medievale, e il Palazzetto Venezia fu smontato pietra per pietra e rimontato di lato. E' il piu' grande sventramento di Roma dopo quelli papali, fatto per dare una scena monumentale all'Italia unita. Oggi e' l'incrocio piu' attraversato della citta', e il vigile sulla pedana al centro — tolto nel 1990, rimesso ogni tanto per tradizione — e' diventato un simbolo cittadino."
+ },
+ {
   "id": "poi-225-nome",
   "testo": "Piazza della Rotonda"
  },
@@ -3362,6 +3378,10 @@
  {
   "id": "poi-226-scheda",
   "testo": "Filippo Raguzzini disegnò le case, non solo lo spazio: le palazzine curve sembrano quinte di teatro disposte attorno a un piccolo invaso, con le facciate che si rincorrono. È il rococò romano in cinque edifici."
+ },
+ {
+  "id": "poi-226-ancora",
+  "testo": "Da manuale: Filippo Raguzzini la disegna fra il 1727 e il 1728, ed e' una delle piazze piu' particolari di Roma: invece di spazi grandi, tre palazzine curve e basse che si fronteggiano formando quasi un salotto, con le facciate concave e convesse che si rispondono. L'idea e' teatrale in senso letterale — lo spazio e' pensato come il palcoscenico davanti alla scena, che e' la facciata della chiesa di Sant'Ignazio. E' rococo' romano, raro e dichiaratamente in scala minore: dopo le grandi piazze barocche, una piazza da camera."
  },
  {
   "id": "poi-227-nome",
@@ -3394,6 +3414,10 @@
  {
   "id": "poi-228-dentro",
   "testo": "Poco più su, all'angolo di via Veneto, la Fontana delle Api, sempre del Bernini."
+ },
+ {
+  "id": "poi-228-ancora",
+  "testo": "Da manuale: la piazza prende nome dal palazzo della famiglia, e al centro ha la Fontana del Tritone di Bernini, 1643. All'angolo con via Veneto c'e' la Fontana delle Api, dello stesso Bernini, 1644: una conchiglia aperta con tre api — lo stemma dei Barberini — e un'iscrizione che fu fatta rifare in fretta perche' diceva che correva il ventiduesimo anno di pontificato quando il papa era ancora al ventunesimo, e annunciare un anno non compiuto portava sfortuna. La piazza era in origine fuori dall'abitato, in mezzo alle vigne; divento' il centro della Roma mondana con via Veneto nel Novecento."
  },
  {
   "id": "poi-229-nome",
@@ -3440,6 +3464,10 @@
   "testo": "L'arco che scavalca via Giulia doveva essere il primo pezzo di un ponte: i Farnese volevano collegare il palazzo alla Farnesina dall'altra parte del Tevere, su disegno di Michelangelo. Il ponte non si fece mai, e l'arco è rimasto lì, coperto d'edera, come il frammento di un'idea."
  },
  {
+  "id": "poi-231-ancora",
+  "testo": "Da manuale: l'arco che scavalca via Giulia, coperto di edera, e' tutto quello che fu costruito del ponte che Michelangelo aveva progettato per collegare Palazzo Farnese, di qua dal Tevere, alla Villa Farnesina di Trastevere, di la'. L'idea era del cardinale Alessandro Farnese: un passaggio privato sopra il fiume, come il Vasariano a Firenze. Il progetto si fermo' per i costi e per la morte del committente, e resto' questo arco che non porta da nessuna parte. E' uno dei luoghi piu' fotografati di Roma proprio perche' e' un'opera incompiuta diventata scenografia."
+ },
+ {
   "id": "poi-232-nome",
   "testo": "La gatta di via della Gatta"
  },
@@ -3450,6 +3478,10 @@
  {
   "id": "poi-232-scheda",
   "testo": "Su un cornicione di Palazzo Grazioli sta una gatta di marmo antica, probabilmente egizia, rimessa lì come decorazione. Guarda in giù, e dà il nome alla strada: un pezzo di statua riusato che diventa toponimo."
+ },
+ {
+  "id": "poi-232-ancora",
+  "testo": "Da manuale: una piccola gatta di marmo, scultura romana di eta' imperiale, posata sul cornicione di Palazzo Grazioli all'altezza del primo piano. Veniva probabilmente dal tempio di Iside, dove i gatti erano animali sacri. La leggenda cittadina dice che guardi nella direzione di un tesoro sepolto, e che chi scava dove punta lo trovi. In realta' guarda verso il palazzo di fronte perche' li' e' stata murata nel Settecento. E' uno dei dettagli che si trovano solo se si alza lo sguardo, e da' il nome alla strada."
  },
  {
   "id": "poi-233-nome",
@@ -3464,6 +3496,10 @@
   "testo": "Un busto colossale di marmo, probabilmente una sacerdotessa di Iside, appoggiato all'angolo di piazza San Marco. È una delle statue parlanti: ci si attaccavano i biglietti di protesta."
  },
  {
+  "id": "poi-233-ancora",
+  "testo": "Da manuale: e' un busto colossale in marmo del Secondo secolo, alto quasi tre metri, che raffigura probabilmente la dea Iside o una sua sacerdotessa: viene dal tempio di Iside e Serapide che stava qui vicino, nel Campo Marzio. Il nome e' quello di Lucrezia d'Alagno, amante di Alfonso d'Aragona, che abitava nel palazzo accanto nel Quattrocento. E' una delle sei statue parlanti di Roma: insieme a Pasquino, Marforio, l'Abate Luigi, il Babuino e il Facchino, serviva ad attaccare di notte i cartelli con le satire contro il potere. E' l'unica donna del gruppo."
+ },
+ {
   "id": "poi-234-nome",
   "testo": "L'Abate Luigi"
  },
@@ -3476,6 +3512,10 @@
   "testo": "Statua romana togata, senza testa per lunghi periodi — gliela rubavano — messa al fianco di Sant'Andrea della Valle. L'altra voce di Roma insieme a Pasquino."
  },
  {
+  "id": "poi-234-ancora",
+  "testo": "Da manuale: statua romana tardoantica di un uomo in toga, forse un magistrato, addossata al fianco della chiesa di Sant'Andrea della Valle. Il nome popolare viene dalla somiglianza con un sacrestano della vicina chiesa del Sudario. E' una delle sei statue parlanti: ai suoi piedi si attaccavano i cartelli contro i potenti, e sul basamento c'e' ancora l'iscrizione che lo dice in prima persona — fui cittadino dell'antica Roma, ora mi chiamano l'Abate Luigi. La testa e' stata rubata piu' volte e rifatta: quella attuale e' un rifacimento del Novecento."
+ },
+ {
   "id": "poi-235-nome",
   "testo": "La Porta Magica"
  },
@@ -3486,6 +3526,10 @@
  {
   "id": "poi-235-scheda",
   "testo": "L'unico monumento alchemico di Roma: una porta isolata, coperta di simboli e iscrizioni ermetiche, che stava nella villa del marchese Palombara e oggi è rimontata nei giardini di piazza Vittorio. Non porta da nessuna parte: è un testo da leggere, non un passaggio."
+ },
+ {
+  "id": "poi-235-ancora",
+  "testo": "Da manuale: unico monumento alchemico rimasto in Europa, era la porta della villa del marchese Massimiliano Palombara e fu costruita fra il 1655 e il 1680. Sugli stipiti e sull'architrave sono incise formule in latino e simboli alchemici — i pianeti, lo zolfo, il mercurio — che secondo la tradizione contengono la ricetta per trasformare il piombo in oro, lasciata da un pellegrino sparito nella notte dopo un esperimento riuscito. Le iscrizioni sono autentiche e gli studiosi le leggono come un testo ermetico coerente. La porta fu smontata e rimontata qui nel 1888, quando la villa fu demolita per costruire il quartiere."
  },
  {
   "id": "poi-236-nome",
@@ -3514,6 +3558,10 @@
  {
   "id": "poi-237-scheda",
   "testo": "Si passa sotto un arco basso in via del Pellegrino e si finisce in un cortile medievale con le scale esterne, i ballatoi e i mattoni a vista: un pezzo di città del Quattrocento rimasto incastrato dietro Campo de' Fiori."
+ },
+ {
+  "id": "poi-237-ancora",
+  "testo": "Da manuale: si entra da un passaggio stretto su via del Pellegrino e ci si trova in un cortile medievale rimasto intatto: case a tre piani, scale esterne in muratura, ballatoi di legno, intonaci ocra scrostati. E' uno dei pochissimi angoli di Roma in cui si vede com'era il tessuto edilizio prima degli sventramenti — non un monumento, ma case di gente comune del Quattrocento, cresciute una sull'altra. Il nome viene dagli acetari, i venditori d'aceto e d'acqua acetosa che avevano bottega qui."
  },
  {
   "id": "poi-238-nome",
@@ -3608,6 +3656,10 @@
   "testo": "Un corridoio murato lungo ottocento metri che corre in alto da San Pietro a Castel Sant'Angelo: via di fuga per il papa, costruita dentro lo spessore delle mura. Si vede dalla strada come un muro cieco con i merli e le feritoie, che scavalca i palazzi."
  },
  {
+  "id": "poi-243-ancora",
+  "testo": "Da manuale: e' il corridoio fortificato lungo ottocento metri che collega il Vaticano a Castel Sant'Angelo, costruito da Niccolo' Terzo nel 1277 sopra un muro leonino del Nono secolo. Serviva a una cosa sola: far scappare il papa. Fu usato davvero due volte, da Alessandro Sesto nel 1494 all'arrivo di Carlo Ottavo, e da Clemente Settimo il 6 maggio 1527, durante il Sacco di Roma, mentre le guardie svizzere si facevano uccidere in San Pietro per coprirne la fuga: ne morirono centoquarantasette su centottantanove, ed e' per questo che il giuramento delle guardie si fa il 6 maggio."
+ },
+ {
   "id": "poi-244-nome",
   "testo": "Le piene del Tevere, alla Minerva"
  },
@@ -3622,6 +3674,10 @@
  {
   "id": "poi-244-dentro",
   "testo": "Cerca le mani scolpite e le date: ogni targa indica con una linea il punto esatto dell'acqua."
+ },
+ {
+  "id": "poi-244-ancora",
+  "testo": "Da manuale: sul fianco della chiesa di Santa Maria sopra Minerva, a sinistra del portale, sono murate una serie di lapidi con una mano incisa e una data: segnano il livello raggiunto dall'acqua nelle piene del Tevere, dal 1422 al 1870. La piu' alta, quella del dicembre 1598, sta a circa due metri dal suolo attuale: quel giorno il fiume raggiunse i diciannove metri e mezzo sul livello del mare, e mezza Roma era sott'acqua. Le lapidi sono state spostate verso l'alto piu' volte, perche' il piano stradale si e' alzato: la distanza fra la lapide e il terreno misura anche quello."
  },
  {
   "id": "poi-245-nome",
