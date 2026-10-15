@@ -737,6 +737,8 @@
   }
   .porta-installa[hidden]{display:none}
   .porta-installa:active{background:rgba(47,227,242,.12)}
+  .porta-apk{text-align:center;text-decoration:none;color:var(--acido);
+    border-color:rgba(168,255,91,.35);background:rgba(168,255,91,.06)}
 
   /* su uno schermo piccolo si taglia meno e si stringe il passo */
   @media (max-width:420px){
@@ -825,6 +827,7 @@
   <button class="porta-cambia" id="porta-cambia" hidden>Cambia modo</button>
   <select id="porta-lingua" class="porta-lingua" aria-label="Lingua / Language"></select>
   <button class="porta-installa" id="porta-installa" hidden>Metti l’icona sul telefono</button>
+  <a class="porta-installa porta-apk" id="porta-apk" href="Yourbea.apk" download hidden>Scarica l’app per Android</a>
   <div id="porta-modo" hidden>
     <button class="porta-scelta porta-voce" id="scelta-libera">
       <b>Cammino libero</b>
@@ -4797,8 +4800,52 @@
     speak(testo);
     setTimeout(function(){ finito(mio); }, Math.min(16000,1200+(testo||'').length*55));
   }
+
+  /* ---------- una copia sola che parla ----------
+     Ipotesi mai verificata fino al 15/10, e l'unica che spiega perche' le
+     due voci si sentono ancora dopo aver messo tutto in coda: le due voci
+     non vengono dalla stessa copia dell'app. Vengono da DUE copie aperte
+     insieme — la pagina rimasta in una scheda del browser e l'app con
+     l'icona sulla Home, oppure due schede. Ognuna ha la sua coda, il suo
+     turno e i suoi livelli, e non sa niente dell'altra: le priorita' che
+     abbiamo costruito non possono funzionare, perche' valgono dentro una
+     copia sola.
+     Qui le copie si parlano fra loro. Chi sta per dire qualcosa lo
+     annuncia; le altre zittiscono quello che stanno dicendo e, finche'
+     restano nascoste, non annunciano piu' niente. */
+  var CANALE=null, ioParlo=0, altriParlanoFino=0;
+  (function(){
+    try{ CANALE=new BroadcastChannel('yourbea-voce'); }catch(e){ CANALE=null; }
+    if(!CANALE)return;
+    CANALE.onmessage=function(ev){
+      var m=ev&&ev.data; if(!m)return;
+      if(m.tipo==='parlo'){
+        // un'altra copia sta parlando: se io sono nascosto taccio del tutto,
+        // se sono in primo piano la lascio finire e aspetto il mio turno
+        altriParlanoFino=Date.now()+(m.quanto||6000);
+        if(document.hidden){ try{ zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }catch(e){} }
+      }
+    };
+    // quando questa copia torna in primo piano, riprende lei
+    document.addEventListener('visibilitychange',function(){
+      if(!document.hidden){ altriParlanoFino=0; try{ CANALE.postMessage({tipo:'sveglia'}); }catch(e){} }
+    });
+  })();
+  function altreCopieStannoParlando(){
+    return !!(altriParlanoFino && Date.now()<altriParlanoFino && document.hidden);
+  }
+  function diciAlleAltreCopie(testo){
+    if(!CANALE)return;
+    try{ CANALE.postMessage({tipo:'parlo', quanto:Math.min(16000,1200+(testo||'').length*55)}); }catch(e){}
+  }
+
   function dire(ids,testo,livello){
     var liv=livelloDi(livello);
+    // un'altra copia dell'app sta parlando e questa e' in secondo piano:
+    // due copie che parlano insieme sono due voci, e nessuna coda puo'
+    // metterle d'accordo dall'interno
+    if(altreCopieStannoParlando() && liv!==EMERGENZA) return;
+    diciAlleAltreCopie(testo);
     if(staParlando){
       var accoda=function(){
         if(!inCoda||liv>=inCoda.liv)inCoda={ids:ids,testo:testo,liv:liv};
@@ -5122,7 +5169,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='67';
+  var VERSIONE='69';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -7540,6 +7587,11 @@
 
     /* lo stesso tasto, ma sulla schermata d'ingresso: e' li' che arriva
        chi apre il link, e li' deve trovarlo */
+    // su Android, il pacchetto da scaricare: funziona anche dal browser
+    // interno di WhatsApp, dove l'installazione normale non esiste
+    var androide=/Android/i.test(ua);
+    var bapk=el('porta-apk');
+    if(bapk && androide && !giaInstallata) bapk.hidden=false;
     var bp=el('porta-installa');
     if(bp && !giaInstallata){
       bp.hidden=false;
