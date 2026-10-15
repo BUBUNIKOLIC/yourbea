@@ -849,7 +849,13 @@
     </div>
   </section>
 
-  <div class="sr" id="live" role="status" aria-live="polite"></div>
+  <!-- Il testo di quello che l'app sta dicendo. NON ha aria-live: la frase
+       la pronuncia gia' l'app, e se anche il lettore di schermo la leggesse
+       si sentirebbero due voci sovrapposte. Resta leggibile scorrendo. -->
+  <div class="sr" id="live" role="status" aria-live="off"></div>
+  <!-- Qui invece finisce solo cio' che l'app NON dice a voce: il lettore di
+       schermo lo legge senza accavallarsi a niente. -->
+  <div class="sr" id="muto" role="status" aria-live="polite"></div>
 
   <section class="cassetto" id="cassetto" aria-label="Altri comandi">
     <button class="btn" id="voice" aria-pressed="false">Modalità voce</button>
@@ -884,6 +890,8 @@
   <div class="status" id="status">in attesa</div>
 
   <div id="mappa" class="vuota" aria-label="Mappa: strade, edifici e servizi intorno a te"></div>
+  <!-- in guida vocale la mappa sparisce dal lettore di schermo: vedi lo
+       script piu' sotto, che le mette aria-hidden -->
   <canvas id="plan" hidden aria-hidden="true"></canvas>
   <div class="strip" id="strip"><div class="ahead"></div></div>
 
@@ -5092,7 +5100,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='62';
+  var VERSIONE='63';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5779,6 +5787,22 @@
     parlaLibero(testo, GUIDA);
   }
 
+  /* Quello che l'app NON dice a voce — lo stato, la precisione del GPS, le
+     conferme — va comunque fatto sapere a chi non vede: si copia nel
+     riquadro che il lettore di schermo annuncia. Il parlato no, quello lo
+     dice gia' l'app, e due voci sulla stessa frase sono il difetto numero
+     uno di questa settimana. */
+  function annunciaAlLettore(t){ try{ var m=el('muto'); if(m&&t)m.textContent=t; }catch(e){} }
+  (function(){
+    try{
+      var st=el('status'); if(!st||!window.MutationObserver)return;
+      var ultimo='';
+      new MutationObserver(function(){
+        var t=(st.textContent||'').trim();
+        if(t&&t!==ultimo){ ultimo=t; annunciaAlLettore(t); }
+      }).observe(st,{childList:true,characterData:true,subtree:true});
+    }catch(e){}
+  })();
   function render(){var items=around();
     // se si sta parlando di un luogo, la direzione e i metri si aggiornano
     // mentre cammini: prima restavano quelli del momento dell'annuncio
@@ -7227,6 +7251,15 @@
       if(m&&say&&say.parentNode)say.parentNode.insertBefore(m,say);
       setTimeout(function(){ try{ if(mappa&&mappa.invalidateSize)mappa.invalidateSize(); }catch(e){} },200);
       ricorda('urbea-modo',modoVoce?'voce':'occhi');
+      /* Chi entra in guida vocale quasi sempre ha VoiceOver o TalkBack
+         acceso: la mappa, con i suoi zoom e i suoi segnaposti, gli
+         finirebbe fra i piedi per prima. Resta a schermo per chi
+         accompagna, ma il lettore di schermo la salta. */
+      try{
+        var mp=el('mappa');
+        if(mp){ if(modoVoce){ mp.setAttribute('aria-hidden','true'); mp.setAttribute('role','presentation'); }
+                else { mp.removeAttribute('aria-hidden'); mp.removeAttribute('role'); } }
+      }catch(e){}
       ricorda('urbea-cammino',S.libero?'libero':'percorso');
       if(modoVoce&&!S.voice)el('voice').click();
       // si parte da soli: nessuno deve cercare il tasto Avvia, men che meno

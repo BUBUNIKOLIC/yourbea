@@ -32,6 +32,7 @@ echo
 echo "— le coordinate —"
 node prove/coordinate.js || mal=1
 node "$QUI/prove/schede-al-posto-giusto.js" || ESITO=1
+node "$QUI/prove/lettore-di-schermo.js" || ESITO=1
 
 if [ "$RETE" = 1 ]; then
   echo
