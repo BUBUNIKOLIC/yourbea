@@ -1,9 +1,9 @@
 {
  "name": "Yourbea — la bellezza intorno a te",
  "short_name": "Yourbea",
- "description": "Italia: la bellezza intorno a te a te. Cammini e la città si racconta: cosa ammirare, da che parte, a quanti metri.",
+ "description": "Cammini e la città ti parla: dove sei, cosa hai intorno, e i monumenti raccontati a voce. Per chi non vede e per chi visita.",
  "lang": "it",
- "start_url": "./index.html",
+ "start_url": "./nuova/",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
