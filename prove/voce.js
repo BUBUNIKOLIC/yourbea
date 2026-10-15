@@ -51,6 +51,7 @@ class FintoAudio {
       return Promise.resolve();
     }
     this.paused = false;
+    this.currentTime = 0.01;      // come una clip vera: appena parte, il tempo avanza
     attivi++;
     diario.push('suona ' + this.id + ' (attivi ' + attivi + ')');
     if (attivi > 1) guasto('DUE CLIP INSIEME: ' + diario.slice(-3).join(' | '));

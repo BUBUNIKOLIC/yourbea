@@ -5210,7 +5210,13 @@
     staParlando=true;
     // rete ferma, clip che non parte, audio negato: se entro mezzo minuto
     // non si è chiuso niente, il turno si libera da solo e la guida riparla.
-    setTimeout(function(){ if(mio===turno&&staParlando)finito(mio); },30000);
+    /* IL SILENZIO NON DEVE DURARE.
+       Prima: se una clip non partiva, l'app restava muta TRENTA secondi
+       prima di liberare il turno. Su una rete mobile basta una clip lenta
+       perche' chi cammina senta «si e' bloccata» — ed e' quello che hanno
+       detto tutti e quattro i provatori. Ora il tetto e' nove secondi, e
+       ogni singola clip ha il suo tempo massimo qui sotto. */
+    setTimeout(function(){ if(mio===turno&&staParlando)finito(mio); },9000);
     if(LINGUA!=='it'){
       var tr=inLingua(ids,testo);
       liveEl.textContent=tr.t;
@@ -5225,6 +5231,31 @@
         if(i>=ids.length){inCorso=null;setTimeout(function(){finito(mio);},350);return;}
         var a=prontaOCrea(ids[i++]);
         inCorso=a;
+        /* Tempo massimo per QUESTA clip: se entro tre secondi e mezzo non ha
+           cominciato a suonare — rete lenta, file che non arriva, telefono
+           che non apre l'audio — si smette di aspettare e si dice la frase
+           con la voce di sistema. Meglio una voce diversa che il silenzio. */
+        (function(clip,mioTurno){
+          var partita=false;
+          try{
+            clip.addEventListener('playing',function(){ partita=true; });
+            clip.addEventListener('timeupdate',function(){ partita=true; });
+          }catch(e){}
+          setTimeout(function(){
+            if(mioTurno!==turno||partita)return;
+            /* Il tempo che avanza e' la prova che la clip ha suonato: vale
+               anche se nel frattempo e' FINITA (il banco di prova me l'ha
+               fatto notare: scambiavo una clip finita per una mai partita).
+               E se l'interruzione e' stata voluta — pause(), che fa
+               rigettare la promessa con AbortError — la clip e' segnata
+               come gia' gestita e qui non si tocca. */
+            if(clip.currentTime>0||clip.__gestita)return;
+            if(window.diario)try{ window.diario('CLIP LENTA, passo alla voce: '+clip.id); }catch(e){}
+            try{ clip.pause(); }catch(e){}
+            inCorso=null;
+            ripiego(mioTurno,testo);
+          },3500);
+        })(a,mio);
         // mentre questa suona, la prossima si scarica: era questo che faceva
         // sembrare la voce interrotta quando la rete è lenta
         if(ids[i])preparaClip(ids[i]);
@@ -5239,6 +5270,7 @@
         };
         var pr=a.play();
         if(pr&&pr.catch)pr.catch(function(err){
+          try{ a.__gestita=true; }catch(e){}
           if(mio!==turno)return;
           // pause() fa rifiutare la promessa con AbortError: è
           // l'interruzione normale, non un guasto. Lì non si ripiega.
@@ -5530,7 +5562,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='102';
+  var VERSIONE='103';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
