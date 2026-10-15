@@ -20,6 +20,8 @@ telefono e senza rete.
       parti/racconto.js     cosa dire e quando: il racconto a gradini
       prove/voce.js         11 prove — ognuna è un difetto che qualcuno ha sentito
       prove/racconto.js     12 prove — compreso il difetto di Gabri a Parma
+      parti/passeggiata.js  i giri a tappe             (26 prove)
+      dati/passeggiate.json 101 passeggiate, 732 tappe
 
 ## Le regole, e chi le ha dettate
 
@@ -42,10 +44,33 @@ In **Utilità** — la modalità di chi non vede — i luoghi importanti si dico
 come la guida, non come un cenno sacrificabile, e «approfondisci» parla del
 monumento, non della farmacia accanto.
 
+**Le passeggiate** (`parti/passeggiata.js`), portate dalla vecchia app il
+15/10 sera. Erano 102 polilinee senza tappe: le tappe sono i luoghi che la
+linea tocca entro ottanta metri, nell'ordine in cui li tocca — 101 giri e 732
+tappe (quella della Laurentina è rimasta fuori: tutti attraversamenti, zero
+luoghi da raccontare).
+1. una tappa per volta, e «avanti», «ancora», «ferma» — il contratto di Vince;
+2. la tappa si racconta **quando ci sei** (trentacinque metri): dire com'è
+   fatta una facciata mentre sei a quattrocento metri è una bugia detta a chi
+   non la può controllare. «Avanti» dice il nome e da che parte, non la scheda;
+3. la tappa è quella **dove sei**, non quella che tocca all'app: chi fa il
+   giro al contrario non resta bloccato;
+4. distanze in passi fino a trecento metri, mai un imperativo sui piedi, e
+   niente direzione per una tappa che hai sotto i piedi;
+5. si propongono solo quelle **entro cinque chilometri**: a Parma l'app
+   offriva come seconda un giro di Mantova «a 52 chilometri da te»;
+6. «zitto» zittisce, «ferma» lascia il giro: non sono la stessa cosa;
+7. la scena intorno — piazze, alberi, attraversamenti, negozi — resta di
+   Utilità: in una passeggiata si parla di arte, architettura e storia.
+
+Mentre una passeggiata è in corso parla solo lei: il racconto tace, se no al
+Battistero si sentono due voci dire due cose diverse sullo stesso luogo.
+
 ## Come si prova
 
     node nuova/prove/voce.js
     node nuova/prove/racconto.js
+    node nuova/prove/passeggiata.js
 
 Nessuna delle due prove tocca la rete, l'audio o il telefono: girano in un
 secondo. Se una si rompe, il difetto che descrive è tornato.

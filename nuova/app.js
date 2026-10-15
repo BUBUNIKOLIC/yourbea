@@ -161,7 +161,7 @@
 
     /* i puntini si rifanno solo se sono cambiati: ridisegnarli a ogni passo
        farebbe lampeggiare la mappa sotto gli occhi di chi la guarda. */
-    var inCorso = racconto.inCorso();
+    var inCorso = passeggiata.tappa() || racconto.inCorso();
     var punti = mappa.puntini(lista, modo, inCorso ? inCorso.n : null);
     var firma = punti.map(function (x) { return x.n + x.raggio; }).join('|');
     if (firma !== segniDi || Date.now() - ultimoDisegno > 30000) {
@@ -189,6 +189,15 @@
         fillColor: '#4FD38A', fillOpacity: .8 }).addTo(LE);
       var linea = mappa.tracciato(PERCORSO);
       if (linea) laLinea = L.polyline(linea, { color: '#4FD38A', weight: 4, opacity: .6 }).addTo(LE);
+    }
+    /* la passeggiata: il giro in oro, e la tappa di adesso segnata. È per
+       chi accompagna — guarda lo schermo e sa dove si sta andando. */
+    if (!m && passeggiata.inCorso()) {
+      var giro = passeggiata.linea();
+      if (giro && giro.length > 1) laLinea = L.polyline(giro, { color: COLORI.oro, weight: 4, opacity: .5 }).addTo(LE);
+      var t = passeggiata.tappa();
+      if (t) laMeta = L.circleMarker([t.lat, t.lon], { radius: 10, color: '#fff', weight: 2,
+        fillColor: COLORI.oro, fillOpacity: .9 }).addTo(LE);
     }
   }
 
@@ -223,6 +232,12 @@
   var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       diario: diario });
+
+  /* le passeggiate: i giri a tappe della vecchia app. Le regole stanno in
+     parti/passeggiata.js, con 21 prove; qui si attaccano soltanto alla voce,
+     alla posizione e alla mappa. */
+  var passeggiata = Passeggiata({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+                                  verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
 
   /* esegui(): le mosse che l'emergenza chiede — chiamare, mandare un
      messaggio. Si fanno QUI, dopo che la frase e' stata detta: se no la
@@ -502,6 +517,12 @@
     if (d.tipo === 'scheda') return 'Dimmi «ancora» per sapere cosa guardare.';
     if (d.tipo === 'cosa-vedere') return 'Dimmi «ancora» per l\'approfondimento.';
     if (d.tipo === 'approfondimento') return 'Di questo ti ho detto tutto.';
+    /* la passeggiata: a che punto siamo, e i tre comandi, scritti perché chi
+       accompagna li possa leggere invece di indovinarli */
+    var punto = d.quale !== undefined && d.quante ? ('Tappa ' + (d.quale + 1) + ' di ' + d.quante + '. ') : '';
+    if (d.tipo === 'parto' || d.tipo === 'prossima') return punto + 'Dimmi «ancora», «avanti», oppure «ferma».';
+    if (d.tipo === 'tappa') return punto + 'Dimmi «ancora» per saperne di più, «avanti» per la prossima.';
+    if (d.tipo === 'finita') return 'Passeggiata finita.';
     return '';
   }
 
@@ -568,6 +589,16 @@
       if (g) dilloSubito(g);
       return;
     }
+    /* SE SI STA FACENDO UNA PASSEGGIATA, PARLA LA PASSEGGIATA. Una tappa per
+       volta: se intanto parlasse anche il racconto, al Battistero si
+       sentirebbero due voci dire due cose diverse sullo stesso luogo. La
+       strada, la scena e l'emergenza restano, perché quelle servono sempre. */
+    if (passeggiata.inCorso()) {
+      var pp = passeggiata.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
+                                   direzioneBuona: s.direzioneBuona });
+      if (pp) dillo(pp);
+      return;
+    }
     // e il racconto
     var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo,
                                 direzioneBuona: s.direzioneBuona,
@@ -603,13 +634,38 @@
     var t = normalizza(testo);
     if (!t) return false;
     diario('COMANDO: ' + t.slice(0, 50));
-    function ha(chiave) { return PAROLE[chiave].some(function (p) { return t.indexOf(p) >= 0; }); }
+    /* ha(): o il nome di un gruppo di PAROLE, o le frasi scritte lì per lì —
+       si usano tutt'e due gli stili qui sotto. Scritta che accettava solo i
+       gruppi, `ha('portami a casa', ...)` cercava il gruppo «portami a casa»,
+       non lo trovava e SCOPPIAVA: da lì in giù non funzionava più nessun
+       comando parlato — né «ancora», né «avanti», né «dove sono». */
+    function ha() {
+      var quali = [].slice.call(arguments);
+      return quali.some(function (k) {
+        var frasi = PAROLE[k] || [k];
+        return frasi.some(function (p) { return t.indexOf(p) >= 0; });
+      });
+    }
 
     if (!el('porta').hidden) {
       if (ha('turismo')) { entra('cultura'); return true; }
       if (ha('utilita')) { entra('servizi'); return true; }
     }
-    if (ha('ferma')) { fermaLeMosse(); voce.ferma(); guida.lascia(); return true; }
+    if (ha('ferma')) {
+      fermaLeMosse(); voce.ferma(); guida.lascia();
+      /* «ferma» durante una passeggiata la lascia, e si dice: se si zittisse
+         soltanto la voce, l'app resterebbe a seguire un giro che l'utente
+         ha lasciato, e al primo monumento ricomincerebbe da sé.
+         Ma «zitto» e «silenzio» no: quelli vogliono dire «non parlare
+         adesso», e la passeggiata resta. Quali parole lasciano il giro lo
+         decide la parte, dove è provato. */
+      var q = passeggiata.dallaVoce(t);
+      if (q && q.cosa === 'ferma') {
+        var lascio = passeggiata.ferma();
+        if (lascio) dilloSubito(lascio);
+      }
+      return true;
+    }
     /* «messaggio» da solo, subito dopo «avvisa»: ferma la chiamata e manda
        lo scritto. È la seconda strada della doppia opzione. */
     if (/^(?:messaggio|il messaggio|manda il messaggio|scrivi|whatsapp)$/.test(t) && contatto && contatto.telefono) {
@@ -648,12 +704,32 @@
       portamiA(meta); return true;
     }
     if (ha('lascia perdere', 'annulla', 'non importa')) { dilloSubito(guida.lascia()); return true; }
+    /* LE PASSEGGIATE. Viene dopo «portami a», perché «portami alla stazione»
+       è una cosa e «facciamo una passeggiata» è un'altra, e prima di
+       «ancora» e «avanti», che durante una passeggiata vogliono dire la
+       tappa, non il luogo che ti capita accanto. */
+    var pq = passeggiata.dallaVoce(t);
+    if (pq) {
+      var sp = posizione.leggi();
+      if (!sp.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return true; }
+      var dovesono = { lat: sp.lat, lon: sp.lon, direzione: sp.direzione, direzioneBuona: sp.direzioneBuona };
+      if (pq.cosa === 'elenco') { dillo(passeggiata.elenco(dovesono)); return true; }
+      dillo(passeggiata.comincia(pq.quale !== undefined ? pq.quale : pq.nome, dovesono));
+      return true;
+    }
+    if (passeggiata.inCorso()) {
+      var sp2 = posizione.leggi();
+      var qui2 = { lat: sp2.lat, lon: sp2.lon, direzione: sp2.direzione, direzioneBuona: sp2.direzioneBuona };
+      if (ha('ancora')) { dillo(passeggiata.ancora()); return true; }
+      if (ha('avanti')) { dillo(passeggiata.avanti(qui2)); return true; }
+    }
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
       voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
+                 'Passeggiate, e ti dico i giri a tappe che ci sono qui: poi «comincia la prima». ' +
                  'Portami a, e un indirizzo. Portami a casa. Avvisa, e il nome del tuo contatto. ' +
                  'E per registrare: mi chiamo, e il tuo nome. Casa mia è, e la via. ' +
                  'Il mio contatto è, il nome, e poi il numero.',
@@ -739,7 +815,8 @@
     posizione.comincia();
     apriAscolto();
     voce.parla(quale === 'cultura'
-      ? 'Turismo. Ti racconto quello che hai intorno. Camminando ti dico cosa passi; se ti fermi dieci secondi te lo racconto.'
+      ? 'Turismo. Ti racconto quello che hai intorno. Camminando ti dico cosa passi; se ti fermi dieci secondi te lo racconto. ' +
+        'E se vuoi fare un giro, dimmi «passeggiate».'
       : 'Utilità. Ti dico la strada, i numeri civici, i negozi e gli attraversamenti, e i luoghi importanti. Dimmi «ancora» per saperne di più.',
       { livello: voce.GUIDA });
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
@@ -845,6 +922,15 @@
     LUOGHI = l;
     diario('dati: ' + LUOGHI.length + ' luoghi, ' + LUOGHI.filter(function (x) { return x.a; }).length + ' approfondimenti');
     stato('pronta · <b>' + LUOGHI.length + '</b> luoghi');
+    /* le passeggiate DOPO i luoghi, non in parallelo: le tappe sono luoghi, e
+       senza i luoghi ogni tappa resterebbe muta e la passeggiata si
+       butterebbe da sé. Se le passeggiate non arrivano, l'app funziona
+       comunque: è il racconto che porta il peso. */
+    return fetch('dati/passeggiate.json' + VER).then(function (r) { return r.json(); }).then(function (pp) {
+      var quante = passeggiata.conDati(pp, LUOGHI);
+      diario('passeggiate: ' + quante + ' giri, ' +
+             pp.reduce(function (n, x) { return n + (x.t ? x.t.length : 0); }, 0) + ' tappe');
+    }).catch(function () { diario('PASSEGGIATE NON CARICATE'); });
   }).catch(function () {
     diario('DATI NON CARICATI');
     stato('dati non caricati', true);
@@ -858,7 +944,10 @@
       fermoDa: Math.round(s.fermoDa / 1000) + ' s', direzioneBuona: s.direzioneBuona,
       luoghi: LUOGHI.length, vicini: vicini().slice(0, 5).map(function (o) { return o.p.n + ' ' + Math.round(o.m) + 'm'; }),
       staParlando: voce.staParlando(), inCoda: voce.inCoda().length,
-      inCorso: racconto.inCorso() ? racconto.inCorso().n : null
+      inCorso: racconto.inCorso() ? racconto.inCorso().n : null,
+      passeggiate: passeggiata.quante(),
+      passeggiata: passeggiata.inCorso() ? passeggiata.inCorso().n : null,
+      tappa: passeggiata.tappa() ? (passeggiata.tappa().n + ' — ' + JSON.stringify(passeggiata.aChePunto())) : null
     };
   };
 })();

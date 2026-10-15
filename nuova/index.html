@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=17">
-<link rel="stylesheet" href="stile.css?v=17">
+<link rel="stylesheet" href="mappa/leaflet.css?v=18">
+<link rel="stylesheet" href="stile.css?v=18">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -99,18 +99,19 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
 </nav>
 
-<script src="parti/voce.js?v=17"></script>
-<script src="parti/racconto.js?v=17"></script>
-<script src="parti/clip.js?v=17"></script>
-<script src="parti/posizione.js?v=17"></script>
-<script src="parti/intorno.js?v=17"></script>
-<script src="parti/emergenza.js?v=17"></script>
-<script src="parti/dettatura.js?v=17"></script>
-<script src="parti/guida.js?v=17"></script>
-<script src="mappa/leaflet.js?v=17"></script>
-<script src="parti/scena.js?v=17"></script>
-<script src="parti/mappa.js?v=17"></script>
-<script src="app.js?v=17"></script>
+<script src="parti/voce.js?v=18"></script>
+<script src="parti/racconto.js?v=18"></script>
+<script src="parti/clip.js?v=18"></script>
+<script src="parti/posizione.js?v=18"></script>
+<script src="parti/intorno.js?v=18"></script>
+<script src="parti/emergenza.js?v=18"></script>
+<script src="parti/dettatura.js?v=18"></script>
+<script src="parti/guida.js?v=18"></script>
+<script src="parti/passeggiata.js?v=18"></script>
+<script src="mappa/leaflet.js?v=18"></script>
+<script src="parti/scena.js?v=18"></script>
+<script src="parti/mappa.js?v=18"></script>
+<script src="app.js?v=18"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -141,7 +142,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=17", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=18", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si
