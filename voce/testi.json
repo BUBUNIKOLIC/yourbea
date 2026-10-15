@@ -3696,6 +3696,10 @@
   "testo": "Guarda prima la piazza, poi il buco: la prospettiva è il seguito di quello che Piranesi ha disegnato sui muri."
  },
  {
+  "id": "poi-245-ancora",
+  "testo": "Da manuale: il portone del Priorato dei Cavalieri di Malta, sulla piazza che Giovan Battista Piranesi disegno' nel 1765 — l'unica opera di architettura che abbia mai realizzato. Guardando dal buco della serratura si vede, in fondo a un viale di siepi potate come un cannocchiale verde, la cupola di San Pietro perfettamente inquadrata. Non e' un caso: Piranesi, che era incisore e studiava la prospettiva, dispose il giardino perche' la cupola apparisse esattamente li'. Si vedono tre Stati in una volta — il Priorato, che e' territorio del Sovrano Militare Ordine di Malta, l'Italia e il Vaticano."
+ },
+ {
   "id": "poi-246-nome",
   "testo": "Terme di Caracalla"
  },
@@ -3758,6 +3762,10 @@
  {
   "id": "poi-249-scheda",
   "testo": "Il cimitero degli stranieri non cattolici, sotto la piramide: cipressi, lapidi inglesi e tedesche, gatti. Ci sono le tombe di Keats e di Shelley."
+ },
+ {
+  "id": "poi-249-ancora",
+  "testo": "Da manuale: nato a meta' Settecento per seppellire chi non era cattolico e quindi non poteva stare in terra consacrata — protestanti, ortodossi, ebrei, suicidi, attori. Sta addossato alla Piramide Cestia e alle Mura Aureliane, fra i cipressi e i gatti. Ci sono John Keats, morto a venticinque anni nel 1821, con l'epitaffio che volle lui — qui giace uno il cui nome fu scritto nell'acqua — e Percy Bysshe Shelley, annegato l'anno dopo. E Antonio Gramsci, morto nel 1937, con una lapide piccolissima. Oscar Wilde lo chiamo' il luogo piu' sacro di Roma."
  },
  {
   "id": "poi-250-nome",
@@ -10208,6 +10216,10 @@
   "testo": "Il disco di marmo sopra il portale con le bugne che si rincorrono. Accanto, la breccia del 20 settembre 1870 è segnata nel muro."
  },
  {
+  "id": "poi-579-ancora",
+  "testo": "Da manuale: e' l'ultima opera architettonica di Michelangelo, 1561-1565, commissionata da Pio Quarto per chiudere la nuova via Pia. La facciata verso la citta' e' il suo testamento: elementi classici usati contro le regole — il timpano spezzato, le cornici che si interrompono, le finestre con decorazioni che sembrano asciugamani annodati o teste di leone, e un cerchio con dentro un bacile da barbiere, allusione ironica all'origine della famiglia Medici di Milano. Il 20 settembre 1870 i bersaglieri aprirono la breccia nelle mura cinquanta metri piu' in la', e finiva lo Stato pontificio: la porta ha dato il nome a un fatto che e' avvenuto accanto."
+ },
+ {
   "id": "poi-580-nome",
   "testo": "Via del Corso"
  },
@@ -10222,6 +10234,10 @@
  {
   "id": "poi-580-dentro",
   "testo": "Guardarla dall'obelisco di piazza del Popolo: la fuga prospettica finisce esattamente sul Vittoriano, tre secoli dopo che la strada fu tracciata."
+ },
+ {
+  "id": "poi-580-ancora",
+  "testo": "Da manuale: e' la via Lata dei romani, il tratto urbano della via Flaminia, dritta per un chilometro e mezzo da piazza del Popolo a piazza Venezia. Il nome viene dalle corse dei cavalli berberi che vi si tenevano a Carnevale dal Quattrocento: cavalli senza fantino, lanciati fra due ali di folla, con l'arrivo a piazza Venezia. Furono vietate nel 1874 dopo che un ragazzo mori' travolto. Goethe le descrisse nel Viaggio in Italia. La strada fu allargata e regolarizzata da Alessandro Settimo nel Seicento, ed e' il primo esempio romano di via rettilinea moderna, pensata per il passeggio e per lo sguardo in fondo."
  },
  {
   "id": "poi-581-nome",
@@ -10256,6 +10272,10 @@
   "testo": "Costruite sopra la Domus Aurea, riempita di terra per farne le fondazioni: è il motivo per cui la casa di Nerone si è conservata. Restano le esedre e i muri in laterizio dentro il parco del Colle Oppio."
  },
  {
+  "id": "poi-582-ancora",
+  "testo": "Da manuale: inaugurate nel 109, progettate da Apollodoro di Damasco, furono le prime terme imperiali di dimensione colossale — trecentotrenta metri per trecentoquindici — e il modello di tutte quelle dopo, da Caracalla a Diocleziano. L'impianto introduce la simmetria assoluta sull'asse centrale, con i bagni al centro e i servizi tutt'intorno. Furono costruite sopra la Domus Aurea di Nerone, riempita di terra per farne le fondazioni: e' per questo che la casa di Nerone si e' conservata. Restano l'esedra, alcune aule e le cisterne delle Sette Sale, capaci di ottomila metri cubi d'acqua."
+ },
+ {
   "id": "poi-583-nome",
   "testo": "Mura Aureliane a Porta San Sebastiano"
  },
@@ -10270,6 +10290,10 @@
  {
   "id": "poi-583-dentro",
   "testo": "Il camminamento di ronda dentro lo spessore del muro, che si percorre."
+ },
+ {
+  "id": "poi-583-ancora",
+  "testo": "Da manuale: le mura furono costruite fra il 271 e il 275 da Aureliano, quando Roma, dopo tre secoli senza difese, torno' ad averne bisogno: diciannove chilometri, costruiti in cinque anni usando dove possibile edifici esistenti — case, tombe, acquedotti, perfino la Piramide Cestia. Porta San Sebastiano, dove comincia la via Appia, e' la piu' grande e la meglio conservata: due torri semicilindriche su base quadrata, rialzate da Onorio nel 401. Dentro c'e' il Museo delle Mura e si cammina nel camminamento di ronda per trecento metri. Sull'arco interno, un graffito con l'arcangelo Michele ricorda la vittoria sui Goti del 1327."
  },
  {
   "id": "poi-584-nome",
@@ -10360,6 +10384,10 @@
   "testo": "Pio Piacentini lo fece come un tempio laico sulla via Nazionale: scalinata, pronao a colonne corinzie e arco centrale. Era il primo edificio in Italia pensato solo per le mostre."
  },
  {
+  "id": "poi-588-ancora",
+  "testo": "Da manuale: Pio Piacentini lo costruisce fra il 1877 e il 1883, pochi anni dopo l'arrivo dell'Italia a Roma, ed e' il primo grande edificio pubblico laico della capitale: non una chiesa, non un palazzo nobiliare, ma uno spazio per mostre d'arte aperto a tutti. La facciata ha un arco trionfale a tre fornici con colonne corinzie, citazione dichiarata dell'antico applicata a una funzione nuova. Dentro, la grande sala con la cupola vetrata. E' stato chiuso e riaperto piu' volte; il restauro di Costantino Dardi, 1990, ha tolto le sovrastrutture e rimesso in luce lo spazio originale."
+ },
+ {
   "id": "poi-589-nome",
   "testo": "San Giovanni a Porta Latina"
  },
@@ -10370,6 +10398,10 @@
  {
   "id": "poi-589-scheda",
   "testo": "Tre navate su colonne antiche tutte diverse, abside con le finestre di selenite, campanile romanico e davanti un cedro vecchissimo. Dentro, un ciclo di affreschi del XII secolo copre le pareti della navata."
+ },
+ {
+  "id": "poi-589-ancora",
+  "testo": "Da manuale: basilica del Quinto secolo, rifatta nel Dodicesimo, e' una delle chiese romane che hanno conservato meglio l'aspetto medievale, anche perche' sta fuori mano, dentro un giardino con un cedro e un pozzo del 1200. Ha il portico a quattro colonne antiche, il campanile romanico a cinque piani di bifore, e le finestre chiuse da transenne di selenite, la pietra traslucida che si usava prima del vetro: la luce dentro e' lattiginosa e non cambia da ottocento anni. Gli affreschi della navata, del Duecento, raccontano il Vecchio e il Nuovo Testamento su tre registri."
  },
  {
   "id": "poi-590-nome",
@@ -10564,6 +10596,10 @@
   "testo": "Le pareti del cortile e lo scalone, tappezzati di marmi romani."
  },
  {
+  "id": "poi-602-ancora",
+  "testo": "Da manuale: Carlo Maderno lo costruisce fra il 1598 e il 1611 per Asdrubale Mattei, e il cortile e' una delle cose piu' particolari di Roma: ogni superficie — pareti, archi, scale, loggiato — e' coperta di rilievi, busti, sarcofagi e statue antiche, murati come un rivestimento continuo. Non e' una collezione esposta: e' una collezione usata come architettura. I Mattei possedevano uno dei maggiori raccolte di marmi antichi della citta', e invece di tenerla in galleria la cementarono nei muri. Oggi il palazzo ospita la Biblioteca di storia moderna e contemporanea, e il cortile si puo' attraversare."
+ },
+ {
   "id": "poi-603-nome",
   "testo": "Palazzo Falconieri"
  },
@@ -10578,6 +10614,10 @@
  {
   "id": "poi-603-dentro",
   "testo": "Le erme-falco sugli spigoli, viste dalla strada."
+ },
+ {
+  "id": "poi-603-ancora",
+  "testo": "Da manuale: Francesco Borromini lo rimaneggia fra il 1646 e il 1649 per Orazio Falconieri, e ci mette la firma sugli angoli: due erme con testa di falco e busto di donna, in travertino, che reggono il cornicione. Il falco e' lo stemma della famiglia, ma la soluzione — una figura mostruosa come elemento strutturale, all'angolo — e' sua. Sul retro, verso il Tevere, il loggiato a tre arcate con la terrazza e' il punto da cui Borromini risolve il rapporto fra il palazzo e il fiume. Dal 1927 e' l'Accademia d'Ungheria."
  },
  {
   "id": "poi-604-nome",
@@ -10628,6 +10668,10 @@
   "testo": "Pietro da Cortona la rifece per sé e ci sperimentò una facciata leggermente convessa, che spinge in fuori: la chiesa è a croce greca su due livelli, uno sopra l'altro. È uno dei punti dove nasce il barocco romano."
  },
  {
+  "id": "poi-606-ancora",
+  "testo": "Da manuale: Pietro da Cortona la ricostruisce dal 1635 ed e' la prima chiesa del barocco romano con la facciata curva — leggermente convessa, mossa come un panno teso, con le colonne addossate che creano l'ombra. Prima di questa, le facciate erano piane. La pianta e' a croce greca con le absidi arrotondate, tutta bianca, senza colori: la plastica dell'architettura al posto della decorazione. Cortona la pago' di tasca propria e vi e' sepolto, nella chiesa inferiore dove durante i lavori fu ritrovato il corpo di santa Martina. Sta all'ingresso del Foro, accanto alla Curia."
+ },
+ {
   "id": "poi-607-nome",
   "testo": "Basilica di Sant'Agostino"
  },
@@ -10642,6 +10686,10 @@
  {
   "id": "poi-607-dentro",
   "testo": "La Madonna dei Pellegrini di Caravaggio, con i piedi sporchi dei devoti in primo piano; e il profeta Isaia di Raffaello sul terzo pilastro."
+ },
+ {
+  "id": "poi-607-ancora",
+  "testo": "Da manuale: 1479-1483, fu una delle prime chiese rinascimentali di Roma, con la facciata in travertino preso dal Colosseo. Ma ci si va per tre cose. La Madonna del Parto di Jacopo Sansovino, 1521, davanti alla quale si accumulano gli ex voto delle partorienti: e' una statua antica di Agrippina rilavorata. Il profeta Isaia affrescato da Raffaello nel 1512, dopo che aveva visto la volta Sistina — si vede. E la Madonna dei Pellegrini di Caravaggio, 1604-1606: la Vergine appare a due contadini inginocchiati con i piedi sporchi in primo piano, e per quei piedi la chiesa fece scandalo."
  },
  {
   "id": "poi-608-nome",
@@ -10706,6 +10754,10 @@
  {
   "id": "poi-611-scheda",
   "testo": "Un arco a quattro fronti, costruito all'incrocio del Foro Boario per fare ombra ai mercanti: non è un arco di trionfo, è una copertura. Le nicchie sui pilastri erano piene di statue."
+ },
+ {
+  "id": "poi-611-ancora",
+  "testo": "Da manuale: quadrifronte, cioe' con quattro facciate uguali e quattro fornici, costruito nel Quarto secolo nel Foro Boario all'incrocio di due strade: non un arco di trionfo ma una copertura per i mercanti, che si riparavano sotto. Le nicchie erano quarantotto, con le statue. Il nome non c'entra con Giano: viene da ianus, che in latino significa passaggio coperto. La parte superiore, che sembra mozza, in realta' e' stata demolita nel 1830 perche' la si credette un'aggiunta medievale: era invece l'attico originale, e l'errore ha dato all'arco la forma tozza che ha oggi."
  },
  {
   "id": "poi-612-nome",
@@ -10774,6 +10826,10 @@
  {
   "id": "poi-615-scheda",
   "testo": "Piccola chiesa a croce greca con la cupola su tamburo, disegnata da Raffaello per la corporazione degli orefici: pianta centrale pura, senza decorazione, il contrario del barocco che verrà."
+ },
+ {
+  "id": "poi-615-ancora",
+  "testo": "Da manuale: Raffaello la progetto' intorno al 1509 per la corporazione degli orafi, ed e' l'unica chiesa interamente sua. Pianta a croce greca con cupola su tamburo, piccolissima, tutta bianca: le superfici lisce, le lesene sottili, nessuna decorazione. E' lo spazio centrale rinascimentale allo stato puro, come lo si studia nei manuali, ricavato in venti metri. La cupola fu rifatta da Baldassarre Peruzzi dopo un cedimento, e la facciata e' settecentesca. Sta in una strada laterale e si apre di rado: molti romani non sanno che esiste."
  },
  {
   "id": "poi-616-nome",
@@ -10912,6 +10968,10 @@
   "testo": "Un dio fluviale colossale sdraiato, oggi nel cortile dei Musei Capitolini. Era la statua che rispondeva a Pasquino: le pasquinate erano dialoghi fra i due."
  },
  {
+  "id": "poi-624-ancora",
+  "testo": "Da manuale: statua colossale di un dio fluviale sdraiato, del Primo secolo, trovata nel Foro di Augusto — il nome viene da Martis Forum. E' una delle sei statue parlanti, e in particolare era quella che rispondeva a Pasquino: i romani attaccavano una domanda su uno e la risposta sull'altro, costruendo dialoghi satirici in due pezzi. Nel 1588 Sisto Quinto la fece spostare per toglierla alla strada, e dal 1679 sta nel cortile del Palazzo Nuovo, ai Musei Capitolini: messa al chiuso, ha smesso di parlare."
+ },
+ {
   "id": "poi-625-nome",
   "testo": "Il Babuino"
  },
@@ -10922,6 +10982,10 @@
  {
   "id": "poi-625-scheda",
   "testo": "Un Sileno sdraiato sopra una vasca, così consumato e brutto che i romani lo chiamarono babbuino e diedero il nome alla strada. Terza voce di Roma dopo Pasquino e Marforio."
+ },
+ {
+  "id": "poi-625-ancora",
+  "testo": "Da manuale: una statua di Sileno sdraiato, del Terzo secolo, posta nel 1571 sopra una fontana in via del Babuino, che da lei prende il nome. I romani la giudicarono cosi' brutta da chiamarla babbuino, e la trasformarono in una delle sei statue parlanti: i cartelli attaccati qui si chiamavano babuinate. La tradizione non si e' mai interrotta — il muro accanto e' coperto di scritte da secoli, ed e' stato ripulito e riscritto decine di volte. E' l'unico dei sei che continua a ricevere messaggi."
  },
  {
   "id": "poi-626-nome",
@@ -11024,6 +11088,10 @@
   "testo": "L'occhialone: se l'acqua lo tocca, la piena è vicina."
  },
  {
+  "id": "poi-633-ancora",
+  "testo": "Da manuale: costruito fra il 1473 e il 1479 da Sisto Quarto per il Giubileo del 1475, sulle fondazioni del ponte romano di Aurelio, e' il primo ponte nuovo a Roma dopo mille anni. Serviva a far defluire i pellegrini da Trastevere senza intasare Ponte Sant'Angelo, dove nel 1450 una calca aveva ucciso centosettantadue persone. L'architetto, probabilmente Baccio Pontelli, mise al centro della struttura un occhio circolare, l'occhialone: non e' decorazione, serve a far passare l'acqua nelle piene e a scaricare la pressione sulle arcate. Quando l'acqua arriva all'occhialone, Roma si allaga."
+ },
+ {
   "id": "poi-634-nome",
   "testo": "Ponte Rotto"
  },
@@ -11034,6 +11102,10 @@
  {
   "id": "poi-634-scheda",
   "testo": "Un'arcata sola in mezzo al fiume: è quel che resta del ponte Emilio, il primo ponte di pietra di Roma, portato via dalle piene e ricostruito tante volte finché nel 1598 lo lasciarono andare."
+ },
+ {
+  "id": "poi-634-ancora",
+  "testo": "Da manuale: e' quello che resta del Ponte Emilio, il primo ponte in pietra di Roma, cominciato nel 179 avanti Cristo. Crollo' e fu ricostruito piu' volte; dopo la piena del 24 dicembre 1598 nessuno lo rifece piu', e resto' meta' ponte in mezzo al fiume. Nel 1887, per costruire Ponte Palatino, furono demolite due delle tre arcate superstiti: quella che si vede e' l'unica rimasta, con lo stemma di Gregorio Decimoterzo. E' il piu' antico pezzo di ponte romano visibile, ed e' li' da duemiladuecento anni senza servire piu' a niente."
  },
  {
   "id": "poi-635-nome",
@@ -11064,6 +11136,10 @@
   "testo": "L'altro ponte dell'Isola, verso Trastevere: ricostruito nell'Ottocento riusando i materiali antichi quando si alzarono i muraglioni."
  },
  {
+  "id": "poi-636-ancora",
+  "testo": "Da manuale: collega l'isola Tiberina a Trastevere, costruito nel Primo secolo avanti Cristo probabilmente da Lucio Cestio. Fu rifatto nel Quarto secolo con i marmi del Teatro di Marcello, e ricostruito quasi per intero fra il 1888 e il 1892 durante i lavori dei muraglioni: l'arcata centrale e' antica e fu smontata e rimontata pietra per pietra, le due laterali sono ottocentesche. Insieme al Ponte Fabricio dall'altro lato, fa dell'isola l'unico punto di Roma dove si attraversa il fiume in due tempi, come facevano i romani."
+ },
+ {
   "id": "poi-637-nome",
   "testo": "Porta Settimiana"
  },
@@ -11074,6 +11150,10 @@
  {
   "id": "poi-637-scheda",
   "testo": "La porta che apre su via della Lungara: fu rifatta da Alessandro VI con la merlatura che si vede, su un passaggio delle mura aureliane."
+ },
+ {
+  "id": "poi-637-ancora",
+  "testo": "Da manuale: aperta nelle Mura Aureliane, fu rifatta da Alessandro Sesto nel 1498 e prende il nome dall'imperatore Settimio Severo, che aveva terme qui vicino. Da qui comincia via della Lungara, la strada rettilinea che Giulio Secondo fece tracciare per collegare il Vaticano a Trastevere: una delle prime operazioni urbanistiche rinascimentali di Roma. La merlatura in alto e' un rifacimento ottocentesco. La casa accanto e' indicata dalla tradizione come quella della Fornarina, l'amante di Raffaello, che pero' non ha alcun fondamento documentario."
  },
  {
   "id": "poi-638-nome",
@@ -11550,6 +11630,10 @@
  {
   "id": "poi-675-scheda",
   "testo": "Giuseppe Gioachino Belli, una delle fontane del centro di Roma."
+ },
+ {
+  "id": "poi-675-ancora",
+  "testo": "Da manuale: il monumento, di Michele Tripisciano, fu inaugurato nel 1913 all'inizio di viale Trastevere. Belli, 1791-1863, scrisse oltre duemila sonetti in romanesco: la voce del popolo di Roma contro il governo dei preti, scritti di nascosto e non pubblicati in vita — lascio' detto di bruciarli, e un amico non lo fece. La statua lo mostra in tuba e finanziera, appoggiato al parapetto, con lo sguardo verso il Tevere. Gogol' lo lesse e lo ammiro'. Il monumento e' diventato il punto d'incontro del quartiere: ai piedi del poeta che scriveva contro il potere, i trasteverini si danno appuntamento."
  },
  {
   "id": "poi-676-nome",

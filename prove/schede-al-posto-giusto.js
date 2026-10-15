@@ -40,7 +40,7 @@ function dove(p) {
 }
 /* Guardate a mano e giuste: il confronto con un'altra citta' fa parte del
    racconto. Si tolgono dall'elenco per non coprire quelle vere. */
-const GIUSTE = new Set(['Teatro romano di Verona']);
+const GIUSTE = new Set(['Teatro romano di Verona', 'Via del Corso']);  // «piazza Venezia» e «Palazzo Venezia» sono a Roma
 let sospette = [];
 for (const p of POI) {
   if (!p.a || p.a.length < 40) continue;
