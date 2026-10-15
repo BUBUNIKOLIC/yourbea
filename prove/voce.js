@@ -144,6 +144,8 @@ function reset(clip) {
   errori = []; diario = []; vive = []; detteDalSintetizzatore = [];
   attivi = 0; modoPlay = 'ok'; staParlando = false; inCoda = null; inCorso = null;
   riserva = {};
+  // il freno alle ripetizioni non deve passare da una prova all'altra
+  ultimoTesto = ''; ultimoQuando = 0;
   clipEsistenti = new Set(clip || []);
 }
 async function finisciTutte(giri) {
@@ -312,6 +314,44 @@ prova('emergenza su emergenza: parla l\'ultima', async () => {
   const suona = vive.filter(a => !a.paused).map(a => a.id);
   if (suona.indexOf('sos2') < 0) guasto('la seconda emergenza non ha preso la parola');
   if (suona.length > 1) guasto('due emergenze insieme');
+  await finisciTutte();
+});
+
+/* LA STESSA FRASE NON DUE VOLTE.
+   Dal diario dell'iPhone di Vince, 15/10 13:52: «Cerco l'indirizzo, un
+   momento» tre volte in due secondi, «Ti porto a Via dei Corazzieri» tre
+   volte, «Sei arrivato» due volte, «Ci siamo» tre volte. In cuffia e' un'app
+   che balbetta, e Vince lo chiama «voci che si accavallano». */
+prova('la stessa frase, due volte di fila, si dice una volta sola', async () => {
+  reset(['uno']);
+  dire(['uno'], "Cerco l'indirizzo, un momento.", GUIDA);
+  await attesa(20);
+  dire(['uno'], "Cerco l'indirizzo, un momento.", GUIDA);
+  dire(['uno'], "Cerco l'indirizzo, un momento.", GUIDA);
+  await attesa(20);
+  if (inCoda && (Array.isArray(inCoda) ? inCoda.length : 1) > 0) guasto('la stessa frase e finita in coda per essere ridetta');
+  await finisciTutte();
+});
+
+prova('«ripeti» ha il diritto di risentire la stessa frase', async () => {
+  reset(['uno']);
+  dire(['uno'], 'Palazzo Farnese, a destra, a ottanta metri.');
+  await finisciTutte();
+  await attesa(20);
+  const prima = vive.length;
+  dire(['uno'], 'Palazzo Farnese, a destra, a ottanta metri.', RACCONTO, true);  // come fa «ripeti»
+  await attesa(20);
+  if (vive.length === prima) guasto('«ripeti» non riesce piu a far ridire la frase');
+  await finisciTutte();
+});
+
+prova('due frasi diverse non si bloccano fra loro', async () => {
+  reset(['uno', 'due']);
+  dire(['uno'], 'Prima frase.', GUIDA);
+  await attesa(20);
+  dire(['due'], 'Seconda frase, diversa.', GUIDA);
+  await attesa(20);
+  if (!inCoda) guasto('la seconda frase, che e diversa, e stata buttata');
   await finisciTutte();
 });
 

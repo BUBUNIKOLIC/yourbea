@@ -126,6 +126,7 @@ const attesa = ms => new Promise(r => veroSetTimeout(r, ms));
 function reset(clip) {
   errori = []; vive = []; detteDalSintetizzatore = [];
   attivi = 0; staParlando = false; inCoda = null; inCorso = null; riserva = {};
+  ultimoTesto = ''; ultimoQuando = 0;
   ignoraFinoA = 0; dettoDaNoi = ''; micSpento = false;
   clipEsistenti = new Set(clip || []);
   ascolto = null; ascoltoAcceso = true; apertureBrowser = 0;
@@ -278,7 +279,7 @@ function controlliSulTesto() {
   }
 
   // 2. il microfono si chiude dentro dire(), prima di fare rumore
-  const d = s.indexOf('function dire(ids,testo,livello)');
+  const d = s.search(/function dire\(ids,testo,livello/);
   const corpo = d < 0 ? '' : s.slice(d, s.indexOf('function serveQui(p)'));
   if (corpo.indexOf('micSpegni()') < 0) {
     console.log('NO  dire() non chiude piu il microfono: la clip rientra dal microfono');

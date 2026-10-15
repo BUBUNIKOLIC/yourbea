@@ -4838,7 +4838,9 @@
     staParlando=false;
     livelloInCorso=0;
     var c=prossimaDallaFila();
-    if(c){ dire(c.ids,c.testo,c.liv); return; }
+    // il racconto che un avviso aveva interrotto riprende da capo: quello
+    // si deve ripetere, e' lo stesso discorso lasciato a meta'
+    if(c){ dire(c.ids,c.testo,c.liv,c.ripresa); return; }
     /* ha finito di parlare per davvero. Il microfono si riapre, ma non
        subito: l'ultima sillaba sta ancora uscendo dall'altoparlante e il
        riconoscimento la prenderebbe per un comando. */
@@ -4954,6 +4956,7 @@
   var entrandoDallaPorta=false;
   function micSpegni(){
     micSpento=true;
+    if(window.diario)try{ window.diario('MIC chiuso'); }catch(e){}
     if(window.urbeaNativo && window.urbeaChiudiAscolto){
       try{ window.urbeaChiudiAscolto(); }catch(e){}
       return;
@@ -4965,6 +4968,7 @@
   }
   function micRiaccendi(){
     micSpento=false;
+    if(window.diario)try{ window.diario('MIC aperto (ascolto='+ascoltoAcceso+')'); }catch(e){}
     if(!ascoltoAcceso)return;      // modalita' voce spenta: non si riapre da se'
     if(window.urbeaNativo && window.urbeaAscolta){
       try{ window.urbeaAscolta(); }catch(e){}
@@ -5000,8 +5004,25 @@
     return false;
   }
 
-  function dire(ids,testo,livello){
+  /* ---------- LA STESSA FRASE NON SI DICE DUE VOLTE ----------
+     Dal diario dell'iPhone di Vince, 15/10 13:52: «Cerco l'indirizzo, un
+     momento» tre volte in due secondi, «Ti porto a Via dei Corazzieri»
+     tre volte in un secondo e mezzo, «Sei arrivato» due volte, «Ci siamo»
+     tre volte. Ognuna di quelle chiamate, da sola, e' legittima: un tasto
+     premuto due volte, una posizione che arriva di nuovo, una ricerca che
+     riparte. Ma in cuffia diventano un'app che balbetta, ed e' una delle
+     cose che Vince chiama «voci che si accavallano».
+     Chi ascolta non ha bisogno di sapere quante volte il codice e' passato
+     da quella riga: la stessa frase, nello stesso momento, si dice UNA
+     volta. Chi vuole davvero ripeterla — il comando «ripeti» — lo chiede. */
+  var ultimoTesto='', ultimoQuando=0;
+  function uguale(testo){ return normalizza(testo)===ultimoTesto; }
+  function dire(ids,testo,livello,ancheSeUguale){
     var liv=livelloDi(livello);
+    if(!ancheSeUguale && uguale(testo) && Date.now()-ultimoQuando<8000){
+      if(window.diario)try{ window.diario('GIA DETTA, non la ripeto: '+String(testo).slice(0,50)); }catch(e){}
+      return;
+    }
     if(window.diario)try{ window.diario('DIRE liv='+liv+' staParlando='+staParlando+
       ' inCorso='+livelloInCorso+' altre='+altreCopieStannoParlando()+' | '+String(testo).slice(0,60)); }catch(e){}
     // un'altra copia dell'app sta parlando e questa e' in secondo piano:
@@ -5018,6 +5039,11 @@
          oltre, la roba vecchia non serve piu' a nessuno. */
       var accoda=function(){
         if(!Array.isArray(inCoda)) inCoda = inCoda ? [inCoda] : [];
+        // e nemmeno due volte in fila nella fila: tre «cerco l'indirizzo»
+        // in attesa sono tre «cerco l'indirizzo» in cuffia
+        for(var q=0;q<inCoda.length;q++){
+          if(normalizza(inCoda[q].testo)===normalizza(testo))return;
+        }
         inCoda.push({ids:ids,testo:testo,liv:liv});
         inCoda.sort(function(a,b){ return b.liv-a.liv; });   // prima le importanti
         if(inCoda.length>4) inCoda.length=4;
@@ -5041,6 +5067,7 @@
       if(inCoda.length>4) inCoda.length=4;
     }
     ultimaFrase={ids:ids,testo:testo};
+    ultimoTesto=normalizza(testo); ultimoQuando=Date.now();
     zittisci();
     // da qui esce un suono: il microfono si chiude, e si tiene da parte
     // quello che stiamo per dire, per non riconoscerlo come un comando
@@ -5356,7 +5383,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='88';
+  var VERSIONE='89';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5410,6 +5437,11 @@
     try{ o.serviziScaricati=INTORNO.length; o.ultimoScarico=intornoQuando?Math.round((Date.now()-intornoQuando)/1000)+' s fa':'mai';
          o.scaricoInCorso=intornoInCorso; }catch(e){ o.serviziScaricati='errore: '+e; }
     try{ o.staParlando=staParlando; o.livello=livelloInCorso; }catch(e){}
+    // la fila delle frasi in attesa: serve a vedere se l'app sta per
+    // ripetersi, che e' il difetto visto sul telefono di Vince il 15/10
+    try{ o.inCoda = inCoda ? (Array.isArray(inCoda) ? inCoda.map(function(x){ return String(x.testo).slice(0,34); })
+                                                   : [String(inCoda.testo).slice(0,34)]) : []; }catch(e){}
+    try{ o.microfono = micSpento ? 'chiuso (l\'app parla)' : (ascoltoAcceso ? 'aperto' : 'spento'); }catch(e){}
     try{
       var v=[]; for(var i=0;i<Math.min(INTORNO.length,40);i++){
         var x=INTORNO[i], m=dist(S.lat,S.lon,x.lat,x.lon), r=norm(bear(S.lat,S.lon,x.lat,x.lon)-S.hd);
@@ -7099,6 +7131,9 @@
   function portamiA(tipo){
     zittoFino=Date.now()+45000;
     var mia=++richiestaN;
+    // nel diario si vede quante volte viene chiesta la stessa cosa: il
+    // 15/10 sul telefono di Vince e' stata chiesta tre volte in due secondi
+    if(window.diario)try{ window.diario('PORTAMI A '+tipo+' (richiesta n.'+mia+')'); }catch(e){}
     var v=piuVicinoDiTipo(tipo);
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
@@ -7327,7 +7362,8 @@
     if(ha('approfondisci','dimmi di piu','raccontami','racconta','di piu','spiega')||haL('approfondisci')){ deepen(); return true; }
     if(ha('avanti','vai oltre','prossimo','salta','andiamo')||haL('avanti')){ skipOn(); return true; }
     if(ha('ripeti','come hai detto','non ho capito')||haL('ripeti')){
-      if(ultimaFrase)dire(ultimaFrase.ids,ultimaFrase.testo);
+      // «ripeti» e' l'unico che ha il diritto di risentire la stessa frase
+      if(ultimaFrase)dire(ultimaFrase.ids,ultimaFrase.testo,RACCONTO,true);
       return true;
     }
     if(ha('chiudi','annulla','lascia perdere','niente')&&typeof window.chiudiAiuto==='function'){
