@@ -75,7 +75,7 @@ function Emergenza(opzioni) {
       /* onesta: nessuna app su iPhone manda un SMS di nascosto. Si apre il
          messaggio già scritto, con la via e il punto sulla mappa, e l'invio
          lo preme la persona — un tasto solo, ma va detto. */
-      testo: 'Apro il messaggio per ' + contatto.nome + ', con la via e il punto sulla mappa. Premi invia.',
+      testo: 'Apro WhatsApp su ' + contatto.nome + ', col messaggio già scritto: la via e il punto sulla mappa. Premi invia.',
       mosse: [{ cosa: 'messaggio', numero: contatto.telefono, testo: messaggio }]
     };
   }
@@ -88,6 +88,18 @@ function Emergenza(opzioni) {
                  farmacia: 'la farmacia più vicina' };
     return { tipo: 'cerca', cosa: tipo, livello: 'emergenza', subito: true,
              testo: 'Cerco ' + (nomi[tipo] || tipo) + ', un momento.' };
+  }
+
+  /* numeroWhatsApp(): wa.me vuole le cifre col prefisso del paese e senza
+     il più. Se il numero è stato scritto all'italiana — 333 123 4567, o
+     0333... — si mette il 39 davanti: non si indovina un paese straniero,
+     si completa il nostro. Con un prefisso già scritto non si tocca niente. */
+  function numeroWhatsApp(n) {
+    var scritto = String(n || '');
+    var cifre = scritto.replace(/[^0-9]/g, '');
+    if (cifre.indexOf('00') === 0) cifre = cifre.slice(2);
+    else if (scritto.indexOf('+') < 0 && cifre.length <= 10) cifre = '39' + cifre.replace(/^0+/, '');
+    return cifre;
   }
 
   /* comando(): riconosce le parole dell'emergenza. Restituisce null se la
@@ -133,6 +145,7 @@ function Emergenza(opzioni) {
   return {
     scelte: scelte, chiama112: chiama112, derubato: derubato,
     avvisaContatto: avvisaContatto, cerca: cerca, comando: comando,
+    numeroWhatsApp: numeroWhatsApp,
     conContatto: function (c) { contatto = c; },
     contatto: function () { return contatto; }
   };

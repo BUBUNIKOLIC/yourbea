@@ -213,11 +213,41 @@
       setTimeout(function () {
         try {
           if (m.cosa === 'chiama') location.href = 'tel:' + m.numero;
-          else if (m.cosa === 'messaggio') location.href = 'sms:' + m.numero + '&body=' + encodeURIComponent(m.testo);
+          else if (m.cosa === 'messaggio') location.href = suWhatsApp(m.numero, m.testo);
         } catch (e) { diario('MOSSA non riuscita: ' + m.cosa); }
       }, m.fraMillisecondi || 1500);
     });
   }
+  /* suWhatsApp(): il messaggio si manda da WhatsApp, non con gli SMS —
+     e' quello che la gente ha aperto davvero. wa.me vuole il numero in
+     cifre, col prefisso del paese e senza il piu'. Se il numero e' stato
+     scritto all'italiana — 333... — si mette il 39 davanti: non si
+     indovina un paese, si completa il nostro. */
+  function suWhatsApp(numero, testo) {
+    return 'https://wa.me/' + emergenza.numeroWhatsApp(numero) + '?text=' + encodeURIComponent(testo);
+  }
+
+  /* avvisaOra(): il tasto. Se il contatto non c'e' non si inventa niente:
+     lo dice e apre il posto dove scriverlo. */
+  function avvisaOra() {
+    if (!contatto || !contatto.telefono) {
+      voce.parla('Non ho ancora nessuno da avvisare. Scrivi qui il nome e il numero, col prefisso, e poi basta un tasto.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      apriCassetto(true);
+      el('riga-contatto').hidden = false;
+      el('contatto-nome').focus();
+      return;
+    }
+    var s = posizione.leggi();
+    var dove = { via: ultimaStrada || '', lat: s.lat, lon: s.lon };
+    dilloSubito(emergenza.avvisaContatto(dove));
+  }
+
+  function scriviTastoAvvisa() {
+    el('avvisa-contatto').textContent = contatto && contatto.nome
+      ? ('📣 Avvisa ' + contatto.nome) : '📣 Avvisa il mio contatto';
+  }
+
   function dilloSubito(d) {
     if (!d) return;
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
@@ -578,6 +608,8 @@
 
   /* il tasto di casa, e il posto dove si scrive l'indirizzo */
   el('vai-a-casa').addEventListener('click', aCasa);
+  el('avvisa-contatto').addEventListener('click', avvisaOra);
+  scriviTastoAvvisa();
   el('dove-abito').addEventListener('click', function () {
     var r = el('riga-casa');
     r.hidden = !r.hidden;
@@ -617,6 +649,7 @@
     contatto = { nome: nome, telefono: tel };
     try { localStorage.setItem('yourbea2-contatto', JSON.stringify(contatto)); } catch (e) {}
     emergenza.conContatto(contatto);
+    scriviTastoAvvisa();
     el('riga-contatto').hidden = true;
     voce.parla('Ho registrato ' + nome + '. In emergenza posso avvisarlo e dirgli dove sei.', { livello: voce.GUIDA, ancheSeUguale: true });
   });

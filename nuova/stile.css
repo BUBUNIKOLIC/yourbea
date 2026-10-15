@@ -145,8 +145,10 @@ body[data-modo="utilita"] #mappa{display:none}
 /* ---------- il tasto di casa ----------
    Solo in Utilità, e grande: si preme senza guardare, col pollice, magari
    sotto la pioggia. In Turismo sparisce, perché lì non si torna: si gira. */
-#casa-riga{display:none;margin:14px 0 0}
+#casa-riga{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
 #casa-riga[hidden]{display:none}
-body[data-modo="utilita"] #casa-riga{display:flex}
+#vai-a-casa{display:none}
+body[data-modo="utilita"] #vai-a-casa{display:block}
+.tasto.avvisa{border-color:rgba(224,81,63,.45);color:#F3B5AC}
 #riga-casa[hidden]{display:none}
-.tasto.grande{width:100%;min-height:64px;font-size:calc(var(--base) * 1.1);font-weight:600}
+.tasto.grande{flex:1 1 220px;min-height:64px;font-size:calc(var(--base) * 1.1);font-weight:600}

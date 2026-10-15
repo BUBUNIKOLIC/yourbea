@@ -111,8 +111,12 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      SMS di nascosto, e prometterlo sarebbe una bugia pericolosa. */
   func webView(_ w: WKWebView, decidePolicyFor azione: WKNavigationAction,
                decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    let fuori = ["tel", "sms", "mailto", "facetime", "maps", "whatsapp"]
+    /* wa.me è un indirizzo normale ma porta a WhatsApp: dentro la pagina
+       non deve entrarci, se no l'app sparisce dietro una pagina web. */
+    let aWhatsApp = ["wa.me", "api.whatsapp.com"].contains(azione.request.url?.host?.lowercased() ?? "")
     if let u = azione.request.url, let schema = u.scheme?.lowercased(),
-       ["tel", "sms", "mailto", "facetime", "maps"].contains(schema) {
+       fuori.contains(schema) || aWhatsApp {
       UIApplication.shared.open(u, options: [:], completionHandler: nil)
       NSLog("YOURBEA apro: %@", schema)
       decisionHandler(.cancel)

@@ -215,6 +215,15 @@ prova('il nome registrato apre il messaggio, e non promette l\'invio', () => {
   if (!/Via dei Corazzieri/.test(m.testo)) guasto('nel messaggio ci va la via');
 });
 
+prova('il numero per WhatsApp: col prefisso, in cifre', () => {
+  const e = Emergenza({ contatto: null });
+  const n = e.numeroWhatsApp;
+  if (n('+39 333 123 4567') !== '393331234567') guasto('col prefisso scritto non si tocca: ' + n('+39 333 123 4567'));
+  if (n('333 123 4567') !== '393331234567') guasto('un numero italiano senza prefisso va completato: ' + n('333 123 4567'));
+  if (n('0039 333 1234567') !== '393331234567') guasto('lo 00 si toglie: ' + n('0039 333 1234567'));
+  if (n('+44 7700 900123') !== '447700900123') guasto('un numero straniero non si tocca: ' + n('+44 7700 900123'));
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');
