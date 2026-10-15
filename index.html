@@ -5387,7 +5387,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='93';
+  var VERSIONE='94';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5446,6 +5446,10 @@
     try{ o.inCoda = inCoda ? (Array.isArray(inCoda) ? inCoda.map(function(x){ return String(x.testo).slice(0,34); })
                                                    : [String(inCoda.testo).slice(0,34)]) : []; }catch(e){}
     try{ o.microfono = micSpento ? 'chiuso (l\'app parla)' : (ascoltoAcceso ? 'aperto' : 'spento'); }catch(e){}
+    try{ o.racconta=S.racconta; }catch(e){}
+    // il percorso a svolte, per vedere dove sta portando e a che punto e'
+    try{ o.svolte = percorso.length ? percorso.map(function(x,k){
+           return (k===percorsoI?'> ':'  ')+x.testo.slice(0,46)+' ['+x.lat.toFixed(5)+','+x.lon.toFixed(5)+']'; }) : []; }catch(e){}
     try{
       var v=[]; for(var i=0;i<Math.min(INTORNO.length,40);i++){
         var x=INTORNO[i], m=dist(S.lat,S.lon,x.lat,x.lon), r=norm(bear(S.lat,S.lon,x.lat,x.lon)-S.hd);
@@ -6239,7 +6243,7 @@
     drawList(items);
     if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}
     try{ guardaLaStrada(); }catch(e){}
-    try{ scaricaIntorno(); avvisaServizi(); }catch(e){}}
+    try{ scaricaIntorno(); avvisaServizi(); riferimentiLungoLaStrada(); }catch(e){}}
 
 
 
@@ -6843,6 +6847,7 @@
   function portamiAlPunto(lat,lon,nome,descrizione){
     meta={lat:lat,lon:lon,n:nome,d:descrizione||'',t:'meta'};
     metaUltimo=0; metaUltimaDist=dist(S.lat,S.lon,lat,lon);
+    percorsoChiesto=0; try{ chiediPercorso(); }catch(e){}
     var rel=norm(bear(S.lat,S.lon,lat,lon)-S.hd);
     var sp='Ti porto a '+nome+': '+side(rel)+', '+metres(metaUltimaDist)+'.';
     whereEl.textContent=side(rel)+', '+metres(metaUltimaDist);
@@ -6869,7 +6874,7 @@
       dire(['frase-ti-porto-a',poiId(mig)+'-nome',dirId(rel),metriId(dmin)],sp,GUIDA);
       return true;
     }
-    dire(['frase-cerco'],'Cerco l\'indirizzo, un momento.',GUIDA);
+    dire(['frase-cerco'],'Cerco l\'indirizzo, un momento.',GUIDA,true);
     /* SE DICI LA CITTA', LA CITTA' SI RISPETTA.
        «Portami a via Vincenzo Gioberti, Latina»: Photon ne trova tre — a
        Cisterna di Latina, a Latina e ad Aprilia — e prendendo la prima
@@ -6900,10 +6905,10 @@
     var url='https://nominatim.openstreetmap.org/search?format=json&limit=8&accept-language=it'
       +'&q='+encodeURIComponent(testo)+riquadro;
     fetch(url).then(function(r){return r.json();}).then(function(j){
-      if(!j||!j.length){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); return; }
+      if(!j||!j.length){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA,true); return; }
       var s=scegliDaNominatim(j,paroleCitta);
       portamiAlPunto(parseFloat(s.lat),parseFloat(s.lon),s.display_name.split(',').slice(0,2).join(', '));
-    }).catch(function(){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); });
+    }).catch(function(){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA,true); });
     }
     return true;
   }
@@ -7301,7 +7306,7 @@
     var v=piuVicinoDiTipo(tipo);
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
-      dire(['frase-cerco'],"Cerco l'indirizzo, un momento.",GUIDA);
+      dire(['frase-cerco'],"Cerco l'indirizzo, un momento.",GUIDA,true);
       var vicino=dalRiquadro(tipo);
       if(vicino){ vaiVerso(vicino); return true; }
       cercaInNominatim(tipo,function(r0){
@@ -7324,6 +7329,7 @@
   }
   function vaiVerso(v){
     meta=v.p; metaUltimo=0; metaUltimaDist=v.d;
+    percorsoChiesto=0; try{ chiediPercorso(); }catch(e){}
     zittoFino=Date.now()+60000;
     var rel=norm(bear(S.lat,S.lon,meta.lat,meta.lon)-S.hd);
     var sp='Ti porto a '+meta.n+': '+side(rel)+', '+metres(v.d)+'.';
@@ -7338,6 +7344,122 @@
     if(lontano)voci.push('frase-e-lontano');
     dire(voci,sp);
   }
+  /* ---------- LE SVOLTE, non solo la direzione in linea d'aria ----------
+     Vince, 15/10, provando a Latina: «è più utile dire sei in via Pinco
+     Pallo numero 10, e per arrivare a via Gioberti devi continuare, poi
+     devi girare; qui c'è un macellaio, qui ci sono gli alberi — serve per
+     orientare meglio il non vedente».
+     Fin qui l'app diceva direzione e metri in linea d'aria: giusta come
+     bussola, inutile come strada, perché fra te e la meta ci sono i
+     palazzi. Il percorso a piedi lo calcola Valhalla, il servizio pubblico
+     di OpenStreetMap: risponde con le istruzioni già scritte in italiano
+     («Svolta a destra su Largo dei Maestri») e con il tracciato, da cui si
+     ricava DOVE sta ogni svolta. Si chiede una volta per meta, non a ogni
+     passo: è un servizio gratuito di altri, non si tempesta.
+     Se non risponde, resta la bussola di prima: meglio poco che niente. */
+  var percorso=[], percorsoI=0, percorsoChiesto=0;
+  function decodiTracciato(s){
+    // il tracciato arriva compresso: polilinea a sei decimali
+    var pts=[], i=0, lat=0, lon=0, b, sh, res;
+    while(i<s.length){
+      sh=0; res=0;
+      do{ b=s.charCodeAt(i++)-63; res|=(b&31)<<sh; sh+=5; }while(b>=32);
+      lat += (res&1)?~(res>>1):(res>>1);
+      sh=0; res=0;
+      do{ b=s.charCodeAt(i++)-63; res|=(b&31)<<sh; sh+=5; }while(b>=32);
+      lon += (res&1)?~(res>>1):(res>>1);
+      pts.push([lat/1e6,lon/1e6]);
+    }
+    return pts;
+  }
+  function chiediPercorso(){
+    percorso=[]; percorsoI=0;
+    if(!meta||!S.pronto||!window.fetch)return;
+    if(Date.now()-percorsoChiesto<15000)return;
+    percorsoChiesto=Date.now();
+    var mia=meta;
+    var corpo={locations:[{lat:S.lat,lon:S.lon},{lat:meta.lat,lon:meta.lon}],
+               costing:'pedestrian',
+               directions_options:{language:'it-IT',units:'kilometers'}};
+    var stop=null,orologio=null;
+    try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},9000); }catch(e){}
+    fetch('https://valhalla1.openstreetmap.de/route',
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body:JSON.stringify(corpo),signal:stop?stop.signal:undefined})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(orologio)clearTimeout(orologio);
+        if(meta!==mia)return;                 // nel frattempo ha chiesto altro
+        var leg=d&&d.trip&&d.trip.legs&&d.trip.legs[0];
+        if(!leg||!leg.maneuvers)return;
+        var pts=decodiTracciato(leg.shape||'');
+        var lista=[];
+        leg.maneuvers.forEach(function(m,k){
+          var pt=pts[m.begin_shape_index||0]; if(!pt)return;
+          var testo=String(m.verbal_pre_transition_instruction||m.instruction||'')
+                      .replace(/\s+poi\s+.*$/i,'');   // il «poi...» si dice al suo turno
+          if(!testo)return;
+          var metri=Math.round((m.length||0)*1000);
+          // i passetti dentro una piazza non sono svolte: fanno solo rumore
+          if(k && metri<20 && /rimanere su|mantieni/i.test(testo))return;
+          /* l'arrivo lo annuncia l'app, con il nome del posto: «sei arrivato
+             a destinazione» di Valhalla sarebbe la stessa cosa detta due
+             volte di fila, ed e' quello che si sentiva provando a Latina */
+          if(m.type===4||m.type===5||m.type===6)return;
+          // e Valhalla spesso spezza la stessa svolta in due manovre uguali
+          if(lista.length && lista[lista.length-1].testo===testo)return;
+          lista.push({lat:pt[0],lon:pt[1],testo:testo,metri:metri});
+        });
+        if(!lista.length)return;
+        percorso=lista; percorsoI=1;
+        if(window.diario)try{ window.diario('PERCORSO '+lista.length+' svolte per '+mia.n); }catch(e){}
+        /* la prima cosa che serve sapere e' dove sei, poi che strada fare */
+        stradaDiQui(function(via){
+          if(meta!==mia)return;
+          var quanto=(leg.summary&&leg.summary.length)?Math.round(leg.summary.length*1000):0;
+          var testo=(via?('Sei in '+via+'. '):'')+
+                    'Per arrivare a '+mia.n+(quanto?', '+metres(quanto)+' a piedi':'')+'. '+
+                    lista[0].testo;
+          liveEl.textContent=testo;
+          parlaLibero(testo,GUIDA);
+        });
+      })
+      .catch(function(){ if(orologio)clearTimeout(orologio); percorso=[]; });
+  }
+
+  /* ---------- I RIFERIMENTI LUNGO LA STRADA ----------
+     «Qui c'è un macellaio»: a chi non vede un negozio sulla destra dice
+     dove si trova meglio di un numero di metri. I negozi l'app li scarica
+     già — li usa per rispondere a «la farmacia più vicina» — ma
+     camminando li scartava tutti. Ora, mentre ti porta da qualche parte o
+     in Utilità, ne dice uno ogni venticinque secondi, e ognuno una volta
+     sola. */
+  var ultimoRiferimento=0;
+  function riferimentiLungoLaStrada(){
+    if(!S.voice||!S.pronto||!INTORNO.length)return;
+    if(!versoAffidabile())return;
+    if(!meta && S.racconta!=='servizi')return;
+    if(Date.now()-ultimoRiferimento<25000)return;
+    var mig=null,dmin=Infinity;
+    for(var i=0;i<INTORNO.length;i++){
+      var o=INTORNO[i];
+      if(!o.servizio)continue;            // qui servono i negozi, non gli attraversamenti
+      var m=dist(S.lat,S.lon,o.lat,o.lon);
+      if(m>22||m<2)continue;
+      var rel=norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
+      if(Math.abs(rel)>70)continue;       // quello che hai di fianco o davanti
+      var chiave='rif@'+o.lat.toFixed(5)+','+o.lon.toFixed(5);
+      if(dettiServizi[chiave] && Date.now()-dettiServizi[chiave]<600000)continue;
+      if(m<dmin){ dmin=m; mig={o:o,chiave:chiave,rel:rel}; }
+    }
+    if(!mig)return;
+    dettiServizi[mig.chiave]=Date.now();
+    ultimoRiferimento=Date.now();
+    var cosa=mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1);
+    var nome=(mig.o.nome&&mig.o.nome!==mig.o.cosa)?', '+mig.o.nome:'';
+    parlaLibero(cosa+nome+', '+side(mig.rel)+'.',GUIDA);
+  }
+
   function guidaVersoMeta(){
     if(!meta)return;
     var d=dist(S.lat,S.lon,meta.lat,meta.lon);
@@ -7349,7 +7471,19 @@
       var fine='Sei arrivato: '+meta.n+'.';
       liveEl.textContent=fine;
       dire(['frase-sei-arrivato',poiId(meta)+'-nome'],fine,EMERGENZA);
-      meta=null; return;
+      meta=null; percorso=[]; percorsoI=0; return;
+    }
+    /* LA SVOLTA CHE VIENE. Si dice quando ci sei quasi sopra: una svolta
+       annunciata a cento metri chi non vede non la può usare. */
+    if(percorso.length && percorsoI<percorso.length){
+      var pr=percorso[percorsoI];
+      if(dist(S.lat,S.lon,pr.lat,pr.lon)<25){
+        percorsoI++;
+        liveEl.textContent=pr.testo;
+        parlaLibero(pr.testo,GUIDA);
+        metaUltimo=Date.now(); metaUltimaDist=d;
+        return;
+      }
     }
     var ora=Date.now();
     // si parla quando ci si è spostati di venti metri, e non più di una volta ogni otto secondi
@@ -7491,6 +7625,7 @@
     return staParlando || Date.now()<ignoraFinoA+1200;
   }
   function eseguiComando(testo){
+    if(window.diario)try{ window.diario('COMANDO: '+String(testo).slice(0,60)); }catch(e){}
     /* IL CANCELLO: da qui passano tutti i comandi, da qualunque parte
        arrivino — il riconoscimento del browser, il guscio dell'iPhone, il
        tasto del microfono. Quello che l'app ha appena detto non entra.
@@ -7517,9 +7652,17 @@
     // finche' la schermata d'ingresso e' aperta si sceglie parlando
     var pt=el('porta');
     if(pt && !pt.hidden && typeof window.portaScegli==='function'){
-      // i due modi si scelgono anche a voce, col loro nome
-      if(ha('turismo','turista','raccontami','descrivimi','visita'))return window.portaScegli('turismo');
-      if(ha('utilita','utilita\'','servizi','devo andare','portami'))return window.portaScegli('utilita');
+      /* I due modi si scelgono anche a voce, col loro nome. Ma solo
+         finche' la scelta e' aperta, e solo se la porta la prende
+         davvero: con «portami» fra queste parole, «portami a via
+         Gioberti» detto davanti al secondo passo veniva inghiottito qui
+         e l'app restava zitta — sembrava che non avesse sentito. */
+      if(ha('turismo','turista','descrivimi','visita')){
+        if(window.portaScegli('turismo'))return true;
+      }
+      if(ha('utilita','utilita\'','servizi')){
+        if(window.portaScegli('utilita'))return true;
+      }
       if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso')){
         if(window.portaScegli && window.portaScegli('percorso'))return true;
         return percorsiDaQui();
@@ -7716,7 +7859,7 @@
   // dentro il guscio iPhone il riconoscimento lo fa iOS e il testo torna qui
   window.urbeaComando=function(testo){
     var b=el('parla'); if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';}
-    if(!eseguiComando(testo||'') && !zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
+    if(!eseguiComando(testo||'') && !zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA,true);
     /* il guscio chiude il microfono dopo ogni frase riconosciuta. Se non lo
        riapre nessuno, il comando dopo non arriva mai e l'app sembra
        bloccata: era il terzo difetto raccontato da Vince. Se la frase ha
@@ -7743,7 +7886,7 @@
           var res=e.results[i];
           for(var k=0;k<res.length;k++){ if(eseguiComando(res[k].transcript))return; }
         }
-        if(!zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
+        if(!zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA,true);
       };
       r.onerror=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} };
       r.onend=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} ascolto=null; if(ascoltoAcceso&&!micSpento)avviaAscolto(); };
