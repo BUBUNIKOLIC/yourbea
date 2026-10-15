@@ -5201,7 +5201,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='76';
+  var VERSIONE='77';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5712,7 +5712,8 @@
         if(!la||la===qui)return;
         if(la===incrocioDetto)return;          // gia' detto, non si ripete
         incrocioDetto=la; incrocioQuando=Date.now();
-        parlaLibero('Fra una quarantina di metri, incrocio con '+la+'.',GUIDA);
+        // come per gli attraversamenti: la distanza esatta il GPS non la sa
+        parlaLibero('Pi\u00f9 avanti, incrocio con '+la+'.',GUIDA);
       });
     });
   }
@@ -5898,14 +5899,30 @@
        «a trentacinque metri»: per chi non vede e' peggio che tacere.
        Quindi il numero si dice solo quando il telefono e' davvero preciso,
        e comunque mai sotto l'errore che dichiara lui stesso. */
-    var errore = Math.max(8, Math.round(S.acc||15));
-    var quanto;
-    if(mig.m <= errore)            quanto = 'qui, davanti a te';
-    else if(mig.m <= errore*1.6)   quanto = 'a pochi passi';
-    else if(errore > 25)           quanto = 'poco piu\u2019 avanti';
-    else                           quanto = 'fra '+(Math.round(mig.m/5)*5)+' metri';
-    var testo = mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1)+' '+quanto+
-                (mig.o.extra ? ': '+mig.o.extra : '')+'.';
+    /* COME SI DICE, e perche' si dice cosi'.
+       Il GPS a piedi sbaglia dai dieci ai trenta metri, fra i palazzi anche
+       di piu'. La sorella di Vince era SULLE strisce mentre l'app diceva «a
+       trentacinque metri». Un numero sbagliato, a chi non vede, e' peggio
+       del silenzio: puo' farlo scendere dal marciapiede dove non deve.
+       Quindi niente punti esatti e niente imperativi. Si dice che su questa
+       strada c'e' un attraversamento e com'e' fatto — semaforo, strisce,
+       percorso tattile — e il punto lo trova lui col bastone o col cane,
+       come fa sempre. L'app aggiunge quello che da solo non puo' sapere:
+       se il semaforo c'e'. Le app serie per non vedenti funzionano cosi':
+       danno contesto, non dicono dove mettere i piedi. */
+    var errore = Math.max(10, Math.round(S.acc||20));
+    var dove;
+    if(mig.m <= errore*1.2)      dove = 'qui intorno';
+    else if(mig.m <= errore*2.5) dove = 'poco pi\u00f9 avanti';
+    else                         dove = 'pi\u00f9 avanti su questa strada';
+    var testo;
+    if(mig.o.cosa==='attraversamento')
+      testo = 'Attraversamento '+dove+(mig.o.extra ? ', '+mig.o.extra : '')+'.';
+    else if(mig.o.cosa==='semaforo')
+      testo = 'Semaforo '+dove+'.';
+    else
+      testo = mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1)+' '+dove+
+              (mig.o.extra ? ': '+mig.o.extra : '')+'.';
     parlaLibero(testo, GUIDA);
   }
 
@@ -7465,6 +7482,25 @@
       // sei girato, quindi può dire destra e sinistra invece dei cardinali.
       setTimeout(function(){ try{ if(!S.live)el('start').click(); }catch(e){} }, 150);
       apertoDa=Date.now();
+      /* Detto chiaro la prima volta: questa app racconta e orienta, non
+         dice dove mettere i piedi. Il GPS non e' preciso abbastanza, e chi
+         cammina deve saperlo da subito — non in fondo a una pagina di
+         condizioni d'uso che nessuno legge, men che meno chi non vede. */
+      try{
+        var avvisato=null;
+        try{ avvisato=localStorage.getItem('yourbea-avviso-sicurezza'); }catch(e){}
+        if(modoVoce && !avvisato){
+          try{ localStorage.setItem('yourbea-avviso-sicurezza','1'); }catch(e){}
+          setTimeout(function(){
+            var a='Una cosa importante, e te la dico una volta sola. Ti racconto quello che hai intorno '+
+                  'e ti dico dove ci sono attraversamenti e semafori, ma la posizione che leggo dal telefono '+
+                  'puo\u2019 sbagliare anche di trenta metri. Non usarmi per decidere quando attraversare: '+
+                  'per quello restano il bastone, il cane e le tue orecchie.';
+            try{ liveEl.textContent=a; }catch(e){}
+            try{ parlaLibero(a, GUIDA); }catch(e){}
+          }, 2800);
+        }
+      }catch(e){}
       // si dice subito che cosa sta succedendo, senza aspettare il GPS
       setTimeout(function(){
         var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
