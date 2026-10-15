@@ -1,0 +1,40 @@
+# Il guscio iOS di Yourbea — si rigenera con: xcodegen generate
+# Perché esiste: dentro Safari la posizione si ferma quando lo schermo si
+# spegne, e per chi non vede l'app serve proprio mentre cammina col telefono
+# in tasca. Il guscio tiene accesi GPS e microfono in sottofondo.
+name: Yourbea
+options:
+  bundleIdPrefix: it.vdmdata
+  deploymentTarget: { iOS: "16.0" }
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: T3524H28MX
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "2.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+targets:
+  Yourbea:
+    type: application
+    platform: iOS
+    sources: [Yourbea]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: it.vdmdata.urbea
+        INFOPLIST_KEY_CFBundleDisplayName: Yourbea
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
+        TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      path: Yourbea/Info.plist
+      properties:
+        CFBundleDisplayName: Yourbea
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [audio, location]
+        NSLocationWhenInUseUsageDescription: "Yourbea ti dice dove sei e cosa hai intorno: senza la posizione non può farlo."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Serve anche con lo schermo spento, perché l'app ti accompagna mentre cammini col telefono in tasca."
+        NSMicrophoneUsageDescription: "Per capire quando dici «dove sono», «approfondisci» o «portami a»."
+        NSSpeechRecognitionUsageDescription: "Le tue richieste vengono riconosciute per rispondere a voce."
+        ITSAppUsesNonExemptEncryption: false
