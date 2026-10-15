@@ -813,12 +813,12 @@
     <span class="claim">La bellezza intorno a te</span>
   </div>
   <button class="porta-scelta porta-voce" id="scelta-voce">
-    <b>Guidami a voce</b>
-    <span>Tutto parlato, comandi a voce: lo schermo non serve.</span>
+    <b>Utilità</b>
+    <span>Numeri civici, farmacie, negozi, semafori e attraversamenti. E ti porto dove devi andare. Tutto parlato: lo schermo non serve.</span>
   </button>
   <button class="porta-scelta porta-occhi" id="scelta-occhi">
-    <b>Mostrami la città</b>
-    <span>Mappa, schede e percorsi da guardare.</span>
+    <b>Turismo</b>
+    <span>Ti descrive quello che hai intorno: palazzi, chiese, dettagli di strada. Con la mappa, le schede e i percorsi.</span>
   </button>
   <button class="porta-scelta porta-voce porta-torna" id="scelta-torna" hidden>
     <b>Tocca per cominciare</b>
@@ -5387,7 +5387,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='92';
+  var VERSIONE='93';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -7517,6 +7517,9 @@
     // finche' la schermata d'ingresso e' aperta si sceglie parlando
     var pt=el('porta');
     if(pt && !pt.hidden && typeof window.portaScegli==='function'){
+      // i due modi si scelgono anche a voce, col loro nome
+      if(ha('turismo','turista','raccontami','descrivimi','visita'))return window.portaScegli('turismo');
+      if(ha('utilita','utilita\'','servizi','devo andare','portami'))return window.portaScegli('utilita');
       if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso')){
         if(window.portaScegli && window.portaScegli('percorso'))return true;
         return percorsiDaQui();
@@ -7932,7 +7935,14 @@
       if(attesa){clearTimeout(attesa);attesa=null;}
       porta.hidden=true;
       audio();
-      S.racconta = modoVoce ? 'tutto' : 'cultura';
+      /* I DUE MODI, COME LI HA DETTI VINCE IL 15/10:
+         «utilità da indicazioni sui numeri civici, farmacie, negozi,
+          semafori e se devo arrivare da qualche parte; turismo invece
+          descrive la realtà circostante».
+         La distinzione esisteva gia' qui dentro (`racconta`), ma la
+         schermata d'ingresso non la offriva: chiedeva «a voce» o «sullo
+         schermo», cioe' COME funziona, non A COSA serve. */
+      S.racconta = modoVoce ? 'servizi' : 'cultura';
       // la mappa davanti agli occhi, non in fondo alla pagina: vale anche in
       // guida vocale, perche' chi accompagna guarda
       var m=el('mappa'), say=document.querySelector('.say');
@@ -7949,7 +7959,12 @@
                 else { mp.removeAttribute('aria-hidden'); mp.removeAttribute('role'); } }
       }catch(e){}
       ricorda('urbea-cammino',S.libero?'libero':'percorso');
-      if(modoVoce&&!S.voice)el('voice').click();
+      /* La voce si accende in tutt'e due i modi: anche in Turismo l'app
+         racconta parlando — e' il suo mestiere — e chi non vede puo'
+         scegliere Turismo senza ritrovarsi un'app muta. Quello che cambia
+         fra i due e' COSA dice, non se parla. Lo schermo grande e la mappa
+         nascosta al lettore restano solo per chi entra in Utilita'. */
+      if(!S.voice)el('voice').click();
       // si parte da soli: nessuno deve cercare il tasto Avvia, men che meno
       // chi non vede. Da qui in poi l'app segue i passi e sa da che parte
       // sei girato, quindi può dire destra e sinistra invece dei cardinali.
@@ -8043,8 +8058,16 @@
     // la porta risponde anche ai comandi a voce
     window.portaScegli=function(cosa){
       if(porta.hidden)return false;
-      if(passo===1){ S.modoVoce=true; secondoPasso(true); return true; }
-      if(cosa==='libero'){ S.libero=true; entra(true); return true; }
+      if(passo===1){
+        // adesso i due modi hanno un nome, e si possono dire a voce
+        if(cosa==='turismo'){ var bo=el('scelta-occhi'); if(bo){ bo.click(); return true; } }
+        S.modoVoce=true; secondoPasso(true); return true;
+      }
+      /* il modo scelto al primo passo deve arrivare fino qui: prima
+         «libero» entrava sempre in Utilita', anche a chi aveva appena
+         scelto Turismo, e si ritrovava la mappa nascosta al lettore e
+         soltanto i servizi raccontati */
+      if(cosa==='libero'){ S.libero=true; entra(S.modoVoce!==false); return true; }
       if(cosa==='percorso'){ el('scelta-percorso').click(); return true; }
       return false;
     };
