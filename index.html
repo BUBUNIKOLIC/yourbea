@@ -5387,7 +5387,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='91';
+  var VERSIONE='92';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6106,6 +6106,8 @@
                lat:mig.lat,lon:mig.lon,t:tipo,k:0,d:''}, d:dmin};
   }
   var ultimoServizio=0;
+  // quando si e' parlato di attraversamenti, e su quale strada
+  var attraversamentiQuando=0, attraversamentiVia='';
   function avvisaServizi(){
     if(!S.voice||!S.pronto||!INTORNO.length)return;
     if(!versoAffidabile())return;              // «davanti» ha senso solo se so come sei girato
@@ -6155,10 +6157,44 @@
     else                         dove = 'pi\u00f9 avanti su questa strada';
     var testo;
     if(mig.o.cosa==='attraversamento'){
+      /* UNA SERIE DI ATTRAVERSAMENTI SI DICE UNA VOLTA.
+         Vince, 15/10, all'ingresso di Latina: «se ci sono ogni 5 metri
+         l'indicazione si ripete troppo: basta dire c'e' una serie di
+         attraversamenti pedonali». Ed e' giusto: nella mappa ogni
+         attraversamento e' un punto a se', e a un incrocio normale ce ne
+         sono quattro. L'app li trovava uno per uno e ne annunciava uno
+         ogni dodici secondi, con l'avvertenza appresso.
+         Ora si guarda il gruppo: se qui intorno ce n'e' piu' d'uno si dice
+         che e' una serie, si segnano tutti come detti e per due minuti —
+         e per tutta questa strada — non si torna sull'argomento. */
+      if(Date.now()-attraversamentiQuando<120000)return;
+      var viaOra=viaSotto||'';
+      if(viaOra && viaOra===attraversamentiVia && Date.now()-attraversamentiQuando<300000)return;
+      var gruppo=[], semaforo=0, tattile=0;
+      for(var g=0;g<INTORNO.length;g++){
+        var x=INTORNO[g];
+        if(x.cosa!=='attraversamento')continue;
+        if(dist(S.lat,S.lon,x.lat,x.lon)>80)continue;
+        gruppo.push(x);
+        if(/semaforo/i.test(x.extra||'') && !/senza il semaforo|senza semaforo/i.test(x.extra||''))semaforo++;
+        if(/tattile/i.test(x.extra||''))tattile++;
+      }
+      gruppo.forEach(function(x){
+        dettiServizi[x.cosa+'@'+x.lat.toFixed(5)+','+x.lon.toFixed(5)]=Date.now();
+      });
+      attraversamentiQuando=Date.now(); attraversamentiVia=viaOra;
       invitiFatti++;
-      var agg = (invitiFatti<=2 || invitiFatti%5===0)
+      var agg = (invitiFatti<=2)
         ? ' Il punto preciso non te lo so dire: cercalo col bastone, o chiedi.' : '';
-      testo = 'Attraversamento '+dove+(mig.o.extra ? ', '+mig.o.extra : '')+'.'+agg;
+      if(gruppo.length>1){
+        var com='';
+        if(semaforo>=gruppo.length/2) com=', con il semaforo';
+        else if(semaforo>0)           com=', qualcuno con il semaforo';
+        if(tattile>0) com+=(com?' e':', con')+' il percorso tattile';
+        testo = 'Qui c’è una serie di attraversamenti'+com+'.'+agg;
+      } else {
+        testo = 'Attraversamento '+dove+(mig.o.extra ? ', '+mig.o.extra : '')+'.'+agg;
+      }
     }
     else if(mig.o.cosa==='semaforo')
       testo = 'Semaforo '+dove+'.';
