@@ -5201,7 +5201,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='78';
+  var VERSIONE='79';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5660,8 +5660,12 @@
   function parlaLibero(testo,livello){ dire([LIBERO],testo,livello); }
 
   var viaSotto='', viaDetta='', viaQuando=0, viaLat=0, viaLon=0;
+  var ultimoCivico='', ultimoCivicoQuando=0;
   var incrocioDetto='', incrocioQuando=0, invitiFatti=0;
 
+  /* il nome della strada e, se c'e', il numero civico: «sei in via
+     Laurentina, 212» dice a chi non vede esattamente dove si trova, ed e'
+     un'informazione che non manda nessuno in mezzo alla strada */
   function nomeViaIn(lat,lon,quando){
     if(!window.fetch){quando('');return;}
     var u='https://photon.komoot.io/reverse?lat='+lat+'&lon='+lon+'&limit=1';
@@ -5675,7 +5679,7 @@
         /* «street» e' la via dell'indirizzo; se il punto e' esso stesso una
            strada, il nome sta in «name» con osm_key=highway */
         var via=pr.street || (pr.osm_key==='highway' ? (pr.name||'') : '') || '';
-        quando(via);
+        quando(via, pr.housenumber||'');
       })
       .catch(function(){ if(orologio)clearTimeout(orologio); quando(''); });
   }
@@ -5693,15 +5697,25 @@
     // e solo se ti sei davvero mosso: da fermo la strada non cambia
     if(viaLat && dist(S.lat,S.lon,viaLat,viaLon)<15)return;
     viaQuando=Date.now(); viaLat=S.lat; viaLon=S.lon;
-    nomeViaIn(S.lat,S.lon,function(qui){
+    nomeViaIn(S.lat,S.lon,function(qui,civico){
       if(!qui)return;
       var cambiata=(qui!==viaSotto);
       viaSotto=qui;
       if(cambiata && qui!==viaDetta){
         viaDetta=qui;
-        statusEl.textContent='sei in '+qui;
-        parlaLibero('Sei in '+qui+'.',GUIDA);
+        var conCivico = qui + (civico ? ', numero '+civico : '');
+        statusEl.textContent='sei in '+conCivico;
+        parlaLibero('Sei in '+conCivico+'.',GUIDA);
+        ultimoCivico=civico||''; ultimoCivicoQuando=Date.now();
         return;                                // una cosa per volta
+      }
+      /* stessa strada, ma il numero e' cambiato parecchio: ogni tanto lo
+         si ridice, cosi' chi cammina sa a che punto e' arrivato */
+      if(civico && civico!==ultimoCivico && Date.now()-ultimoCivicoQuando>60000){
+        ultimoCivico=civico; ultimoCivicoQuando=Date.now();
+        statusEl.textContent='sei in '+qui+', numero '+civico;
+        parlaLibero('Numero '+civico+'.',GUIDA);
+        return;
       }
       // l'incrocio: si guarda quaranta metri davanti, e solo se si sa da che
       // parte sei girato — se no «davanti» non vuol dire niente
@@ -6080,6 +6094,7 @@
   function stradaDiQui(quando){
     if(!S.pronto||!window.fetch){quando('');return;}
     if(stradaOra && Date.now()-stradaPresa<60000){quando(stradaOra);return;}
+    // il civico entra nella risposta: «sei in via Laurentina 212, Roma»
     var u='https://photon.komoot.io/reverse?lat='+S.lat+'&lon='+S.lon+'&limit=1';
     var stop=null,orologio=null;
     try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},6000); }catch(e){}
@@ -6089,8 +6104,9 @@
         if(orologio)clearTimeout(orologio);
         var pr=(d.features&&d.features[0]&&d.features[0].properties)||{};
         var via=pr.street||pr.name||'';
+        var civ=pr.housenumber||'';
         var dove=pr.city||pr.county||pr.district||'';
-        stradaOra = via ? (via + (dove?', '+dove:'')) : dove;
+        stradaOra = via ? (via + (civ?' '+civ:'') + (dove?', '+dove:'')) : dove;
         stradaPresa=Date.now();
         quando(stradaOra);
       })
