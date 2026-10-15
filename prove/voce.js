@@ -104,6 +104,17 @@ function inLingua(ids, testo) { return { t: testo, italiano: false }; }
 var LIBERO = '_parlato_';
 function cardinale() { return 'a nord'; }
 function side() { return 'a destra'; }
+/* il motore ora chiude il microfono quando sta per parlare: queste sono le
+   cose che chiede al resto dell'app per farlo. Il microfono in se' si prova
+   in prove/non-si-ascolta-da-sola.js */
+var ascolto = null, ascoltoAcceso = false;
+function avviaAscolto() { ascolto = { finto: true }; return true; }
+function normalizza(t) {
+  return (t || '').toLowerCase()
+    .replace(/[àá]/g, 'a').replace(/[èé]/g, 'e').replace(/[ìí]/g, 'i')
+    .replace(/[òó]/g, 'o').replace(/[ùú]/g, 'u')
+    .replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 /* ---- il codice vero ---- */
 // il motore si estrae da index.html al volo: così il banco prova sempre il

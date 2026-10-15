@@ -4837,7 +4837,13 @@
     if(mio!==turno)return;
     staParlando=false;
     livelloInCorso=0;
-    var c=prossimaDallaFila(); if(c) dire(c.ids,c.testo,c.liv);
+    var c=prossimaDallaFila();
+    if(c){ dire(c.ids,c.testo,c.liv); return; }
+    /* ha finito di parlare per davvero. Il microfono si riapre, ma non
+       subito: l'ultima sillaba sta ancora uscendo dall'altoparlante e il
+       riconoscimento la prenderebbe per un comando. */
+    ignoraFinoA=Date.now()+900;
+    setTimeout(function(){ if(!staParlando)micRiaccendi(); },900);
   }
   // il ripiego con la voce del telefono: solo se il turno è ancora suo
   function ripiego(mio,testo){
@@ -4915,6 +4921,85 @@
     try{ CANALE.postMessage({tipo:'parlo', quanto:quanto}); }catch(e){}
   }
 
+  /* ---------- L'APP NON DEVE SENTIRE SE STESSA ----------
+     Questa e' la causa che spiega insieme le tre cose che Vince ha visto
+     provandola: voci accavallate, spiegazioni sbagliate e blocchi.
+     In modalita' voce il microfono resta aperto per ricevere i comandi.
+     Ma la clip di Alice esce dall'altoparlante, a venti centimetri da quel
+     microfono: il riconoscimento la sente, dentro la frase trova «avanti»
+     o «racconta» — parole che l'app dice continuamente — e le esegue. Da
+     li' tutto il resto:
+       - esegue un comando che nessuno ha dato: parte un secondo annuncio
+         sopra quello in corso → DUE VOCI;
+       - risponde a quello che ha capito male → SPIEGAZIONE SBAGLIATA, o il
+         «non ho capito» che taglia il racconto a meta';
+       - e nel guscio dell'iPhone, dopo ogni frase riconosciuta il
+         microfono si chiude: se nessuno lo riapre, i comandi veri non
+         arrivano piu' e l'app sembra BLOCCATA.
+     Il banco di prova non poteva vederlo: gira sul Mac, dove non c'e' ne'
+     microfono ne' altoparlante.
+     La regola, da qui in avanti: mentre l'app parla il microfono e' chiuso,
+     e per quasi un secondo dopo l'ultima sillaba non si ascolta — perche'
+     l'ultima sillaba sta ancora uscendo. Chiude e riapre un posto solo. */
+  var micSpento=false, ignoraFinoA=0, dettoDaNoi='';
+  /* QUESTA VARIABILE ERA DICHIARATA DENTRO UNA FUNZIONE E LETTA FUORI.
+     Chi entrava da «guidami a voce» faceva scattare un errore vero
+     (ReferenceError: entrandoDallaPorta is not defined) dentro al tasto
+     della modalita' voce, e tutto quello che veniva dopo quella riga —
+     render() compreso, e il resto di entra() — non girava piu'. L'app
+     entrava in guida vocale a meta' e restava li', ferma su «in attesa».
+     Era in linea nella versione 87, cioe' nell'app che Vince ha provato.
+     Trovato aprendola nel browser, non dalle prove: le prove non aprono
+     la schermata d'ingresso. */
+  var entrandoDallaPorta=false;
+  function micSpegni(){
+    micSpento=true;
+    if(window.urbeaNativo && window.urbeaChiudiAscolto){
+      try{ window.urbeaChiudiAscolto(); }catch(e){}
+      return;
+    }
+    if(ascolto){
+      try{ if(ascolto.abort)ascolto.abort(); else ascolto.stop(); }catch(e){}
+      ascolto=null;
+    }
+  }
+  function micRiaccendi(){
+    micSpento=false;
+    if(!ascoltoAcceso)return;      // modalita' voce spenta: non si riapre da se'
+    if(window.urbeaNativo && window.urbeaAscolta){
+      try{ window.urbeaAscolta(); }catch(e){}
+      return;
+    }
+    if(!ascolto){ try{ avviaAscolto(); }catch(e){} }
+  }
+  /* quello che l'app ha appena detto non e' un comando, nemmeno se dentro
+     c'e' una parola che somiglia a un comando */
+  function echoDiNoiStessi(testo){
+    /* Vale mentre l'app parla e per poco piu' di un secondo dopo — il
+       tempo che un risultato in ritardo arrivi. Oltre, no: se l'app ha
+       appena letto l'elenco dei comandi («puoi dire: approfondisci,
+       avanti, ripeti») e poi l'utente dice «avanti» per davvero, quella
+       parola e' dentro cio' che abbiamo detto, e senza questo limite
+       verrebbe buttata per sempre. */
+    if(!staParlando && Date.now()>ignoraFinoA+1200)return false;
+    var t=normalizza(testo);
+    if(t.length<3 || !dettoDaNoi)return false;
+    /* SOLO LE FRASI LUNGHE. Una parola o due non bastano a dire che e'
+       l'eco, e scartarle fa danno: l'app chiede «vuoi camminare libero, o
+       seguire un percorso?» e la risposta — «percorso» — e' dentro la
+       domanda. Provando l'app nel browser e' stato buttato esattamente
+       quello. Perche' sia eco servono tre parole di fila che abbiamo
+       appena detto, oppure un pezzo lungo della nostra frase. */
+    var p=t.split(' ');
+    if(p.length>=3){
+      for(var i=0;i+2<p.length;i++){
+        if(dettoDaNoi.indexOf(p[i]+' '+p[i+1]+' '+p[i+2])>=0)return true;
+      }
+    }
+    if(t.length>=15 && dettoDaNoi.indexOf(t)>=0)return true;
+    return false;
+  }
+
   function dire(ids,testo,livello){
     var liv=livelloDi(livello);
     if(window.diario)try{ window.diario('DIRE liv='+liv+' staParlando='+staParlando+
@@ -4957,6 +5042,11 @@
     }
     ultimaFrase={ids:ids,testo:testo};
     zittisci();
+    // da qui esce un suono: il microfono si chiude, e si tiene da parte
+    // quello che stiamo per dire, per non riconoscerlo come un comando
+    dettoDaNoi=normalizza(testo);
+    ignoraFinoA=Date.now()+Math.min(20000,1500+String(testo||'').length*55);
+    micSpegni();
     var mio=turno;
     /* le frasi con dentro un nome proprio — una via, un luogo trovato in
        diretta — non hanno una clip incisa e si dicono col sintetizzatore.
@@ -5266,7 +5356,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='87';
+  var VERSIONE='88';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -7192,7 +7282,26 @@
       .replace(/[òó]/g,'o').replace(/[ùú]/g,'u')
       .replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
   }
+  /* Mentre l'app parla — e per un attimo dopo — quello che arriva dal
+     microfono puo' essere un pezzo della nostra stessa clip, riconosciuto
+     storto. Se non e' un comando, in quel momento non si risponde «non ho
+     capito»: sarebbe una voce in piu' sopra il racconto, provocata da noi
+     stessi. Se invece e' un comando vero, l'utente che parla sopra la
+     guida ha ragione: si esegue. */
+  function zittoSeNonCapito(){
+    return staParlando || Date.now()<ignoraFinoA+1200;
+  }
   function eseguiComando(testo){
+    /* IL CANCELLO: da qui passano tutti i comandi, da qualunque parte
+       arrivino — il riconoscimento del browser, il guscio dell'iPhone, il
+       tasto del microfono. Quello che l'app ha appena detto non entra.
+       Si risponde «true» per dire «preso in consegna»: se rispondessimo
+       «false», chi ci ha chiamato annuncerebbe «non ho capito», che e'
+       esattamente la voce di troppo che stiamo togliendo. */
+    if(echoDiNoiStessi(testo)){
+      if(window.diario)try{ window.diario('SENTITA LA MIA VOCE, buttata: '+String(testo).slice(0,50)); }catch(e){}
+      return true;
+    }
     var t=normalizza(testo);
     if(!t)return false;
     function ha(){
@@ -7382,6 +7491,9 @@
       // lascia la guida libera di riparlare. Prima restava a metà e l'app
       // non diceva più niente.
       zittisci(); staParlando=false; livelloInCorso=0; inCoda=null;
+      // taciuta l'app, il microfono torna aperto: «ferma» non deve
+      // significare anche «non ti ascolto piu'»
+      ignoraFinoA=0; dettoDaNoi=''; micRiaccendi();
       return true;
     }
     return false;
@@ -7401,7 +7513,13 @@
   // dentro il guscio iPhone il riconoscimento lo fa iOS e il testo torna qui
   window.urbeaComando=function(testo){
     var b=el('parla'); if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';}
-    if(!eseguiComando(testo||''))dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
+    if(!eseguiComando(testo||'') && !zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
+    /* il guscio chiude il microfono dopo ogni frase riconosciuta. Se non lo
+       riapre nessuno, il comando dopo non arriva mai e l'app sembra
+       bloccata: era il terzo difetto raccontato da Vince. Se la frase ha
+       fatto parlare l'app, lo riapre finito(); se non ha fatto niente —
+       o era la nostra stessa voce — lo riapre questa riga. */
+    setTimeout(function(){ if(!staParlando && Date.now()>=ignoraFinoA)micRiaccendi(); },400);
   };
   function ascoltaUnaVolta(){
     if(window.urbeaNativo && window.urbeaAscolta){
@@ -7422,10 +7540,10 @@
           var res=e.results[i];
           for(var k=0;k<res.length;k++){ if(eseguiComando(res[k].transcript))return; }
         }
-        dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
+        if(!zittoSeNonCapito())dire(['frase-non-capito'],'Non ho capito. Prova con: approfondisci, avanti, dove sono.',GUIDA);
       };
       r.onerror=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} };
-      r.onend=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} ascolto=null; if(ascoltoAcceso)avviaAscolto(); };
+      r.onend=function(){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} ascolto=null; if(ascoltoAcceso&&!micSpento)avviaAscolto(); };
       r.start();
       ascolto=r;
     }catch(e){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} }
@@ -7435,12 +7553,13 @@
     // chiede anche la pagina compare un secondo dialogo col nome del
     // dominio, e la guida resta ferma finche' nessuno lo tocca
     if(window.urbeaNativo && window.urbeaAscolta){
-      ascoltoAcceso=true;
+      ascoltoAcceso=true; micSpento=false;
       try{ window.urbeaAscolta(); }catch(e){}
       return true;
     }
     var R=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!R)return false;
+    micSpento=false;
     chiediMicrofono();
     if(ascolto)return true;
     try{
@@ -7455,7 +7574,9 @@
         }
       };
       ascolto.onerror=function(ev){ if(ev.error==='not-allowed'||ev.error==='service-not-allowed')ascoltoAcceso=false; };
-      ascolto.onend=function(){ if(ascoltoAcceso){ try{ascolto.start();}catch(e){} } };
+      // ...ma non si riaccende se siamo noi ad averlo chiuso per parlare:
+      // riaprirlo qui vorrebbe dire sentire la nostra stessa clip
+      ascolto.onend=function(){ if(ascoltoAcceso&&!micSpento){ try{ascolto.start();}catch(e){} } };
       ascoltoAcceso=true;
       ascolto.start();
       return true;
@@ -7463,8 +7584,26 @@
   }
   function fermaAscolto(){
     ascoltoAcceso=false;
+    micSpento=false;      // spento per volere dell'utente, non per parlare
     if(ascolto){ try{ascolto.stop();}catch(e){} ascolto=null; }
   }
+
+  /* ---------- il guardiano del microfono ----------
+     Il microfono si chiude in un punto solo (micSpegni, quando l'app sta
+     per parlare) e si riapre in un punto solo (micRiaccendi, quando ha
+     finito). Ma se una di quelle riaperture non arriva — una clip che non
+     parte, il guscio che si e' chiuso da se', un errore inghiottito —
+     l'app resta sorda e chi non vede non ha nessun modo di accorgersene:
+     parla e non succede niente. Allora ogni due secondi e mezzo si
+     controlla che, quando l'app tace, il microfono sia aperto. */
+  setInterval(function(){
+    try{
+      if(!S.voice||!ascoltoAcceso)return;
+      if(staParlando||Date.now()<ignoraFinoA)return;
+      if(micSpento){ micRiaccendi(); return; }
+      if(!window.urbeaNativo && !ascolto) micRiaccendi();
+    }catch(e){}
+  },2500);
 
   // dentro l'app i collegamenti non devono portare fuori: la finestra si
   // chiuderebbe e sembrerebbe che l'app sia uscita
@@ -7584,8 +7723,9 @@
 
     /* Chi entra da «guidami a voce» sa gia' di essere in guida vocale:
        dirglielo e' una frase in piu' davanti a chi aspetta solo di sapere
-       dove si trova. */
-    var entrandoDallaPorta=false;
+       dove si trova. La bandierina e' dichiarata in alto, dove la legge
+       anche il tasto della modalita' voce: dichiararla qui la rendeva
+       invisibile a lui, e li' scattava un errore che fermava l'ingresso. */
     function entra(modoVoce){
       entrandoDallaPorta=true;
       setTimeout(function(){ entrandoDallaPorta=false; }, 4000);
@@ -7824,7 +7964,14 @@
     var b=el('testo-piu');
     if(b)b.addEventListener('click',function(){audio();testoPiuGrande();});
     var bp=el('parla');
-    if(bp)bp.addEventListener('click',function(){audio();ascoltaUnaVolta();});
+    // chi premo il tasto vuole parlare adesso: l'app tace e ascolta. Senza
+    // questo il cancello scarterebbe il comando perche' l'app sta parlando.
+    if(bp)bp.addEventListener('click',function(){
+      audio();
+      zittisci(); staParlando=false; livelloInCorso=0; inCoda=null;
+      ignoraFinoA=0; dettoDaNoi='';
+      ascoltaUnaVolta();
+    });
     var bc=el('vai-casa');
     if(bc)bc.addEventListener('click',function(){audio();portamiACasa();});
     var bs=el('segna-casa');

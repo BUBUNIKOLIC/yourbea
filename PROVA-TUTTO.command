@@ -36,6 +36,9 @@ echo
 echo "— chi non vede: lettore di schermo e una voce sola —"
 node prove/lettore-di-schermo.js || mal=1
 node prove/una-voce-sola.js || mal=1
+echo
+echo "— il microfono: l'app non deve sentire se stessa —"
+node prove/non-si-ascolta-da-sola.js || mal=1
 
 if [ "$RETE" = 1 ]; then
   echo
