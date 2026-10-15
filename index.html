@@ -890,6 +890,7 @@
       <input id="contatto-tel" type="tel" autocomplete="tel" placeholder="numero di telefono">
       <button class="btn btn-go" id="contatto-salva">Salva il contatto</button>
     </div>
+    <button class="btn" id="manda-diario">Manda il diario a chi l'ha fatta</button>
     <button class="btn" id="sim" aria-pressed="false">Simula</button>
     <button class="btn btn-install" id="install" hidden>Metti l'icona sul telefono</button>
   </section>
@@ -5188,6 +5189,7 @@
     // da qui parla per davvero: nel diario le due cose erano la stessa riga
     // e una frase messa in fila sembrava detta due volte
     if(window.diario)try{ window.diario('PARLA: '+String(testo).slice(0,60)); }catch(e){}
+    try{ ultimaParolaQuando=Date.now(); }catch(e){}
     zittisci();
     // da qui esce un suono: il microfono si chiude, e si tiene da parte
     // quello che stiamo per dire, per non riconoscerlo come un comando
@@ -5528,7 +5530,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='101';
+  var VERSIONE='102';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5571,6 +5573,70 @@
      Ogni tasto chiama direttamente la sua funzione dall'HTML. Se un pezzo di
      codice più avanti va in errore, questi continuano a funzionare. */
   window.YB = window.YB || {};
+  /* ---------- IL DIARIO DELL'APP, E COME ARRIVA A CHI L'HA FATTA ----------
+     Due giorni di «non funziona» e «si bloccava» raccontati a parole, e ogni
+     volta bisognava indovinare cosa fosse successo sul telefono di un altro.
+     Da qui l'app tiene il proprio diario — le ultime trecento righe, con
+     l'ora — e nel cassetto c'e' un tasto che lo manda: chi prova tocca
+     «Manda il diario» e sceglie messaggio, mail o appunti. Cosi un difetto
+     raccontato diventa un difetto leggibile.
+     Nota: `window.diario` esiste gia' e nel guscio dell'iPhone scrive anche
+     nel log di sistema; qui si aggiunge la memoria dentro la pagina. */
+  var DIARIO=[];
+  /* IL DIARIO SOPRAVVIVE ALLA CHIUSURA.
+     Nessun provatore premera' un tasto mentre cammina, e quando racconta
+     il difetto l'app e' gia' stata chiusa e riaperta. Quindi il diario si
+     salva nel telefono (resta nel telefono: non va da nessuna parte) e
+     quando si riapre l'app quello di prima e' ancora li', sotto una riga
+     che dice «— sessione precedente —». Cosi' «ieri si bloccava» si
+     recupera il giorno dopo. */
+  (function(){
+    try{
+      var vecchio=localStorage.getItem('yourbea-diario');
+      if(vecchio){
+        DIARIO=vecchio.split('\n').slice(-150);
+        DIARIO.push('— sessione precedente, sopra —');
+      }
+    }catch(e){}
+    setInterval(function(){
+      try{ localStorage.setItem('yourbea-diario', DIARIO.slice(-300).join('\n')); }catch(e){}
+    },15000);
+    try{ window.addEventListener('pagehide',function(){
+      try{ localStorage.setItem('yourbea-diario', DIARIO.slice(-300).join('\n')); }catch(e){}
+    }); }catch(e){}
+  })();
+  (function(){
+    var prima = window.diario;
+    window.diario = function(t){
+      try{
+        var ora=new Date();
+        var hh=('0'+ora.getHours()).slice(-2)+':'+('0'+ora.getMinutes()).slice(-2)+':'+('0'+ora.getSeconds()).slice(-2);
+        DIARIO.push(hh+' '+t);
+        if(DIARIO.length>300)DIARIO.shift();
+      }catch(e){}
+      if(typeof prima==='function')try{ prima(t); }catch(e){}
+    };
+  })();
+  window.YB.diario=function(){ return DIARIO.join('\n'); };
+  window.YB.mandaDiario=function(){
+    var capo='Yourbea versione '+(typeof VERSIONE!=='undefined'?VERSIONE:'?')+
+             ' — diario del telefono\n'+(navigator.userAgent||'')+'\n';
+    try{ capo+='posizione: '+(S.pronto?(S.lat.toFixed(5)+','+S.lon.toFixed(5)+' prec '+Math.round(S.acc||0)+' m'):'non pronta')+
+               ' | modo: '+(S.racconta||'?')+' | voce: '+(S.voice?'si':'no')+'\n'; }catch(e){}
+    var testo=capo+'\n'+DIARIO.join('\n');
+    if(navigator.share){
+      navigator.share({title:'Diario di Yourbea', text:testo}).catch(function(){});
+      return true;
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(testo).then(function(){
+        parlaLibero('Il diario e negli appunti: incollalo in un messaggio.',GUIDA);
+      }).catch(function(){});
+      return true;
+    }
+    try{ location.href='mailto:?subject=Diario%20di%20Yourbea&body='+encodeURIComponent(testo.slice(0,1800)); }catch(e){}
+    return true;
+  };
   /* Per capire perche' qualcosa non parla: YB.diagnosi() dice cosa sa l'app
      in questo momento. Serve a me e a chi prova, non all'utente. */
   window.YB.diagnosi=function(){
@@ -8681,6 +8747,41 @@
     if(ascolto){ try{ascolto.stop();}catch(e){} ascolto=null; }
   }
 
+  /* ---------- IL GUARDIANO DEL SILENZIO ----------
+     «Si bloccava»: la parola che e' tornata per due giorni. Un'app che
+     tace non si accorge di tacere, e chi la usa non ha modo di capire se e'
+     rotta o se non c'e' niente da dire. Allora adesso se l'app non dice
+     niente da venti secondi, ma avrebbe qualcosa da dire — c'e' un luogo
+     intorno non ancora raccontato e nessuno sta parlando — lo dice a forza,
+     a livello guida, e scrive nel diario SBLOCCO con il motivo. Se invece
+     non ha niente da dire, tace in pace: il diario lo registra comunque,
+     e dal diario si vede la differenza fra le due cose. */
+  var ultimaParolaQuando=Date.now();
+  setInterval(function(){
+    try{
+      if(!S.voice||!S.pronto||!S.live)return;
+      if(staParlando){ ultimaParolaQuando=Date.now(); return; }
+      if(Date.now()-ultimaParolaQuando<20000)return;
+      if(meta||pending)return;
+      var q=around(true).filter(function(o){ return o.p.k===1 && o.m<260 && !giaDetto(o.p); });
+      if(!q.length){
+        if(window.diario)window.diario('SILENZIO da 20 s, ma non ho niente da dire qui');
+        ultimaParolaQuando=Date.now();
+        return;
+      }
+      var o=q[0];
+      if(window.diario)window.diario('SBLOCCO: zitto da 20 s con '+o.p.n+' a '+Math.round(o.m)+' m, lo dico');
+      segnaDetto(o.p);
+      var testa=(versoAffidabile()?side(o.rel):cardinale(o.p.lat,o.p.lon))+', '+metres(o.m);
+      var sp=testa+', '+o.p.n+'.';
+      liveEl.textContent=sp;
+      dire([versoAffidabile()?dirId(o.rel):cardId(o.p),metriId(o.m),poiId(o.p)+'-nome'],sp,GUIDA);
+      ultimaParolaQuando=Date.now();
+    }catch(e){
+      if(window.diario)window.diario('GUARDIANO: errore '+(e&&e.message));
+    }
+  },5000);
+
   /* ---------- il guardiano del microfono ----------
      Il microfono si chiude in un punto solo (micSpegni, quando l'app sta
      per parlare) e si riapre in un punto solo (micRiaccendi, quando ha
@@ -9087,6 +9188,8 @@
     });
     var bc=el('vai-casa');
     if(bc)bc.addEventListener('click',function(){audio();portamiACasa();});
+    var bd=el('manda-diario');
+    if(bd)bd.addEventListener('click',function(){ audio(); window.YB.mandaDiario(); });
     var bs=el('segna-casa');
     if(bs)bs.addEventListener('click',function(){audio();segnaCasaQui();});
     leggiCasa();
