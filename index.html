@@ -4888,10 +4888,18 @@
     try{ localStorage.setItem('yourbea-voce', JSON.stringify({chi:MIO_NUMERO, fino:Date.now()+quanto})); }catch(e){}
   }
   function altreCopieStannoParlando(){
+    /* IL LUCCHETTO VALE SOLO SE SONO IO QUELLO IN SECONDO PIANO.
+       Prima bastava che un'altra copia avesse il lucchetto perche' questa
+       tacesse, e il risultato e' stato un'app completamente muta in mano a
+       Vince: una copia dimenticata aperta da qualche parte teneva la
+       parola, e quella che lui aveva davanti non diceva piu' niente —
+       tasti compresi, perche' rispondono a voce.
+       Chi sta davanti all'utente parla sempre. Tace solo chi e' dietro. */
+    var nascosto=(typeof document!=='undefined') && document.hidden;
+    if(!nascosto) return false;
     var l=leggiLucchetto();
     if(l && l.chi!==MIO_NUMERO && l.fino>Date.now()) return true;
-    var nascosto=(typeof document!=='undefined') && document.hidden;
-    return !!(altriParlanoFino && Date.now()<altriParlanoFino && nascosto);
+    return !!(altriParlanoFino && Date.now()<altriParlanoFino);
   }
   function diciAlleAltreCopie(testo){
     var quanto=Math.min(16000,1200+(testo||'').length*55);
@@ -5239,7 +5247,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='83';
+  var VERSIONE='84';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che

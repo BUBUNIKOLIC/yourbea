@@ -317,3 +317,22 @@ prova('emergenza su emergenza: parla l\'ultima', async () => {
   console.log('\n' + (prove.length - falliti) + '/' + prove.length + ' prove passate');
   process.exit(falliti ? 1 : 0);
 })();
+
+/* Una copia in primo piano deve parlare SEMPRE.
+   Il 15/10 il lucchetto fra copie ha reso l'app completamente muta in mano
+   a Vince: una copia dimenticata altrove teneva la parola. Da allora il
+   lucchetto vale solo per chi sta in secondo piano. */
+(function(){
+  const s = require('fs').readFileSync(require('path').join(__dirname,'..','index.html'),'utf8');
+  const m = /function altreCopieStannoParlando\(\)\{([\s\S]*?)\n  \}/.exec(s);
+  if(!m){ console.log('NO  non trovo il controllo delle copie'); process.exitCode=1; return; }
+  const corpo = m[1];
+  const primaIlNascosto = corpo.indexOf('if(!nascosto) return false');
+  const poiIlLucchetto  = corpo.indexOf('leggiLucchetto');
+  if(primaIlNascosto<0 || (poiIlLucchetto>=0 && poiIlLucchetto<primaIlNascosto)){
+    console.log('NO  il lucchetto puo zittire una copia in primo piano: l app resta muta');
+    process.exitCode=1;
+  } else {
+    console.log('SI  una copia in primo piano parla sempre');
+  }
+})();
