@@ -5044,6 +5044,10 @@
         for(var q=0;q<inCoda.length;q++){
           if(normalizza(inCoda[q].testo)===normalizza(testo))return;
         }
+        // nel diario si deve vedere che e' MESSA IN FILA, non detta: se no
+        // la stessa frase compare due volte (quando arriva e quando parte)
+        // e sembra che l'app si ripeta quando invece sta aspettando
+        if(window.diario)try{ window.diario('IN FILA, parlera dopo: '+String(testo).slice(0,45)); }catch(e){}
         inCoda.push({ids:ids,testo:testo,liv:liv});
         inCoda.sort(function(a,b){ return b.liv-a.liv; });   // prima le importanti
         if(inCoda.length>4) inCoda.length=4;
@@ -5383,7 +5387,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='90';
+  var VERSIONE='91';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6830,11 +6834,18 @@
       return true;
     }
     dire(['frase-cerco'],'Cerco l\'indirizzo, un momento.',GUIDA);
-    // prima Photon: Nominatim rifiuta molte richieste
+    /* SE DICI LA CITTA', LA CITTA' SI RISPETTA.
+       «Portami a via Vincenzo Gioberti, Latina»: Photon ne trova tre — a
+       Cisterna di Latina, a Latina e ad Aprilia — e prendendo la prima
+       l'app lo portava a Cisterna, venti chilometri dalla via giusta. Il
+       nome della via non basta mai: in Italia le vie si chiamano tutte
+       uguali. Allora fra le risposte si cerca quella della citta' che hai
+       detto, e solo se nessuna combacia si prende la piu' vicina. */
+    var paroleCitta=cittaNelTesto(testo);
     var up='https://photon.komoot.io/api/?q='+encodeURIComponent(testo)+
-           '&lat='+S.lat+'&lon='+S.lon+'&limit=1';
+           '&lat='+S.lat+'&lon='+S.lon+'&limit=8';
     fetch(up).then(function(r){return r.json();}).then(function(d){
-      var f=(d.features||[])[0];
+      var f=scegliRisposta((d.features||[]),paroleCitta);
       if(f&&f.geometry&&f.geometry.coordinates){
         var pr=f.properties||{};
         var nome=[pr.name,pr.street,pr.city].filter(Boolean).slice(0,2).join(', ')||testo;
@@ -6844,15 +6855,111 @@
       cercaConNominatim();
     }).catch(function(){ cercaConNominatim(); });
     function cercaConNominatim(){
-    var url='https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=it'
-      +'&q='+encodeURIComponent(testo)
-      +'&viewbox='+(S.lon-0.08)+','+(S.lat+0.06)+','+(S.lon+0.08)+','+(S.lat-0.06)+'&bounded=1';
+    /* Il riquadro intorno a noi vale finche' la meta e' in citta'. Se hai
+       detto un'altra citta' — Latina da Roma sono sessanta chilometri —
+       con il riquadro non si trova niente, e l'app rispondeva «questo
+       indirizzo non l'ho trovato» per un indirizzo che esiste. */
+    var riquadro = paroleCitta.length ? ''
+      : '&viewbox='+(S.lon-0.08)+','+(S.lat+0.06)+','+(S.lon+0.08)+','+(S.lat-0.06)+'&bounded=1';
+    var url='https://nominatim.openstreetmap.org/search?format=json&limit=8&accept-language=it'
+      +'&q='+encodeURIComponent(testo)+riquadro;
     fetch(url).then(function(r){return r.json();}).then(function(j){
       if(!j||!j.length){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); return; }
-      portamiAlPunto(parseFloat(j[0].lat),parseFloat(j[0].lon),j[0].display_name.split(',').slice(0,2).join(', '));
+      var s=scegliDaNominatim(j,paroleCitta);
+      portamiAlPunto(parseFloat(s.lat),parseFloat(s.lon),s.display_name.split(',').slice(0,2).join(', '));
     }).catch(function(){ dire(['frase-indirizzo-non-trovato'],'Questo indirizzo non l\'ho trovato.',GUIDA); });
     }
     return true;
+  }
+  /* le parole che possono essere il nome della citta': quelle dopo la
+     virgola, o — se parli e la virgola non c'e' — le ultime due */
+  function cittaNelTesto(testo){
+    var t=normalizza(testo);
+    var pezzi=String(testo).split(',');
+    var coda = pezzi.length>1 ? normalizza(pezzi[pezzi.length-1]) : '';
+    if(!coda){
+      var p=t.split(' ');
+      coda = p.slice(-2).join(' ');
+    }
+    var fuori=['via','viale','piazza','corso','largo','vicolo','strada','numero',
+               'il','lo','la','di','del','della','dei','a','al','in','su','per'];
+    return coda.split(' ').filter(function(w){
+      return w.length>3 && fuori.indexOf(w)<0;
+    });
+  }
+  function combacia(dove,parole){
+    var d=normalizza(dove||'');
+    if(!d)return false;
+    for(var i=0;i<parole.length;i++){ if(d.indexOf(parole[i])>=0)return true; }
+    return false;
+  }
+  /* IL COMUNE DEVE COMBACIARE PER INTERO, non per un pezzo.
+     «Cisterna di Latina» contiene «Latina», e con il confronto per pezzi
+     vinceva lui: a 44 km dalla via che Vince aveva chiesto. Qui si chiede
+     che OGNI parola del nome del comune sia fra quelle che hai detto —
+     «Latina» passa, «Cisterna di Latina» no, e «Torre del Greco» passa se
+     l'hai detto tutto. */
+  function cittaCombacia(dove,parole){
+    var d=normalizza(dove||'');
+    if(!d||!parole.length)return false;
+    var minori=['di','del','della','dei','degli','in','sul','sui','a','al','la','il','lo','d'];
+    var sue=d.split(' ').filter(function(w){ return w && minori.indexOf(w)<0; });
+    if(!sue.length)return false;
+    for(var i=0;i<sue.length;i++){ if(parole.indexOf(sue[i])<0)return false; }
+    return true;
+  }
+  function scegliRisposta(lista,parole){
+    if(!lista.length)return null;
+    /* PRIMA IL COMUNE, LA PROVINCIA PER ULTIMA.
+       «Via Vincenzo Gioberti, Latina»: la via di **Cisterna di Latina** ha
+       `county: "Latina"`, perche' Latina e' anche la provincia. Guardando
+       tutti i campi insieme vinceva Cisterna, a 44 km dalla via giusta.
+       Quindi: prima si cerca chi ha quel nome come CITTA', e solo se
+       nessuno ce l'ha si guarda provincia e regione. */
+    if(parole.length){
+      var ordine=[
+        // 1. il comune, per intero: «Latina» sì, «Cisterna di Latina» no
+        function(pr){ return cittaCombacia(pr.city,parole); },
+        // 2. la frazione o il quartiere, per intero
+        function(pr){ return cittaCombacia(pr.locality,parole) || cittaCombacia(pr.district,parole); },
+        // 3. solo adesso provincia e regione, e anche per pezzi
+        function(pr){ return combacia([pr.county,pr.state,pr.name].join(' '),parole); }
+      ];
+      for(var g=0;g<ordine.length;g++){
+        for(var i=0;i<lista.length;i++){
+          if(ordine[g](lista[i].properties||{}))return lista[i];
+        }
+      }
+    }
+    // nessuna citta' detta, o nessuna che combacia: la piu' vicina a noi
+    var mig=lista[0],dm=Infinity;
+    lista.forEach(function(f){
+      var c=f.geometry&&f.geometry.coordinates; if(!c)return;
+      var d=dist(S.lat,S.lon,c[1],c[0]);
+      if(d<dm){dm=d;mig=f;}
+    });
+    return mig;
+  }
+  function scegliDaNominatim(lista,parole){
+    if(parole.length){
+      // il comune e' uno dei pezzi fra le virgole, e deve valere per intero:
+      // «Latina» non e' «Cisterna di Latina»
+      for(var i=0;i<lista.length;i++){
+        var pezzi=String(lista[i].display_name||'').split(',').map(function(x){ return normalizza(x); });
+        for(var k=0;k<pezzi.length;k++){
+          if(parole.indexOf(pezzi[k])>=0)return lista[i];
+        }
+      }
+      for(var j=0;j<lista.length;j++){
+        if(combacia(lista[j].display_name,parole))return lista[j];
+      }
+    }
+    var mig=lista[0],dm=Infinity;
+    lista.forEach(function(r){
+      var d=dist(S.lat,S.lon,parseFloat(r.lat),parseFloat(r.lon));
+      if(d<dm){dm=d;mig=r;}
+    });
+    return mig;
   }
   /* ---------- i servizi che non stanno nei nostri dati ----------
      Farmacie, fermate, pronto soccorso: non si possono scrivere a mano citta'
