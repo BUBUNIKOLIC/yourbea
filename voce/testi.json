@@ -11525,7 +11525,11 @@
  },
  {
   "id": "poi-642-scheda",
-  "testo": "Font Ludovisi, una delle fontane del centro di Roma."
+  "testo": "In via Abruzzi, nel quartiere Ludovisi: porta il nome della grande villa seicentesca dei Ludovisi, che stava qui e fu distrutta per costruire il quartiere."
+ },
+ {
+  "id": "poi-642-ancora",
+  "testo": "Da manuale: il nome è tutto quello che resta di Villa Ludovisi, una delle ville più grandi di Roma, costruita nel Seicento sul Pincio dentro l'area degli antichi Horti Sallustiani, i giardini degli imperatori. La volle il cardinale Ludovico Ludovisi, nipote di Gregorio Quindicesimo, che nel 1622 comprò Villa Orsini e la ampliò con le proprietà intorno, e la riempì di sculture antiche — un centinaio finirono poi allo Stato italiano. Alla fine dell'Ottocento la villa fu lottizzata e sparì sotto il quartiere che porta il suo nome. Di tutto quel parco, in queste strade, restano i nomi e qualche fontana."
  },
  {
   "id": "poi-643-nome",
@@ -11609,7 +11613,11 @@
  },
  {
   "id": "poi-649-scheda",
-  "testo": "Fontana di piazza dell'Aracoeli, una delle fontane del centro di Roma."
+  "testo": "Ai piedi del Campidoglio: una vasca su piede con gli stemmi, alimentata dalla ramificazione dell'Acqua Felice che Sisto V portò in questi rioni dopo il 1587."
+ },
+ {
+  "id": "poi-649-ancora",
+  "testo": "Da manuale: nasce da un'opera di ingegneria. Nel 1587 finì il restauro dell'antico acquedotto alessandrino, che da allora si chiamò Acqua Felice dal nome di papa Sisto V, Felice Peretti; subito dopo si cominciarono le ramificazioni sotterranee per portare l'acqua al Viminale, al Quirinale e a questi rioni, che ne erano scarsamente serviti. Ogni ramo finiva in una mostra, cioè in una fontana: quella è la ragione per cui a Roma le fontane sono tante e stanno dove stanno. Questa chiude il ramo ai piedi del Campidoglio, nel rione Campitelli."
  },
  {
   "id": "poi-650-nome",
@@ -11621,7 +11629,11 @@
  },
  {
   "id": "poi-650-scheda",
-  "testo": "Fontana di piazza delle Cinque Scole, una delle fontane del centro di Roma."
+  "testo": "Detta anche fontana del Pianto, nel Ghetto: è una delle fontane cinquecentesche dell'Acqua Felice, sistemata definitivamente in questa piazza nel 1930."
+ },
+ {
+  "id": "poi-650-ancora",
+  "testo": "Da manuale: la chiamano anche fontana del Pianto, e la sua storia è quella di un oggetto che ha cambiato posto. Nasce nel Cinquecento come mostra terminale di una ramificazione dell'Acqua Felice, l'acquedotto rimesso in funzione da Sisto V nel 1587, e arriva in questa piazza solo nel 1930, con i lavori che ridisegnarono il quartiere. È il caso più chiaro di una fontana romana che si legge male se non si sa da dove viene: le proporzioni sono fatte per un altro luogo."
  },
  {
   "id": "poi-651-nome",
@@ -11633,7 +11645,11 @@
  },
  {
   "id": "poi-651-scheda",
-  "testo": "Fontana del Trullo, una delle fontane del centro di Roma."
+  "testo": "Una delle più antiche fontane rinascimentali di Roma, del 1572: stava in piazza del Popolo, fu rimossa nell'Ottocento e dal 1950 sta in piazza Nicosia."
+ },
+ {
+  "id": "poi-651-ancora",
+  "testo": "Da manuale: è del 1572, fra le prime fontane rinascimentali della città, e fu costruita subito dopo il restauro dell'Acqua Vergine, finito nel 1570 — di nuovo, prima l'acquedotto, poi la fontana. Stava in piazza del Popolo e fu tolta nei primi anni dell'Ottocento, quando la piazza fu risistemata; dopo vicende varie, dal 1950 sta in piazza Nicosia. Il nome viene dalla forma della sua copertura, che ricordava un trullo. Spostata due volte in quattro secoli, è la prova che a Roma le fontane sono arredo mobile."
  },
  {
   "id": "poi-652-nome",
@@ -11657,7 +11673,11 @@
  },
  {
   "id": "poi-653-scheda",
-  "testo": "Fontana della Madonna dei Monti, una delle fontane del centro di Roma."
+  "testo": "In piazza della Madonna dei Monti: realizzata nel 1589 da Battista Rusconi su progetto di Giacomo Della Porta, alimentata dall'Acqua Felice."
+ },
+ {
+  "id": "poi-653-ancora",
+  "testo": "Da manuale: si chiama anche fontana dei Catecumeni e fu realizzata nel 1589 da Battista Rusconi su progetto di Giacomo Della Porta, l'architetto a cui Sisto V affidò buona parte delle mostre d'acqua dei nuovi rami dell'Acqua Felice. Il disegno è quello che Della Porta ripeté in mezza Roma: vasca mossa su gradini, catino centrale, getti brevi — un modello replicabile, perché le fontane andavano fatte in fretta e in serie. Chi ha occhio lo riconosce poi in altre piazze: è la firma di un programma, non di un capriccio."
  },
  {
   "id": "poi-654-nome",
@@ -11713,7 +11733,11 @@
  },
  {
   "id": "poi-657-scheda",
-  "testo": "Fontana di piazza colonna, una delle fontane del centro di Roma."
+  "testo": "A pochi metri dalla colonna di Marco Aurelio: una delle prime fontane dell'Acqua Vergine restaurata nel 1570, con la vasca di marmo e i due mascheroni."
+ },
+ {
+  "id": "poi-657-ancora",
+  "testo": "Da manuale: dopo il restauro dell'acquedotto dell'Acqua Vergine, finito nel 1570, si aprirono le ramificazioni verso il Campo Marzio, che era fra le zone più popolose di Roma, e con esse si progettarono le fontane. Dopo quella di piazza del Popolo e le due agli estremi di piazza Navona — del Moro e del Nettuno — venne questa, per incarico di papa Gregorio Tredicesimo. Sta a pochi metri dalla colonna di Marco Aurelio, che dà il nome alla piazza: una fontana del Cinquecento accanto a un monumento del Secondo secolo, e in mezzo il palazzo del governo. Tre Rome in venti metri."
  },
  {
   "id": "poi-658-nome",
@@ -11725,7 +11749,11 @@
  },
  {
   "id": "poi-658-scheda",
-  "testo": "Fontana di piazza Mastai, una delle fontane del centro di Roma."
+  "testo": "Al centro della piazza, fatta da Pio IX insieme al palazzo della manifattura dei tabacchi: è una delle ultime fontane papali, di poco prima del 1870."
+ },
+ {
+  "id": "poi-658-ancora",
+  "testo": "Da manuale: è una fontana che segna una data politica. Dopo il Risorgimento l'attività dei fontanieri romani si era quasi fermata — per forza maggiore e perché la città ne era già ben fornita — e nel 1860, l'anno in cui si dichiarava l'unità d'Italia, Pio Nono commissionò ad Antonio Sarti il grande palazzo della manifattura dei tabacchi qui a Trastevere, e con esso questa piazza e questa fontana. Quindi: una delle ultime opere pubbliche dello Stato pontificio, fatta mentre lo Stato pontificio stava finendo, in un quartiere operaio."
  },
  {
   "id": "poi-659-nome",
@@ -11749,7 +11777,11 @@
  },
  {
   "id": "poi-660-scheda",
-  "testo": "Fontana delle Cariatidi, una delle fontane del centro di Roma."
+  "testo": "In piazza dei Quiriti, rione Prati: quattro cariatidi nude che reggono la vasca, dal bando comunale del 1924 per cinque fontane monumentali."
+ },
+ {
+  "id": "poi-660-ancora",
+  "testo": "Da manuale: nasce da un concorso. Nel 1924 il Comune di Roma indisse un bando nazionale per arredare cinque piazze della città con altrettante fontane monumentali, e questa è quella di piazza dei Quiriti, nel rione Prati. Le cariatidi nude fecero scandalo negli ambienti più puritani, non solo per la nudità ma per la posizione delle statue: era già successo nel 1901 con le Naiadi dell'allora piazza Esedra. Vale saperlo perché dice una cosa sulla città: a Roma le polemiche sulle fontane nuove si ripetono identiche a distanza di una generazione."
  },
  {
   "id": "poi-661-nome",
@@ -11761,7 +11793,11 @@
  },
  {
   "id": "poi-661-scheda",
-  "testo": "Fontana di Maderno, una delle fontane del centro di Roma."
+  "testo": "Una delle due fontane gemelle di piazza San Pietro, sull'asse maggiore dell'ellisse: è la più antica delle due, alimentata dall'Acqua Paola."
+ },
+ {
+  "id": "poi-661-ancora",
+  "testo": "Da manuale: all'inizio del Seicento le zone a destra del Tevere — Trastevere, Borgo, il Vaticano — erano ancora mal servite d'acqua, e fu uno dei primi problemi che papa Paolo Quinto affrontò appena eletto: i lavori partirono nel 1608 e nel 1610 l'Acqua Paola era in funzione, con condotte secondarie che arrivavano fin qui. Questa è la fontana di Carlo Maderno, la prima delle due gemelle; l'altra, sul lato opposto dell'ellisse, fu aggiunta dopo per dare simmetria al colonnato del Bernini. Una fontana che esiste perché esiste un acquedotto, e che poi è diventata parte di una scenografia."
  },
  {
   "id": "poi-662-nome",
@@ -11773,7 +11809,11 @@
  },
  {
   "id": "poi-662-scheda",
-  "testo": "Fontana di Bernini, una delle fontane del centro di Roma."
+  "testo": "La seconda delle due fontane gemelle di piazza San Pietro: fu aggiunta per fare simmetria a quella di Maderno dentro il disegno della piazza ellittica."
+ },
+ {
+  "id": "poi-662-ancora",
+  "testo": "Da manuale: le due fontane di piazza San Pietro sembrano nate insieme e non lo sono. La prima è di Carlo Maderno, alimentata dall'Acqua Paola che Paolo Quinto portò qui fra il 1608 e il 1610; questa è la gemella, aggiunta sull'altro ramo dell'asse maggiore quando Bernini disegnò la piazza ellittica col colonnato, perché la simmetria lo richiedeva. È il modo in cui lavora una grande scenografia barocca: si prende quello che c'è, si duplica, e l'insieme diventa una cosa sola. Chi le guarda bene nota che i dettagli non sono identici."
  },
  {
   "id": "poi-663-nome",
@@ -11797,7 +11837,11 @@
  },
  {
   "id": "poi-664-scheda",
-  "testo": "Fontana di piazza San Simeone, una delle fontane del centro di Roma."
+  "testo": "Nella piazzetta di San Simeone: fontana di origine cinquecentesca, spostata più volte e sistemata qui nel 1973."
+ },
+ {
+  "id": "poi-664-ancora",
+  "testo": "Da manuale: l'origine è cinquecentesca e nasce dal solito meccanismo — portare l'acqua ai colli Viminale e Quirinale e poi verso l'isola Tiberina, e costruire le mostre alla fine dei rami. Ma questa fontana è arrivata qui solo nel 1973: nel frattempo era stata smontata e tenuta altrove. A Roma ci sono diverse fontane così, rimontate nel Novecento in piazze che non erano le loro: la piazzetta di San Simeone, piccola e appartata, le ha dato un posto migliore di quello che aveva prima."
  },
  {
   "id": "poi-665-nome",
@@ -11857,7 +11901,11 @@
  },
  {
   "id": "poi-669-scheda",
-  "testo": "Fontana di piazza del Viminale, una delle fontane del centro di Roma."
+  "testo": "Davanti al Ministero dell'Interno: la progettò Publio Morbiducci nel 1929, insieme alla sistemazione della piazza; ultimo restauro nel 1999."
+ },
+ {
+  "id": "poi-669-ancora",
+  "testo": "Da manuale: è una fontana del Novecento con un compito urbanistico. Dieci anni dopo che il palazzo del Viminale era finito, nel 1929, a Publio Morbiducci fu dato l'incarico di modificare e arredare la piazza davanti, e la fontana fa parte di quel lavoro: sta al centro, fra le rampe carrabili circolari che portano all'ingresso del ministero. Serve a dare un fuoco a uno spazio nato come svincolo. L'ultimo restauro è del 1999. È il caso in cui la fontana non viene dopo un acquedotto, ma dopo un palazzo di governo."
  },
  {
   "id": "poi-670-nome",
