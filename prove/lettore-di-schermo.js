@@ -8,7 +8,7 @@
    Si lancia dentro PROVA-TUTTO (senza rete: legge il codice). */
 const fs = require('fs');
 const path = require('path');
-const s = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const s = fs.readFileSync(process.env.PAGINA || path.join(__dirname, '..', 'index.html'), 'utf8');
 let guai = [], note = [];
 
 // 1 - il riquadro del parlato non deve annunciarsi da solo
@@ -36,6 +36,25 @@ if (!/aria-hidden','true'\)/.test(s.replace(/"/g, "'")) || !/mp\.setAttribute/.t
 
 // 5 - la lingua va dichiarata, se no legge con l'accento sbagliato
 if (!/<html[^>]*lang="it"/.test(s)) guai.push('manca lang="it" sulla pagina');
+
+/* 6 - UN TASTO PREMUTO DEVE RISPONDERE SUBITO.
+   Chi non vede non ha modo di sapere se il tasto ha preso: se l'app tace,
+   per lui e' rotta e lo premera' di nuovo. Due casi veri, trovati provando
+   la 89 il 15/10:
+   - il 🆘 diceva le scelte dopo 2.600 ms: quasi tre secondi di silenzio
+     dopo aver premuto il tasto dell'emergenza;
+   - «Approfondisci» premuto senza una domanda aperta non diceva niente. */
+const aiuto = /YB\.vaiAiuto\s*=\s*function\(\)\{([\s\S]*?)\n  \};/.exec(s);
+if (!aiuto) note.push('non trovo YB.vaiAiuto: controlla a mano che il 🆘 parli subito');
+else {
+  const ritardi = [...aiuto[1].matchAll(/setTimeout\([\s\S]{0,400}?,\s*(\d+)\s*\)/g)].map((m) => +m[1]);
+  const tardi = ritardi.filter((n) => n > 800);
+  if (tardi.length) guai.push('il 🆘 parla dopo ' + tardi.join(', ') + ' ms: chi lo preme sente silenzio e lo premera di nuovo');
+}
+const prof = /function deepen\(\)\{([\s\S]*?)\n  \}/.exec(s);
+if (!prof) note.push('non trovo deepen(): controlla a mano che «approfondisci» risponda sempre');
+else if (/if\(!pending\)return;/.test(prof[1]))
+  guai.push('«approfondisci» senza una domanda aperta non dice niente: chi non vede preme e non sa perche tace');
 
 if (guai.length) { console.log('NO  lettore di schermo: ' + guai.length + ' cose da sistemare');
   guai.forEach((g) => console.log('      - ' + g)); }

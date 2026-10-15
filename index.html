@@ -5383,7 +5383,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='89';
+  var VERSIONE='90';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5455,14 +5455,19 @@
     var pan=document.getElementById('pannello-aiuto');
     if(!pan)return;
     try{ pan.scrollIntoView({block:'start'}); }catch(e){ location.hash='#pannello-aiuto'; }
-    YB.apri();
-    // e si dice ad alta voce che cosa c'è: chi non vede deve saperlo senza guardare
+    /* SUBITO, non dopo tre secondi.
+       Prima le scelte partivano a 2.600 ms, per lasciar dire prima la via.
+       Ma chi preme il tasto rosso lo preme perche' ha un problema adesso:
+       premeva e per quasi tre secondi non sentiva niente — e al buio tre
+       secondi di silenzio vogliono dire «non ha funzionato», quindi premeva
+       di nuovo. La via arriva dopo: e' GUIDA, e aspetta dietro
+       all'emergenza senza accavallarsi. */
+    var scelte='Aiuto. Dì chiama per il 112, oppure commissariato, pronto soccorso, '+
+               'farmacia, portami a casa. Oppure: mi hanno rubato il portafoglio.';
+    try{ liveEl.textContent=scelte; }catch(e){}
     setTimeout(function(){
-      var scelte='Aiuto. Dì chiama per il 112, oppure commissariato, pronto soccorso, '+
-                 'farmacia, portami a casa. Oppure: mi hanno rubato il portafoglio.';
-      try{ liveEl.textContent=scelte; }catch(e){}
       try{ dire(['frase-scelte-aiuto'],scelte,EMERGENZA); }catch(e){ try{ speak(scelte,true); }catch(_){} }
-    }, 2600);
+    }, 150);
   };
   YB.apri = function(){
     var pan=document.getElementById('pannello-aiuto');
@@ -5756,7 +5761,23 @@
   }
 
   function deepen(){
-    if(!pending)return;
+    /* PRIMA RESTAVA ZITTO.
+       «Approfondisci» funzionava solo subito dopo un annuncio, quando c'era
+       una domanda aperta. Premuto in qualunque altro momento — appena entrato,
+       o dopo che la domanda era scaduta — non diceva niente: e chi non vede
+       preme, non sente nulla e non sa se ha sbagliato lui, se l'app e' rotta
+       o se il tasto non c'e'. E' lo stesso difetto che «vai oltre» aveva e
+       che era stato corretto; qui era rimasto.
+       Ora approfondisce quello che hai piu' vicino, e se non c'e' niente da
+       raccontare lo dice. */
+    if(!pending){
+      var qui=around();
+      if(!qui||!qui.length){
+        dire(['frase-niente-intorno'],'Qui intorno non ho niente da raccontare.',GUIDA);
+        return;
+      }
+      pending={p:qui[0].p};
+    }
     var o=pending;
     clearTimeout(pendingTimer);
     choiceEl.hidden=true;
