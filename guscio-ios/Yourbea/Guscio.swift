@@ -57,6 +57,13 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   // MARK: la pagina
 
   private func apriLaPagina() {
+    /* LA CACHE SI BUTTA A OGNI AVVIO. Senza, il telefono tiene i file per
+       dieci minuti: si corregge un difetto, si pubblica, si riapre l'app e
+       si sente ancora quello vecchio — e si cerca un errore che non c'è
+       più. Ci sono andati via due giorni, in questo modo. */
+    URLCache.shared.removeAllCachedResponses()
+    HTTPCookieStorage.shared.cookies?.forEach { HTTPCookieStorage.shared.deleteCookie($0) }
+
     let config = WKWebViewConfiguration()
     config.allowsInlineMediaPlayback = true
     /* le clip partono da sole: chi non vede non può premere «play» */
@@ -80,7 +87,9 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     ])
     var u = URLComponents(string: INDIRIZZO)!
     u.queryItems = [URLQueryItem(name: "guscio", value: "ios")]
-    pagina.load(URLRequest(url: u.url!))
+    var richiesta = URLRequest(url: u.url!)
+    richiesta.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+    pagina.load(richiesta)
   }
 
   /* IL PONTE: le quattro porte, scritte nella pagina prima che parta. */
