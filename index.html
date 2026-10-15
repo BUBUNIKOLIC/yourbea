@@ -5201,7 +5201,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='77';
+  var VERSIONE='78';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5660,7 +5660,7 @@
   function parlaLibero(testo,livello){ dire([LIBERO],testo,livello); }
 
   var viaSotto='', viaDetta='', viaQuando=0, viaLat=0, viaLon=0;
-  var incrocioDetto='', incrocioQuando=0;
+  var incrocioDetto='', incrocioQuando=0, invitiFatti=0;
 
   function nomeViaIn(lat,lon,quando){
     if(!window.fetch){quando('');return;}
@@ -5713,7 +5713,12 @@
         if(la===incrocioDetto)return;          // gia' detto, non si ripete
         incrocioDetto=la; incrocioQuando=Date.now();
         // come per gli attraversamenti: la distanza esatta il GPS non la sa
-        parlaLibero('Pi\u00f9 avanti, incrocio con '+la+'.',GUIDA);
+        // L'invito a chiedere: l'app sa che c'e' l'incrocio, non sa dove
+        // si attraversa, e a chi non vede va detto.
+        invitiFatti++;
+        var inv = (invitiFatti<=2 || invitiFatti%4===0)
+          ? ' Se devi attraversare, meglio chiedere a qualcuno.' : '';
+        parlaLibero('Pi\u00f9 avanti c\u2019\u00e8 un incrocio, con '+la+'.'+inv,GUIDA);
       });
     });
   }
@@ -5916,8 +5921,12 @@
     else if(mig.m <= errore*2.5) dove = 'poco pi\u00f9 avanti';
     else                         dove = 'pi\u00f9 avanti su questa strada';
     var testo;
-    if(mig.o.cosa==='attraversamento')
-      testo = 'Attraversamento '+dove+(mig.o.extra ? ', '+mig.o.extra : '')+'.';
+    if(mig.o.cosa==='attraversamento'){
+      invitiFatti++;
+      var agg = (invitiFatti<=2 || invitiFatti%5===0)
+        ? ' Il punto preciso non te lo so dire: cercalo col bastone, o chiedi.' : '';
+      testo = 'Attraversamento '+dove+(mig.o.extra ? ', '+mig.o.extra : '')+'.'+agg;
+    }
     else if(mig.o.cosa==='semaforo')
       testo = 'Semaforo '+dove+'.';
     else
