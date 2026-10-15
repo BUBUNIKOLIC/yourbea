@@ -4820,19 +4820,22 @@
     CANALE.onmessage=function(ev){
       var m=ev&&ev.data; if(!m)return;
       if(m.tipo==='parlo'){
+        var nascosto=(typeof document!=='undefined')&&document.hidden;
         // un'altra copia sta parlando: se io sono nascosto taccio del tutto,
         // se sono in primo piano la lascio finire e aspetto il mio turno
         altriParlanoFino=Date.now()+(m.quanto||6000);
-        if(document.hidden){ try{ zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }catch(e){} }
+        if(nascosto){ try{ zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }catch(e){} }
       }
     };
     // quando questa copia torna in primo piano, riprende lei
+    if(typeof document==='undefined'||!document.addEventListener)return;
     document.addEventListener('visibilitychange',function(){
       if(!document.hidden){ altriParlanoFino=0; try{ CANALE.postMessage({tipo:'sveglia'}); }catch(e){} }
     });
   })();
   function altreCopieStannoParlando(){
-    return !!(altriParlanoFino && Date.now()<altriParlanoFino && document.hidden);
+    var nascosto = (typeof document!=='undefined') && document.hidden;
+    return !!(altriParlanoFino && Date.now()<altriParlanoFino && nascosto);
   }
   function diciAlleAltreCopie(testo){
     if(!CANALE)return;
@@ -5169,7 +5172,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='69';
+  var VERSIONE='70';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
