@@ -5172,7 +5172,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='71';
+  var VERSIONE='72';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6022,6 +6022,28 @@
   }
 
 
+
+  /* ---------- una porta sola per la posizione ----------
+     Dentro il guscio iPhone la posizione arriva dall'app (CoreLocation) e
+     la pagina non deve chiederla: ogni chiamata a navigator.geolocation
+     fa comparire il dialogo «bubunikolic.github.io vorrebbe utilizzare la
+     tua posizione», che chi non vede non sa nemmeno che c'e'.
+     Tutte le richieste di posizione passano di qui. */
+  function chiediPosizione(quando, seNo, opzioni){
+    if(window.urbeaHaPosizione){
+      if(window.__ultimaNativa){ quando(window.__ultimaNativa); return; }
+      // l'app non l'ha ancora mandata: si aspetta la prima, senza chiedere
+      var atteso=0;
+      var spia=setInterval(function(){
+        if(window.__ultimaNativa){ clearInterval(spia); quando(window.__ultimaNativa); return; }
+        if(++atteso>40){ clearInterval(spia); if(seNo)seNo({code:3,message:'posizione non ancora pronta'}); }
+      },250);
+      return;
+    }
+    if(!navigator.geolocation){ if(seNo)seNo({code:2,message:'niente GPS'}); return; }
+    navigator.geolocation.getCurrentPosition(quando, seNo, opzioni);
+  }
+
   /* ---------- la posizione quando l'app e' un'app ----------
      Dentro il guscio iPhone la pagina chiedeva il permesso di posizione per
      conto suo, e iOS mostrava un dialogo con scritto il nome del dominio:
@@ -6035,8 +6057,8 @@
       var p={coords:{latitude:lat,longitude:lon,accuracy:(prec>0?prec:12),
                      heading:(rotta>=0?rotta:null),speed:(velocita>=0?velocita:null)},
              timestamp:Date.now()};
+      window.__ultimaNativa=p;
       if(typeof window.__daNativo==='function') window.__daNativo(p);
-      else window.__ultimaNativa=p;
     }catch(e){}
   };
 
@@ -6321,9 +6343,9 @@
     if(!el('porta').hidden){ el('porta-via').hidden=false; }
   }
   function dovesiamo(){
-    if(!navigator.geolocation)return;
+    if(!window.urbeaHaPosizione && !navigator.geolocation)return;
     statusEl.textContent='cerco dove ti trovi…';
-    navigator.geolocation.getCurrentPosition(function(pos){
+    chiediPosizione(function(pos){
       S.lat=pos.coords.latitude; S.lon=pos.coords.longitude;
       S.acc=pos.coords.accuracy||null; S.pronto=true;
       caricaRegione();
@@ -7502,11 +7524,11 @@
       S.libero=false;
       // la posizione si chiede PRIMA di mostrare l'elenco: a un turista a
       // Roma non interessa sapere che esiste una passeggiata a Torre del Greco
-      if(!S.pronto && navigator.geolocation){
+      if(!S.pronto && (window.urbeaHaPosizione || navigator.geolocation)){
         var e2a=el('porta-elenco');
         if(e2a){ e2a.textContent=''; var att=document.createElement('option');
                  att.textContent='cerco dove sei…'; e2a.appendChild(att); e2a.hidden=false; }
-        navigator.geolocation.getCurrentPosition(function(pos){
+        chiediPosizione(function(pos){
           S.lat=pos.coords.latitude; S.lon=pos.coords.longitude;
           S.acc=pos.coords.accuracy||null; S.pronto=true;
           try{caricaRegione();}catch(e){}
