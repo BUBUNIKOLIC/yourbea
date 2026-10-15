@@ -5039,7 +5039,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='54';
+  var VERSIONE='55';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6165,6 +6165,62 @@
     'posteggio taxi':['taxi'],
     'ufficio postale':['poste','ufficio postale']
   };
+
+  /* ---------- trovare un servizio vicino ----------
+     Photon cerca per NOME, non per vicinanza: chiedendogli «farmacia» trova
+     solo quelle che si chiamano letteralmente Farmacia, e la Farmacia
+     Corsetti — che ha un nome proprio — non la vede. Da via dei Corazzieri
+     mandava a 2,1 chilometri avendone una a seicento metri.
+     Nominatim invece cerca dentro un riquadro: gli si dà la categoria OSM e
+     i quattro angoli intorno a te, e risponde con quello che c'e' li'.
+     E' la fonte giusta per «la farmacia piu' vicina», e si usa per prima. */
+  var PAROLA_OSM={
+    'pronto soccorso':'hospital', ospedale:'hospital', farmacia:'pharmacy',
+    commissariato:'police', fermata:'bus stop', stazione:'railway station',
+    'posteggio taxi':'taxi', supermercato:'supermarket', bar:'cafe',
+    ristorante:'restaurant', panificio:'bakery', 'ufficio postale':'post office',
+    banca:'bank', municipio:'townhall', distributore:'fuel',
+    chiesa:'place of worship', museo:'museum'
+  };
+  var ultimoNominatim=0;
+  function cercaInNominatim(tipo,cb){
+    var parola=PAROLA_OSM[tipo];
+    if(!parola||!window.fetch){cb(null);return;}
+    // Nominatim chiede di non essere tempestato: una ricerca ogni tre secondi
+    var attesa=Math.max(0, 3000-(Date.now()-ultimoNominatim));
+    setTimeout(function(){
+      ultimoNominatim=Date.now();
+      // un riquadro di circa un chilometro e mezzo per lato intorno a te
+      var dlat=0.009, dlon=0.012/Math.cos(S.lat*Math.PI/180);
+      var vb=(S.lon-dlon)+','+(S.lat+dlat)+','+(S.lon+dlon)+','+(S.lat-dlat);
+      var u='https://nominatim.openstreetmap.org/search?format=json&limit=20&bounded=1'+
+            '&q='+encodeURIComponent(parola)+'&viewbox='+vb;
+      var stop=null,orologio=null;
+      try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},8000); }catch(e){}
+      fetch(u,{signal:stop?stop.signal:undefined,headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(orologio)clearTimeout(orologio);
+          var mig=null,dmin=Infinity;
+          (d||[]).forEach(function(x){
+            var la=parseFloat(x.lat), lo=parseFloat(x.lon);
+            if(!isFinite(la)||!isFinite(lo))return;
+            var dd=dist(S.lat,S.lon,la,lo);
+            if(dd<dmin){
+              dmin=dd;
+              // «Farmacia Corsetti, 37, Viale dell'Aeronautica, E.U.R., ...»:
+              // il nome e' il primo pezzo
+              var nome=(x.display_name||'').split(',')[0].trim() ||
+                       (tipo.charAt(0).toUpperCase()+tipo.slice(1));
+              mig={n:nome,lat:la,lon:lo,t:tipo,k:0,d:''};
+            }
+          });
+          if(mig)cb({p:mig,d:dmin}); else cb(null);
+        })
+        .catch(function(){ if(orologio)clearTimeout(orologio); cb(null); });
+    }, attesa);
+  }
+
   function cercaInPhoton(tipo,cb){
     var parole=PAROLE_PHOTON[tipo]||[tipo];
     var restano=parole.length, migliore=null, risposto=false;
@@ -6291,13 +6347,17 @@
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
       dire(['frase-cerco'],"Cerco l'indirizzo, un momento.",GUIDA);
-      cercaInPhoton(tipo,function(r){
-        if(mia!==richiestaN)return;           // nel frattempo ha chiesto altro
-        if(r){ vaiVerso(r); return; }
-        cercaInOSM(tipo,function(r2){
-          if(mia!==richiestaN)return;
-          if(!r2){ dire(['frase-niente-di-questi'],'Qui vicino non ne trovo.'); return; }
-          vaiVerso(r2);
+      cercaInNominatim(tipo,function(r0){
+        if(mia!==richiestaN)return;
+        if(r0){ vaiVerso(r0); return; }
+        cercaInPhoton(tipo,function(r){
+          if(mia!==richiestaN)return;           // nel frattempo ha chiesto altro
+          if(r){ vaiVerso(r); return; }
+          cercaInOSM(tipo,function(r2){
+            if(mia!==richiestaN)return;
+            if(!r2){ dire(['frase-niente-di-questi'],'Qui vicino non ne trovo.',GUIDA); return; }
+            vaiVerso(r2);
+          });
         });
       });
       return true;
