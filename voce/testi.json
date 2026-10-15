@@ -5740,6 +5740,10 @@
   "testo": "Sul Ponte Vecchio, guardare la fila di finestrelle quadrate sopra le botteghe: è il corridoio. E all'estremità sud, la deviazione attorno alla torre dei Mannelli."
  },
  {
+  "id": "poi-350-ancora",
+  "testo": "Da manuale: è una strada privata sopraelevata, lunga quasi un chilometro, che Cosimo I fece aprire nel 1565 per passare da Palazzo Vecchio a Palazzo Pitti senza mettere piede in strada: attraversa gli Uffizi e scavalca l'Arno passando sopra le botteghe del Ponte Vecchio. Il progetto è di Giorgio Vasari, che stava già costruendo gli Uffizi, e il cantiere durò nove mesi: aperto il 12 marzo 1565, chiuso il 17 dicembre dello stesso anno. Guardandolo dal lungarno si riconosce il loggiato degli Archibusieri, che nasceva aperto e nel 1572 fu già chiuso in botteghe. Le tre finestre grandi al centro del ponte sono del 1938. È l'architettura del potere nella sua forma più nuda: un corridoio che passa sopra la città."
+ },
+ {
   "id": "poi-351-nome",
   "testo": "Ponte Vecchio"
  },
@@ -5956,6 +5960,10 @@
   "testo": "In alto, la loggia aperta aggiunta nel Quattrocento, e sotto il grande stemma dei Davanzati."
  },
  {
+  "id": "poi-361-ancora",
+  "testo": "Da manuale: è la casa di un mercante del Trecento, ed è il tipo edilizio intermedio fra la torre medievale e il palazzo rinascimentale: costruito verso la metà del secolo dai Davizzi, dell'arte di Calimala, passò ai Bartolini nel 1516 e nel 1578 a Bernardo Davanzati, la cui famiglia si estinse nel 1838. Fu anche sede degli Ufficiali della Decima, l'ufficio delle denunce dei beni per le tasse. Alla fine del Settecento ci stava l'Accademia degli Armonici, dove suonarono Luigi Cherubini e Pietro Nardini. Oggi è il Museo della Casa fiorentina antica, cioè l'unico posto in città dove si vede come si abitava davvero, non come si rappresentava."
+ },
+ {
   "id": "poi-362-nome",
   "testo": "Piazza della Repubblica"
  },
@@ -5970,6 +5978,10 @@
  {
   "id": "poi-362-dentro",
   "testo": "La Colonna dell'Abbondanza al centro, che segna l'incrocio del cardo e del decumano romani: è l'unico pezzo rimasto dal passato."
+ },
+ {
+  "id": "poi-362-ancora",
+  "testo": "Da manuale: questa piazza è un vuoto costruito a tavolino. È il risultato più visibile del Risanamento, l'operazione urbanistica che seguì gli anni in cui Firenze fu capitale del Regno d'Italia, dal 1865 al 1871: qui c'erano il Mercato Vecchio e il Ghetto, dove Cosimo I aveva obbligato gli ebrei a risiedere dal 1571, e furono demoliti. Il rettangolo misura circa settantacinque metri per cento, con i portici e gli edifici di gusto ottocentesco che non hanno niente a che vedere col tessuto medievale intorno. Entrando da via degli Speziali o da via Roma il salto si sente nei materiali e nell'altezza: si passa da vicoli di pietra a una piazza da capitale."
  },
  {
   "id": "poi-363-nome",
@@ -5988,6 +6000,10 @@
   "testo": "Il Porcellino, la fontana col cinghiale di bronzo di Pietro Tacca, 1634: il muso è lucido perché lo toccano tutti."
  },
  {
+  "id": "poi-363-ancora",
+  "testo": "Da manuale: è una loggia di mercato cinquecentesca, voluta da Cosimo I e costruita fra il 1547 e il 1551 su progetto di Giovanni Battista del Tasso, che era un legnaiolo. Serviva al commercio della seta e degli oggetti preziosi, e sopra le volte stavano gli stanzoni dell'archivio degli atti notarili, raggiungibili con le scalette a chiocciola ricavate nei pilastri d'angolo: i documenti si tenevano in alto per salvarli dalle piene. Si contano venti colonne composite e otto pilastri di pietra con nicchie e tabernacoli, archi a tutto sesto e volte a vela, e al centro di ogni volta un rosone con l'impresa medicea dell'anello di diamante e il motto Semper. Fu restaurata nel 1838 da Paolo Veraci."
+ },
+ {
   "id": "poi-364-nome",
   "testo": "Badia Fiorentina"
  },
@@ -6002,6 +6018,10 @@
  {
   "id": "poi-364-dentro",
   "testo": "Il chiostro degli Aranci, al primo piano, con il ballatoio a due ordini e gli affreschi sulla vita di san Benedetto."
+ },
+ {
+  "id": "poi-364-ancora",
+  "testo": "Da manuale: l'abbazia fu fondata nel 978, voluta dalla famiglia di Willa di Toscana e del marchese Ugo, ed è la badia che sta al centro delle cinque benedettine disposte intorno a Firenze come ai punti cardinali. Il rifacimento gotico del 1285 è di Arnolfo di Cambio, che fece una cosa radicale: girò la chiesa, portando l'abside su via del Proconsolo. Nel 1307 il campanile fu abbattuto sotto la metà per punire i monaci che non volevano pagare una tassa cittadina e si erano barricati suonando le campane per chiamare il popolo — lo racconta Giovanni Villani. Sulla base quadrangolare rimasta il cardinale Orsini fece costruire fra il 1310 e il 1330 il campanile esagonale che si vede oggi, fra le torri di Palazzo Vecchio e del Bargello."
  },
  {
   "id": "poi-365-nome",
@@ -6020,6 +6040,10 @@
   "testo": "La Cappella Sassetti, a destra del presbiterio, con gli affreschi di Domenico Ghirlandaio: dentro le scene sacre ci sono piazza Santa Trinita e piazza della Signoria dipinte come erano nel 1485."
  },
  {
+  "id": "poi-365-ancora",
+  "testo": "Da manuale: è una delle prime chiese gotiche di Firenze, seconda solo a Santa Maria Novella, i cui lavori erano cominciati nel 1242. Qui l'ampliamento gotico fu avviato fra il 1250 e il 1258, su un progetto che si attribuisce a Neri di Fioravanti — qualcuno dice Nicola Pisano — al posto di una chiesa più antica dedicata a Santa Maria dello Spasimo, documentata dal 1077 e dei vallombrosani, la congregazione benedettina fondata a Firenze da san Giovanni Gualberto. Il cantiere corse fra il 1300 e il 1330, si fermò con la peste del 1348 e riprese dal 1365 al 1405. Una cosa da sapere per non sbagliare: il nome si pronuncia Trìnita, con l'accento sulla prima i, come il latino."
+ },
+ {
   "id": "poi-366-nome",
   "testo": "Ponte Santa Trinita"
  },
@@ -6034,6 +6058,10 @@
  {
   "id": "poi-366-dentro",
   "testo": "Guardarlo di profilo dal Ponte Vecchio: la linea dell'arcata è il pezzo di geometria più bello della città."
+ },
+ {
+  "id": "poi-366-ancora",
+  "testo": "Da manuale: questo ponte è la storia delle piene dell'Arno scritta in pietra. Il primo, di legno, è del 1252, voluto da Lamberto de' Frescobaldi; la piena del 1269 lo portò via, e fu rifatto in pietra da fra' Sisto e fra' Ristoro; cedette sotto la piena del 1333, quella che a Firenze risparmiò solo il ponte alle Grazie. La riedificazione successiva durò mezzo secolo, dal 1356 al 1415, su progetto riferito a Taddeo Gaddi, e anche quel ponte cedette con l'alluvione del 13 settembre 1557. Le forme attuali sono il rifacimento su progetto di Bartolomeo Ammannati: tre arcate molto schiacciate, con una curva bassa e tesa che si riconosce a prima vista fra tutti i ponti della città."
  },
  {
   "id": "poi-367-nome",
@@ -6152,6 +6180,10 @@
   "testo": "Le due fontane di Pietro Tacca con i mostri marini, e la statua equestre di Ferdinando I fusa col bronzo dei cannoni turchi."
  },
  {
+  "id": "poi-372-ancora",
+  "testo": "Da manuale: è la piazza che in Firenze esprime meglio l'idea rinascimentale di città, e lo fa con un espediente semplice: portici su tre lati e due palazzi gemelli sul quarto, che inquadrano la vista della cupola del Brunelleschi lungo la linea retta di via dei Servi. La storia parte dalla chiesa dei Servi di Maria, fondata per tradizione nel 1233; nel 1250 si cominciò la basilica più grande, fra il 1255 e il 1256 si aprì via de' Servi per collegarla al centro, e nel 1299 il Comune stanziò quattrocento fiorini perché i frati comprassero il terreno davanti e ne facessero una piazza. Al centro c'è il monumento equestre a Ferdinando I de' Medici, del Giambologna, finito da Pietro Tacca."
+ },
+ {
   "id": "poi-373-nome",
   "testo": "Basilica della Santissima Annunziata"
  },
@@ -6166,6 +6198,10 @@
  {
   "id": "poi-373-dentro",
   "testo": "Il Chiostrino dei Voti, appena entrati, con gli affreschi di Andrea del Sarto e del Pontormo."
+ },
+ {
+  "id": "poi-373-ancora",
+  "testo": "Da manuale: è il principale santuario mariano di Firenze e la casa madre dei Servi di Maria. Alle origini, per tradizione dal 1081, c'era un oratorio dedicato alla Madonna, fondato ai tempi di Matilde di Canossa come ex-voto per la fine dell'assedio di Enrico IV. Nel 1233 era quasi abbandonato, e lo chiesero al vescovo Ardingus sette giovani fiorentini che quell'anno, il 15 agosto e l'8 settembre, dissero di aver visto due volte la Vergine piangere per le discordie della città. La prima pietra della basilica grande è del 1250: la prima notizia sicura è un atto notarile del 17 marzo di quell'anno, firmato dal vescovo di Siena Bonfiglio perché la sede di Firenze era vacante. Qui si celebrava il capodanno fiorentino, il 25 marzo."
  },
  {
   "id": "poi-374-nome",
@@ -6244,6 +6280,10 @@
   "testo": "La copia in bronzo del David al centro, e la fuga dei ponti verso ovest nelle ore della sera."
  },
  {
+  "id": "poi-377-ancora",
+  "testo": "Da manuale: il belvedere più famoso di Firenze non è un caso fortunato, è un progetto: lo disegnò Giuseppe Poggi dal 1869, a completamento della sistemazione della riva sinistra dell'Arno, e la vista che si apre da qui è costruita come si costruisce una facciata. Il monumento al centro fu portato su il 25 giugno 1873 da nove paia di buoi. Per decenni il piazzale è stato anche un nodo di trasporti: fra il 1890 e il 1935 passavano i binari della tranvia del Chianti, che arrivava fino a San Casciano e a Greve, e fino al 1958 ci faceva capolinea la linea 13 che veniva da piazza del Duomo attraverso il ponte alle Grazie."
+ },
+ {
   "id": "poi-378-nome",
   "testo": "Chiesa di Ognissanti"
  },
@@ -6258,6 +6298,10 @@
  {
   "id": "poi-378-dentro",
   "testo": "Nel refettorio, il Cenacolo di Domenico Ghirlandaio, 1480. In chiesa, la tomba di Sandro Botticelli e quella della famiglia Vespucci."
+ },
+ {
+  "id": "poi-378-ancora",
+  "testo": "Da manuale: la chiesa si chiama San Salvatore in Ognissanti e fu iniziata nel 1251 dagli Umiliati, un ordine arrivato a Firenze da Alessandria nel 1239 che lavorava la lana: il convento e la chiesa furono portati a termine fra il 1278 e il 1294, fuori dalla vecchia cinta muraria, su un borgo. All'inizio del Trecento la chiesa era abbastanza ricca da chiamare Giotto: intorno al 1310 sull'altare maggiore fu messa la sua Maestà, che oggi sta agli Uffizi. L'altra cosa da sapere è il patronato: è la chiesa dei Vespucci, e qui sono sepolti i membri più noti della famiglia — compreso il navigatore che ha dato il nome all'America."
  },
  {
   "id": "poi-379-nome",
@@ -6276,6 +6320,10 @@
   "testo": "Il bugnato a diamante del bastione verso viale Strozzi, e il mastio centrale."
  },
  {
+  "id": "poi-379-ancora",
+  "testo": "Da manuale: si chiama fortezza di San Giovanni Battista ed è fortificazione alla moderna, cioè del tipo nato per resistere all'artiglieria: muri bassi e spessi, bastioni angolari, niente torri alte da abbattere. La costruirono Pier Francesco da Viterbo e Antonio da Sangallo il Giovane fra il 1534 e il 1537, per ordine di Alessandro de' Medici, e la rapidità dice a cosa serviva: scavi da maggio 1533, prima pietra il 15 luglio 1534, grosso delle opere finito entro dicembre. Negli stessi anni Sangallo stava costruendo la Cittadella di Ancona e poi la Rocca Paolina di Perugia: tre fortezze per tenere tre città. Nata col nome di Castello Alessandria, oggi è sede di fiere e del laboratorio di restauro."
+ },
+ {
   "id": "poi-380-nome",
   "testo": "Museo Galileo"
  },
@@ -6290,6 +6338,10 @@
  {
   "id": "poi-380-dentro",
   "testo": "I due telescopi originali di Galileo e la lente con cui scoprì i satelliti di Giove, montata in una cornice d'avorio."
+ },
+ {
+  "id": "poi-380-ancora",
+  "testo": "Da manuale: il museo sta in Palazzo Castellani, un edificio di origini antichissime — fine XI secolo — che ai tempi di Dante si chiamava Castello d'Altafronte. Dentro c'è una delle raccolte di strumenti scientifici più importanti del mondo, e la sua storia è medicea: la collezione la comincia Cosimo I, che la tiene nella Guardaroba di Palazzo Vecchio, l'attuale Sala delle Carte Geografiche; nel 1600 Ferdinando I la sposta nello Stanzino delle Matematiche agli Uffizi, dove sul terrazzo stava la grande sfera armillare costruita da Antonio Santucci nel 1593. Nel Seicento si aggiungono gli strumenti dell'Accademia del Cimento, attiva dal 1657 al 1667. Il museo col nome di Galileo è stato inaugurato nel 2010, quattrocento anni dopo il Sidereus Nuncius."
  },
  {
   "id": "poi-381-nome",
@@ -6328,6 +6380,10 @@
   "testo": "La Porta del Paradiso di Ghiberti restaurata, e la Pietà Bandini di Michelangelo, lasciata incompiuta e in parte spaccata da lui stesso."
  },
  {
+  "id": "poi-382-ancora",
+  "testo": "Da manuale: il museo sta dove sta da sempre il cantiere della cattedrale. Dal 1296 qui c'era il fabbricato dell'Opera del Duomo, l'istituzione fondata dalla Repubblica Fiorentina e sovrintesa dall'Arte della Lana, che doveva costruire, arredare e mantenere Santa Maria del Fiore. Nel Quattrocento in questo cortile Brunelleschi teneva i legnami per la Cupola, e qui intorno al 1500 Michelangelo scolpì il David. Dentro c'è il nucleo di statuaria gotica e rinascimentale staccata dal Duomo, dal Battistero e dal Campanile di Giotto: le opere originali sono qui, fuori ci sono le copie. È il posto dove si capisce che una cattedrale non è un edificio ma un'impresa di secoli."
+ },
+ {
   "id": "poi-383-nome",
   "testo": "Palazzo Antinori"
  },
@@ -6342,6 +6398,10 @@
  {
   "id": "poi-383-dentro",
   "testo": "Il cortile con il loggiato su tre lati, visibile dal portone quando è aperto."
+ },
+ {
+  "id": "poi-383-ancora",
+  "testo": "Da manuale: è considerato fra i più bei palazzi rinascimentali di Firenze, e sta al capo di via de' Tornabuoni. Fu costruito fra il 1461 e il 1469 per Giovanni Boni; il progetto la letteratura lo dà a Giuliano da Maiano, la tradizione popolare lo attribuiva direttamente a Brunelleschi e qualche studioso ha proposto Giuliano da Sangallo — un caso tipico di attribuzione non chiusa, e vale la pena saperlo invece di sentirsi dire un nome solo. I guai finanziari dei Boni portarono alla vendita: nel luglio 1475 lo comprò Lorenzo il Magnifico e nell'agosto dello stesso anno lo rivendette a Carlo d'Ugolino Martelli."
  },
  {
   "id": "poi-384-nome",
@@ -6360,6 +6420,10 @@
   "testo": "Sul fianco esterno, murata in alto, la testa di pietra chiamata Berta: la leggenda la lega a una fornaia, ma è un frammento romano reimpiegato."
  },
  {
+  "id": "poi-384-ancora",
+  "testo": "Da manuale: è una delle chiese più antiche di Firenze e una delle prime dedicate alla Madonna. Esisteva già, con una struttura diversa, forse in epoca longobarda nell'ottavo secolo, ed è documentata nel 931, quando un atto ricorda il vescovo Rambaldo affittuario di una terra e di una casa presso la chiesa di Santa Maria Maggiore: vuol dire che era qui prima delle mura matildine del 1078, il cui tratto nord passava verso San Lorenzo. La seconda menzione certa è del 1021. Dal 1176 fu collegiata, e una delle dodici antiche priorie della città. La leggenda che la farebbe fondare da papa Pelagio Secondo nel 580 non ha fondamento storico."
+ },
+ {
   "id": "poi-385-nome",
   "testo": "Casa Buonarroti"
  },
@@ -6374,6 +6438,10 @@
  {
   "id": "poi-385-dentro",
   "testo": "I due rilievi giovanili di Michelangelo: la Madonna della Scala, scolpita a quindici anni, e la Battaglia dei Centauri."
+ },
+ {
+  "id": "poi-385-ancora",
+  "testo": "Da manuale: non è la casa dove Michelangelo nacque — era nato a Caprese, in provincia di Arezzo — ma è la casa che comprò lui, nel 1508, e che ampliò nel 1514 con un fondo adiacente acquistato dall'ospedale di Santa Maria Nuova. Ci abitò davvero, anche se in quegli anni viveva a Roma: stette qui col nipote Leonardo nel periodo dei lavori a San Lorenzo, fra il 1516 e il 1534, e nel 1534 denunciò la casa di via Ghibellina nella decima granducale. Il piano nobile che si visita oggi è opera dei discendenti, che nei decenni dopo la sua morte lo decorarono per celebrare l'artista: è un museo su Michelangelo fatto dalla sua famiglia."
  },
  {
   "id": "poi-386-nome",
@@ -7812,6 +7880,10 @@
   "testo": "Il pronao del Teatro Carlo Felice, unico pezzo rimasto del teatro ottocentesco bombardato, con addosso la torre scenica moderna di Aldo Rossi."
  },
  {
+  "id": "poi-457-ancora",
+  "testo": "Da manuale: è la piazza principale di Genova e la sua forma irregolare non è un difetto: nasce dall'accorpamento di due aree diverse, e gli stili degli edifici lo dicono a chi guarda. Si chiama così dal 1877, dal nome di Raffaele De Ferrari duca di Galliera, banchiere e uomo politico. L'aspetto attuale è dei primi due decenni del Novecento: le tre strade che vi arrivano da levante — via XX Settembre fra il 1892 e il 1901, via Dante e via Petrarca fra il 1901 e il 1915 — e i quattro grandi palazzi in stile eclettico costruiti fra il 1899 e il 1923 nell'area ricavata sbancando il colle. Sul lato opposto risponde il profilo dei monumenti antichi: la piazza è il punto dove Genova medievale e Genova ottocentesca si guardano."
+ },
+ {
   "id": "poi-458-nome",
   "testo": "Basilica di San Petronio"
  },
@@ -8468,6 +8540,10 @@
   "testo": "La cella di Caterina, con il pavimento e il cuscino di pietra originali; e il loggiato cinquecentesco aperto sulla valle."
  },
  {
+  "id": "poi-490-ancora",
+  "testo": "Da manuale: il santuario non è una chiesa sola, è un complesso costruito attorno a una casa: la dimora dei Benincasa, dove Caterina nacque, nella zona di Fontebranda. Il Comune di Siena comprò la casa — che apparteneva all'Arte della Lana — e gli edifici vicini subito dopo la canonizzazione, nel 1461, e dal 1464 cominciò a trasformarli in portici, loggiati, chiese e oratori sovrapposti. L'ingresso è il portico dei Comuni d'Italia, neorinascimentale, voluto dall'arcivescovo Mario Toccabelli per festeggiare la proclamazione di santa Caterina patrona d'Italia fatta da Pio XII nel 1939: fu cominciato nel 1941, e ogni comune d'Italia contribuì con una cifra simbolica, il costo di un mattone."
+ },
+ {
   "id": "poi-491-nome",
   "testo": "Basilica di San Francesco"
  },
@@ -8484,6 +8560,10 @@
   "testo": "Nel transetto, gli affreschi staccati di Pietro e Ambrogio Lorenzetti; e accanto, l'oratorio di San Bernardino con la sala superiore decorata dal Sodoma e dal Beccafumi."
  },
  {
+  "id": "poi-491-ancora",
+  "testo": "Da manuale: i francescani arrivarono a Siena subito dopo la morte di san Francesco, nel 1226, e fra il 1228 e il 1255 costruirono qui una prima chiesetta. La basilica che si vede è il suo ingrandimento in forme gotiche, cantiere lunghissimo: dal 1326 al 1475, e nel Quattrocento al progetto prese forse parte Francesco di Giorgio Martini. Poi la storia gira male: nel 1655 un incendio la rovinò e la lasciò malridotta per oltre due secoli, con restauri e aggiunte barocche che si integravano poco. Quello che si guarda oggi è quindi una chiesa gotica enorme passata attraverso un incendio e due rifacimenti: le cuciture si vedono, e sono la parte interessante."
+ },
+ {
   "id": "poi-492-nome",
   "testo": "Chiesa di Sant'Agostino"
  },
@@ -8498,6 +8578,10 @@
  {
   "id": "poi-492-dentro",
   "testo": "La Crocifissione del Perugino e la Maestà di Ambrogio Lorenzetti nella cappella Piccolomini."
+ },
+ {
+  "id": "poi-492-ancora",
+  "testo": "Da manuale: la cominciarono gli Agostiniani nel 1258, e il cantiere andò per le lunghe: nel 1309 era ancora in costruzione e non si sa quando fu finita. Il primo grande ampliamento è del Quattrocento, fra il 1450 e il 1490 circa; che i lavori fossero quasi chiusi lo dice un documento preciso, il codicillo testamentario del novembre 1492 con cui il conte Baldo di Mariotto Lucarini destinò cinquanta fiorini alla pala dell'altare maggiore. L'interno però non è più quello: dopo l'incendio rovinoso del 1747 fu rinnovato da capo, e il rinnovamento lo curò Luigi Vanvitelli. Quindi fuori una chiesa duecentesca, dentro un'aula del Settecento."
  },
  {
   "id": "poi-493-nome",
@@ -8954,6 +9038,10 @@
  {
   "id": "poi-515-dentro",
   "testo": "Il chiostro, e nella chiesa la lapide che ricorda la sepoltura di Giovanni Boccherini."
+ },
+ {
+  "id": "poi-515-ancora",
+  "testo": "Da manuale: i francescani a Lucca sono attestati dal 1228 e presero subito un ruolo di primo piano in città. La chiesa è in laterizio, ad aula unica con la copertura a capriate — cioè il tipo più semplice e più francescano che ci sia — e fu completata entro il 1430 con l'aggiunta di tre cappelle presbiteriali. L'arredo è andato avanti per secoli, dal Trecento al Seicento: fra tardo Quattrocento e primo Cinquecento ci fu un aggiornamento rinascimentale di altari e pareti affrescate, chiuso all'inizio del Cinquecento dalle pale di Agostino Marti e di Zacchia il vecchio. Oggi, ancora consacrata, si usa anche come sala da concerti: l'acustica di un'aula unica a capriate è quella."
  },
  {
   "id": "poi-516-nome",
@@ -9630,6 +9718,10 @@
  {
   "id": "poi-549-dentro",
   "testo": "I pulpiti romanici con i rilievi, e sotto, il santuario scavato nella roccia con le urne dei martiri."
+ },
+ {
+  "id": "poi-549-ancora",
+  "testo": "Da manuale: il duomo di Cagliari è ufficialmente cattedrale di Santa Maria Assunta e di Santa Cecilia, e sta nel quartiere Castello. Fu costruita nel Duecento in stile romanico pisano — i pisani si insediarono sul colle probabilmente nel 1217, e la prima menzione della chiesa di Santa Maria de Castello è del 1254. Nel 1258, dopo che i pisani distrussero la capitale giudicale di Santa Igia e la sua cattedrale di Santa Cecilia, questa chiesa fu elevata a cattedrale, e si prese anche quel titolo. All'inizio del Trecento fu aggiunto il transetto, che le diede la pianta a croce latina e le due porte laterali. Sette secoli di rifacimenti si leggono sulle murature: è un edificio dove ogni stile ha lasciato uno strato."
  },
  {
   "id": "poi-550-nome",
