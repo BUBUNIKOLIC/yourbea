@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		4E260ABA10A732E1E2A5F589 /* Guscio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D7E0835E8C14F816483A5A /* Guscio.swift */; };
+		618FCC0B6FDB09070C88146A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C0EDA4C49721840BEB908BA /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		096EBD8375CB40450A0402C7 /* Yourbea.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Yourbea.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C0EDA4C49721840BEB908BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		30D7E0835E8C14F816483A5A /* Guscio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guscio.swift; sourceTree = "<group>"; };
 		3D2630A11200A9DBF79C2B7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -28,6 +30,7 @@
 		B1A8C380F9D4B8362DCDF03F /* Yourbea */ = {
 			isa = PBXGroup;
 			children = (
+				1C0EDA4C49721840BEB908BA /* Assets.xcassets */,
 				30D7E0835E8C14F816483A5A /* Guscio.swift */,
 				3D2630A11200A9DBF79C2B7A /* Info.plist */,
 			);
@@ -50,6 +53,7 @@
 			buildConfigurationList = 118734CE5EB34485C5251528 /* Build configuration list for PBXNativeTarget "Yourbea" */;
 			buildPhases = (
 				A1E3194BF4093D013FAF25F5 /* Sources */,
+				420B904CB932166790C05ABA /* Resources */,
 			);
 			buildRules = (
 			);
@@ -95,6 +99,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		420B904CB932166790C05ABA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				618FCC0B6FDB09070C88146A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A1E3194BF4093D013FAF25F5 /* Sources */ = {
