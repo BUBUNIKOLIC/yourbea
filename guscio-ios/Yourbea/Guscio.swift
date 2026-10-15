@@ -42,6 +42,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private var motore: AVAudioEngine?
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
   private var ascolto: SFSpeechRecognitionTask?
+  private var ultimaPosizione: CLLocation?
+  private var battito: Timer?
   private var ultimoParlato = ""
   private var chiusuraRitardata: DispatchWorkItem?
 
@@ -125,6 +127,21 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     gps.pausesLocationUpdatesAutomatically = false
     gps.requestWhenInUseAuthorization()
     gps.startUpdatingLocation()
+    /* IL BATTITO. iOS manda una posizione nuova solo quando ti SPOSTI di
+       cinque metri: fermo in casa il guscio taceva, e la pagina — che dopo
+       cinque secondi di silenzio si arrende e chiede al browser — finiva a
+       chiedere il permesso dentro la WKWebView, dove non ce l'ha, e si
+       lamentava di non sapere dove sei. Quindi l'ultima posizione si
+       ribatte ogni tre secondi: costa niente e la pagina sa che ci siamo. */
+    battito = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
+      guard let self = self, let p = self.ultimaPosizione else { return }
+      self.mandaPosizione(p)
+    }
+  }
+
+  private func mandaPosizione(_ p: CLLocation) {
+    allaPagina(String(format: "window.urbeaPosizione && window.urbeaPosizione(%f,%f,%f)",
+                      p.coordinate.latitude, p.coordinate.longitude, max(p.horizontalAccuracy, 1)))
   }
 
   func locationManagerDidChangeAuthorization(_ m: CLLocationManager) {
@@ -139,12 +156,15 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       m.allowsBackgroundLocationUpdates = true
       m.startUpdatingLocation()
     }
+    /* quella che iOS ha già in tasca parte subito: non si fa aspettare chi
+       apre l'app in casa, dove il GPS ci mette venti secondi a decidersi */
+    if let p = m.location { ultimaPosizione = p; mandaPosizione(p) }
   }
 
   func locationManager(_ m: CLLocationManager, didUpdateLocations punti: [CLLocation]) {
     guard let p = punti.last else { return }
-    allaPagina(String(format: "window.urbeaPosizione && window.urbeaPosizione(%f,%f,%f)",
-                      p.coordinate.latitude, p.coordinate.longitude, max(p.horizontalAccuracy, 1)))
+    ultimaPosizione = p
+    mandaPosizione(p)
   }
 
   func locationManager(_ m: CLLocationManager, didFailWithError e: Error) {

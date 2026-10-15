@@ -131,6 +131,11 @@ prova('le voci amministrative si riconoscono dal testo, non dal nome', () => {
   if (!i.amministrativa('Latina è un comune italiano di 127 379 abitanti.')) guasto('non riconosce «è un comune»');
   if (!i.amministrativa('Il circondario di Campobasso era uno dei circondari del Regno.')) guasto('non riconosce «circondario»');
   if (i.amministrativa('Il battistero di Parma è un edificio di culto del 1196.')) guasto('ha scartato un monumento');
+  /* sentita col telefono in mano a Roma, il 15/10 */
+  if (!i.amministrativa('Villaggio Giuliano è la zona urbanistica 12B del Municipio Roma X di Roma Capitale.'))
+    guasto('ha raccontato una zona urbanistica come se fosse un posto da visitare');
+  if (i.amministrativa('Trastevere è il tredicesimo rione di Roma, sulla riva destra del Tevere.'))
+    guasto('ha scartato Trastevere: i rioni veri si raccontano');
 });
 
 prova('IL PERCORSO: svolte in italiano, senza doppioni e senza l\'arrivo', async () => {

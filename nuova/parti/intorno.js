@@ -162,6 +162,12 @@ function Intorno(opzioni) {
   function amministrativa(t) {
     var testa = String(t || '').slice(0, 320);
     if (/(?:^|[\s,;:])(?:è|e'|era|fu)\s+(?:un|una|il|la|uno)?\s*(?:ex\s+)?(?:comune|città|citta|provincia|regione|capoluogo)/i.test(testa)) return true;
+    /* Il 15/10 a Roma l'app ha raccontato: «Villaggio Giuliano è la zona
+       urbanistica 12B del Municipio Roma X». Non è un posto da visitare, è
+       una riga di un registro: a chi cammina non dice niente. I rioni e i
+       quartieri veri — Trastevere, il Vomero — restano, perché quelli un
+       senso ce l'hanno: si tolgono solo le suddivisioni per numero. */
+    if (/zona urbanistica|circoscrizione|suddivisione amministrativa|municipio roma|\bmunicipio\s+(?:[IVXLC]+|\d+)\b/i.test(testa)) return true;
     return /(?:^|[\s,;:])(?:circondario|mandamento|distretto|comunità montana|unione dei comuni|comune italiano|regione storica)\b/i.test(testa);
   }
   function pulisci(t) {
