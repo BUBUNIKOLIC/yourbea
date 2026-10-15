@@ -197,6 +197,8 @@
   /* ---------- l'emergenza e la guida ---------- */
   var contatto = null;
   try { contatto = JSON.parse(localStorage.getItem('yourbea2-contatto') || 'null'); } catch (e) {}
+  var casa = '';
+  try { casa = localStorage.getItem('yourbea2-casa') || ''; } catch (e) {}
   var emergenza = Emergenza({ contatto: contatto });
   var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
@@ -229,6 +231,21 @@
     if (d.tipo === 'parto' || d.tipo === 'svolta' || d.tipo === 'manca') return guida.meta() ? ('→ ' + guida.meta().n) : 'In cammino';
     if (d.tipo === 'arrivato') return 'Arrivato';
     return el('cosa').textContent;
+  }
+
+  /* aCasa(): il tasto e la voce finiscono tutti e due qui.
+     Se non sa dove abiti non si inventa niente e non lascia in silenzio:
+     lo dice, e apre il posto dove scriverlo. */
+  function aCasa() {
+    if (!casa) {
+      voce.parla('Non so ancora dove abiti. Aprimi il cassetto, «dove abito», e scrivi la via: poi ti ci porto quando vuoi.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      apriCassetto(true);
+      var r = el('riga-casa'); r.hidden = false; el('casa-indirizzo').focus();
+      return;
+    }
+    diario('A CASA: ' + casa);
+    portamiA(casa);
   }
 
   /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
@@ -421,8 +438,14 @@
       if (em.tipo === 'cerca') { portamiA(em.cosa); dilloSubito(em); return true; }
       dilloSubito(em); return true;
     }
+    /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
+       un posto che si chiama «casa», e ce ne sono a decine. */
+    if (ha('portami a casa', 'torniamo a casa', 'riportami a casa', 'andiamo a casa', 'voglio tornare a casa')) { aCasa(); return true; }
     var meta = guida.dalComando(t);
-    if (meta) { portamiA(meta); return true; }
+    if (meta) {
+      if (/^(?:casa|casa mia|a casa)$/.test(meta.trim())) { aCasa(); return true; }
+      portamiA(meta); return true;
+    }
     if (ha('lascia perdere', 'annulla', 'non importa')) { dilloSubito(guida.lascia()); return true; }
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
@@ -534,9 +557,32 @@
     setTimeout(function () { b.classList.remove('ascolta'); }, 6000);
   });
   el('sos').addEventListener('click', function () { dilloSubito(emergenza.scelte()); });
+  function apriCassetto(aperto) {
+    el('cassetto').classList.toggle('aperto', aperto !== false);
+    el('altro').setAttribute('aria-expanded', aperto !== false ? 'true' : 'false');
+  }
   el('altro').addEventListener('click', function () {
-    var c = el('cassetto'), aperto = c.classList.toggle('aperto');
+    var aperto = el('cassetto').classList.toggle('aperto');
     this.setAttribute('aria-expanded', aperto ? 'true' : 'false');
+  });
+
+  /* il tasto di casa, e il posto dove si scrive l'indirizzo */
+  el('vai-a-casa').addEventListener('click', aCasa);
+  el('dove-abito').addEventListener('click', function () {
+    var r = el('riga-casa');
+    r.hidden = !r.hidden;
+    if (!r.hidden) {
+      el('casa-indirizzo').value = casa || '';
+      voce.parla('Scrivi la via, il numero e la città di casa tua, poi salva.', { livello: voce.GUIDA, ancheSeUguale: true });
+    }
+  });
+  el('casa-salva').addEventListener('click', function () {
+    var v = el('casa-indirizzo').value.trim();
+    if (!v) { voce.parla('Mi serve l\'indirizzo: via, numero e città.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    casa = v;
+    try { localStorage.setItem('yourbea2-casa', casa); } catch (e) {}
+    el('riga-casa').hidden = true;
+    voce.parla('Casa tua è ' + casa + '. Da adesso basta dire «portami a casa».', { livello: voce.GUIDA, ancheSeUguale: true });
   });
   el('testo-piu').addEventListener('click', function () {
     var ora = document.body.dataset.testo;
@@ -580,7 +626,13 @@
     var t = localStorage.getItem('yourbea2-testo');
     if (t) document.body.dataset.testo = t;
   } catch (e) {}
-  fetch('dati/luoghi.json').then(function (r) { return r.json(); }).then(function (l) {
+  /* il ?v= dei dati si legge dal proprio tag <script>, cosi' non c'e' un
+     secondo posto dove ricordarsi di alzarlo a mano. Senza, la cassaforte
+     terrebbe i luoghi di ieri mentre tutto il resto e' nuovo: lo stesso
+     difetto che il 15/10 ha fatto perdere due giorni, solo sui dati. */
+  var VER = ((document.querySelector('script[src^="app.js"]') || {}).src || '').replace(/^.*(\?v=\d+).*$/, '$1');
+  if (VER.indexOf('?v=') !== 0) VER = '';
+  fetch('dati/luoghi.json' + VER).then(function (r) { return r.json(); }).then(function (l) {
     LUOGHI = l;
     diario('dati: ' + LUOGHI.length + ' luoghi, ' + LUOGHI.filter(function (x) { return x.a; }).length + ' approfondimenti');
     stato('pronta · <b>' + LUOGHI.length + '</b> luoghi');

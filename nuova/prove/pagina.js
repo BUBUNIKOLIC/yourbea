@@ -66,6 +66,136 @@ prova('il riquadro del parlato non viene letto due volte', () => {
   if (!/aria-live="off"/.test(riga)) guasto('il riquadro .dice deve avere aria-live="off"');
 });
 
+/* ============================================================
+   L'INSTALLAZIONE SUL TELEFONO, E IL NUMERO DI VERSIONE
+   ============================================================
+   Queste prove guardano tre file insieme — index.html, sw.js e il manifest —
+   perche' il difetto che il 15/10 ha fatto perdere due giorni non sta in
+   nessuno dei tre: sta nel fatto che dicevano numeri diversi. Si pubblicava
+   una correzione, il telefono teneva la cassaforte di ieri, e il provatore
+   giurava che non fosse stato corretto niente.                            */
+
+const sw = fs.readFileSync(path.join(qui, 'sw.js'), 'utf8');
+const manifestVia = path.join(qui, 'manifest.webmanifest');
+
+/* la fila di indirizzi di un array del service worker, con il `+ V` sciolto */
+function listaDelSW(nome, v) {
+  const blocco = (sw.match(new RegExp('const ' + nome + ' = \\[([\\s\\S]*?)\\n\\];')) || [, ''])[1];
+  const fuori = [];
+  const re = /'([^']+)'(\s*\+\s*V)?/g;
+  let m;
+  while ((m = re.exec(blocco))) fuori.push(m[1] + (m[2] ? '?v=' + v : ''));
+  return fuori;
+}
+
+prova('la pagina e la cassaforte dicono lo stesso numero di versione', () => {
+  const nellaPagina = [...html.matchAll(/\?v=(\d+)/g)].map((m) => m[1]);
+  if (!nellaPagina.length) return guasto('in index.html non c\'e\' nessun ?v=');
+  const soli = [...new Set(nellaPagina)];
+  if (soli.length > 1) guasto('index.html porta numeri diversi (' + soli.join(', ') + '): PUBBLICA.command non li ha alzati tutti');
+  const v = soli[0];
+  const nelSW = (sw.match(/^const VERSIONE = (\d+);/m) || [])[1];
+  if (!nelSW) return guasto('in sw.js non c\'e\' `const VERSIONE = N;`');
+  if (nelSW !== v) guasto('la pagina dice v=' + v + ' e sw.js dice VERSIONE = ' + nelSW + ': la cassaforte resterebbe quella di prima');
+  /* il service worker va chiesto con il suo ?v=, o il telefono si tiene
+     quello di prima e non si accorge di niente */
+  const reg = (html.match(/serviceWorker\.register\(\s*"([^"]+)"/) || [])[1];
+  if (!reg) return guasto('index.html non registra il service worker con le virgolette doppie: il sed di PUBBLICA.command non lo troverebbe');
+  if (reg !== 'sw.js?v=' + v) guasto('registra ' + reg + ' invece di sw.js?v=' + v);
+});
+
+prova('il nome della cassaforte contiene la versione', () => {
+  /* se il nome fosse fisso, la cassaforte vecchia non verrebbe mai buttata */
+  if (!/const CASSAFORTE = '[^']*' \+ VERSIONE/.test(sw)) guasto('CASSAFORTE non e\' costruito con VERSIONE: a ogni pubblicazione resterebbe la stessa');
+  if (!/caches\.delete/.test(sw)) guasto('nessuno butta la cassaforte vecchia');
+  if (!/clients\.claim/.test(sw)) guasto('senza clients.claim la versione nuova aspetta che si chiuda l\'app');
+});
+
+prova('la nuova e la vecchia non si svuotano la cassaforte a vicenda', () => {
+  /* `caches.keys()` elenca TUTTE le cassaforti del sito: chi fa pulizia
+     senza guardare il prefisso cancella quella dell'altro. Finche' la
+     vecchia app sta alla radice, questa prova e' quella che tiene i due
+     service worker separati. */
+  const mio = (sw.match(/const MIO_PREFISSO = '([^']+)'/) || [])[1];
+  if (!mio) return guasto('sw.js non dichiara MIO_PREFISSO');
+  if (!new RegExp('startsWith\\(MIO_PREFISSO\\)').test(sw)) guasto('la pulizia non si limita al suo prefisso');
+
+  const radice = path.join(qui, '..', 'sw.js');
+  if (!fs.existsSync(radice)) return;              // vecchia app tolta: niente da temere
+  const vecchio = fs.readFileSync(radice, 'utf8');
+  const suo = (vecchio.match(/const CACHE = '([^']+)'/) || [])[1];
+  if (suo && suo.startsWith(mio)) guasto('la cassaforte della vecchia app (' + suo + ') comincia come la nostra: si buttano a vicenda');
+  if (/keys\.filter\(k => k !== CACHE\)/.test(vecchio)) guasto('il sw della radice butta ogni cassaforte che non sia la sua, compresa la nostra');
+});
+
+prova('il manifest c\'e\', e dice quello che serve per installarla', () => {
+  if (!/<link rel="manifest" href="manifest\.webmanifest"/.test(html)) return guasto('index.html non collega il manifest: senza, Android non offre di installarla');
+  if (!fs.existsSync(manifestVia)) return guasto('manca nuova/manifest.webmanifest');
+  let m;
+  try { m = JSON.parse(fs.readFileSync(manifestVia, 'utf8')); }
+  catch (e) { return guasto('il manifest non e\' JSON valido: ' + e.message); }
+  if (!m.name || !/Yourbea/i.test(m.name)) guasto('il nome non dice Yourbea');
+  if (m.display !== 'standalone') guasto('display deve essere standalone, o si apre dentro il browser');
+  if (!m.start_url) guasto('senza start_url si apre chissa\' dove');
+  /* lo start_url deve stare QUI DENTRO: un ./ di troppo e l'icona sulla Home
+     aprirebbe la vecchia app, che e' proprio quello che non deve capitare */
+  if (/^(\/|https?:|\.\.)/.test(m.start_url)) guasto('start_url ' + m.start_url + ' esce dalla cartella nuova/');
+  const tema = (html.match(/<meta name="theme-color" content="([^"]+)"/) || [])[1];
+  if (m.theme_color !== tema) guasto('theme_color ' + m.theme_color + ' e la pagina ' + tema + ': la barra in cima cambierebbe colore');
+  if (!(m.icons || []).length) return guasto('niente icone: sulla Home ci sarebbe un quadrato bianco');
+  m.icons.forEach((i) => {
+    if (!fs.existsSync(path.join(qui, i.src))) guasto('l\'icona ' + i.src + ' non esiste');
+  });
+  if (!m.icons.some((i) => /maskable/.test(i.purpose || ''))) guasto('senza icona maskable Android la taglia a modo suo');
+  /* su iPhone il manifest non basta: «Aggiungi a Home» guarda questi */
+  if (!/apple-mobile-web-app-capable" content="yes"/.test(html)) guasto('senza apple-mobile-web-app-capable su iPhone si apre con la barra di Safari');
+  const tocco = (html.match(/<link rel="apple-touch-icon" href="([^"?]+)"/) || [])[1];
+  if (!tocco) guasto('manca l\'apple-touch-icon: su iPhone l\'icona sarebbe una fotografia della pagina');
+  else if (!fs.existsSync(path.join(qui, tocco))) guasto('l\'apple-touch-icon ' + tocco + ' non esiste');
+});
+
+prova('tutto quello che la cassaforte si porta dietro esiste davvero', () => {
+  /* `cache.addAll` e' tutto-o-niente: un solo indirizzo sbagliato e
+     l'installazione fallisce in silenzio, l'app non parte senza rete e non
+     si capisce perche'. */
+  const v = ((sw.match(/^const VERSIONE = (\d+);/m) || [])[1]) || '0';
+  const ess = listaDelSW('ESSENZIALI', v);
+  if (!ess.length) return guasto('non ho trovato la lista ESSENZIALI in sw.js');
+  ess.forEach((u) => {
+    const f = u.replace(/\?v=\d+$/, '');
+    if (f === './') return;                        // la cartella, non un file
+    if (!fs.existsSync(path.join(qui, f))) guasto('ESSENZIALI chiede ' + f + ', che non c\'e\'');
+  });
+  listaDelSW('CONTORNO', v).forEach((u) => {
+    const f = u.replace(/\?v=\d+$/, '');
+    if (!fs.existsSync(path.join(qui, f))) guasto('CONTORNO chiede ' + f + ', che non c\'e\'');
+  });
+});
+
+prova('la pagina e la cassaforte chiedono gli stessi indirizzi', () => {
+  /* se la cassaforte salva `stile.css` e la pagina chiede `stile.css?v=4`,
+     il telefono senza rete non trova niente: sono due indirizzi diversi.
+     E' lo stesso difetto della cache, visto dall'altra parte. */
+  const v = ((sw.match(/^const VERSIONE = (\d+);/m) || [])[1]) || '0';
+  const ess = new Set(listaDelSW('ESSENZIALI', v));
+  const re = /(?:src|href)="((?:\.\/)?[\w./-]+\.(?:js|css))(\?v=\d+)?"/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const chiesto = './' + m[1].replace(/^\.\//, '') + (m[2] || '');
+    if (!ess.has(chiesto)) guasto('la pagina chiede ' + chiesto + ' e la cassaforte non lo tiene: senza rete non partirebbe');
+  }
+  /* i dati: la pagina li chiede da app.js, non da un tag */
+  if (!/dati\/luoghi\.json' \+ VER/.test(app)) guasto('app.js chiede i dati senza ?v=: resterebbero quelli di ieri');
+  if (![...ess].some((u) => u.indexOf('dati/luoghi.json') > -1)) guasto('la cassaforte non tiene i dati: senza rete l\'app non avrebbe luoghi');
+});
+
+prova('le fonti di fuori non finiscono in cassaforte', () => {
+  /* OpenStreetMap, Wikipedia e Valhalla rispondono cose diverse a ogni
+     passo: tenerle vorrebbe dire raccontare la strada di stamattina. */
+  if (!/origin !== self\.location\.origin\) return/.test(sw)) guasto('il service worker non lascia passare le fonti di fuori');
+  if (!/mode === 'navigate'/.test(sw)) guasto('la pagina deve andare prima in rete, o le correzioni non arrivano mai');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pagina');

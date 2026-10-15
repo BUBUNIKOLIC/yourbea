@@ -42,6 +42,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private var motore: AVAudioEngine?
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
   private var ascolto: SFSpeechRecognitionTask?
+  private var vuoleAscoltare = false
   private var ultimaPosizione: CLLocation?
   private var battito: Timer?
   private var ultimoParlato = ""
@@ -105,8 +106,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   func userContentController(_ c: WKUserContentController, didReceive messaggio: WKScriptMessage) {
     guard let d = messaggio.body as? [String: Any], let cosa = d["cosa"] as? String else { return }
     switch cosa {
-    case "ascolta": apriMicrofono()
-    case "chiudi": chiudiMicrofono()
+    case "ascolta": vuoleAscoltare = true; apriMicrofono()
+    case "chiudi": vuoleAscoltare = false; chiudiMicrofono()
     case "diario": NSLog("YOURBEA %@", (d["testo"] as? String) ?? "")
     default: break
     }
@@ -212,8 +213,13 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       }
       if errore != nil || (risultato?.isFinal ?? false) { self.rimandaChiusura(fra: 0.05) }
     }
-    /* se non dice niente, il microfono non resta aperto per sempre */
-    rimandaChiusura(fra: 8)
+    /* se non dice niente per dieci secondi si ricomincia da capo: il
+       riconoscimento di iOS non regge sessioni lunghe, e comunque va
+       rinfrescato. Non si SPEGNE: spegnerlo era il difetto del 15/10 —
+       «portami a via Corsetti» detto dopo un minuto di silenzio non lo
+       sentiva nessuno, perché il microfono era chiuso e la pagina lo
+       credeva aperto. Finché la pagina non dice «chiudi», si ascolta. */
+    rimandaChiusura(fra: 10)
   }
 
   private func rimandaChiusura(fra secondi: Double) {
@@ -226,6 +232,15 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private func consegnaEChiudi() {
     let detto = ultimoParlato.trimmingCharacters(in: .whitespacesAndNewlines)
     chiudiMicrofono()
+    /* e si torna ad ascoltare: una frase consegnata non è la fine della
+       conversazione. Il mezzo secondo serve a non riprendere la coda della
+       stessa frase. */
+    if vuoleAscoltare {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        guard let self = self, self.vuoleAscoltare, self.motore == nil else { return }
+        self.apriMicrofono()
+      }
+    }
     guard !detto.isEmpty else { return }
     let pulito = detto.replacingOccurrences(of: "\\", with: "")
                       .replacingOccurrences(of: "\"", with: "")

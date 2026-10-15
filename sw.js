@@ -85,7 +85,15 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+            /* SOLO le mie. `caches.keys()` elenca tutte le cassaforti del sito,
+         comprese quelle della nuova Yourbea in /nuova/, che si chiamano
+         `yourbea-nuova-vN`: buttando senza guardare il prefisso, la vecchia
+         app svuotava la cassaforte della nuova a ogni avvio, e la nuova
+         restava senza nulla da aprire quando non c'e' rete. */
+      .then(keys => Promise.all(
+        keys.filter(k => /^yourbea-v\d+$/.test(k) && k !== CACHE)
+            .map(k => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });

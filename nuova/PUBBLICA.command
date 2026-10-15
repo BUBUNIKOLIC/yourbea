@@ -7,8 +7,14 @@
 cd "$(dirname "$0")/.." || exit 1
 vecchia=$(grep -o 'v=[0-9]\+' nuova/index.html | head -1 | cut -d= -f2)
 nuova=$((vecchia + 1))
-sed -i '' "s/?v=$vecchia\"/?v=$nuova\"/g" nuova/index.html
-echo "versione $vecchia → $nuova"
+# il ?v= su ogni file della pagina, con le virgolette di qualunque tipo
+sed -i '' "s/?v=$vecchia\([\"']\)/?v=$nuova\1/g" nuova/index.html
+# e lo STESSO numero come nome della cassaforte del service worker: se i due
+# si scollano, la cassaforte resta quella di ieri e il provatore sente il
+# difetto corretto ieri. nuova/prove/pagina.js non lascia pubblicare se
+# non coincidono, quindi un numero dimenticato qui blocca la pubblicazione.
+sed -i '' "s/^const VERSIONE = $vecchia;/const VERSIONE = $nuova;/" nuova/sw.js
+echo "versione $vecchia → $nuova (pagina e cassaforte)"
 ./nuova/PROVA-LA-NUOVA.command | tee /tmp/prove-yourbea.txt
 grep -q "TUTTO A POSTO" /tmp/prove-yourbea.txt || { echo "NON pubblico: qualcosa non passa."; exit 1; }
 git add -A && git commit -q -m "${1:-Nuova Yourbea: versione $nuova}" && git push -q origin HEAD
