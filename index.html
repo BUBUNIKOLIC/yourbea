@@ -4814,6 +4814,15 @@
     ultimaFrase={ids:ids,testo:testo};
     zittisci();
     var mio=turno;
+    /* le frasi con dentro un nome proprio — una via, un luogo trovato in
+       diretta — non hanno una clip incisa e si dicono col sintetizzatore.
+       Prima chiedevano lo stesso una clip inesistente e aspettavano il 404
+       per ripiegare: una richiesta inutile e un ritardo a ogni frase. */
+    if(ids && ids.length===1 && ids[0]===LIBERO){
+      staParlando=true; livelloInCorso=liv;
+      ripiego(mio,testo);
+      return;
+    }
     livelloInCorso=liv;
     staParlando=true;
     // rete ferma, clip che non parte, audio negato: se entro mezzo minuto
@@ -5113,7 +5122,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='65';
+  var VERSIONE='66';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5192,7 +5201,7 @@
       stradaDiQui(function(via){
         var t = via ? ('Sei in '+via+'.') : 'La strada non la so dire.';
         if(d)d.textContent=t;
-        try{ speak(t, true); }catch(e){}
+        try{ parlaLibero(t,GUIDA); }catch(e){}
       });
     }catch(e){ if(d)d.textContent='—'; }
     try{
@@ -5367,7 +5376,7 @@
       livello[p.n]=9;
       schedaWikipedia(p,function(t){
         whatEl.textContent=p.n; bodyEl.className='body'; bodyEl.textContent=t;
-        liveEl.textContent=t; speak(p.n+'. '+t);
+        liveEl.textContent=t; parlaLibero(p.n+'. '+t,RACCONTO);
       });
       return;
     }
@@ -5477,7 +5486,7 @@
       bodyEl.textContent='Un momento, cerco…';
       schedaWikipedia(o.p,function(testo){
         bodyEl.textContent=testo; liveEl.textContent=testo;
-        if(S.voice)speak(testo);
+        if(S.voice)parlaLibero(testo,RACCONTO);
       });
       pending=null;
       return;
@@ -6248,7 +6257,7 @@
               ? dove+'Qui non ho schede scritte a mano, ma ti dico lo stesso i luoghi che passi, e farmacie, fermate e negozi.'
               : dove+'Qui intorno non trovo luoghi da raccontare. Farmacie, fermate e negozi te li trovo lo stesso: chiedimeli.';
             liveEl.textContent=testo;
-            if(S.voice)speak(testo);
+            if(S.voice)parlaLibero(testo,GUIDA);
             render();
           });
         });
@@ -6268,7 +6277,9 @@
           // tre secondi dopo. «Via Sacra, Roma» qui, «Via Sacra» di la':
           // si segna solo la prima parte, prima della virgola.
           if(via){ viaSotto=viaDetta=String(via).split(',')[0].trim(); }
-          if(via) speak(t, true);
+          // passa dalla coda: prima questa partiva sopra l'annuncio
+          // d'apertura, ed erano le due voci che Vince sentiva ogni volta
+          if(via) parlaLibero(t,GUIDA);
           else    dire(['frase-ci-siamo'],t,GUIDA);
         });
       }
@@ -6662,7 +6673,7 @@
       var dove='Sei in '+via+'.';
       bodyEl.textContent=dove+' '+base;
       liveEl.textContent=dove;
-      setTimeout(function(){ speak(dove, true); }, 600);
+      setTimeout(function(){ parlaLibero(dove,EMERGENZA); }, 600);
     });
     // se c'è un contatto registrato, gli si manda la posizione
     if(typeof soccorso!=='undefined' && soccorso && soccorso.tel){
@@ -6921,7 +6932,7 @@
       whatEl.textContent=q.p.n;
       liveEl.textContent=testoQ;
       if(q.p.w && !q.p.d){
-        schedaWikipedia(q.p,function(t2){ bodyEl.textContent=t2; liveEl.textContent=t2; speak(q.p.n+'. '+t2); });
+        schedaWikipedia(q.p,function(t2){ bodyEl.textContent=t2; liveEl.textContent=t2; parlaLibero(q.p.n+'. '+t2,RACCONTO); });
         return true;
       }
       dire([poiId(q.p)+'-nome',poiId(q.p)+'-scheda'],testoQ);
@@ -6944,7 +6955,7 @@
     if(ha('in che strada','che strada e questa','che via e questa','come si chiama questa strada')){
       stradaDiQui(function(via){
         var testo = via ? ('Sei in '+via+'.') : 'La strada non la so dire.';
-        liveEl.textContent=testo; speak(testo);
+        liveEl.textContent=testo; parlaLibero(testo,GUIDA);
       });
       return true;
     }
@@ -7549,7 +7560,7 @@
       else if(iPhone) t='Tocca il tasto condividi in basso — il quadrato con la freccia — scorri e scegli «Aggiungi alla schermata Home».';
       else t='Apri il menu del browser, i tre puntini in alto a destra, e scegli «Installa app».';
       if(bp){ bp.textContent=t; bp.style.textAlign='left'; bp.style.lineHeight='1.45'; }
-      try{ speak(t); }catch(e){}
+      try{ parlaLibero(t,GUIDA); }catch(e){}
     }
 
     // il tasto si vede sempre, tranne quando l'app e' gia' installata

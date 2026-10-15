@@ -31,14 +31,19 @@ node prove/clip.js || mal=1
 echo
 echo "— le coordinate —"
 node prove/coordinate.js || mal=1
-node "$QUI/prove/schede-al-posto-giusto.js" || ESITO=1
-node "$QUI/prove/lettore-di-schermo.js" || ESITO=1
+node prove/schede-al-posto-giusto.js || mal=1
+echo
+echo "— chi non vede: lettore di schermo e una voce sola —"
+node prove/lettore-di-schermo.js || mal=1
+node prove/una-voce-sola.js || mal=1
 
 if [ "$RETE" = 1 ]; then
   echo
   echo "— le coordinate contro Wikidata (serve rete) —"
   node prove/wikidata.js $TUTTI || mal=1
-  node "$QUI/prove/servizi.js" || ESITO=1
+  echo
+  echo "— i servizi: 41 tipi su piu' citta' (serve rete) —"
+  node prove/servizi.js || mal=1
   echo
   echo "— quello che i telefoni scaricano davvero (serve rete) —"
   node prove/in-linea.js || mal=1

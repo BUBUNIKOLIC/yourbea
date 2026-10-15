@@ -97,6 +97,11 @@ var liveEl = { textContent: '' };
 var staParlando = false, ultimaFrase = '', inCorso = null;
 var POI = [];
 function inLingua(ids, testo) { return { t: testo, italiano: false }; }
+/* LIBERO e' l'id finto con cui l'app dice le frasi che contengono un nome
+   proprio — una via, un luogo trovato in diretta — che non hanno una clip
+   incisa. Sta fuori dal pezzo di codice che questo banco estrae, quindi
+   va nominato qui, se no il motore non parte. */
+var LIBERO = '_parlato_';
 function cardinale() { return 'a nord'; }
 function side() { return 'a destra'; }
 
