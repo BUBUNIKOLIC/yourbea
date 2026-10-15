@@ -107,7 +107,7 @@ function Emergenza(opzioni) {
          Chi non vede non ha un tasto «annulla» da cercare. */
       testo: 'Chiamo ' + contatto.nome + '.' + (via ? ' Quando risponde dille che sei in ' + via + '.' : '') +
              ' Se preferisci il messaggio scritto, dì: messaggio.',
-      mosse: [{ cosa: 'chiama', numero: contatto.telefono, fraMillisecondi: 2600 }]
+      mosse: [{ cosa: 'chiama', numero: numeroTelefono(contatto.telefono), fraMillisecondi: 2600 }]
     };
   }
 
@@ -131,6 +131,17 @@ function Emergenza(opzioni) {
     if (cifre.indexOf('00') === 0) cifre = cifre.slice(2);
     else if (scritto.indexOf('+') < 0 && cifre.length <= 10) cifre = '39' + cifre.replace(/^0+/, '');
     return cifre;
+  }
+
+  /* numeroTelefono(): col prefisso e col più davanti.
+     Il 15/10 Vince ha detto «chiama Mariolina» e iOS gli ha mostrato IL
+     NUMERO, non il nome: senza +39 il telefono non lo riconosce come quello
+     della rubrica, e chi non vede si sente leggere dieci cifre invece di
+     «Chiamare Mariolina?». L'ultimo tocco Apple lo chiede comunque — nessuna
+     app può telefonare di nascosto — ma almeno dice chi. */
+  function numeroTelefono(n) {
+    var c = numeroWhatsApp(n);
+    return c ? '+' + c : '';
   }
 
   /* comando(): riconosce le parole dell'emergenza. Restituisce null se la
@@ -180,7 +191,7 @@ function Emergenza(opzioni) {
   return {
     scelte: scelte, chiama112: chiama112, derubato: derubato,
     avvisaContatto: avvisaContatto, chiamaContatto: chiamaContatto, cerca: cerca, comando: comando,
-    numeroWhatsApp: numeroWhatsApp,
+    numeroWhatsApp: numeroWhatsApp, numeroTelefono: numeroTelefono,
     conContatto: function (c) { contatto = c; },
     chiSono: function (n) { io_ = n; },
     contatto: function () { return contatto; }

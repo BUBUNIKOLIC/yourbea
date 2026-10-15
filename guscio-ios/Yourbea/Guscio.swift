@@ -120,7 +120,9 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     if let u = azione.request.url, let schema = u.scheme?.lowercased(),
        fuori.contains(schema) || aWhatsApp {
       UIApplication.shared.open(u, options: [:], completionHandler: nil)
-      NSLog("YOURBEA apro: %@", schema)
+      /* nel log va anche l'indirizzo intero: quando «non la chiama» bisogna
+         sapere SE il numero era buono, non indovinarlo. */
+      NSLog("YOURBEA apro: %@", u.absoluteString)
       decisionHandler(.cancel)
       return
     }

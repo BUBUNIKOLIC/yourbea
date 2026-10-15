@@ -250,6 +250,17 @@ prova('nel messaggio d\'aiuto c\'è prima chi sei', () => {
   if (t.indexOf('Via dei Corazzieri') < 0) guasto('e poi dove sei');
 });
 
+prova('il numero della chiamata porta il prefisso, se no iOS mostra le cifre', () => {
+  /* 15/10: «non c'era nulla, solo il numero e chiama» — senza +39 il
+     telefono non lo riconosce come quello in rubrica e legge dieci cifre */
+  const e = Emergenza({ contatto: { nome: 'Mariolina', telefono: '333 123 4567' } });
+  const d = e.chiamaContatto({ via: 'Via dei Corazzieri' });
+  const n = d.mosse[0].numero;
+  if (n !== '+393331234567') guasto('numero da chiamare sbagliato: ' + n);
+  const e2 = Emergenza({ contatto: { nome: 'John', telefono: '+44 7700 900123' } });
+  if (e2.chiamaContatto({}).mosse[0].numero !== '+447700900123') guasto('un numero straniero non si tocca');
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');
