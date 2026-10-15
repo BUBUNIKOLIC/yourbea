@@ -5387,7 +5387,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='94';
+  var VERSIONE='95';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5446,16 +5446,24 @@
     try{ o.inCoda = inCoda ? (Array.isArray(inCoda) ? inCoda.map(function(x){ return String(x.testo).slice(0,34); })
                                                    : [String(inCoda.testo).slice(0,34)]) : []; }catch(e){}
     try{ o.microfono = micSpento ? 'chiuso (l\'app parla)' : (ascoltoAcceso ? 'aperto' : 'spento'); }catch(e){}
-    try{ o.racconta=S.racconta; }catch(e){}
+    try{ o.racconta=S.racconta; o.alberi=ALBERI.length; }catch(e){}
     // il percorso a svolte, per vedere dove sta portando e a che punto e'
     try{ o.svolte = percorso.length ? percorso.map(function(x,k){
            return (k===percorsoI?'> ':'  ')+x.testo.slice(0,46)+' ['+x.lat.toFixed(5)+','+x.lon.toFixed(5)+']'; }) : []; }catch(e){}
     try{
       var v=[]; for(var i=0;i<Math.min(INTORNO.length,40);i++){
-        var x=INTORNO[i], m=dist(S.lat,S.lon,x.lat,x.lon), r=norm(bear(S.lat,S.lon,x.lat,x.lon)-S.hd);
-        if(m<120) v.push(x.cosa+' '+Math.round(m)+'m '+Math.round(r)+'°'+(x.extra?' ('+x.extra+')':''));
+        var x=INTORNO[i], m=quantoDista(x), r=doveSta(x);
+        if(m<120) v.push((x.grande?'[grande] ':'')+x.cosa+' '+Math.round(m)+'m '+Math.round(r)+'°'+(x.extra?' ('+x.extra+')':''));
       }
-      o.serviziVicini=v.slice(0,8);
+      o.serviziVicini=v.slice(0,14);
+      // le cose grandi a parte: sono quelle che dicono dove sei
+      var g=[];
+      for(var q=0;q<INTORNO.length;q++){
+        var y=INTORNO[q]; if(!y.grande)continue;
+        var mg=quantoDista(y);
+        if(mg<250) g.push(y.cosa+(y.nome?' «'+y.nome+'»':'')+' '+Math.round(mg)+'m');
+      }
+      o.grandiVicine=g.slice(0,12);
     }catch(e){}
     return o;
   };
@@ -6017,6 +6025,79 @@
     place_of_worship:'chiesa', toilets:'bagno pubblico', drinking_water:'fontanella',
     fountain:'fontana', bench:'panchina', shelter:'pensilina', parking:'parcheggio',
     marketplace:'mercato', theatre:'teatro', cinema:'cinema',
+    ice_cream:'gelateria', 'shop:ice_cream':'gelateria', 'shop:pastry':'pasticceria',
+    'shop:deli':'gastronomia', 'shop:florist':'fiorista', 'shop:mall':'centro commerciale',
+    school:'scuola', kindergarten:'asilo', university:'universit\u00e0', college:'istituto',
+    courthouse:'tribunale', veterinary:'veterinario', dentist:'dentista',
+    /* ---------- IL RESTO DI UN PAESE ITALIANO ----------
+       «Fallo approfondito per tutta Italia», 15/10. Questo elenco non e'
+       la nostra banca dati: e' il vocabolario con cui leggiamo la mappa di
+       OpenStreetMap, che l'Italia la copre tutta. Piu' nomi ci sono qui,
+       piu' cose l'app sa dire in un paese dove non abbiamo mai scritto una
+       riga. Ogni voce e' una cosa che chi cammina riconosce e usa per
+       orientarsi, o che gli serve. */
+    pub:'pub', biergarten:'birreria', food_court:'area ristoro',
+    bureau_de_change:'cambiavalute', money_transfer:'money transfer',
+    post_box:'cassetta delle lettere', parcel_locker:'armadietto dei pacchi',
+    telephone:'telefono pubblico', clock:'orologio pubblico',
+    bicycle_parking:'parcheggio delle bici', bicycle_rental:'bici a noleggio',
+    motorcycle_parking:'parcheggio delle moto', charging_station:'colonnina di ricarica',
+    car_wash:'autolavaggio', car_rental:'autonoleggio', car_sharing:'auto condivise',
+    ferry_terminal:'porto dei traghetti', nightclub:'locale notturno',
+    social_facility:'servizi sociali', community_centre:'centro civico',
+    nursing_home:'casa di riposo', childcare:'asilo nido',
+    driving_school:'scuola guida', language_school:'scuola di lingue',
+    music_school:'scuola di musica', place_of_mourning:'camera ardente',
+    'emergency:phone':'telefono di emergenza', 'emergency:defibrillator':'defibrillatore',
+    'healthcare:physiotherapist':'fisioterapista', 'healthcare:laboratory':'laboratorio analisi',
+    'healthcare:blood_donation':'centro trasfusionale',
+    'railway:tram_stop':'fermata del tram', 'railway:subway_entrance':'ingresso della metropolitana',
+    'railway:station':'stazione', 'railway:halt':'fermata del treno',
+    'highway:elevator':'ascensore',
+    'tourism:hotel':'albergo', 'tourism:guest_house':'affittacamere',
+    'tourism:hostel':'ostello', 'tourism:apartment':'appartamenti',
+    'tourism:information':'ufficio informazioni', 'tourism:viewpoint':'punto panoramico',
+    'tourism:artwork':'opera d\u2019arte', 'tourism:picnic_site':'area picnic',
+    'shop:jewelry':'gioielleria', 'shop:electronics':'elettronica',
+    'shop:mobile_phone':'telefonia', 'shop:computer':'computer',
+    'shop:hardware':'ferramenta', 'shop:furniture':'mobili',
+    'shop:pet':'animali', 'shop:toys':'giocattoli', 'shop:sports':'articoli sportivi',
+    'shop:bicycle':'biciclette', 'shop:car_repair':'meccanico', 'shop:car':'concessionaria',
+    'shop:car_parts':'ricambi auto', 'shop:tyres':'gommista', 'shop:motorcycle':'moto',
+    'shop:stationery':'cartoleria', 'shop:gift':'articoli da regalo',
+    'shop:department_store':'grande magazzino', 'shop:variety_store':'casalinghi',
+    'shop:houseware':'casalinghi', 'shop:paint':'colori e vernici',
+    'shop:tiles':'piastrelle', 'shop:kitchen':'cucine', 'shop:lighting':'illuminazione',
+    'shop:fishmonger':'pescheria', 'shop:seafood':'pescheria',
+    'shop:cheese':'formaggi', 'shop:dairy':'latteria', 'shop:pasta':'pastificio',
+    'shop:confectionery':'dolci', 'shop:chocolate':'cioccolateria',
+    'shop:alcohol':'enoteca', 'shop:wine':'enoteca', 'shop:beverages':'bibite',
+    'shop:coffee':'torrefazione', 'shop:health_food':'alimenti naturali',
+    'shop:medical_supply':'sanitaria', 'shop:hearing_aids':'apparecchi acustici',
+    'shop:beauty':'centro estetico', 'shop:massage':'massaggi',
+    'shop:tattoo':'tatuaggi', 'shop:photo':'fotografo',
+    'shop:dry_cleaning':'lavasecco', 'shop:tailor':'sartoria',
+    'shop:shoe_repair':'calzolaio', 'shop:locksmith':'ferramenta e chiavi',
+    'shop:watchmaker':'orologiaio', 'shop:musical_instrument':'strumenti musicali',
+    'shop:art':'galleria d\u2019arte', 'shop:antiques':'antiquariato',
+    'shop:frame':'corniciaio', 'shop:bed':'materassi',
+    'shop:interior_decoration':'arredamento', 'shop:curtain':'tende',
+    'shop:garden_centre':'vivaio', 'shop:agrarian':'consorzio agrario',
+    'shop:farm':'prodotti agricoli', 'shop:kiosk':'chiosco',
+    'shop:funeral_directors':'onoranze funebri', 'shop:lottery':'ricevitoria',
+    'shop:bookmaker':'scommesse', 'shop:copyshop':'copisteria',
+    'shop:second_hand':'usato', 'shop:charity':'beneficenza',
+    'shop:erotic':'negozio per adulti', 'shop:e-cigarette':'sigarette elettroniche',
+    'shop:video_games':'videogiochi', 'shop:hifi':'alta fedelt\u00e0',
+    'shop:appliance':'elettrodomestici', 'shop:electrical':'materiale elettrico',
+    'shop:trade':'edilizia', 'shop:doors':'porte e finestre',
+    'office:dentist':'dentista', 'office:physician':'medico',
+    'office:engineer':'ingegnere', 'office:architect':'architetto',
+    'office:financial':'finanziaria', 'office:bank':'banca',
+    'office:political_party':'sede di partito', 'office:association':'associazione',
+    'office:ngo':'associazione', 'office:religion':'ufficio parrocchiale',
+    'office:educational_institution':'istituto', 'office:newspaper':'redazione',
+    'office:it':'informatica', 'office:company':'ufficio',
     'shop:supermarket':'supermercato', 'shop:bakery':'panificio',
     'shop:convenience':'alimentari', 'shop:tobacco':'tabaccheria',
     'shop:newsagent':'edicola', 'shop:greengrocer':'frutta e verdura',
@@ -6034,6 +6115,73 @@
     'government:public_service':'ufficio pubblico', 'government:social_services':'servizi sociali'
   };
   var INTORNO=[], intornoQuando=0, intornoLat=0, intornoLon=0, intornoInCorso=false;
+  var ALBERI=[], alberiQuando=0, alberiVia='';
+  /* ---------- LE COSE GRANDI ----------
+     Vince, 15/10: «un parco sì, le cose più grandi: la prefettura, la
+     villa comunale, il gelataio, il bar, il ristorante».
+     Il bar e il ristorante nella mappa sono punti, e l'app li aveva gia'.
+     Un parco, una villa comunale, la prefettura, una chiesa, una scuola
+     sono invece AREE — in OpenStreetMap sono linee chiuse, non punti — e
+     l'app non le leggeva per niente: leggeva solo i punti. Per questo a
+     Latina sentiva attraversamenti e negozi e mai la villa comunale.
+     Di un'area non interessa il centro ma il punto piu' vicino: quello che
+     ti passa accanto mentre cammini. */
+  var GRANDI_OSM={
+    'leisure:park':'parco', 'leisure:garden':'giardino',
+    'leisure:playground':'parco giochi', 'leisure:sports_centre':'centro sportivo',
+    'leisure:pitch':'campo sportivo', 'leisure:stadium':'stadio',
+    'amenity:place_of_worship':'chiesa', 'amenity:school':'scuola',
+    'amenity:hospital':'ospedale', 'amenity:townhall':'municipio',
+    'amenity:police':'commissariato', 'amenity:courthouse':'tribunale',
+    'amenity:theatre':'teatro', 'amenity:library':'biblioteca',
+    'amenity:university':'universit\u00e0', 'amenity:college':'istituto',
+    'amenity:marketplace':'mercato', 'amenity:cinema':'cinema',
+    'amenity:public_building':'edificio pubblico', 'amenity:prison':'carcere',
+    'amenity:cemetery':'cimitero', 'landuse:cemetery':'cimitero',
+    'tourism:museum':'museo', 'tourism:attraction':'luogo da vedere',
+    'office:government':'ufficio pubblico', 'place:square':'piazza',
+    'shop:mall':'centro commerciale', 'historic:monument':'monumento',
+    'historic:memorial':'monumento', 'historic:castle':'castello',
+    'building:church':'chiesa', 'building:public':'edificio pubblico',
+    /* le aree, per tutta Italia: quello che in un paese si vede da lontano
+       e dice a chi cammina dove si trova */
+    'leisure:swimming_pool':'piscina', 'leisure:fitness_centre':'palestra',
+    'leisure:dog_park':'area cani', 'leisure:nature_reserve':'riserva naturale',
+    'leisure:track':'pista', 'leisure:marina':'porto turistico',
+    'leisure:water_park':'parco acquatico', 'leisure:golf_course':'campo da golf',
+    'amenity:kindergarten':'asilo', 'amenity:community_centre':'centro civico',
+    'amenity:social_facility':'servizi sociali', 'amenity:fire_station':'caserma dei pompieri',
+    'amenity:bus_station':'stazione degli autobus', 'amenity:grave_yard':'cimitero',
+    'amenity:monastery':'convento', 'amenity:arts_centre':'centro culturale',
+    'amenity:conference_centre':'centro congressi', 'amenity:exhibition_centre':'centro fiere',
+    'amenity:clinic':'poliambulatorio', 'amenity:nursing_home':'casa di riposo',
+    'amenity:post_office':'ufficio postale', 'amenity:parking':'parcheggio',
+    'amenity:fuel':'distributore', 'amenity:driving_school':'scuola guida',
+    'tourism:gallery':'galleria d\u2019arte', 'tourism:zoo':'zoo',
+    'tourism:theme_park':'parco di divertimenti', 'tourism:aquarium':'acquario',
+    'tourism:hotel':'albergo', 'tourism:museum':'museo',
+    'historic:ruins':'rovine', 'historic:archaeological_site':'area archeologica',
+    'historic:city_gate':'porta della citt\u00e0', 'historic:tower':'torre',
+    'historic:fort':'forte', 'historic:church':'chiesa',
+    'historic:building':'edificio storico', 'historic:aqueduct':'acquedotto',
+    'landuse:military':'zona militare', 'landuse:recreation_ground':'area attrezzata',
+    'landuse:forest':'bosco', 'landuse:retail':'zona commerciale',
+    'landuse:allotments':'orti', 'landuse:vineyard':'vigneto',
+    'natural:wood':'bosco', 'natural:water':'specchio d\u2019acqua',
+    'natural:beach':'spiaggia', 'natural:cliff':'scogliera',
+    'natural:peak':'cima', 'natural:spring':'sorgente',
+    'man_made:pier':'pontile', 'man_made:lighthouse':'faro',
+    'man_made:water_tower':'torre dell\u2019acqua', 'man_made:bridge':'ponte',
+    'building:train_station':'stazione', 'building:cathedral':'cattedrale',
+    'building:chapel':'cappella', 'building:university':'universit\u00e0',
+    'building:hospital':'ospedale', 'building:school':'scuola',
+    'building:government':'edificio pubblico', 'building:civic':'edificio pubblico',
+    'building:stadium':'stadio',
+    'office:administrative':'ufficio pubblico',
+    'railway:station':'stazione', 'aeroway:aerodrome':'aeroporto',
+    'waterway:river':'fiume', 'waterway:canal':'canale',
+    'shop:department_store':'grande magazzino'
+  };
   var dettiServizi={};
 
   function scaricaIntorno(){
@@ -6051,10 +6199,23 @@
         if(orologio)clearTimeout(orologio);
         var doc=new DOMParser().parseFromString(x,'application/xml');
         var nodi=doc.getElementsByTagName('node'), nuovi=[];
+        /* GLI ALBERI STANNO A PARTE.
+           Vince, 15/10: «qui ci sono gli alberi, non lo so, ma serve per
+           orientare meglio il non vedente». Giusto — ma un albero per
+           volta sarebbe il difetto degli attraversamenti: nella mappa
+           ogni albero e' un punto, e un viale alberato ne ha cinquanta.
+           Quindi non entrano fra i servizi che si annunciano: si contano,
+           e se sono tanti si dice una volta che la strada e' alberata. */
+        var alberi=[], dovesta={};
         for(var i=0;i<nodi.length;i++){
           var n=nodi[i], t={};
           var tg=n.getElementsByTagName('tag');
           for(var j=0;j<tg.length;j++) t[tg[j].getAttribute('k')]=tg[j].getAttribute('v');
+          dovesta[n.getAttribute('id')]=[parseFloat(n.getAttribute('lat')),parseFloat(n.getAttribute('lon'))];
+          if(t.natural==='tree'){
+            alberi.push([parseFloat(n.getAttribute('lat')),parseFloat(n.getAttribute('lon'))]);
+            continue;
+          }
           var h=t.highway||'', cosa=null, extra='';
           if(h==='crossing'){
             cosa='attraversamento';
@@ -6074,9 +6235,11 @@
             /* tutto il resto che OSM sa di quel punto: non serve ad annunciarlo
                camminando, ma serve a rispondere subito a «la farmacia piu'
                vicina» senza chiedere niente a nessuno */
-            var q=(t.amenity||'')+(t.shop?('|'+t.shop):'')+(t.healthcare?('|'+t.healthcare):'');
             var et=SERVIZIO_OSM[t.amenity]||SERVIZIO_OSM['shop:'+t.shop]||
-                   SERVIZIO_OSM['office:'+t.office]||SERVIZIO_OSM['government:'+t.government]||null;
+                   SERVIZIO_OSM['office:'+t.office]||SERVIZIO_OSM['government:'+t.government]||
+                   SERVIZIO_OSM['tourism:'+t.tourism]||SERVIZIO_OSM['healthcare:'+t.healthcare]||
+                   SERVIZIO_OSM['emergency:'+t.emergency]||SERVIZIO_OSM['railway:'+t.railway]||
+                   SERVIZIO_OSM['highway:'+t.highway]||SERVIZIO_OSM[t.leisure]||null;
             // l'anagrafe e' spesso un ufficio del comune: vale come tutte e due
             if(t.government==='register_office') et='anagrafe';
             if(!et) continue;
@@ -6087,7 +6250,40 @@
           nuovi.push({cosa:cosa, extra:extra,
                       lat:parseFloat(n.getAttribute('lat')), lon:parseFloat(n.getAttribute('lon'))});
         }
-        INTORNO=nuovi;
+        /* i filari (natural=tree_row) sono linee, non punti: si prendono i
+           punti che li compongono, che stanno in questa stessa risposta */
+        try{
+          var vie=doc.getElementsByTagName('way');
+          for(var w=0;w<vie.length;w++){
+            var tw={}, tg2=vie[w].getElementsByTagName('tag');
+            for(var z=0;z<tg2.length;z++) tw[tg2[z].getAttribute('k')]=tg2[z].getAttribute('v');
+            var nd=vie[w].getElementsByTagName('nd');
+            if(tw.natural==='tree_row' || tw.natural==='tree'){
+              for(var y=0;y<nd.length;y++){
+                var c=dovesta[nd[y].getAttribute('ref')];
+                if(c)alberi.push(c);
+              }
+              continue;
+            }
+            // le cose grandi: si tiene il contorno, per sapere quando ci passi accanto
+            var gt=null;
+            ['leisure','amenity','tourism','office','place','shop','historic','landuse',
+             'natural','man_made','waterway','aeroway','railway','building'].forEach(function(ch){
+              if(!gt && tw[ch] && GRANDI_OSM[ch+':'+tw[ch]])gt=GRANDI_OSM[ch+':'+tw[ch]];
+            });
+            if(!gt)continue;
+            var punti=[];
+            for(var y2=0;y2<nd.length;y2++){
+              var c2=dovesta[nd[y2].getAttribute('ref')];
+              if(c2)punti.push(c2);
+              if(punti.length>60)break;
+            }
+            if(!punti.length)continue;
+            nuovi.push({cosa:gt, servizio:gt, nome:(tw.name||''), extra:(tw.name||''),
+                        grande:true, punti:punti, lat:punti[0][0], lon:punti[0][1]});
+          }
+        }catch(e){}
+        INTORNO=nuovi; ALBERI=alberi;
         intornoInCorso=false;
       })
       .catch(function(){ if(orologio)clearTimeout(orologio); intornoInCorso=false; });
@@ -6243,7 +6439,7 @@
     drawList(items);
     if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}
     try{ guardaLaStrada(); }catch(e){}
-    try{ scaricaIntorno(); avvisaServizi(); riferimentiLungoLaStrada(); }catch(e){}}
+    try{ scaricaIntorno(); avvisaServizi(); riferimentiLungoLaStrada(); stradaAlberata(); }catch(e){}}
 
 
 
@@ -7434,24 +7630,83 @@
      camminando li scartava tutti. Ora, mentre ti porta da qualche parte o
      in Utilità, ne dice uno ogni venticinque secondi, e ognuno una volta
      sola. */
+  /* «Qui la strada e' alberata»: si dice una volta per strada, come la
+     serie di attraversamenti. Gli alberi sono un riferimento che chi non
+     vede sente — l'ombra, il rumore, i rami — e aiuta a capire dove sta. */
+  function stradaAlberata(){
+    if(!S.voice||!S.pronto||ALBERI.length<5)return;
+    if(Date.now()-alberiQuando<180000)return;
+    var via=viaSotto||'';
+    if(via && via===alberiVia)return;
+    var vicini=0;
+    for(var i=0;i<ALBERI.length;i++){
+      if(dist(S.lat,S.lon,ALBERI[i][0],ALBERI[i][1])<45)vicini++;
+      if(vicini>=5)break;
+    }
+    if(vicini<5)return;
+    alberiQuando=Date.now(); alberiVia=via;
+    parlaLibero('Qui la strada è alberata.',GUIDA);
+  }
+  // di un'area conta il punto piu' vicino, non il centro
+  function quantoDista(o){
+    if(!o.punti)return dist(S.lat,S.lon,o.lat,o.lon);
+    var dm=Infinity;
+    for(var i=0;i<o.punti.length;i++){
+      var d=dist(S.lat,S.lon,o.punti[i][0],o.punti[i][1]);
+      if(d<dm)dm=d;
+    }
+    return dm;
+  }
+  function doveSta(o){
+    if(!o.punti)return norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
+    var dm=Infinity,mig=o.punti[0];
+    for(var i=0;i<o.punti.length;i++){
+      var d=dist(S.lat,S.lon,o.punti[i][0],o.punti[i][1]);
+      if(d<dm){dm=d;mig=o.punti[i];}
+    }
+    return norm(bear(S.lat,S.lon,mig[0],mig[1])-S.hd);
+  }
+  /* QUANDO UNA COSA GRANDE VALE LA PENA DI DIRLA.
+     In Piazza del Popolo a Latina la mappa ha nove «giardino» senza nome —
+     sono le aiuole della piazza. Dirle una per una sarebbe il difetto degli
+     attraversamenti con un altro nome. Quindi: una cosa grande si dice se
+     ha un nome («Villa Comunale», «Prefettura», «Piazza del Popolo»), e
+     senza nome solo se il tipo da solo serve a orientarsi — un parco, una
+     chiesa, la stazione, il fiume. Un'aiuola senza nome non orienta
+     nessuno. */
+  var VALE_SENZA_NOME={'parco':1,'piazza':1,'chiesa':1,'cattedrale':1,'cimitero':1,
+    'stazione':1,'ospedale':1,'mercato':1,'spiaggia':1,'fiume':1,'canale':1,'ponte':1,
+    'bosco':1,'area archeologica':1,'castello':1,'faro':1,'aeroporto':1,'stadio':1,
+    'porta della citt\u00e0':1,'torre':1,'rovine':1,'municipio':1,'tribunale':1,
+    'universit\u00e0':1,'museo':1,'teatro':1,'riserva naturale':1,'porto turistico':1};
+  function valeDirla(o){
+    if(!o.grande)return true;
+    if(o.nome)return true;
+    return !!VALE_SENZA_NOME[o.cosa];
+  }
   var ultimoRiferimento=0;
   function riferimentiLungoLaStrada(){
     if(!S.voice||!S.pronto||!INTORNO.length)return;
     if(!versoAffidabile())return;
     if(!meta && S.racconta!=='servizi')return;
     if(Date.now()-ultimoRiferimento<25000)return;
-    var mig=null,dmin=Infinity;
+    var mig=null,dmin=Infinity,migGrande=null,dminG=Infinity;
     for(var i=0;i<INTORNO.length;i++){
       var o=INTORNO[i];
       if(!o.servizio)continue;            // qui servono i negozi, non gli attraversamenti
-      var m=dist(S.lat,S.lon,o.lat,o.lon);
-      if(m>22||m<2)continue;
-      var rel=norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
-      if(Math.abs(rel)>70)continue;       // quello che hai di fianco o davanti
-      var chiave='rif@'+o.lat.toFixed(5)+','+o.lon.toFixed(5);
+      if(!valeDirla(o))continue;
+      var m=quantoDista(o);
+      var limite=o.grande?60:22;          // una villa comunale si sente da piu' lontano
+      if(m>limite||m<2)continue;
+      var rel=doveSta(o);
+      if(Math.abs(rel)>(o.grande?85:70))continue;
+      var chiave='rif@'+o.cosa+'@'+(o.nome||(o.lat.toFixed(5)+','+o.lon.toFixed(5)));
       if(dettiServizi[chiave] && Date.now()-dettiServizi[chiave]<600000)continue;
-      if(m<dmin){ dmin=m; mig={o:o,chiave:chiave,rel:rel}; }
+      if(o.grande){ if(m<dminG){ dminG=m; migGrande={o:o,chiave:chiave,rel:rel}; } }
+      else if(m<dmin){ dmin=m; mig={o:o,chiave:chiave,rel:rel}; }
     }
+    // le cose grandi prima: sono quelle che ti dicono dove sei
+    if(migGrande)mig=migGrande;
     if(!mig)return;
     dettiServizi[mig.chiave]=Date.now();
     ultimoRiferimento=Date.now();
