@@ -5172,7 +5172,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='72';
+  var VERSIONE='73';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -7193,6 +7193,7 @@
     return false;
   }
   function chiediMicrofono(){
+    if(window.urbeaNativo)return;   // nell'app il permesso l'ha gia' l'app
     // su Android il riconoscimento non parte se il permesso non è stato dato:
     // si apre e si chiude subito uno stream, così il telefono lo chiede davvero
     try{
@@ -7236,6 +7237,14 @@
     }catch(e){ if(b){b.classList.remove('ascolta');b.textContent='🎙 Parla';} }
   }
   function avviaAscolto(){
+    // dentro il guscio ascolta l'app, che il microfono ce l'ha gia': se lo
+    // chiede anche la pagina compare un secondo dialogo col nome del
+    // dominio, e la guida resta ferma finche' nessuno lo tocca
+    if(window.urbeaNativo && window.urbeaAscolta){
+      ascoltoAcceso=true;
+      try{ window.urbeaAscolta(); }catch(e){}
+      return true;
+    }
     var R=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!R)return false;
     chiediMicrofono();
