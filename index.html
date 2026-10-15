@@ -5122,7 +5122,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='66';
+  var VERSIONE='67';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6270,8 +6270,12 @@
       if(!dettoPronto){
         dettoPronto=true;
         stradaDiQui(function(via){
-          var t = via ? ('Ci siamo. Sei in '+via+'. Cammina pure.')
-                      : 'Ci siamo, ti ho trovato. Cammina pure.';
+          // se l'annuncio d'apertura sta ancora parlando, questo non si
+          // aggiunge come secondo discorso: basta la via, in poche parole
+          var corto = staParlando || (apertoDa && Date.now()-apertoDa < 9000);
+          var t = via ? (corto ? ('Sei in '+via+'.')
+                               : ('Ci siamo. Sei in '+via+'. Cammina pure.'))
+                      : (corto ? 'Ci siamo.' : 'Ci siamo, ti ho trovato. Cammina pure.');
           try{ liveEl.textContent=t; }catch(e){}
           // la via l'ha appena detta: chi guarda la strada non la ripeta
           // tre secondi dopo. «Via Sacra, Roma» qui, «Via Sacra» di la':
