@@ -5266,7 +5266,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='86';
+  var VERSIONE='87';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6387,7 +6387,7 @@
     // «modalita' voce attiva» si dice solo se la accendi tu dal tasto:
     // entrando da «guidami a voce» lo sai gia', e sono parole in piu'
     // davanti a chi aspetta di sentire dove si trova
-    if(!porta || porta.hidden) dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.',GUIDA);}
+    if(!entrandoDallaPorta) dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.',GUIDA);}
     else{ spegniRadio(); fermaAscolto(); var bp2=el('parla'); if(bp2)bp2.hidden=true; zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }
     render();
   });
@@ -7582,7 +7582,13 @@
     function letto(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
     var modoSalvato=letto('urbea-modo');
 
+    /* Chi entra da «guidami a voce» sa gia' di essere in guida vocale:
+       dirglielo e' una frase in piu' davanti a chi aspetta solo di sapere
+       dove si trova. */
+    var entrandoDallaPorta=false;
     function entra(modoVoce){
+      entrandoDallaPorta=true;
+      setTimeout(function(){ entrandoDallaPorta=false; }, 4000);
       if(attesa){clearTimeout(attesa);attesa=null;}
       porta.hidden=true;
       audio();
@@ -7637,13 +7643,16 @@
                       'e controlla che Yourbea abbia il permesso di usare la posizione.',GUIDA);
         }
       }, 20000);
+      /* «sto cercando la posizione» serve solo se la posizione tarda: se
+         arriva subito, l'utente sente due frasi di fila per niente. */
       setTimeout(function(){
+        if(S.pronto) return;
         var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
               'Senza premere tasti puoi comandarmi parlando: dì aiuto, dove sono, '+
               'oppure cosa c\'è qui intorno.';
         try{ liveEl.textContent=t; }catch(e){}
         try{ dire(['frase-apertura'],t,GUIDA); }catch(e){ try{ speak(t); }catch(_){} }
-      }, 400);
+      }, 3000);
       try{dovesiamo();}catch(e){}
       comandoDaFuori();
     }
