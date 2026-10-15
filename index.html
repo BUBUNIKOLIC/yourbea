@@ -5134,14 +5134,14 @@
     var liv=livelloDi(livello);
     if(!ancheSeUguale && uguale(testo) && Date.now()-ultimoQuando<8000){
       if(window.diario)try{ window.diario('GIA DETTA, non la ripeto: '+String(testo).slice(0,50)); }catch(e){}
-      return;
+      return false;
     }
     if(window.diario)try{ window.diario('ARRIVA liv='+liv+' staParlando='+staParlando+
       ' inCorso='+livelloInCorso+' altre='+altreCopieStannoParlando()+' | '+String(testo).slice(0,60)); }catch(e){}
     // un'altra copia dell'app sta parlando e questa e' in secondo piano:
     // due copie che parlano insieme sono due voci, e nessuna coda puo'
     // metterle d'accordo dall'interno
-    if(altreCopieStannoParlando() && liv!==EMERGENZA) return;
+    if(altreCopieStannoParlando() && liv!==EMERGENZA) return false;
     diciAlleAltreCopie(testo);   // prende il lucchetto e avvisa le altre
     if(staParlando){
       /* Una fila vera, non una casella sola.
@@ -5167,10 +5167,10 @@
       };
       // piu' basso di quello che sta parlando: il racconto si butta, il
       // resto aspetta il suo turno
-      if(liv<livelloInCorso){ if(liv===RACCONTO)return; accoda(); return; }
+      if(liv<livelloInCorso){ if(liv===RACCONTO)return false; accoda(); return true; }
       // pari livello: non si taglia a meta' una frase per dirne una uguale,
       // tranne fra emergenze, dove l'ultima conta piu' di quella in corso
-      if(liv===livelloInCorso && liv!==EMERGENZA){ accoda(); return; }
+      if(liv===livelloInCorso && liv!==EMERGENZA){ accoda(); return true; }
     }
     if(liv===EMERGENZA)inCoda=null; // l'emergenza non si trascina dietro niente
     /* Se sto interrompendo qualcosa di meno importante che era GIA'
@@ -5202,7 +5202,7 @@
     if(ids && ids.length===1 && ids[0]===LIBERO){
       staParlando=true; livelloInCorso=liv;
       ripiego(mio,testo);
-      return;
+      return true;
     }
     livelloInCorso=liv;
     staParlando=true;
@@ -5214,7 +5214,7 @@
       liveEl.textContent=tr.t;
       speak(tr.t, tr.italiano);
       setTimeout(function(){ finito(mio); }, Math.min(16000, 1200+tr.t.length*55));
-      return;
+      return true;
     }
     try{
       var i=0,saltate=0;
@@ -5246,13 +5246,24 @@
         });
       })();
     }catch(e){ ripiego(mio,testo); }
+    return true;
   }
 
   function serveQui(p){
-    // 'tutto' dice anche farmacie e fermate; 'cultura' solo i luoghi raccontati;
-    // 'servizi' solo quelli utili a chi cammina per arrivare da qualche parte
+    /* 'cultura' (Turismo): solo i luoghi da raccontare.
+       'servizi' (Utilita', ed e' la modalita' dei non vedenti): i servizi
+       utili a camminare — civici, farmacie, negozi, fermate — PIU' i luoghi
+       importanti. Gabri, a Parma, il 15/10: «ripeteva solo il posto dove
+       stavo, ma non mi raccontava nulla dei luoghi importanti». Misurato nel
+       punto dove era: l'app diceva la via e il panificio e non nominava
+       Palazzo del Governatore a 107 metri, perche' in Utilita' i luoghi
+       culturali erano esclusi tutti. Chi non vede ha diritto di sapere che
+       sta passando davanti a un palazzo del Duecento; quello che non vuole
+       e' l'elenco dei dettagli minori mentre cerca la farmacia. Quindi in
+       Utilita' passano i luoghi di rango alto — i grandi e i notevoli — e
+       restano fuori i particolari di strada. */
     if(S.racconta==='cultura')return p.k===1;
-    if(S.racconta==='servizi')return p.k!==1;
+    if(S.racconta==='servizi')return p.k!==1 || rango(p)>=2;
     return true;
   }
   /* ---------- quanto conta un luogo ----------
@@ -5367,7 +5378,14 @@
      davanti a un palazzo minore a cinquanta, ma non davanti a uno a venti —
      la distanza continua a contare, solo non da sola. */
   function peso(p){ var r=rango(p); return r===3?3.4:(r===2?1.8:1); }
-  function around(){
+  /* `around()` da' quello che il MODO prevede: in Utilita' i servizi, in
+     Turismo i luoghi da raccontare. Ma QUANDO L'UTENTE CHIEDE — «approfondisci»,
+     «che cos'e' questo» — si guarda tutto: chi non vede, in Utilita', ha
+     diritto di sapere che cos'e' il palazzo che ha accanto, e infatti il
+     difetto di Gabri a Parma era questo: chiedeva «approfondisci» e l'app
+     rispondeva «Farmacia Pirani», perche' in Utilita' i monumenti non li
+     guardava nemmeno. `around(true)` ignora il filtro del modo. */
+  function around(tutto){
     var dl=0.008;   // ~900 m: si scartano subito i lontani senza calcolare niente
     /* LA CITTA' NON E' UN MONUMENTO. Wikipedia, interrogata sul punto dove
        sei, risponde anche con la voce del comune: a Latina l'app annunciava
@@ -5377,7 +5395,7 @@
     var citta=normalizza(cittaOra||String(stradaOra||'').split(',').pop().trim());
     return POI.filter(function(p){
       if(citta && normalizza(p.n)===citta)return false;
-      return !p.f && Math.abs(p.lat-S.lat)<dl && Math.abs(p.lon-S.lon)<dl && serveQui(p);
+      return !p.f && Math.abs(p.lat-S.lat)<dl && Math.abs(p.lon-S.lon)<dl && (tutto || serveQui(p));
     }).map(function(p){
       return {p:p,m:dist(S.lat,S.lon,p.lat,p.lon),rel:norm(bear(S.lat,S.lon,p.lat,p.lon)-S.hd)};
     }).filter(function(o){return o.m<S.radius;})
@@ -5510,7 +5528,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='100';
+  var VERSIONE='101';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5716,7 +5734,7 @@
     if(pending||!S.voice)return false;
     // l'annuncio d'apertura dura una decina di secondi: finche' parla lui,
     // nessun monumento gli si mette sopra
-    if(apertoDa && Date.now()-apertoDa < 11000) return false;
+    if(apertoDa && Date.now()-apertoDa < 4000) return false;   // 11 s erano troppi: l'app sembrava muta
     var c=POI.filter(function(p){return p.f&&!giaDetto(p);}).map(function(p){
       return {p:p,m:dist(S.lat,S.lon,p.lat,p.lon),rel:norm(bear(S.lat,S.lon,p.lat,p.lon)-S.hd)};
     }).filter(function(o){
@@ -5791,9 +5809,13 @@
     return n;
   }
   window.ancoraDiPiu=function(){
-    var vicini=around();
+    var vicini=around(true);
     if(!vicini.length)return false;
-    var o=vicini[0];
+    var o=null;
+    for(var z=0;z<vicini.length;z++){
+      if(vicini[z].p.k===1 && vicini[z].m<400){ o=vicini[z]; break; }
+    }
+    if(!o)return false;
     if((livello[o.p.n]||0) >= quantiLivelli(o.p)){
       dire(['frase-tutto-detto'],'Di questo ti ho detto tutto.');
       return true;
@@ -5817,7 +5839,12 @@
     if(l===1){                                    // primo gradino: com'è fatto
       if(!p.d)return;
       ids=[poiId(p)+'-nome', poiId(p)+'-scheda'];
-      testo=p.n+'. '+p.d; aVideo=p.d;
+      /* «Farmacia Pirani. Farmacia Pirani.»: se la scheda comincia col nome
+         del luogo, il nome davanti e' una ripetizione. Succedeva sui luoghi
+         la cui scheda e' il nome stesso. */
+      testo=(normalizza(p.d).indexOf(normalizza(p.n))===0) ? p.d : (p.n+'. '+p.d);
+      if(normalizza(p.d).indexOf(normalizza(p.n))===0) ids=[poiId(p)+'-scheda'];
+      aVideo=p.d;
     } else if(l===2){                             // secondo: che cosa guardare
       if(!p.i)return;
       ids=['frase-cosa-vedere', poiId(p)+'-dentro'];
@@ -5879,7 +5906,7 @@
     // non e' il momento di raccontare chiese
     if(meta){ zitto('ti sto portando a '+meta.n); return; }
     if(Date.now()<zittoFino){ zitto('silenzio chiesto per altri '+Math.round((zittoFino-Date.now())/1000)+' s'); return; }
-    if(apertoDa && Date.now()-apertoDa < 11000){ zitto('app aperta da poco'); return; }
+    if(apertoDa && Date.now()-apertoDa < 4000){ zitto('app aperta da poco'); return; }
     // quanto lontano si annuncia dipende da quanto conta il luogo: i Fori
     // Imperiali hanno un punto solo e dalla strada stanno a duecento metri,
     // e con il raggio fisso non venivano mai nominati
@@ -5897,16 +5924,30 @@
       return r===3 ? Math.round(base*2.3) : (r===2 ? Math.round(base*1.5) : base);
     }
     var c=items.filter(function(o){
+      /* UNA BANCA NON SI APPROFONDISCE.
+         Misurato a Parma il 15/10, nel punto dove camminava Gabri: l'app
+         apriva la domanda «vuoi approfondire?» su «Banca Intesa Sanpaolo»,
+         l'annuncio veniva scartato perche' e' livello racconto e qualcosa
+         di piu' importante stava parlando, e la domanda restava aperta
+         ventisei secondi bloccando TUTTO — compreso il Battistero a
+         sessantotto metri. Lei lo ha detto cosi': «ripeteva solo il posto
+         dove stavo, ma non mi raccontava nulla dei luoghi importanti».
+         Il racconto, e la domanda, valgono solo per i luoghi. */
+      if(o.p.k!==1)return false;
       return Math.abs(o.rel)<spread && o.m<quantoLontano(o.p) && !giaDetto(o.p);
     });
+    if(window.diario && !c.length)try{
+      var q=items.filter(function(o){return o.p.k===1;});
+      window.diario('CANDIDATI: '+c.length+' su '+q.length+' luoghi | '+q.slice(0,3).map(function(o){
+        return o.p.n+' '+Math.round(o.m)+'m/'+Math.round(quantoLontano(o.p))+'m rel'+Math.round(o.rel)+'/'+spread+
+               (giaDetto(o.p)?' GIADETTO':'');}).join(' ; '));
+    }catch(e){}
     if(!c.length){
       if(items.length)zitto(items.length+' luoghi intorno ma nessuno dentro '+base+' m e '+spread+' gradi; il primo: '+
         items[0].p.n+' a '+Math.round(items[0].m)+' m, '+Math.round(items[0].rel)+' gradi'+(giaDetto(items[0].p)?', gia detto':''));
       narraLontani();return;
     }
     var o=c[0];
-    segnaDetto(o.p);
-    pending=o;
 
     var head=(versoAffidabile()?side(o.rel):cardinale(o.p.lat,o.p.lon))+', '+metres(o.m);
     whereEl.textContent=head;
@@ -5920,15 +5961,39 @@
     var sp=head+', '+o.p.n+'.'+(introd?' '+introd+(o.p.y?' del '+o.p.y:'')+'.':'')+' Vuoi approfondire, o andiamo avanti?';
     liveEl.textContent=sp;
     earcon(o.rel,o.m,o.p.k);
+    /* LA DOMANDA SI APRE SOLO SE LA FRASE E' PARTITA DAVVERO.
+       Prima `pending` veniva messo subito: se poi l'annuncio si buttava,
+       restava una domanda aperta su una cosa che l'utente non aveva mai
+       sentito, e per ventisei secondi l'app non diceva piu' niente. */
     if(S.voice)setTimeout(function(){
       var voci=[versoAffidabile()?dirId(o.rel):cardId(o.p),metriId(o.m),poiId(o.p)+'-nome'];
       if(introd)voci.push(poiId(o.p)+'-intro');
       voci.push('frase-chiedi');
-      dire(voci,sp);
+      /* IL MONUMENTO NON SI BUTTA.
+         Misurato a Parma il 15/10 con il diario: il Battistero era
+         candidato valido a ogni giro — 159 metri su 253 permessi, direzione
+         giusta, non ancora detto — e veniva scartato ogni volta, perche' un
+         annuncio di livello RACCONTO si butta quando parla qualcosa di
+         livello GUIDA, e in Utilita' la via, i negozi e gli attraversamenti
+         parlano continuamente. Risultato: Gabri ha camminato per Parma e
+         non ha sentito un solo monumento. In Utilita' un luogo importante
+         (rango 2 o 3) e' GUIDA anche lui: aspetta il suo turno in coda
+         invece di essere gettato. In Turismo resta racconto, perche' li'
+         non c'e' il traffico dei servizi. */
+      var livAnnuncio = (S.racconta==='servizi' && rango(o.p)>=2) ? GUIDA : RACCONTO;
+      var partita=dire(voci,sp,livAnnuncio);
+      if(partita){
+        segnaDetto(o.p); pending=o;
+        pendingTimer=setTimeout(function(){ if(pending===o)closeChoice(); },26000);
+      }else{
+        // non e' stata detta: la si riproporra' al prossimo giro
+        choiceEl.hidden=true;
+      }
     },430);
-
-    // se nessuno risponde, si prosegue da soli: non si resta piantati camminando
-    pendingTimer=setTimeout(function(){ if(pending===o)closeChoice(); },26000);
+    if(!S.voice){
+      segnaDetto(o.p); pending=o;
+      pendingTimer=setTimeout(function(){ if(pending===o)closeChoice(); },26000);
+    }
   }
 
   function deepen(){
@@ -5942,12 +6007,31 @@
        Ora approfondisce quello che hai piu' vicino, e se non c'e' niente da
        raccontare lo dice. */
     if(!pending){
-      var qui=around();
+      /* Chi chiede di approfondire vuole sapere di un LUOGO, non di una
+         farmacia: fra quello che ha intorno si cerca prima qualcosa da
+         raccontare (k:1, e meglio ancora con una scheda vera), in
+         qualunque modo si stia camminando. */
+      var qui=around(true);
       if(!qui||!qui.length){
         dire(['frase-niente-intorno'],'Qui intorno non ho niente da raccontare.',GUIDA);
         return;
       }
-      pending={p:qui[0].p};
+      var scelto=null;
+      for(var z=0;z<qui.length;z++){
+        var pz=qui[z].p;
+        if(pz.k===1 && (pz.d||pz.w) && qui[z].m<220){ scelto=qui[z]; break; }
+      }
+      if(window.diario)try{ window.diario('APPROFONDISCI: '+qui.length+' intorno, scelto '+
+        (scelto?scelto.p.n+' a '+Math.round(scelto.m)+' m':'NESSUNO')+
+        ' | primi: '+qui.slice(0,3).map(function(x){return x.p.n+'(k'+x.p.k+','+Math.round(x.m)+'m)';}).join(', ')); }catch(e){}
+      if(!scelto){
+        for(var z2=0;z2<qui.length;z2++){ if(qui[z2].p.k===1 && qui[z2].m<400){ scelto=qui[z2]; break; } }
+      }
+      if(!scelto){
+        dire(['frase-niente-intorno'],'Qui intorno non ho niente da raccontare.',GUIDA);
+        return;
+      }
+      pending=scelto;
     }
     var o=pending;
     clearTimeout(pendingTimer);
@@ -7226,8 +7310,20 @@
              appena diverse, quindi il freno alle ripetizioni — che
              confronta il testo — non le vedeva uguali. Qui si confronta la
              VIA, non la frase. */
+          /* «Sei in Piazza Cesare Battisti, numero 13/a.» e «Sei in Piazza
+             Cesare Battisti 13/a, Parma.»: la stessa via, detta due volte,
+             perche' una versione porta il civico e l'altra no. Si confronta
+             la via SENZA numeri. */
+          /* normalizza() butta le cifre, quindi «Piazza Cesare Battisti 13/a»
+             diventa «piazza cesare battisti a»: restava quella «a» e il
+             confronto con «piazza cesare battisti» falliva. Si tagliano le
+             parole di una o due lettere in coda. */
+          var soloVia = function(x){
+            var t=normalizza(String(x||'').split(',')[0]);
+            return t.replace(/(\s+[a-z]{1,2})+$/,'').trim();
+          };
           var primaParte = via ? String(via).split(',')[0].trim() : '';
-          var giaDetta = primaParte && primaParte===viaDetta;
+          var giaDetta = primaParte && soloVia(primaParte)===soloVia(viaDetta);
           var t = (via && !giaDetta) ? (corto ? ('Sei in '+via+'.')
                                : ('Ci siamo. Sei in '+via+'. Cammina pure.'))
                       : (corto ? 'Ci siamo.' : 'Ci siamo, ti ho trovato. Cammina pure.');
