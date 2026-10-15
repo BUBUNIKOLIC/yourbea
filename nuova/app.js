@@ -117,6 +117,81 @@
     return lista;
   }
 
+  /* ---------- la mappa ----------
+     Serve a chi sta ACCANTO a chi non vede: guarda lo schermo e capisce in
+     un secondo quello che l'app sta dicendo. Per questo il riquadro è fuori
+     dal giro del lettore di schermo (aria-hidden nella pagina): quello che
+     conta lo dice la voce, e due racconti insieme non si seguono.
+     Le regole di cosa disegnare stanno in parti/mappa.js e si provano senza
+     schermo; qui c'è solo Leaflet. */
+  var mappa = Mappa({ dist: posizione.dist });
+  var PERCORSO = null;
+  var LE = null, alone = null, ioSono = null, laMeta = null, laLinea = null;
+  var segni = [], segniDi = '', ultimoDisegno = 0;
+
+  function apriMappa(s) {
+    if (LE || typeof L === 'undefined') return;
+    /* il riquadro si scopre PRIMA di fare la mappa: Leaflet misura il
+       contenitore quando nasce, e dentro un display:none misura zero —
+       veniva fuori una sola tessera in alto a sinistra. */
+    el('mappa').classList.remove('vuota');
+    LE = L.map('mappa', { zoomControl: true, attributionControl: true, tap: true });
+    LE.setView([s.lat, s.lon], 17);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(LE);
+    alone = L.circleMarker([s.lat, s.lon], { radius: 16, color: '#5BE3FF', weight: 1, opacity: .45,
+      fillColor: '#5BE3FF', fillOpacity: .12, interactive: false }).addTo(LE);
+    ioSono = L.circleMarker([s.lat, s.lon], { radius: 7, color: '#fff', weight: 2,
+      fillColor: '#5BE3FF', fillOpacity: 1, interactive: false }).addTo(LE);
+    /* chi trascina o allarga se la tiene: niente ricentrate in faccia */
+    LE.on('dragstart zoomstart', function () { mappa.laTocca(); });
+    /* e si rimisura appena il riquadro ha la sua altezza vera */
+    setTimeout(function () { try { LE.invalidateSize(); } catch (e) {} }, 300);
+    diario('MAPPA aperta');
+  }
+
+  var COLORI = { oro: '#E7C65A', neon: '#5BE3FF', spento: '#8F98A3' };
+
+  function disegnaMappa(s, lista) {
+    if (!s || !s.pronto) return;
+    apriMappa(s);
+    if (!LE) return;
+    ioSono.setLatLng([s.lat, s.lon]); alone.setLatLng([s.lat, s.lon]);
+    if (mappa.vaCentrata(s)) { LE.panTo([s.lat, s.lon]); mappa.centrata(s); }
+
+    /* i puntini si rifanno solo se sono cambiati: ridisegnarli a ogni passo
+       farebbe lampeggiare la mappa sotto gli occhi di chi la guarda. */
+    var inCorso = racconto.inCorso();
+    var punti = mappa.puntini(lista, modo, inCorso ? inCorso.n : null);
+    var firma = punti.map(function (x) { return x.n + x.raggio; }).join('|');
+    if (firma !== segniDi || Date.now() - ultimoDisegno > 30000) {
+      segniDi = firma; ultimoDisegno = Date.now();
+      segni.forEach(function (m) { LE.removeLayer(m); });
+      segni = punti.map(function (x) {
+        var m = L.circleMarker([x.lat, x.lon], {
+          radius: x.raggio, color: x.parla ? '#fff' : COLORI[x.colore], weight: x.parla ? 2 : 1,
+          fillColor: COLORI[x.colore], fillOpacity: x.parla ? .95 : .55
+        }).addTo(LE);
+        /* toccare un puntino lo fa raccontare: è per il turista che vede, e
+           per chi accompagna e vuole sapere cos'è quella cosa lì. */
+        m.on('click', function () {
+          dillo({ tipo: 'scheda', luogo: x.p, testo: x.p.d || x.p.n, livello: 'guida' });
+        });
+        return m;
+      });
+    }
+
+    if (laLinea) { LE.removeLayer(laLinea); laLinea = null; }
+    if (laMeta) { LE.removeLayer(laMeta); laMeta = null; }
+    var m = guida.meta();
+    if (m) {
+      laMeta = L.circleMarker([m.lat, m.lon], { radius: 9, color: '#4FD38A', weight: 2,
+        fillColor: '#4FD38A', fillOpacity: .8 }).addTo(LE);
+      var linea = mappa.tracciato(PERCORSO);
+      if (linea) laLinea = L.polyline(linea, { color: '#4FD38A', weight: 4, opacity: .6 }).addTo(LE);
+    }
+  }
+
   var clip = Clip();
 
   /* ---------- l'emergenza e la guida ---------- */
@@ -199,6 +274,7 @@
   }
   function partiVerso(m, qui) {
     Promise.all([intorno.strada(qui.lat, qui.lon), intorno.percorso(qui, m)]).then(function (r) {
+      PERCORSO = r[1];                       // la mappa ci disegna la strada
       dilloSubito(guida.vaiA(m, qui, r[0], r[1]));
     });
   }
@@ -248,7 +324,9 @@
         : 'Questo telefono non mi dà la posizione.';
       stato('posizione <b>' + s.comeVa + '</b>', true);
       mostra({ titolo: 'Non so dove sei', testo: dice, attesa: true, dove: '—', gradino: '' });
-      voce.parla(dice, { livello: voce.GUIDA });
+      /* se intanto la posizione arriva — dal guscio, o perché l'utente ha
+         appena dato il permesso — questa frase non si dice più. */
+      voce.parla(dice, { livello: voce.GUIDA, valida: function () { return !posizione.leggi().pronto; } });
       return;
     }
     if (!s.pronto) { stato('cerco la posizione…'); return; }
@@ -256,6 +334,7 @@
     if (!acceso) return;
 
     var lista = vicini();
+    disegnaMappa(s, lista);
     // la strada, una volta al minuto
     if (Date.now() - ultimaStradaQuando > 60000) {
       ultimaStradaQuando = Date.now();

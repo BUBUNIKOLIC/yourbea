@@ -90,6 +90,10 @@ body[data-modo="utilita"] #mappa{display:none}
 .cassetto .tasto{flex:1 1 44%}
 
 /* ---------- la porta d'ingresso ---------- */
+/* [hidden] da solo non basta: display:flex qui sotto lo batte, e la porta
+   restava sopra tutto anche dopo aver scelto — l'app parlava sotto a uno
+   schermo che non cambiava mai. Trovato il 15/10 guardando la pagina. */
+#porta[hidden]{display:none}
 #porta{position:fixed;inset:0;z-index:4000;background:var(--fondo);
   display:flex;flex-direction:column;justify-content:center;gap:14px;
   padding:calc(env(safe-area-inset-top,0px) + 24px) 18px calc(env(safe-area-inset-bottom,0px) + 24px)}
@@ -113,3 +117,27 @@ body[data-modo="utilita"] #mappa{display:none}
 @media (prefers-reduced-motion:no-preference){
   .dice{transition:box-shadow .3s ease}
 }
+
+/* ---------- la mappa ----------
+   Non è la protagonista: sta sotto il riquadro del parlato, alta meno di
+   mezzo schermo, e sparisce finché non c'è una posizione da mostrare.
+   Serve a chi accompagna chi non vede, e al turista che vuole vedere dov'è
+   la cosa che l'app gli sta raccontando. */
+#mappa{
+  height:44vh;min-height:280px;max-height:520px;margin:16px 0 0;
+  border:1px solid var(--filo);border-radius:var(--tondo);overflow:hidden;
+  background:#0B0F14;
+  box-shadow:0 0 0 1px rgba(91,227,255,.10), 0 18px 44px rgba(0,0,0,.5);
+}
+#mappa.vuota{display:none}
+/* le tessere arrivano chiare e stonano col nero: si scuriscono un po' */
+#mappa .leaflet-tile{filter:brightness(.72) saturate(.82) contrast(1.04)}
+#mappa .leaflet-control-zoom a{
+  background:#161B22;color:var(--inchiostro);border-color:var(--filo);
+  width:38px;height:38px;line-height:38px;font-size:20px
+}
+#mappa .leaflet-control-zoom a:hover{background:#1F252E}
+#mappa .leaflet-control-attribution{
+  background:rgba(11,15,20,.72);color:var(--spento);font-size:10px
+}
+#mappa .leaflet-control-attribution a{color:#9FB6C4}

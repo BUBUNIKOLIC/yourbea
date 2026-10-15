@@ -252,7 +252,10 @@ function Intorno(opzioni) {
       });
       if (!svolte.length) return null;
       diario('PERCORSO: ' + svolte.length + ' svolte, ' + Math.round((leg.summary && leg.summary.length || 0) * 1000) + ' m');
-      return { svolte: svolte, metri: Math.round((leg.summary && leg.summary.length || 0) * 1000) };
+      /* `linea` serve solo alla mappa, per disegnare la strada: la guida
+         parlata non la guarda nemmeno. */
+      return { svolte: svolte, metri: Math.round((leg.summary && leg.summary.length || 0) * 1000),
+               linea: pts };
     });
   }
 

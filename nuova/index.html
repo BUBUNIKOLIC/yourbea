@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070A0E">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="stile.css">
+<link rel="stylesheet" href="mappa/leaflet.css?v=3">
+<link rel="stylesheet" href="stile.css?v=3">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -41,7 +42,9 @@
   <div class="gradino" id="gradino"></div>
 </section>
 
-<div id="mappa" aria-hidden="true" role="presentation"></div>
+<!-- La mappa è per chi sta accanto: fuori dal giro del lettore di schermo,
+     perché quello che conta lo dice la voce. Compare quando c'è la posizione. -->
+<div id="mappa" class="vuota" aria-hidden="true" role="presentation"></div>
 
 <section class="cassetto" id="cassetto" aria-label="Altri comandi">
   <button class="tasto" id="testo-piu">Testo più grande</button>
@@ -69,13 +72,15 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
 </nav>
 
-<script src="parti/voce.js"></script>
-<script src="parti/racconto.js"></script>
-<script src="parti/clip.js"></script>
-<script src="parti/posizione.js"></script>
-<script src="parti/intorno.js"></script>
-<script src="parti/emergenza.js"></script>
-<script src="parti/guida.js"></script>
-<script src="app.js"></script>
+<script src="parti/voce.js?v=3"></script>
+<script src="parti/racconto.js?v=3"></script>
+<script src="parti/clip.js?v=3"></script>
+<script src="parti/posizione.js?v=3"></script>
+<script src="parti/intorno.js?v=3"></script>
+<script src="parti/emergenza.js?v=3"></script>
+<script src="parti/guida.js?v=3"></script>
+<script src="mappa/leaflet.js?v=3"></script>
+<script src="parti/mappa.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

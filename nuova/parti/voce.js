@@ -98,11 +98,27 @@ function MotoreVoce(opzioni) {
     parlando = false;
     livelloInCorso = 0;
     inCorso = null;
-    var prossima = coda.shift();
+    var prossima = saltaLeScadute();
     if (prossima) { avvia(prossima); return; }
     // niente più da dire: il microfono torna ad ascoltare, ma non subito —
     // l'ultima sillaba sta ancora uscendo dall'altoparlante
     fra(function () { if (!parlando) microfono.apri(); }, 900);
+  }
+
+  /* saltaLeScadute(): una frase può restare in coda dieci, dodici secondi.
+     In quel tempo il mondo cambia, e certe frasi diventano false: provando
+     la mappa il 15/10 l'app ha detto «non ho il permesso di sapere dove
+     sei» dodici secondi dopo che le posizioni erano arrivate — la frase era
+     giusta quando è nata, e bugiarda quando è uscita. Chi mette in coda una
+     frase così le attacca una condizione, e qui si ricontrolla PRIMA di
+     aprire bocca. Le frasi senza condizione non cambiano niente. */
+  function saltaLeScadute() {
+    while (coda.length) {
+      var f = coda.shift();
+      if (f.valida && !f.valida()) { diario('SCADUTA, non la dico: ' + String(f.testo).slice(0, 40)); continue; }
+      return f;
+    }
+    return null;
   }
 
   function conLaVoceDiSistema(mio, testo) {
@@ -194,6 +210,7 @@ function MotoreVoce(opzioni) {
     var livello = p.livello || CENNO;
     var clip = p.clip || null;
     var ancheSeUguale = !!p.ancheSeUguale;
+    var valida = typeof p.valida === 'function' ? p.valida : null;
 
     if (!testo) return false;
 
@@ -218,7 +235,7 @@ function MotoreVoce(opzioni) {
       if (normalizza(coda[i].testo) === normalizza(testo)) { diario('GIÀ IN CODA'); return true; }
     }
     if (livello === CENNO && coda.length >= CODA_MAX) { diario('CODA PIENA, cenno buttato'); return false; }
-    coda.push({ testo: testo, clip: clip, livello: livello });
+    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida });
     coda.sort(function (a, b) { return b.livello - a.livello; });
     if (coda.length > CODA_MAX) coda.length = CODA_MAX;
     diario('IN CODA (' + livello + '): ' + String(testo).slice(0, 40));

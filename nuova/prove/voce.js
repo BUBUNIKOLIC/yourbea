@@ -214,6 +214,29 @@ prova('tre cenni in fila: la coda non supera quattro e nessuno si accavalla', ()
   if (m.motore.staParlando()) guasto('resta occupato alla fine');
 });
 
+/* LA FRASE CHE SCADE IN CODA.
+   Il 15/10, provando la mappa: «non ho il permesso di sapere dove sei»
+   detta DODICI SECONDI dopo che le posizioni erano arrivate. Era vera
+   quando è nata, falsa quando è uscita dalla coda. */
+prova('una frase con la condizione non si dice se non vale più', () => {
+  const m = Mondo();
+  let permesso = false;
+  m.motore.parla('Sei in Via dei Corazzieri.', { livello: 2 });
+  m.motore.parla('Non ho il permesso di sapere dove sei.',
+                 { livello: 2, valida: () => !permesso });
+  permesso = true;                     // intanto la posizione arriva
+  m.passano(30000);
+  if (/permesso/.test(m.dette.join(' | '))) guasto('ha detto una frase che non era più vera');
+});
+
+prova('senza condizione la coda scorre come prima', () => {
+  const m = Mondo();
+  m.motore.parla('Sei in Via dei Corazzieri.', { livello: 2 });
+  m.motore.parla('Museo Duilio Cambellotti, a ottanta metri.', { livello: 2 });
+  m.passano(30000);
+  if (!/Cambellotti/.test(m.dette.join(' | '))) guasto('la seconda frase doveva uscire lo stesso');
+});
+
 /* ==================== il conto ==================== */
 (async () => {
   for (const p of prove) {
