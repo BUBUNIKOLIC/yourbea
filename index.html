@@ -5172,7 +5172,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='70';
+  var VERSIONE='71';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -6021,14 +6021,30 @@
       .catch(function(){ if(orologio)clearTimeout(orologio); quando(''); });
   }
 
+
+  /* ---------- la posizione quando l'app e' un'app ----------
+     Dentro il guscio iPhone la pagina chiedeva il permesso di posizione per
+     conto suo, e iOS mostrava un dialogo con scritto il nome del dominio:
+     «bubunikolic.github.io vorrebbe utilizzare la tua posizione». Chi non
+     vede non sa che c'e', non lo tocca, e la guida resta ferma su «in
+     attesa» per sempre. Ora la posizione la prende l'app con CoreLocation
+     — il permesso lo chiede lei, una volta, con parole sue — e la passa qui
+     dentro. La pagina non chiede piu' niente. */
+  window.urbeaPosizione=function(lat,lon,prec,rotta,velocita){
+    try{
+      var p={coords:{latitude:lat,longitude:lon,accuracy:(prec>0?prec:12),
+                     heading:(rotta>=0?rotta:null),speed:(velocita>=0?velocita:null)},
+             timestamp:Date.now()};
+      if(typeof window.__daNativo==='function') window.__daNativo(p);
+      else window.__ultimaNativa=p;
+    }catch(e){}
+  };
+
   /* ---------- posizione reale ---------- */
   var watchId=null,wakeLock=null,percorsiOrdinati=false,dettoPronto=false;
-  function startLive(){
-    if(!navigator.geolocation){statusEl.textContent='GPS non disponibile in questo browser';return;}
-    statusEl.textContent='cerco la posizione…';
-    accendiRadio();
-    setTimeout(function(){ if(S.pronto&&!partenza)partenza={lat:S.lat,lon:S.lon,n:'il punto di partenza'}; },6000);
-    watchId=navigator.geolocation.watchPosition(function(pos){
+  /* Quello che si fa a ogni posizione nuova, da qualunque parte arrivi:
+     dal browser o dal guscio dell'app iPhone, che la passa lui. */
+  function aggiornaDaPosizione(pos){
       S.live=true;S.sim=false;S.pronto=true;
       S.lat=pos.coords.latitude;S.lon=pos.coords.longitude;
       S.acc=pos.coords.accuracy||null;
@@ -6053,6 +6069,29 @@
       if(mappa&&!seguiMappa===false){} 
       if(mappa&&mappa.getZoom()<14){ mappa.setView([S.lat,S.lon],16,{animate:false}); disegnaMappa(); }
       render();
+  }
+
+  function startLive(){
+    /* dentro l'app la posizione arriva dal guscio: niente permesso doppio */
+    if(window.urbeaHaPosizione){
+      statusEl.textContent='cerco la posizione…';
+      accendiRadio();
+      window.__daNativo=function(pos){
+        S.live=true;S.sim=false;S.pronto=true;
+        S.lat=pos.coords.latitude;S.lon=pos.coords.longitude;
+        S.acc=pos.coords.accuracy||null;
+        try{ aggiornaDaPosizione(pos); }catch(e){ try{ render(); }catch(_){} }
+      };
+      if(window.__ultimaNativa)window.__daNativo(window.__ultimaNativa);
+      setTimeout(function(){ if(S.pronto&&!partenza)partenza={lat:S.lat,lon:S.lon,n:'il punto di partenza'}; },6000);
+      return;
+    }
+    if(!navigator.geolocation){statusEl.textContent='GPS non disponibile in questo browser';return;}
+    statusEl.textContent='cerco la posizione…';
+    accendiRadio();
+    setTimeout(function(){ if(S.pronto&&!partenza)partenza={lat:S.lat,lon:S.lon,n:'il punto di partenza'}; },6000);
+    watchId=navigator.geolocation.watchPosition(function(pos){
+      aggiornaDaPosizione(pos);
     },function(err){
       statusEl.textContent='posizione negata o non disponibile — usa Simula';
     },{enableHighAccuracy:true,maximumAge:2000,timeout:15000});
@@ -7550,7 +7589,8 @@
     var iPhone = /iPhone|iPad|iPod/i.test(ua);
     var safari = iPhone && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
     var giaInstallata = (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
-                        || window.navigator.standalone===true;
+                        || window.navigator.standalone===true
+                        || window.urbeaNativo===true;   // dentro l'app vera
 
     function spiega(){
       var t;
