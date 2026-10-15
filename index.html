@@ -5239,7 +5239,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='82';
+  var VERSIONE='83';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6169,11 +6169,20 @@
   function chiediPosizione(quando, seNo, opzioni){
     if(window.urbeaHaPosizione){
       if(window.__ultimaNativa){ quando(window.__ultimaNativa); return; }
-      // l'app non l'ha ancora mandata: si aspetta la prima, senza chiedere
+      /* L'app dovrebbe mandarla lei. Ma se per qualunque motivo non
+         arriva — permesso a meta', CoreLocation che tace, guscio vecchio —
+         NON si resta ad aspettare: dopo cinque secondi si chiede al
+         browser come si e' sempre fatto. Senza questo ripiego l'app resta
+         muta e tutti i tasti sembrano rotti, perche' senza posizione non
+         funziona niente. E' quello che e' successo a Vince. */
       var atteso=0;
       var spia=setInterval(function(){
         if(window.__ultimaNativa){ clearInterval(spia); quando(window.__ultimaNativa); return; }
-        if(++atteso>40){ clearInterval(spia); if(seNo)seNo({code:3,message:'posizione non ancora pronta'}); }
+        if(++atteso>20){
+          clearInterval(spia);
+          if(navigator.geolocation) navigator.geolocation.getCurrentPosition(quando, seNo, opzioni);
+          else if(seNo) seNo({code:3,message:'posizione non disponibile'});
+        }
       },250);
       return;
     }
@@ -6243,6 +6252,14 @@
       };
       if(window.__ultimaNativa)window.__daNativo(window.__ultimaNativa);
       setTimeout(function(){ if(S.pronto&&!partenza)partenza={lat:S.lat,lon:S.lon,n:'il punto di partenza'}; },6000);
+      /* E se dall'app non arriva niente entro sei secondi, si torna al
+         modo di sempre: meglio un permesso in piu' che un'app muta. */
+      setTimeout(function(){
+        if(S.pronto || watchId!==null) return;
+        window.urbeaHaPosizione=false;
+        statusEl.textContent='cerco la posizione…';
+        try{ startLive(); }catch(e){}
+      }, 6000);
       return;
     }
     if(!navigator.geolocation){statusEl.textContent='GPS non disponibile in questo browser';return;}
@@ -7580,6 +7597,14 @@
         }
       }catch(e){}
       // si dice subito che cosa sta succedendo, senza aspettare il GPS
+      /* Il silenzio e' la cosa peggiore: se dopo venti secondi la posizione
+         non c'e' ancora, l'app lo dice invece di far credere che sia rotta. */
+      setTimeout(function(){
+        if(!S.pronto){
+          parlaLibero('Non riesco ancora a sapere dove sei. Se sei al chiuso prova a uscire, '+
+                      'e controlla che Yourbea abbia il permesso di usare la posizione.',GUIDA);
+        }
+      }, 20000);
       setTimeout(function(){
         var t='Sto cercando la tua posizione. Appena la trovo partiamo. '+
               'Senza premere tasti puoi comandarmi parlando: dì aiuto, dove sono, '+
