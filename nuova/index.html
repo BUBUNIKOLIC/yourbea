@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=5">
-<link rel="stylesheet" href="stile.css?v=5">
+<link rel="stylesheet" href="mappa/leaflet.css?v=9">
+<link rel="stylesheet" href="stile.css?v=9">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -94,16 +94,16 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
 </nav>
 
-<script src="parti/voce.js?v=5"></script>
-<script src="parti/racconto.js?v=5"></script>
-<script src="parti/clip.js?v=5"></script>
-<script src="parti/posizione.js?v=5"></script>
-<script src="parti/intorno.js?v=5"></script>
-<script src="parti/emergenza.js?v=5"></script>
-<script src="parti/guida.js?v=5"></script>
-<script src="mappa/leaflet.js?v=5"></script>
-<script src="parti/mappa.js?v=5"></script>
-<script src="app.js?v=5"></script>
+<script src="parti/voce.js?v=9"></script>
+<script src="parti/racconto.js?v=9"></script>
+<script src="parti/clip.js?v=9"></script>
+<script src="parti/posizione.js?v=9"></script>
+<script src="parti/intorno.js?v=9"></script>
+<script src="parti/emergenza.js?v=9"></script>
+<script src="parti/guida.js?v=9"></script>
+<script src="mappa/leaflet.js?v=9"></script>
+<script src="parti/mappa.js?v=9"></script>
+<script src="app.js?v=9"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -114,6 +114,14 @@
      invece di tenersi quello di prima — il difetto che il 15/10 ha fatto
      perdere due giorni. -->
 <script>
+/* Android dice «si puo' installare» una volta sola, appena caricata la
+   pagina: chi si mette ad ascoltare dopo non sente niente. Lo si prende al
+   volo e lo si tiene da parte, cosi' si puo' vedere se il telefono la offre
+   davvero, invece di doverlo chiedere al provatore. */
+var invitoAdInstallare = null;
+addEventListener('beforeinstallprompt', function (e) { invitoAdInstallare = e; });
+window.offreDiInstallarla = function () { return !!invitoAdInstallare; };
+
 if ('serviceWorker' in navigator) {
   addEventListener('load', function () {
     /* se un service worker c'era gia', al cambio si ricarica: e' cosi' che la
@@ -126,7 +134,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=5", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=9", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

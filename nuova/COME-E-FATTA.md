@@ -57,3 +57,34 @@ secondo. Se una si rompe, il difetto che descrive è tornato.
 - `parti/interfaccia.js` + la grafica nuova, pensata prima per chi non vede
 - `app.js` che tiene insieme i pezzi, e l'indirizzo separato per provarla
   senza toccare il link che è in mano ai provatori.
+
+## Installarla sul telefono, e il numero di versione
+
+I provatori non hanno il guscio iOS: si aprono
+`https://bubunikolic.github.io/yourbea/nuova/` e fanno **Aggiungi a Home**
+(iPhone) o **Installa** (Android). Tre file lo rendono possibile:
+
+    nuova/manifest.webmanifest   nome, icone, standalone, colore #070A0E
+    nuova/sw.js                  la cassaforte: parte anche senza rete
+    nuova/index.html             li collega, e registra sw.js?v=N
+
+**La regola che si e' pagata cara.** Ogni file che la pagina chiama porta
+`?v=N`; `VERSIONE` in `sw.js` e' lo STESSO numero, ed e' il nome della
+cassaforte. `PUBBLICA.command` li alza insieme, e `prove/pagina.js` non
+lascia pubblicare se non coincidono. Al cambio di versione il service
+worker butta la cassaforte di prima e **la pagina si ricarica da se'**: la
+correzione arriva al provatore appena si pubblica, non quando gli viene in
+mente di riavviare. Senza questo si corregge un difetto, si pubblica, e il
+provatore continua a sentire quello di prima.
+
+Nella cassaforte entrano la pagina, le parti, lo stile, Leaflet, i 950
+luoghi e le 161 clip delle frasi fisse (2 MB). I **nomi dei luoghi** no:
+sono 4.026 clip per 243 MB, si scaricano quando servono e restano nel
+telefono da se'. Le fonti di fuori — OSM, Wikipedia, Valhalla — non si
+tengono: cambiano a ogni passo.
+
+**Non si pesta i piedi alla vecchia app.** Alla radice del sito c'e' un
+altro service worker. `caches.keys()` elenca TUTTE le cassaforti del sito,
+quindi ognuno dei due butta solo quelle col suo prefisso — `yourbea-vNNN`
+la vecchia, `yourbea-nuova-vN` la nuova. Senza questo, la vecchia app
+svuotava la nuova a ogni avvio. Lo controlla `prove/pagina.js`.
