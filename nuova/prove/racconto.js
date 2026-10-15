@@ -155,6 +155,40 @@ prova('un luogo lontano non si annuncia: il raggio dipende da quanto conta', () 
   if (!grande) guasto('un luogo grande a 380 metri in Turismo va detto');
 });
 
+/* I DUE DIFETTI DI VIA DEI CORAZZIERI, Roma, 15/10 la sera.
+   Fermo in Turismo, l'app ha raccontato la ferramenta accanto. E guardando
+   i dati si è visto il secondo, che nessuno aveva ancora sentito: chiese e
+   ville segnate k 2 e 3 non si raccontavano in nessuna modalità. */
+const FERRAMENTA = { n: 'Negozio di ferramenta e fai da te', lat: 44.80292, lon: 10.32892, k: 0,
+  d: 'Negozio di ferramenta e fai da te, su Via dei Corazzieri.' };
+const CHIESA = { n: 'Chiesa di Santa Maria delle Grazie', lat: 44.8031, lon: 10.3291, k: 2,
+  d: 'Nel 1794 la colata alzò il livello del suolo di circa sei metri.', i: 'Il portale.' };
+
+prova('in Turismo, da fermo, non racconta la ferramenta', () => {
+  const m = mondo();
+  const lista = intorno([[FERRAMENTA, 8, 0], [CHIESA, 40, 20]]);
+  m.r.prossimo({ qui: QUI, intorno: lista, modo: 'cultura' });
+  m.passano(11000);
+  const d = m.r.prossimo({ qui: QUI, intorno: lista, modo: 'cultura' });
+  if (d && /ferramenta/i.test(d.luogo.n)) guasto('da fermo in Turismo ha raccontato il negozio');
+  if (!d) guasto('aveva una chiesa accanto e non ha detto niente');
+});
+
+prova('nemmeno in Utilità il negozio diventa un racconto', () => {
+  const m = mondo();
+  const lista = intorno([[FERRAMENTA, 8, 0]]);
+  m.r.prossimo({ qui: QUI, intorno: lista, modo: 'servizi' });
+  m.passano(11000);
+  const d = m.r.prossimo({ qui: QUI, intorno: lista, modo: 'servizi' });
+  if (d && /ferramenta/i.test(d.luogo.n)) guasto('ha letto la scheda del negozio invece di tacere');
+});
+
+prova('le chiese segnate 2 e 3 si raccontano', () => {
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[CHIESA, 60, 10]]), modo: 'cultura' });
+  if (!d) guasto('una chiesa k=2 non veniva raccontata mai');
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');

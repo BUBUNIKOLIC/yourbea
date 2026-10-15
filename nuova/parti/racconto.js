@@ -83,7 +83,7 @@ function Racconto(opzioni) {
 
     // 1. SE SONO FERMO DAVANTI A QUALCOSA: si scende di gradino
     if (fermo) {
-      var vicino = inCorso || (intorno.length ? intorno[0].p : null);
+      var vicino = (inCorso && daRaccontare(inCorso)) ? inCorso : primoBuono(intorno);
       if (vicino) {
         var g = gradino[vicino.n] || 0;
         if (g < quantiGradini(vicino)) {
@@ -99,7 +99,7 @@ function Racconto(opzioni) {
     // 2. CAMMINANDO: il cenno del prossimo luogo non ancora detto
     for (var i = 0; i < intorno.length; i++) {
       var o = intorno[i], p = o.p;
-      if (p.k !== 1) continue;                   // qui si raccontano i luoghi
+      if (!daRaccontare(p)) continue;           // qui si raccontano i luoghi
       if (giaDetto(p, qui)) continue;
       if (Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150)) continue;
       if (o.m > raggio(p, modo)) continue;
@@ -118,6 +118,27 @@ function Racconto(opzioni) {
                direzioneBuona: situazione.direzioneBuona !== false,
                cardinale: situazione.cardinale || null,
                testo: versoTesto(o) + ', ' + metri(o.m) + ', ' + p.n + '.' };
+    }
+    return null;
+  }
+
+  /* daRaccontare(): cosa è un luogo e cosa è un servizio.
+     Nei dati k vale 0 per i servizi — negozi, studi medici, attraversamenti —
+     e da 1 in su per i luoghi: 1 i normali, 2 e 3 quelli grossi, chiese e
+     ville. Due difetti nello stesso punto, trovati il 15/10 a Roma:
+     - CAMMINANDO si chiedeva k uguale a 1, e così le ventinove chiese e ville
+       segnate 2 e 3 non si raccontavano MAI, in nessuna modalità;
+     - DA FERMI non si guardava affatto che cosa fosse: in Turismo, fermo in
+       Via dei Corazzieri, l'app ha raccontato la ferramenta.
+     La regola è una sola e non cambia con la modalità: il racconto è dei
+     luoghi. I servizi in Utilità si dicono, ma per la loro strada — la via,
+     i civici, le farmacie — non diventano mai racconti. */
+  function daRaccontare(p) {
+    return p.k >= 1;
+  }
+  function primoBuono(intorno) {
+    for (var i = 0; i < intorno.length; i++) {
+      if (daRaccontare(intorno[i].p)) return intorno[i].p;
     }
     return null;
   }
@@ -172,7 +193,7 @@ function Racconto(opzioni) {
       var intorno = situazione.intorno || [];
       for (var i = 0; i < intorno.length; i++) {
         var p = intorno[i].p;
-        if (p.k === 1 && (p.d || p.a) && intorno[i].m < 260) { inCorso = p; gradino[p.n] = 0; break; }
+        if (p.k >= 1 && (p.d || p.a) && intorno[i].m < 260) { inCorso = p; gradino[p.n] = 0; break; }
       }
       if (!inCorso) return { tipo: 'niente', livello: 'guida',
                              testo: 'Qui intorno non ho niente da raccontare.' };
