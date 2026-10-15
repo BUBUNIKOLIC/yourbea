@@ -1,0 +1,115 @@
+/* YOURBEA — la veste, rifatta il 15/10/2026
+   Pensata prima per chi non vede: niente da cercare, caratteri grandi,
+   contrasto alto, due tasti grandi in basso sempre nello stesso posto.
+   E per chi vede: scura, pulita, hi-tech, come piace a Vince.
+
+   Le misure non sono gusto: 17px di base perché si legge camminando, i tasti
+   64px perché si premono senza guardare, il riquadro del parlato grande
+   perché è la cosa che conta. */
+
+:root{
+  --fondo:#070A0E;
+  --fondo2:#0D1218;
+  --carta:rgba(22,27,34,.78);
+  --filo:rgba(255,255,255,.10);
+  --inchiostro:#E9E8E4;
+  --spento:#8F98A3;
+  --neon:#5BE3FF;
+  --oro:#E7C65A;
+  --rosso:#E0513F;
+  --verde:#4FD38A;
+  --tondo:18px;
+  --base:17px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:
+    radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.10) 0%, transparent 56%),
+    radial-gradient(900px 600px at 88% 8%, rgba(231,198,90,.07) 0%, transparent 52%),
+    linear-gradient(180deg,var(--fondo2) 0%, var(--fondo) 100%);
+  background-attachment:fixed;
+  color:var(--inchiostro);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:var(--base);
+  line-height:1.5;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 110px);
+}
+body[data-testo="grande"]{--base:21px}
+body[data-testo="enorme"]{--base:26px}
+
+/* ---------- l'insegna ---------- */
+.testa{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.marchio{font-family:"Bodoni Moda",Georgia,serif;font-size:22px;letter-spacing:.14em;color:var(--oro)}
+.stato{font-size:12px;color:var(--spento);text-align:right;max-width:58%}
+.stato b{color:var(--verde);font-weight:600}
+.stato.male b{color:var(--rosso)}
+
+/* ---------- il riquadro del parlato: la cosa più importante ---------- */
+.dice{
+  background:var(--carta);border:1px solid var(--filo);border-radius:var(--tondo);
+  padding:20px 20px 18px;min-height:168px;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:0 18px 44px rgba(0,0,0,.45);
+}
+.dice .dove{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--oro);font-weight:600
+}
+.dice .cosa{font-family:"Bodoni Moda",Georgia,serif;font-size:calc(var(--base) * 1.7);line-height:1.2;margin:8px 0 10px}
+.dice .corpo{color:var(--inchiostro);font-size:var(--base)}
+.dice .corpo.attesa{color:var(--spento);font-style:italic}
+.dice .gradino{margin-top:12px;font-size:13px;color:var(--spento)}
+
+/* ---------- la mappa, solo per chi guarda ---------- */
+#mappa{width:100%;height:46vh;min-height:220px;margin-top:14px;border:1px solid var(--filo);
+  border-radius:var(--tondo);overflow:hidden;background:#0E1013}
+body[data-modo="utilita"] #mappa{display:none}
+
+/* ---------- i tasti in basso, sempre nello stesso posto ---------- */
+.barra{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;gap:10px;align-items:center;justify-content:center;
+  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:linear-gradient(180deg, rgba(7,10,14,0) 0%, rgba(7,10,14,.92) 38%, var(--fondo) 100%);
+}
+.tasto{
+  border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);
+  border-radius:16px;padding:16px 18px;font-size:var(--base);font-weight:600;
+  min-height:64px;min-width:64px;cursor:pointer;
+}
+.tasto:active{transform:translateY(1px)}
+.tasto.vai{background:var(--oro);border-color:var(--oro);color:#241C08;flex:1 1 auto}
+.tasto.tondo{width:64px;height:64px;padding:0;font-size:24px;display:grid;place-items:center;border-radius:50%}
+.tasto.sos{background:linear-gradient(180deg,var(--rosso),#B81F10);border-color:#B81F10;color:#fff}
+.tasto.ascolta{background:var(--neon);border-color:var(--neon);color:#04222B}
+
+/* ---------- il cassetto ---------- */
+.cassetto{display:none;gap:10px;flex-wrap:wrap;margin-top:14px}
+.cassetto.aperto{display:flex}
+.cassetto .tasto{flex:1 1 44%}
+
+/* ---------- la porta d'ingresso ---------- */
+#porta{position:fixed;inset:0;z-index:4000;background:var(--fondo);
+  display:flex;flex-direction:column;justify-content:center;gap:14px;
+  padding:calc(env(safe-area-inset-top,0px) + 24px) 18px calc(env(safe-area-inset-bottom,0px) + 24px)}
+#porta h1{font-family:"Bodoni Moda",Georgia,serif;font-size:30px;letter-spacing:.1em;color:var(--oro);margin:0 0 2px}
+#porta p.sotto{color:var(--spento);margin:0 0 18px;font-size:15px}
+.scelta{
+  display:block;width:100%;text-align:left;border:2px solid var(--filo);
+  background:var(--carta);color:var(--inchiostro);border-radius:20px;
+  padding:22px;font-size:var(--base);cursor:pointer;min-height:112px
+}
+.scelta b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:26px;margin-bottom:6px}
+.scelta.utilita{border-color:rgba(91,227,255,.45)}
+.scelta.utilita b{color:var(--neon)}
+.scelta.turismo{border-color:rgba(231,198,90,.45)}
+.scelta.turismo b{color:var(--oro)}
+.scelta span{color:var(--spento);font-size:15px}
+
+/* ---------- quello che l'app non dice, lo legge il lettore di schermo ---------- */
+.muto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:no-preference){
+  .dice{transition:box-shadow .3s ease}
+}

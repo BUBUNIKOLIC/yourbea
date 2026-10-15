@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070A0E">
+<title>Yourbea — la bellezza intorno a te</title>
+<link rel="stylesheet" href="stile.css">
+</head>
+<body data-modo="utilita" data-testo="normale">
+
+<!-- LA PORTA: due scelte, grandi, e si possono dire a voce.
+     I nomi sono quelli scelti da Vince il 15/10: Utilità e Turismo. -->
+<section id="porta" aria-label="Come vuoi usare Yourbea">
+  <h1>YOURBEA</h1>
+  <p class="sotto">La bellezza intorno a te. Scegli come vuoi che ti accompagni.</p>
+  <button class="scelta utilita" id="scelta-utilita">
+    <b>Utilità</b>
+    <span>Numeri civici, farmacie, negozi, semafori e attraversamenti. E ti porto dove devi andare. Tutto parlato: lo schermo non serve.</span>
+  </button>
+  <button class="scelta turismo" id="scelta-turismo">
+    <b>Turismo</b>
+    <span>Ti racconta quello che hai intorno: palazzi, chiese, dettagli di strada. Con la mappa e le schede.</span>
+  </button>
+  <p class="sotto" style="margin-top:14px">Puoi anche dirlo: «utilità» oppure «turismo».</p>
+</section>
+
+<header class="testa">
+  <div class="marchio">YOURBEA</div>
+  <div class="stato" id="stato">in attesa</div>
+</header>
+
+<!-- IL RIQUADRO DEL PARLATO.
+     aria-live è SPENTO di proposito: quello che c'è scritto qui l'app lo sta
+     già dicendo, e se anche il lettore di schermo lo leggesse si sentirebbero
+     due voci. Quello che l'app NON dice sta nel riquadro .muto qui sotto. -->
+<section class="dice" id="dice" aria-live="off">
+  <div class="dove" id="dove">—</div>
+  <div class="cosa" id="cosa">In attesa</div>
+  <div class="corpo attesa" id="corpo">Premi Avvia, o dimmi «partiamo».</div>
+  <div class="gradino" id="gradino"></div>
+</section>
+
+<div id="mappa" aria-hidden="true" role="presentation"></div>
+
+<section class="cassetto" id="cassetto" aria-label="Altri comandi">
+  <button class="tasto" id="testo-piu">Testo più grande</button>
+  <button class="tasto" id="cambia-modo">Cambia modo</button>
+  <button class="tasto" id="manda-diario">Manda il diario</button>
+  <button class="tasto" id="dimmi-dove">Dove sono</button>
+</section>
+
+<div class="muto" id="muto" aria-live="polite" role="status"></div>
+
+<nav class="barra" aria-label="Comandi">
+  <button class="tasto vai" id="avvia">Avvia</button>
+  <button class="tasto tondo" id="parla" aria-label="Parla: dimmi un comando">🎙</button>
+  <button class="tasto tondo sos" id="sos" aria-label="Aiuto">🆘</button>
+  <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
+</nav>
+
+<script src="parti/voce.js"></script>
+<script src="parti/racconto.js"></script>
+<script src="parti/posizione.js"></script>
+<script src="parti/intorno.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
