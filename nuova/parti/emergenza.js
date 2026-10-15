@@ -72,7 +72,10 @@ function Emergenza(opzioni) {
                     (dove && dove.lat ? ' — https://maps.google.com/?q=' + dove.lat + ',' + dove.lon : '') + '.';
     return {
       tipo: 'avvisa', livello: 'emergenza', subito: true,
-      testo: 'Avviso ' + contatto.nome + ' e gli dico dove sei.',
+      /* onesta: nessuna app su iPhone manda un SMS di nascosto. Si apre il
+         messaggio già scritto, con la via e il punto sulla mappa, e l'invio
+         lo preme la persona — un tasto solo, ma va detto. */
+      testo: 'Apro il messaggio per ' + contatto.nome + ', con la via e il punto sulla mappa. Premi invia.',
       mosse: [{ cosa: 'messaggio', numero: contatto.telefono, testo: messaggio }]
     };
   }
@@ -105,7 +108,22 @@ function Emergenza(opzioni) {
     if (ha('commissariato', 'polizia', 'carabinieri')) return cerca('commissariato');
     if (ha('pronto soccorso', 'ospedale', 'primo soccorso')) return cerca('pronto soccorso');
     if (ha('farmacia')) return cerca('farmacia');
-    if (contatto && contatto.nome && ha('chiama ' + String(contatto.nome).toLowerCase(), 'avvisa', 'chiama il contatto')) {
+    /* «AVVISA MARIOLINA». Vince l'ha chiesto il 15/10 e l'app è rimasta
+       zitta, perché il nome non era quello registrato. Un'app non può
+       leggere la rubrica da dentro una pagina web: il numero non ce l'ha e
+       non se lo inventa. Ma il silenzio su una richiesta d'aiuto è la cosa
+       peggiore che possa fare: dice che non ce l'ha, e dove scriverlo. */
+    var chiesto = t.match(/\b(?:avvisa|avverti|chiama|telefona a)\s+([a-z]{3,}(?:\s+[a-z]{3,})?)/);
+    if (chiesto) {
+      var chi = chiesto[1].replace(/\b(?:il|lo|la|mio|mia|suo|sua|per favore|subito)\b/g, '').trim();
+      var suo = contatto && contatto.nome ? String(contatto.nome).toLowerCase() : '';
+      if (chi && suo && (suo.indexOf(chi) >= 0 || chi.indexOf(suo) >= 0)) return avvisaContatto(dove);
+      if (chi) {
+        return { tipo: 'chi-e', nome: chi, livello: 'emergenza', subito: true,
+                 testo: 'Non ho il numero di ' + chi + '. Dimmelo scrivendolo nel cassetto, in «chi avvisare»: da li in poi lo avviso io, con la via e il punto sulla mappa.' };
+      }
+    }
+    if (contatto && contatto.nome && ha('avvisa', 'chiama il contatto')) {
       return avvisaContatto(dove);
     }
     if (ha('aiuto', 'emergenza', 'soccorso', 'ho bisogno')) return scelte();

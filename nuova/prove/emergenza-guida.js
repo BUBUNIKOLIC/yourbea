@@ -192,6 +192,29 @@ prova('«lascia perdere» spegne la guida', () => {
   if (g.passo({ lat: 41.47, lon: 12.91 }, 5000)) guasto('continua a guidare dopo «lascia perdere»');
 });
 
+/* «AVVISA MARIOLINA», il 15/10 la sera.
+   Due difetti nella stessa frase: col nome non registrato l'app restava
+   zitta, e col nome registrato diceva «Avviso Mariolina» ma non apriva
+   niente, perché una WKWebView blocca sms: — quello si è corretto nel
+   guscio. Qui resta la parola data: non si promette un invio che non c'è. */
+prova('un nome che non conosco: lo dice, non resta zitta', () => {
+  const e = Emergenza({ contatto: null });
+  const d = e.comando('avvisa mariolina', { via: 'Via dei Corazzieri' });
+  if (!d) guasto('ha ignorato una richiesta di aiuto');
+  if (d && d.tipo !== 'chi-e') guasto('doveva dire che non ha il numero');
+  if (d && !/numero/.test(d.testo)) guasto('deve dire chiaramente che il numero non ce l\'ha');
+});
+
+prova('il nome registrato apre il messaggio, e non promette l\'invio', () => {
+  const e = Emergenza({ contatto: { nome: 'Mariolina', telefono: '+393331234567' } });
+  const d = e.comando('avvisa mariolina', { via: 'Via dei Corazzieri', lat: 41.8, lon: 12.5 });
+  if (!d || d.tipo !== 'avvisa') guasto('col numero in mano deve avvisare');
+  if (!/premi invia/i.test(d.testo)) guasto('nessuna app manda un SMS di nascosto: va detto');
+  const m = (d.mosse || [])[0];
+  if (!m || m.cosa !== 'messaggio' || m.numero !== '+393331234567') guasto('il messaggio deve partire verso il suo numero');
+  if (!/Via dei Corazzieri/.test(m.testo)) guasto('nel messaggio ci va la via');
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');

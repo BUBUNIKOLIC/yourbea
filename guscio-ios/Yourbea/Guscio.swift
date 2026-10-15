@@ -103,6 +103,24 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaDiario = function (t) { webkit.messageHandlers.guscio.postMessage({ cosa: 'diario', testo: String(t) }); };
   """
 
+  /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
+     blocca e basta: «avvisa Mariolina» non faceva NIENTE, e nel log non
+     compariva niente, perché per la pagina il messaggio era partito. Qui si
+     passano al telefono, che apre Telefono o Messaggi col testo già
+     scritto. L'invio lo preme la persona: nessuna app su iOS può mandare un
+     SMS di nascosto, e prometterlo sarebbe una bugia pericolosa. */
+  func webView(_ w: WKWebView, decidePolicyFor azione: WKNavigationAction,
+               decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    if let u = azione.request.url, let schema = u.scheme?.lowercased(),
+       ["tel", "sms", "mailto", "facetime", "maps"].contains(schema) {
+      UIApplication.shared.open(u, options: [:], completionHandler: nil)
+      NSLog("YOURBEA apro: %@", schema)
+      decisionHandler(.cancel)
+      return
+    }
+    decisionHandler(.allow)
+  }
+
   func userContentController(_ c: WKUserContentController, didReceive messaggio: WKScriptMessage) {
     guard let d = messaggio.body as? [String: Any], let cosa = d["cosa"] as? String else { return }
     switch cosa {

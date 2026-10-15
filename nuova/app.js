@@ -436,6 +436,16 @@
     var em = emergenza.comando(t, ultimaStrada ? dove0 : null);
     if (em) {
       if (em.tipo === 'cerca') { portamiA(em.cosa); dilloSubito(em); return true; }
+      /* chiede di avvisare qualcuno di cui non ho il numero: lo dico e apro
+         subito il posto dove scriverlo, se no resta una frase e basta. */
+      if (em.tipo === 'chi-e') {
+        dilloSubito(em);
+        apriCassetto(true);
+        var rc = el('riga-contatto'); rc.hidden = false;
+        el('contatto-nome').value = em.nome.charAt(0).toUpperCase() + em.nome.slice(1);
+        el('contatto-tel').focus();
+        return true;
+      }
       dilloSubito(em); return true;
     }
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
