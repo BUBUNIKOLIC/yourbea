@@ -5039,7 +5039,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='56';
+  var VERSIONE='61';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5594,6 +5594,34 @@
      Nominatim. Si scarica allora il riquadro grezzo di OpenStreetMap attorno
      a te, duecentoquaranta metri per lato: arriva in mezzo secondo e dentro
      c'e' tutto. Si rifa' solo quando ti sei spostato di centocinquanta metri. */
+  /* Come si chiamano, in OpenStreetMap, le cose che sappiamo dire. A
+     sinistra il tag, a destra il nome con cui l'utente le chiede. */
+  var SERVIZIO_OSM={
+    pharmacy:'farmacia', hospital:'pronto soccorso', clinic:'ambulatorio',
+    doctors:'ambulatorio', police:'commissariato', fire_station:'caserma dei pompieri',
+    post_office:'ufficio postale', bank:'banca', atm:'bancomat',
+    townhall:'municipio', public_building:'edificio pubblico', library:'biblioteca',
+    cafe:'bar', bar:'bar', restaurant:'ristorante', fast_food:'tavola calda',
+    fuel:'distributore', taxi:'posteggio taxi', bus_station:'stazione degli autobus',
+    place_of_worship:'chiesa', toilets:'bagno pubblico', drinking_water:'fontanella',
+    fountain:'fontana', bench:'panchina', shelter:'pensilina', parking:'parcheggio',
+    marketplace:'mercato', theatre:'teatro', cinema:'cinema',
+    'shop:supermarket':'supermercato', 'shop:bakery':'panificio',
+    'shop:convenience':'alimentari', 'shop:tobacco':'tabaccheria',
+    'shop:newsagent':'edicola', 'shop:greengrocer':'frutta e verdura',
+    'shop:butcher':'macelleria', 'shop:chemist':'profumeria',
+    'shop:clothes':'abbigliamento', 'shop:hairdresser':'parrucchiere',
+    'shop:optician':'ottica', 'shop:doityourself':'ferramenta',
+    'shop:laundry':'lavanderia', 'shop:shoes':'calzature', 'shop:books':'libreria',
+    'office:government':'ufficio comunale', 'office:administrative':'ufficio comunale',
+    'office:employment_agency':'centro per l’impiego', 'office:lawyer':'studio legale',
+    'office:insurance':'assicurazione', 'office:estate_agent':'agenzia immobiliare',
+    'office:travel_agent':'agenzia di viaggi', 'office:accountant':'commercialista',
+    'office:notary':'notaio', 'office:telecommunication':'ufficio telefonia',
+    'government:register_office':'anagrafe', 'government:tax':'ufficio delle entrate',
+    'government:prosecutor':'procura', 'government:customs':'dogana',
+    'government:public_service':'ufficio pubblico', 'government:social_services':'servizi sociali'
+  };
   var INTORNO=[], intornoQuando=0, intornoLat=0, intornoLon=0, intornoInCorso=false;
   var dettiServizi={};
 
@@ -5631,7 +5659,20 @@
             var linee=t.route_ref||'';
             extra = (nm?nm:'') + (linee?(nm?', ':'')+'linee '+linee.replace(/;/g,', '):'');
           }
-          else continue;
+          else {
+            /* tutto il resto che OSM sa di quel punto: non serve ad annunciarlo
+               camminando, ma serve a rispondere subito a «la farmacia piu'
+               vicina» senza chiedere niente a nessuno */
+            var q=(t.amenity||'')+(t.shop?('|'+t.shop):'')+(t.healthcare?('|'+t.healthcare):'');
+            var et=SERVIZIO_OSM[t.amenity]||SERVIZIO_OSM['shop:'+t.shop]||
+                   SERVIZIO_OSM['office:'+t.office]||SERVIZIO_OSM['government:'+t.government]||null;
+            // l'anagrafe e' spesso un ufficio del comune: vale come tutte e due
+            if(t.government==='register_office') et='anagrafe';
+            if(!et) continue;
+            nuovi.push({cosa:et, extra:(t.name||''), servizio:et, nome:(t.name||''),
+                        lat:parseFloat(n.getAttribute('lat')), lon:parseFloat(n.getAttribute('lon'))});
+            continue;
+          }
           nuovi.push({cosa:cosa, extra:extra,
                       lat:parseFloat(n.getAttribute('lat')), lon:parseFloat(n.getAttribute('lon'))});
         }
@@ -5643,6 +5684,20 @@
 
   /* L'avviso arriva quando ce l'hai davanti e vicino: un attraversamento
      annunciato a cento metri non serve, a cinque e' tardi. */
+  /* La risposta piu' veloce: quello che abbiamo gia' in casa. */
+  function dalRiquadro(tipo){
+    if(!INTORNO.length)return null;
+    var mig=null,dmin=Infinity;
+    for(var i=0;i<INTORNO.length;i++){
+      var o=INTORNO[i];
+      if(o.servizio!==tipo)continue;
+      var m=dist(S.lat,S.lon,o.lat,o.lon);
+      if(m<dmin){ dmin=m; mig=o; }
+    }
+    if(!mig||dmin>900)return null;
+    return {p:{n:mig.nome||(tipo.charAt(0).toUpperCase()+tipo.slice(1)),
+               lat:mig.lat,lon:mig.lon,t:tipo,k:0,d:''}, d:dmin};
+  }
   var ultimoServizio=0;
   function avvisaServizi(){
     if(!S.voice||!S.pronto||!INTORNO.length)return;
@@ -5651,6 +5706,9 @@
     var mig=null, dmin=Infinity;
     for(var i=0;i<INTORNO.length;i++){
       var o=INTORNO[i];
+      // camminando si avvisa solo di cio' che riguarda il passo: una
+      // panchina o una banca non si annunciano da sole
+      if(o.servizio)continue;
       var m=dist(S.lat,S.lon,o.lat,o.lon);
       if(m>35||m<4)continue;
       var rel=norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
@@ -6153,7 +6211,33 @@
     municipio:['municipio','comune'],
     distributore:['distributore','benzina','benzinaio'],
     chiesa:['chiesa','messa'],
-    museo:['museo']
+    museo:['museo'],
+    /* le cose che servono camminando, e che fino a ieri non si potevano
+       nemmeno chiedere */
+    anagrafe:['anagrafe','ufficio anagrafe','certificati','carta d identita','residenza'],
+    'ufficio comunale':['ufficio comunale','uffici comunali','ufficio del comune','sportello'],
+    biblioteca:['biblioteca'],
+    tabaccheria:['tabaccheria','tabacchi','sali e tabacchi','sigarette','valori bollati'],
+    edicola:['edicola','giornali','giornalaio'],
+    bancomat:['bancomat','sportello automatico','prelevare','contanti'],
+    'bagno pubblico':['bagno','bagni','toilette','servizi igienici','gabinetto'],
+    fontanella:['fontanella','acqua','acqua potabile','bere','nasone'],
+    panchina:['panchina','sedermi','riposarmi','sedersi'],
+    parcheggio:['parcheggio','posteggio','dove parcheggio'],
+    mercato:['mercato','mercatino'],
+    'tavola calda':['tavola calda','paninoteca','panino'],
+    alimentari:['negozio di alimentari','generi alimentari','droghiere'],
+    macelleria:['macelleria','macellaio','carne'],
+    'frutta e verdura':['fruttivendolo','frutta e verdura','ortolano'],
+    lavanderia:['lavanderia','lavasecco'],
+    parrucchiere:['parrucchiere','barbiere','capelli'],
+    ottica:['ottico','occhiali','ottica'],
+    ferramenta:['ferramenta','brico','fai da te'],
+    libreria:['libreria','libri'],
+    teatro:['teatro'],
+    cinema:['cinema'],
+    'caserma dei pompieri':['pompieri','vigili del fuoco','caserma dei pompieri'],
+    ambulatorio:['ambulatorio','dottore','medico','guardia medica','studio medico']
   };
   function piuVicinoDiTipo(tipo){
     var mig=null,dmin=Infinity;
@@ -6279,14 +6363,80 @@
      Nominatim invece cerca dentro un riquadro: gli si dà la categoria OSM e
      i quattro angoli intorno a te, e risponde con quello che c'e' li'.
      E' la fonte giusta per «la farmacia piu' vicina», e si usa per prima. */
+  /* Come si chiede a Nominatim: per ETICHETTA, non per parola. Cercando
+     la parola «tobacco» rispondeva «Banca Fideuram», perche' cerca nei
+     nomi; con [shop=tobacco] o non trova niente o trova una tabaccheria. */
   var PAROLA_OSM={
-    'pronto soccorso':'hospital', ospedale:'hospital', farmacia:'pharmacy',
-    commissariato:'police', fermata:'bus stop', stazione:'railway station',
-    'posteggio taxi':'taxi', supermercato:'supermarket', bar:'cafe',
-    ristorante:'restaurant', panificio:'bakery', 'ufficio postale':'post office',
-    banca:'bank', municipio:'townhall', distributore:'fuel',
-    chiesa:'place of worship', museo:'museum'
+    'pronto soccorso':'amenity=hospital',
+    ospedale:'amenity=hospital',
+    farmacia:'amenity=pharmacy',
+    commissariato:'amenity=police',
+    fermata:'highway=bus_stop',
+    stazione:'railway=station',
+    'posteggio taxi':'amenity=taxi',
+    supermercato:'shop=supermarket',
+    bar:'amenity=cafe',
+    ristorante:'amenity=restaurant',
+    panificio:'shop=bakery',
+    'ufficio postale':'amenity=post_office',
+    banca:'amenity=bank',
+    municipio:'amenity=townhall',
+    distributore:'amenity=fuel',
+    chiesa:'amenity=place_of_worship',
+    museo:'tourism=museum',
+    anagrafe:'amenity=townhall',
+    'ufficio comunale':'office=government',
+    biblioteca:'amenity=library',
+    tabaccheria:'shop=tobacco',
+    edicola:'shop=newsagent',
+    bancomat:'amenity=atm',
+    'bagno pubblico':'amenity=toilets',
+    fontanella:'amenity=drinking_water',
+    panchina:'amenity=bench',
+    parcheggio:'amenity=parking',
+    mercato:'amenity=marketplace',
+    'tavola calda':'amenity=fast_food',
+    alimentari:'shop=convenience',
+    macelleria:'shop=butcher',
+    'frutta e verdura':'shop=greengrocer',
+    lavanderia:'shop=laundry',
+    parrucchiere:'shop=hairdresser',
+    ottica:'shop=optician',
+    ferramenta:'shop=doityourself',
+    libreria:'shop=books',
+    teatro:'amenity=theatre',
+    cinema:'amenity=cinema',
+    'caserma dei pompieri':'amenity=fire_station',
+    ambulatorio:'amenity=clinic'
   };
+  /* Che cosa deve essere, in OpenStreetMap, la risposta perche' valga.
+     Senza questo controllo «tabaccheria» rispondeva «Banca Fideuram» e
+     «bagno» rispondeva con il nome di una via. */
+  var TIPO_ATTESO={
+    farmacia:'pharmacy', 'pronto soccorso':'hospital', ospedale:'hospital',
+    ambulatorio:'clinic|doctors', commissariato:'police', 'caserma dei pompieri':'fire_station',
+    'ufficio postale':'post_office', banca:'bank', bancomat:'atm',
+    municipio:'townhall', 'ufficio comunale':'government|administrative',
+    anagrafe:'register_office|townhall', biblioteca:'library',
+    bar:'cafe|bar|pub', ristorante:'restaurant', 'tavola calda':'fast_food',
+    panificio:'bakery', supermercato:'supermarket', alimentari:'convenience',
+    macelleria:'butcher', 'frutta e verdura':'greengrocer', tabaccheria:'tobacco',
+    edicola:'newsagent|kiosk', lavanderia:'laundry|dry_cleaning',
+    parrucchiere:'hairdresser', ottica:'optician', ferramenta:'doityourself|hardware',
+    libreria:'books', teatro:'theatre', cinema:'cinema', museo:'museum',
+    chiesa:'place_of_worship', distributore:'fuel', 'posteggio taxi':'taxi',
+    stazione:'station|halt', fermata:'bus_stop|platform',
+    'bagno pubblico':'toilets', fontanella:'drinking_water|water_point',
+    panchina:'bench', parcheggio:'parking', mercato:'marketplace'
+  };
+  function eDelTipoGiusto(tipo,x){
+    var atteso=TIPO_ATTESO[tipo];
+    if(!atteso)return true;                     // di questo non sappiamo dire: si accetta
+    var t=(x.type||'')+'|'+(x.class||'');
+    var parti=atteso.split('|');
+    for(var i=0;i<parti.length;i++){ if(t.indexOf(parti[i])>=0)return true; }
+    return false;
+  }
   var ultimoNominatim=0;
   function cercaInNominatim(tipo,cb){
     var parola=PAROLA_OSM[tipo];
@@ -6299,7 +6449,7 @@
       var dlat=0.009, dlon=0.012/Math.cos(S.lat*Math.PI/180);
       var vb=(S.lon-dlon)+','+(S.lat+dlat)+','+(S.lon+dlon)+','+(S.lat-dlat);
       var u='https://nominatim.openstreetmap.org/search?format=json&limit=20&bounded=1'+
-            '&q='+encodeURIComponent(parola)+'&viewbox='+vb;
+            '&q='+encodeURIComponent('['+parola+']')+'&viewbox='+vb;
       var stop=null,orologio=null;
       try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},8000); }catch(e){}
       fetch(u,{signal:stop?stop.signal:undefined,headers:{'Accept':'application/json'}})
@@ -6310,6 +6460,7 @@
           (d||[]).forEach(function(x){
             var la=parseFloat(x.lat), lo=parseFloat(x.lon);
             if(!isFinite(la)||!isFinite(lo))return;
+            if(!eDelTipoGiusto(tipo,x))return;   // una via non e' una farmacia
             var dd=dist(S.lat,S.lon,la,lo);
             if(dd<dmin){
               dmin=dd;
@@ -6452,6 +6603,8 @@
     if(!v){
       // non e' nei nostri dati: lo chiediamo a OpenStreetMap, che copre tutto
       dire(['frase-cerco'],"Cerco l'indirizzo, un momento.",GUIDA);
+      var vicino=dalRiquadro(tipo);
+      if(vicino){ vaiVerso(vicino); return true; }
       cercaInNominatim(tipo,function(r0){
         if(mia!==richiestaN)return;
         if(r0){ vaiVerso(r0); return; }
@@ -6460,7 +6613,7 @@
           if(r){ vaiVerso(r); return; }
           cercaInOSM(tipo,function(r2){
             if(mia!==richiestaN)return;
-            if(!r2){ dire(['frase-niente-di-questi'],'Qui vicino non ne trovo.',GUIDA); return; }
+            if(!r2){ parlaLibero('Qui intorno non trovo niente del genere.',GUIDA); return; }
             vaiVerso(r2);
           });
         });
@@ -6798,6 +6951,13 @@
     }
     if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso')){
       return percorsiDaQui();
+    }
+    // l'anagrafe: in OpenStreetMap non e' quasi mai segnata a parte, sta
+    // dentro il municipio. Si dice, invece di far finta di niente.
+    if(ha('anagrafe','ufficio anagrafe','certificati','carta d identita','residenza')){
+      parlaLibero('L’anagrafe di solito sta dentro il municipio: ti porto li’.',GUIDA);
+      setTimeout(function(){ try{ portamiA('anagrafe'); }catch(e){} }, 1800);
+      return true;
     }
     if(ha('comincia il primo','segui il primo','il primo','comincia il secondo','il secondo','comincia il terzo','il terzo')&&propostiPercorsi.length){
       var quale = ha('il terzo','comincia il terzo') ? 2 : (ha('il secondo','comincia il secondo') ? 1 : 0);

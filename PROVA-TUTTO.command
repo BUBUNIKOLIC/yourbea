@@ -36,6 +36,7 @@ if [ "$RETE" = 1 ]; then
   echo
   echo "— le coordinate contro Wikidata (serve rete) —"
   node prove/wikidata.js $TUTTI || mal=1
+  node "$QUI/prove/servizi.js" || ESITO=1
   echo
   echo "— quello che i telefoni scaricano davvero (serve rete) —"
   node prove/in-linea.js || mal=1
