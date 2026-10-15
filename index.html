@@ -5023,7 +5023,7 @@
       if(window.diario)try{ window.diario('GIA DETTA, non la ripeto: '+String(testo).slice(0,50)); }catch(e){}
       return;
     }
-    if(window.diario)try{ window.diario('DIRE liv='+liv+' staParlando='+staParlando+
+    if(window.diario)try{ window.diario('ARRIVA liv='+liv+' staParlando='+staParlando+
       ' inCorso='+livelloInCorso+' altre='+altreCopieStannoParlando()+' | '+String(testo).slice(0,60)); }catch(e){}
     // un'altra copia dell'app sta parlando e questa e' in secondo piano:
     // due copie che parlano insieme sono due voci, e nessuna coda puo'
@@ -5072,6 +5072,9 @@
     }
     ultimaFrase={ids:ids,testo:testo};
     ultimoTesto=normalizza(testo); ultimoQuando=Date.now();
+    // da qui parla per davvero: nel diario le due cose erano la stessa riga
+    // e una frase messa in fila sembrava detta due volte
+    if(window.diario)try{ window.diario('PARLA: '+String(testo).slice(0,60)); }catch(e){}
     zittisci();
     // da qui esce un suono: il microfono si chiude, e si tiene da parte
     // quello che stiamo per dire, per non riconoscerlo come un comando
@@ -5253,7 +5256,14 @@
   function peso(p){ var r=rango(p); return r===3?3.4:(r===2?1.8:1); }
   function around(){
     var dl=0.008;   // ~900 m: si scartano subito i lontani senza calcolare niente
+    /* LA CITTA' NON E' UN MONUMENTO. Wikipedia, interrogata sul punto dove
+       sei, risponde anche con la voce del comune: a Latina l'app annunciava
+       «a settanta metri, Latina. Vuoi approfondire?». Il filtro al momento
+       dello scarico non basta, perche' quando lo scarico avviene la citta'
+       spesso non la sappiamo ancora: si guarda anche qui, ogni volta. */
+    var citta=normalizza(cittaOra||String(stradaOra||'').split(',').pop().trim());
     return POI.filter(function(p){
+      if(citta && normalizza(p.n)===citta)return false;
       return !p.f && Math.abs(p.lat-S.lat)<dl && Math.abs(p.lon-S.lon)<dl && serveQui(p);
     }).map(function(p){
       return {p:p,m:dist(S.lat,S.lon,p.lat,p.lon),rel:norm(bear(S.lat,S.lon,p.lat,p.lon)-S.hd)};
@@ -5387,7 +5397,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='95';
+  var VERSIONE='96';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -5437,6 +5447,14 @@
     try{ o.posizione = S.pronto ? (S.lat.toFixed(5)+','+S.lon.toFixed(5)) : 'non ancora'; }catch(e){ o.posizione='?'; }
     try{ o.modoVoce=!!S.voice; o.direzioneAffidabile=versoAffidabile(); o.gradi=Math.round(S.hd); }catch(e){}
     try{ o.luoghiIntorno=around().length; }catch(e){}
+    try{ o.inAttesa = pending ? ('domanda aperta su '+pending.p.n) : 'no';
+         o.giaDetti = Object.keys(S.said||{}).length;
+         o.apertaDa = apertoDa ? Math.round((Date.now()-apertoDa)/1000)+' s' : '?';
+         o.citta = cittaOra||'(non so)'; }catch(e){}
+    // e QUALI sono, con distanza e da che parte: serve a capire perche' in
+    // Turismo l'app tace quando invece ha dei luoghi
+    try{ o.luoghi=around().slice(0,8).map(function(x){
+      return x.p.n+' '+Math.round(x.m)+'m '+Math.round(x.rel)+'\u00b0'+(giaDetto(x.p)?' (gia detto)':''); }); }catch(e){}
     try{ o.stradaSotto=viaSotto||'(non so)'; }catch(e){}
     try{ o.serviziScaricati=INTORNO.length; o.ultimoScarico=intornoQuando?Math.round((Date.now()-intornoQuando)/1000)+' s fa':'mai';
          o.scaricoInCorso=intornoInCorso; }catch(e){ o.serviziScaricati='errore: '+e; }
@@ -5740,7 +5758,15 @@
     // quanto lontano si annuncia dipende da quanto conta il luogo: i Fori
     // Imperiali hanno un punto solo e dalla strada stanno a duecento metri,
     // e con il raggio fisso non venivano mai nominati
-    var base=S.voice?110:190, spread=S.voice?150:110;
+    /* IN TURISMO SI GUARDA LONTANO, IN UTILITÀ SI CAMMINA.
+       Misurato a Latina il 15/10: in Turismo l'app taceva del tutto. I
+       luoghi li aveva — Museo della Terra Pontina a 88 m, Palazzo delle
+       Poste a 154, Museo Cambellotti a 184, Cattedrale di San Marco a
+       265 — ma il raggio d'annuncio era 110 metri: la misura giusta per
+       chi non vede e cammina, sbagliata per chi guarda una citta'. Un
+       palazzo a duecento metri lo VEDI: in Turismo va detto. */
+    var turismo=(S.racconta==='cultura');
+    var base=turismo?240:(S.voice?110:190), spread=turismo?170:(S.voice?150:110);
     function quantoLontano(p){
       var r=rango(p);
       return r===3 ? Math.round(base*2.3) : (r===2 ? Math.round(base*1.5) : base);
@@ -6116,6 +6142,12 @@
   };
   var INTORNO=[], intornoQuando=0, intornoLat=0, intornoLon=0, intornoInCorso=false;
   var ALBERI=[], alberiQuando=0, alberiVia='';
+  /* IL NOME DELLA CITTA'.
+     Serve a buttare via la voce di Wikipedia che parla del comune: a Latina
+     l'app annunciava «a settanta metri, Latina. Vuoi approfondire?».
+     Si teneva dentro `stradaOra`, ma in Turismo nessuno chiede la via —
+     quel campo resta vuoto e il filtro non aveva niente da confrontare. */
+  var cittaOra='';
   /* ---------- LE COSE GRANDI ----------
      Vince, 15/10: «un parco sì, le cose più grandi: la prefettura, la
      villa comunale, il gelataio, il bar, il ristorante».
@@ -6310,6 +6342,11 @@
   var attraversamentiQuando=0, attraversamentiVia='';
   function avvisaServizi(){
     if(!S.voice||!S.pronto||!INTORNO.length)return;
+    /* Attraversamenti, semafori e fermate sono Utilità: in Turismo sono
+       rumore sopra il racconto, e a Latina erano le DUE SOLE cose che
+       l'app diceva in modalità Turismo. Se invece ti sta portando da
+       qualche parte servono sempre, in qualunque modo tu sia entrato. */
+    if(S.racconta==='cultura' && !meta)return;
     if(!versoAffidabile())return;              // «davanti» ha senso solo se so come sei girato
     if(Date.now()-ultimoServizio<12000)return;
     var mig=null, dmin=Infinity;
@@ -6494,6 +6531,11 @@
 
   function caricaDintorni(quando){
     if(dintorniInCorso||!S.pronto||!window.fetch)return;
+    // la citta' la chiediamo adesso, che poi serve a scartare la sua voce
+    if(!cittaOra)try{ stradaDiQui(function(via){
+      var c=String(via||'').split(',').pop().trim();
+      if(c)cittaOra=c;
+    }); }catch(e){}
     var c=cella(S.lat,S.lon);
     if(dintorniPresi[c])return;
     dintorniPresi[c]=1; dintorniInCorso=true;
@@ -6507,22 +6549,88 @@
         if(orologio)clearTimeout(orologio);
         dintorniInCorso=false;
         var elenco=(d.query&&d.query.geosearch)||[];
-        var aggiunti=0;
-        elenco.forEach(function(x){
-          if(/^(Stazione meteorologica|Elenco|Lista)/i.test(x.title))return;
+        var buoni=elenco.filter(function(x){
+          /* A Latina Wikipedia risponde «Latina» a 47 metri, «Provincia di
+             Latina» a 78 e «Agro Pontino» a 300: sono voci amministrative,
+             non cose da guardare, e l'app le annunciava come monumenti. */
+          if(/^(Stazione meteorologica|Elenco|Lista|Provincia di|Comune di|Regione |Diocesi di|Arcidiocesi|Area metropolitana|Agro )/i.test(x.title))return false;
+          if(cittaOra && normalizza(x.title)===normalizza(cittaOra))return false;
           // se un luogo nostro sta a meno di 60 metri, e' lo stesso: non si raddoppia
-          var doppio=POI.some(function(p){ return dist(p.lat,p.lon,x.lat,x.lon)<60; });
-          if(doppio)return;
-          POI.push({n:x.title,lat:x.lat,lon:x.lon,t:'luogo',y:'',k:1,v:0,w:1,
-                    d:'',i:''});
-          aggiunti++;
+          return !POI.some(function(p){ return dist(p.lat,p.lon,x.lat,x.lon)<60; });
         });
-        if(aggiunti){ try{render();}catch(e){} }
-        if(quando)quando(aggiunti);
+        if(!buoni.length){ if(quando)quando(0); return; }
+        /* ---------- I TESTI, SUBITO E TUTTI INSIEME ----------
+           Prima i luoghi di Wikipedia entravano senza testo e la scheda si
+           scaricava quando la chiedevi. Due guai, visti a Latina il 15/10:
+           1. la voce del COMUNE finiva fra i monumenti, e l'app diceva
+              «Latina. Latina () e' un comune italiano di 127 379
+              abitanti...» come se fosse una chiesa — e quella domanda
+              bloccava per ventisei secondi tutto il resto;
+           2. senza testo non si puo' sapere se una voce vale la pena.
+           Adesso i testi si prendono in una richiesta sola (Wikipedia ne
+           da' venti per volta) e si guarda COSA DICONO: se la voce dice
+           «e' un comune», «e' una citta'», «e' una provincia», non e' un
+           luogo da raccontare e non entra. Il nome non basta: «Latina» da
+           sola sembra un posto, il testo lo smentisce. */
+        var titoli=buoni.slice(0,20).map(function(x){return x.title;});
+        var ut='https://it.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1'+
+               '&redirects=1&format=json&origin=*&titles='+encodeURIComponent(titoli.join('|'));
+        fetch(ut).then(function(r){return r.json();}).then(function(dd){
+          var testi={};
+          try{
+            var pg=(dd.query&&dd.query.pages)||{};
+            Object.keys(pg).forEach(function(k){
+              if(pg[k].title)testi[pg[k].title]=pulisciTesto(pg[k].extract||'');
+            });
+          }catch(e){}
+          aggiungiLuoghi(buoni,testi);
+        }).catch(function(){ aggiungiLuoghi(buoni,{}); });
+
+        function aggiungiLuoghi(lista,testi){
+          var aggiunti=0;
+          if(window.diario)try{ window.diario('WIKI: '+Object.keys(testi).length+' testi per '+lista.length+' luoghi'); }catch(e){}
+          lista.forEach(function(x){
+            var t=testi[x.title]||'';
+            if(t && amministrativa(t)){
+              if(window.diario)try{ window.diario('SCARTATA, e un comune o simile: '+x.title); }catch(e){}
+              return;                              // non e' un luogo: e' un'entita'
+            }
+            POI.push({n:x.title,lat:x.lat,lon:x.lon,t:'luogo',y:'',k:1,v:0,w:1,
+                      d:t,i:''});
+            aggiunti++;
+          });
+          if(aggiunti){ try{render();}catch(e){} }
+          if(quando)quando(aggiunti);
+        }
       })
       .catch(function(){ if(orologio)clearTimeout(orologio); dintorniInCorso=false; if(quando)quando(0); });
   }
 
+  /* «Latina () e' un comune italiano di 127 379 abitanti» — le parentesi
+     vuote sono quello che resta della pronuncia, e in bocca a una voce
+     sintetica sono un inciampo. Via loro, via le note, e si taglia alla
+     fine di una frase, non a meta' parola. */
+  function pulisciTesto(t){
+    var x=String(t||'')
+      .replace(/\([^)]{0,3}\)/g,' ')          // le parentesi vuote o quasi
+      .replace(/\[\d+\]/g,'')
+      .replace(/\s+/g,' ')
+      .trim();
+    if(x.length<=460)return x;
+    var tagliato=x.slice(0,460);
+    var punto=tagliato.lastIndexOf('. ');
+    return (punto>200 ? tagliato.slice(0,punto+1) : tagliato+'...');
+  }
+  /* Una voce che parla di un comune, di una citta' o di una provincia non e'
+     un luogo da guardare: e' il posto dove sei. Si riconosce dal testo. */
+  function amministrativa(t){
+    /* ATTENZIONE AL CONFINE DI PAROLA.
+       La prima versione cominciava con \b prima di «è», e non scattava mai:
+       in JavaScript «è» non è una lettera di parola, quindi fra lo spazio e
+       la «è» quel confine non esiste. Il filtro sembrava scritto e non
+       filtrava niente — a Latina l'app continuava a raccontare il comune. */
+    return /(?:^|[\s,;:])(?:\u00e8|e')\s+(?:un|una|il|la)?\s*(?:comune|citt\u00e0|citta|provincia|regione|capoluogo|municipalit\u00e0)/i.test(String(t).slice(0,320));
+  }
   // la scheda di un luogo preso da Wikipedia si scarica solo quando la chiede
   function schedaWikipedia(p,quando){
     if(p.d){quando(p.d);return;}
@@ -7684,19 +7792,42 @@
     if(o.nome)return true;
     return !!VALE_SENZA_NOME[o.cosa];
   }
+  /* COSA E' UN RIFERIMENTO DA TURISTA.
+     «Turismo descrive la realtà circostante», ha detto Vince. A Latina la
+     realtà circostante sono il Mercato Coperto, il Circolo Cittadino Sante
+     Palumbo, l'Intendenza di Finanza, Piazza del Popolo: il razionalismo,
+     che a Latina è il turismo. Stanno nella mappa come aree con un nome, e
+     in Turismo l'app non li diceva perché i riferimenti erano riservati a
+     Utilità. La macelleria e il gommista invece restano a Utilità: a chi
+     guarda una città non interessano. */
+  var TURISTICO={'chiesa':1,'cattedrale':1,'cappella':1,'museo':1,'teatro':1,
+    'monumento':1,'edificio storico':1,'edificio pubblico':1,'piazza':1,
+    'castello':1,'torre':1,'rovine':1,'area archeologica':1,'convento':1,
+    'galleria d\u2019arte':1,'municipio':1,'tribunale':1,'universit\u00e0':1,'istituto':1,
+    'biblioteca':1,'mercato':1,'parco':1,'giardino':1,'fontana':1,'cimitero':1,
+    'porta della citt\u00e0':1,'stazione':1,'faro':1,'ponte':1,'stadio':1,
+    'centro culturale':1,'acquedotto':1,'riserva naturale':1,'spiaggia':1,
+    'fiume':1,'bosco':1,'opera d\u2019arte':1,'punto panoramico':1};
+  function daTurista(o){
+    if(!TURISTICO[o.cosa])return false;
+    return !!(o.nome || VALE_SENZA_NOME[o.cosa]);
+  }
   var ultimoRiferimento=0;
   function riferimentiLungoLaStrada(){
     if(!S.voice||!S.pronto||!INTORNO.length)return;
     if(!versoAffidabile())return;
-    if(!meta && S.racconta!=='servizi')return;
+    var turismo=(S.racconta==='cultura');
+    if(!meta && !turismo && S.racconta!=='servizi')return;
     if(Date.now()-ultimoRiferimento<25000)return;
     var mig=null,dmin=Infinity,migGrande=null,dminG=Infinity;
     for(var i=0;i<INTORNO.length;i++){
       var o=INTORNO[i];
       if(!o.servizio)continue;            // qui servono i negozi, non gli attraversamenti
       if(!valeDirla(o))continue;
+      if(turismo && !daTurista(o))continue;
       var m=quantoDista(o);
-      var limite=o.grande?60:22;          // una villa comunale si sente da piu' lontano
+      // in Turismo un edificio con un nome si dice anche da lontano: lo vedi
+      var limite=turismo?(o.grande?140:60):(o.grande?60:22);
       if(m>limite||m<2)continue;
       var rel=doveSta(o);
       if(Math.abs(rel)>(o.grande?85:70))continue;
@@ -7710,9 +7841,14 @@
     if(!mig)return;
     dettiServizi[mig.chiave]=Date.now();
     ultimoRiferimento=Date.now();
-    var cosa=mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1);
-    var nome=(mig.o.nome&&mig.o.nome!==mig.o.cosa)?', '+mig.o.nome:'';
-    parlaLibero(cosa+nome+', '+side(mig.rel)+'.',GUIDA);
+    /* «Piazza, Piazza del Popolo» era il tipo detto due volte: se il nome
+       comincia col tipo, basta il nome. */
+    var tipo=mig.o.cosa, nome=mig.o.nome||'';
+    var testo;
+    if(nome && normalizza(nome).indexOf(normalizza(tipo))===0) testo=nome;
+    else if(nome) testo=tipo.charAt(0).toUpperCase()+tipo.slice(1)+', '+nome;
+    else testo=tipo.charAt(0).toUpperCase()+tipo.slice(1);
+    parlaLibero(testo+', '+side(mig.rel)+'.',GUIDA);
   }
 
   function guidaVersoMeta(){
