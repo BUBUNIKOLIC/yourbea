@@ -5039,7 +5039,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='55';
+  var VERSIONE='56';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5076,6 +5076,26 @@
      Ogni tasto chiama direttamente la sua funzione dall'HTML. Se un pezzo di
      codice più avanti va in errore, questi continuano a funzionare. */
   window.YB = window.YB || {};
+  /* Per capire perche' qualcosa non parla: YB.diagnosi() dice cosa sa l'app
+     in questo momento. Serve a me e a chi prova, non all'utente. */
+  window.YB.diagnosi=function(){
+    var o={};
+    try{ o.posizione = S.pronto ? (S.lat.toFixed(5)+','+S.lon.toFixed(5)) : 'non ancora'; }catch(e){ o.posizione='?'; }
+    try{ o.modoVoce=!!S.voice; o.direzioneAffidabile=versoAffidabile(); o.gradi=Math.round(S.hd); }catch(e){}
+    try{ o.luoghiIntorno=around().length; }catch(e){}
+    try{ o.stradaSotto=viaSotto||'(non so)'; }catch(e){}
+    try{ o.serviziScaricati=INTORNO.length; o.ultimoScarico=intornoQuando?Math.round((Date.now()-intornoQuando)/1000)+' s fa':'mai';
+         o.scaricoInCorso=intornoInCorso; }catch(e){ o.serviziScaricati='errore: '+e; }
+    try{ o.staParlando=staParlando; o.livello=livelloInCorso; }catch(e){}
+    try{
+      var v=[]; for(var i=0;i<Math.min(INTORNO.length,40);i++){
+        var x=INTORNO[i], m=dist(S.lat,S.lon,x.lat,x.lon), r=norm(bear(S.lat,S.lon,x.lat,x.lon)-S.hd);
+        if(m<120) v.push(x.cosa+' '+Math.round(m)+'m '+Math.round(r)+'°'+(x.extra?' ('+x.extra+')':''));
+      }
+      o.serviziVicini=v.slice(0,8);
+    }catch(e){}
+    return o;
+  };
   YB.vaiAiuto = function(){
     var pan=document.getElementById('pannello-aiuto');
     if(!pan)return;
@@ -5565,6 +5585,89 @@
     return true;
   }
 
+
+  /* ---------- quello che c'e' sotto i piedi ----------
+     Per chi non vede, la citta' utile non sono i monumenti: sono gli
+     attraversamenti, i semafori, le fermate con le linee che ci passano, i
+     percorsi tattili e i marciapiedi abbassati. Niente di tutto questo ha un
+     nome, e quindi nessun cercatore per nome lo trova — ne' Photon ne'
+     Nominatim. Si scarica allora il riquadro grezzo di OpenStreetMap attorno
+     a te, duecentoquaranta metri per lato: arriva in mezzo secondo e dentro
+     c'e' tutto. Si rifa' solo quando ti sei spostato di centocinquanta metri. */
+  var INTORNO=[], intornoQuando=0, intornoLat=0, intornoLon=0, intornoInCorso=false;
+  var dettiServizi={};
+
+  function scaricaIntorno(){
+    if(intornoInCorso||!S.pronto||!window.fetch||!window.DOMParser)return;
+    if(intornoQuando && dist(S.lat,S.lon,intornoLat,intornoLon)<150)return;
+    if(Date.now()-intornoQuando<20000)return;
+    intornoInCorso=true; intornoQuando=Date.now(); intornoLat=S.lat; intornoLon=S.lon;
+    var dla=0.0011, dlo=0.0014/Math.cos(S.lat*Math.PI/180);
+    var bb=(S.lon-dlo)+','+(S.lat-dla)+','+(S.lon+dlo)+','+(S.lat+dla);
+    var stop=null,orologio=null;
+    try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},9000); }catch(e){}
+    fetch('https://api.openstreetmap.org/api/0.6/map?bbox='+bb,{signal:stop?stop.signal:undefined})
+      .then(function(r){return r.text();})
+      .then(function(x){
+        if(orologio)clearTimeout(orologio);
+        var doc=new DOMParser().parseFromString(x,'application/xml');
+        var nodi=doc.getElementsByTagName('node'), nuovi=[];
+        for(var i=0;i<nodi.length;i++){
+          var n=nodi[i], t={};
+          var tg=n.getElementsByTagName('tag');
+          for(var j=0;j<tg.length;j++) t[tg[j].getAttribute('k')]=tg[j].getAttribute('v');
+          var h=t.highway||'', cosa=null, extra='';
+          if(h==='crossing'){
+            cosa='attraversamento';
+            var sem=(t.crossing==='traffic_signals'||t['crossing:signals']==='yes');
+            var str=(t.crossing==='marked'||t.crossing==='zebra'||t['crossing:markings']&&t['crossing:markings']!=='no');
+            extra = sem ? 'con il semaforo' : (str ? 'con le strisce, senza semaforo' : 'senza semaforo');
+            if(t.tactile_paving==='yes') extra += ', con il percorso tattile';
+          }
+          else if(h==='traffic_signals'){ cosa='semaforo'; }
+          else if(h==='bus_stop'||t.public_transport==='platform'){
+            cosa='fermata dell’autobus';
+            var nm=t.name||'';
+            var linee=t.route_ref||'';
+            extra = (nm?nm:'') + (linee?(nm?', ':'')+'linee '+linee.replace(/;/g,', '):'');
+          }
+          else continue;
+          nuovi.push({cosa:cosa, extra:extra,
+                      lat:parseFloat(n.getAttribute('lat')), lon:parseFloat(n.getAttribute('lon'))});
+        }
+        INTORNO=nuovi;
+        intornoInCorso=false;
+      })
+      .catch(function(){ if(orologio)clearTimeout(orologio); intornoInCorso=false; });
+  }
+
+  /* L'avviso arriva quando ce l'hai davanti e vicino: un attraversamento
+     annunciato a cento metri non serve, a cinque e' tardi. */
+  var ultimoServizio=0;
+  function avvisaServizi(){
+    if(!S.voice||!S.pronto||!INTORNO.length)return;
+    if(!versoAffidabile())return;              // «davanti» ha senso solo se so come sei girato
+    if(Date.now()-ultimoServizio<12000)return;
+    var mig=null, dmin=Infinity;
+    for(var i=0;i<INTORNO.length;i++){
+      var o=INTORNO[i];
+      var m=dist(S.lat,S.lon,o.lat,o.lon);
+      if(m>35||m<4)continue;
+      var rel=norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
+      if(Math.abs(rel)>55)continue;            // solo quello che hai davanti
+      var chiave=o.cosa+'@'+o.lat.toFixed(5)+','+o.lon.toFixed(5);
+      if(dettiServizi[chiave] && Date.now()-dettiServizi[chiave]<180000)continue;
+      if(m<dmin){ dmin=m; mig={o:o,m:m,rel:rel,chiave:chiave}; }
+    }
+    if(!mig)return;
+    dettiServizi[mig.chiave]=Date.now();
+    ultimoServizio=Date.now();
+    var quanto = mig.m<12 ? 'qui davanti' : ('fra '+(Math.round(mig.m/5)*5)+' metri');
+    var testo = mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1)+' '+quanto+
+                (mig.o.extra ? ': '+mig.o.extra : '')+'.';
+    parlaLibero(testo, GUIDA);
+  }
+
   function render(){var items=around();
     // se si sta parlando di un luogo, la direzione e i metri si aggiornano
     // mentre cammini: prima restavano quelli del momento dell'annuncio
@@ -5577,12 +5680,14 @@
       if(whereEl.textContent!==testa)whereEl.textContent=testa;
       puntaBussola(versoAffidabile()?rel:null, m);
     }
-    if(document.hidden){drawList(items);narrate(items);try{guardaLaStrada();}catch(e){}return;}
+    if(document.hidden){drawList(items);narrate(items);
+      try{guardaLaStrada();}catch(e){} try{scaricaIntorno();avvisaServizi();}catch(e){} return;}
     if(!S.voice){drawStrip(items);muoviMappa();
       if(Date.now()-ultimoDisegno>4000){ultimoDisegno=Date.now();disegnaMappa();}}
     drawList(items);
     if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}
-    try{ guardaLaStrada(); }catch(e){}}
+    try{ guardaLaStrada(); }catch(e){}
+    try{ scaricaIntorno(); avvisaServizi(); }catch(e){}}
 
 
 
