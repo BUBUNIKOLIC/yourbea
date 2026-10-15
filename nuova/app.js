@@ -117,10 +117,20 @@
     return lista;
   }
 
+  var clip = Clip();
+  /* quando non si sa come sei girato, si dice il punto cardinale: «a nord».
+     Le clip si chiamano card-a-nord, card-a-nord-est... */
+  function cardinaleVerso(o) {
+    if (!o) return null;
+    var s = posizione.leggi();
+    var g = posizione.verso(s.lat, s.lon, o.p.lat, o.p.lon);
+    var punti = ['a nord','a nord-est','a est','a sud-est','a sud','a sud-ovest','a ovest','a nord-ovest'];
+    return punti[Math.round(g / 45) % 8];
+  }
   function clipDi(d) {
-    // le clip incise hanno un nome per ogni pezzo; se non ci sono, parla la
-    // voce di sistema — il motore lo fa da sé, senza silenzio
-    return null;
+    // i nomi dei file incisi con Alice; se una manca o è lenta, il motore
+    // passa alla voce di sistema da sé — senza silenzio
+    try { return clip.per(d); } catch (e) { return null; }
   }
 
   function dillo(d) {
@@ -193,7 +203,9 @@
       });
     }
     // e il racconto
-    var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo });
+    var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo,
+                                direzioneBuona: s.direzioneBuona,
+                                cardinale: s.direzioneBuona ? null : cardinaleVerso(lista[0]) });
     if (d) dillo(d);
   });
 

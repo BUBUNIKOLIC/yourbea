@@ -109,7 +109,14 @@ function Racconto(opzioni) {
       /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
          non essere gettato. Era il difetto di Gabri a Parma. */
       var liv = (modo === 'servizi' && rango(p) >= 2) ? 'guida' : 'cenno';
+      /* si restituiscono anche i pezzi — da che parte, quanti metri — perché
+         le clip incise sono pezzi: «sulla destra» + «a 80 metri» + il nome.
+         Chi riceve questa risposta non deve ricalcolarli, se no il testo e
+         l'audio si disallineano. */
       return { tipo: 'cenno', luogo: p, livello: liv,
+               rel: o.rel, metri: Math.round(o.m),
+               direzioneBuona: situazione.direzioneBuona !== false,
+               cardinale: situazione.cardinale || null,
                testo: versoTesto(o) + ', ' + metri(o.m) + ', ' + p.n + '.' };
     }
     return null;
