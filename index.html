@@ -4833,13 +4833,33 @@
       if(!document.hidden){ altriParlanoFino=0; try{ CANALE.postMessage({tipo:'sveglia'}); }catch(e){} }
     });
   })();
+  /* Il lucchetto della voce.
+     Fidarsi di document.hidden non basta: due copie possono crederle
+     visibili tutte e due, e allora parlano insieme — «e' come se ci
+     fossero due app sovrapposte», ha detto la sorella di Vince.
+     Il lucchetto sta in localStorage, che e' lo stesso per tutte le copie
+     della stessa origine: chi vuole parlare lo prende scrivendoci dentro
+     il proprio numero e fino a quando; chi trova il lucchetto di un altro
+     ancora valido, tace. Se una copia muore senza rilasciarlo, scade da
+     solo dopo il tempo della frase. */
+  var MIO_NUMERO = String(Date.now())+'-'+Math.random().toString(36).slice(2,8);
+  function leggiLucchetto(){
+    try{ var g=localStorage.getItem('yourbea-voce'); return g?JSON.parse(g):null; }catch(e){ return null; }
+  }
+  function prendiLucchetto(quanto){
+    try{ localStorage.setItem('yourbea-voce', JSON.stringify({chi:MIO_NUMERO, fino:Date.now()+quanto})); }catch(e){}
+  }
   function altreCopieStannoParlando(){
-    var nascosto = (typeof document!=='undefined') && document.hidden;
+    var l=leggiLucchetto();
+    if(l && l.chi!==MIO_NUMERO && l.fino>Date.now()) return true;
+    var nascosto=(typeof document!=='undefined') && document.hidden;
     return !!(altriParlanoFino && Date.now()<altriParlanoFino && nascosto);
   }
   function diciAlleAltreCopie(testo){
+    var quanto=Math.min(16000,1200+(testo||'').length*55);
+    prendiLucchetto(quanto);
     if(!CANALE)return;
-    try{ CANALE.postMessage({tipo:'parlo', quanto:Math.min(16000,1200+(testo||'').length*55)}); }catch(e){}
+    try{ CANALE.postMessage({tipo:'parlo', quanto:quanto}); }catch(e){}
   }
 
   function dire(ids,testo,livello){
@@ -4848,7 +4868,7 @@
     // due copie che parlano insieme sono due voci, e nessuna coda puo'
     // metterle d'accordo dall'interno
     if(altreCopieStannoParlando() && liv!==EMERGENZA) return;
-    diciAlleAltreCopie(testo);
+    diciAlleAltreCopie(testo);   // prende il lucchetto e avvisa le altre
     if(staParlando){
       var accoda=function(){
         if(!inCoda||liv>=inCoda.liv)inCoda={ids:ids,testo:testo,liv:liv};
@@ -4861,6 +4881,15 @@
       if(liv===livelloInCorso && liv!==EMERGENZA){ accoda(); return; }
     }
     if(liv===EMERGENZA)inCoda=null; // l'emergenza non si trascina dietro niente
+    /* Se sto interrompendo qualcosa di meno importante che era GIA'
+       cominciato — il racconto di un monumento tagliato a meta' da un
+       avviso di attraversamento — quel racconto non si butta: torna in
+       coda e riprende da capo appena l'avviso ha finito. Prima spariva, e
+       chi ascoltava sentiva una frase che non finiva mai piu'. */
+    if(staParlando && livelloInCorso && liv>livelloInCorso && ultimaFrase &&
+       (!inCoda || livelloInCorso>=inCoda.liv)){
+      inCoda={ids:ultimaFrase.ids, testo:ultimaFrase.testo, liv:livelloInCorso, ripresa:true};
+    }
     ultimaFrase={ids:ids,testo:testo};
     zittisci();
     var mio=turno;
@@ -5172,7 +5201,13 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='73';
+  var VERSIONE='76';
+  /* Una guardia: se per qualunque motivo questo script venisse eseguito
+     due volte nella stessa pagina, il secondo si ferma qui. Due motori
+     nella stessa pagina significano due code, due turni e due voci che
+     non sanno niente l'una dell'altra. */
+  if(window.__yourbeaAvviata){ try{ console.log('Yourbea era gia avviata in questa pagina'); }catch(e){} }
+  window.__yourbeaAvviata=true;
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5843,7 +5878,12 @@
       // panchina o una banca non si annunciano da sole
       if(o.servizio)continue;
       var m=dist(S.lat,S.lon,o.lat,o.lon);
-      if(m>35||m<4)continue;
+      // la finestra si allarga quando il telefono e' preciso e si stringe
+      // quando non lo e': non si avvisa di una cosa che potrebbe essere
+      // gia' sotto i piedi o molto piu' in la'
+      var finestra = Math.min(45, Math.max(20, 35 - (Math.round(S.acc||15)-10)));
+      if(m>finestra)continue;
+      if(m<2)continue;
       var rel=norm(bear(S.lat,S.lon,o.lat,o.lon)-S.hd);
       if(Math.abs(rel)>55)continue;            // solo quello che hai davanti
       var chiave=o.cosa+'@'+o.lat.toFixed(5)+','+o.lon.toFixed(5);
@@ -5853,7 +5893,17 @@
     if(!mig)return;
     dettiServizi[mig.chiave]=Date.now();
     ultimoServizio=Date.now();
-    var quanto = mig.m<12 ? 'qui davanti' : ('fra '+(Math.round(mig.m/5)*5)+' metri');
+    /* Quanto dire che manca. Il GPS a piedi sbaglia di venti o trenta
+       metri, e la sorella di Vince era SULLE strisce mentre l'app diceva
+       «a trentacinque metri»: per chi non vede e' peggio che tacere.
+       Quindi il numero si dice solo quando il telefono e' davvero preciso,
+       e comunque mai sotto l'errore che dichiara lui stesso. */
+    var errore = Math.max(8, Math.round(S.acc||15));
+    var quanto;
+    if(mig.m <= errore)            quanto = 'qui, davanti a te';
+    else if(mig.m <= errore*1.6)   quanto = 'a pochi passi';
+    else if(errore > 25)           quanto = 'poco piu\u2019 avanti';
+    else                           quanto = 'fra '+(Math.round(mig.m/5)*5)+' metri';
     var testo = mig.o.cosa.charAt(0).toUpperCase()+mig.o.cosa.slice(1)+' '+quanto+
                 (mig.o.extra ? ': '+mig.o.extra : '')+'.';
     parlaLibero(testo, GUIDA);
