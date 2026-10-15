@@ -118,6 +118,90 @@
   }
 
   var clip = Clip();
+
+  /* ---------- l'emergenza e la guida ---------- */
+  var contatto = null;
+  try { contatto = JSON.parse(localStorage.getItem('yourbea2-contatto') || 'null'); } catch (e) {}
+  var emergenza = Emergenza({ contatto: contatto });
+  var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+                      verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
+                      diario: diario });
+
+  /* esegui(): le mosse che l'emergenza chiede — chiamare, mandare un
+     messaggio. Si fanno QUI, dopo che la frase e' stata detta: se no la
+     chiamata parte mentre l'app sta ancora parlando e non si sente niente. */
+  function esegui(mosse) {
+    if (!mosse) return;
+    mosse.forEach(function (m) {
+      setTimeout(function () {
+        try {
+          if (m.cosa === 'chiama') location.href = 'tel:' + m.numero;
+          else if (m.cosa === 'messaggio') location.href = 'sms:' + m.numero + '&body=' + encodeURIComponent(m.testo);
+        } catch (e) { diario('MOSSA non riuscita: ' + m.cosa); }
+      }, m.fraMillisecondi || 1500);
+    });
+  }
+  function dilloSubito(d) {
+    if (!d) return;
+    var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
+    voce.parla(d.testo, { livello: liv, ancheSeUguale: true });
+    mostra({ titolo: titoloDi(d), testo: d.testo, gradino: '' });
+    alLettore(d.testo);
+    esegui(d.mosse);
+  }
+  function titoloDi(d) {
+    if (d.tipo === 'furto' || d.tipo === 'scelte' || d.tipo === 'chiama') return 'Aiuto';
+    if (d.tipo === 'parto' || d.tipo === 'svolta' || d.tipo === 'manca') return guida.meta() ? ('→ ' + guida.meta().n) : 'In cammino';
+    if (d.tipo === 'arrivato') return 'Arrivato';
+    return el('cosa').textContent;
+  }
+
+  /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
+     nostri, poi fra i servizi, poi fra gli indirizzi — e la citta' detta
+     dall'utente vince sempre (il difetto che portava a Cisterna di Latina). */
+  function portamiA(cosa) {
+    var s = posizione.leggi();
+    if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    var qui = { lat: s.lat, lon: s.lon };
+    var parole = guida.cittaNelTesto(cosa);
+    var cerca = cosa.toLowerCase();
+    diario('PORTAMI A: ' + cerca);
+    voce.parla("Cerco l'indirizzo, un momento.", { livello: voce.GUIDA, ancheSeUguale: true });
+
+    // 1. un luogo nostro col nome che somiglia
+    var mio = null, dmin = Infinity;
+    LUOGHI.forEach(function (p) {
+      if (p.n.toLowerCase().indexOf(cerca) < 0) return;
+      var d = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (d < dmin) { dmin = d; mio = p; }
+    });
+    if (mio) { partiVerso({ n: mio.n, lat: mio.lat, lon: mio.lon }, qui); return; }
+
+    // 2. un servizio (farmacia, commissariato, fermata...)
+    var tipo = ['farmacia', 'commissariato', 'pronto soccorso', 'fermata', 'supermercato', 'bagno', 'bancomat', 'ufficio postale', 'bar', 'ristorante']
+      .find(function (x) { return cerca.indexOf(x) >= 0; });
+    var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(cosa, qui);
+    cercatore.then(function (candidati) {
+      var scelto = guida.scegli(candidati, parole, qui);
+      if (!scelto) {
+        voce.parla("Questo indirizzo non l'ho trovato.", { livello: voce.GUIDA, ancheSeUguale: true });
+        return;
+      }
+      /* il nome che arriva dal cercatore spesso contiene gia' la citta'
+         («Via Vincenzo Gioberti, Latina»): aggiungerla di nuovo faceva dire
+         «Latina, Latina» */
+      var nome = scelto.nome;
+      if (scelto.citta && parole.length && nome.toLowerCase().indexOf(scelto.citta.toLowerCase()) < 0) {
+        nome += ', ' + scelto.citta;
+      }
+      partiVerso({ n: nome, lat: scelto.lat, lon: scelto.lon }, qui);
+    });
+  }
+  function partiVerso(m, qui) {
+    Promise.all([intorno.strada(qui.lat, qui.lon), intorno.percorso(qui, m)]).then(function (r) {
+      dilloSubito(guida.vaiA(m, qui, r[0], r[1]));
+    });
+  }
   /* quando non si sa come sei girato, si dice il punto cardinale: «a nord».
      Le clip si chiamano card-a-nord, card-a-nord-est... */
   function cardinaleVerso(o) {
@@ -202,6 +286,12 @@
         if (aggiunti) diario('da Wikipedia: ' + aggiunti + ' luoghi nuovi (totali ' + LUOGHI.length + ')');
       });
     }
+    // se ti sto portando da qualche parte, parla la guida e basta
+    if (guida.meta()) {
+      var g = guida.passo({ lat: s.lat, lon: s.lon }, Date.now());
+      if (g) dilloSubito(g);
+      return;
+    }
     // e il racconto
     var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo,
                                 direzioneBuona: s.direzioneBuona,
@@ -243,7 +333,18 @@
       if (ha('turismo')) { entra('cultura'); return true; }
       if (ha('utilita')) { entra('servizi'); return true; }
     }
-    if (ha('ferma')) { voce.ferma(); return true; }
+    if (ha('ferma')) { voce.ferma(); guida.lascia(); return true; }
+    // l'emergenza viene prima di tutto
+    var s0 = posizione.leggi();
+    var dove0 = { via: ultimaStrada, lat: s0.lat, lon: s0.lon };
+    var em = emergenza.comando(t, ultimaStrada ? dove0 : null);
+    if (em) {
+      if (em.tipo === 'cerca') { portamiA(em.cosa); dilloSubito(em); return true; }
+      dilloSubito(em); return true;
+    }
+    var meta = guida.dalComando(t);
+    if (meta) { portamiA(meta); return true; }
+    if (ha('lascia perdere', 'annulla', 'non importa')) { dilloSubito(guida.lascia()); return true; }
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
@@ -294,7 +395,6 @@
         for (var i = e.resultIndex; i < e.results.length; i++) {
           if (!e.results[i].isFinal) continue;
           var t = e.results[i][0].transcript;
-          if (voce.staParlando()) { diario('sentita la mia voce, buttata'); continue; }
           comando(t);
         }
       };
@@ -309,7 +409,16 @@
     if (window.urbeaChiudiAscolto) { try { window.urbeaChiudiAscolto(); } catch (e) {} return; }
     if (ascolto) { try { ascolto.abort ? ascolto.abort() : ascolto.stop(); } catch (e) {} ascolto = null; }
   }
-  window.urbeaComando = function (testo) { if (!voce.staParlando()) comando(testo || ''); };
+  /* UN COMANDO DELL'UTENTE NON SI BUTTA MAI, nemmeno se l'app sta parlando:
+     chi parla sopra la guida ha ragione, ed e' il modo naturale di usarla.
+     (Nella vecchia app questo scarto faceva sembrare l'app sorda: «portami a
+     via Gioberti» detto mentre diceva la via non faceva niente.)
+     L'eco della propria voce non arriva qui, perche' il microfono e' chiuso
+     mentre l'app parla; e se arriva, il diario lo scrive. */
+  window.urbeaComando = function (testo) {
+    if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
+    comando(testo || '');
+  };
 
   /* ---------- la porta e i tasti ---------- */
   function entra(quale) {
@@ -345,11 +454,7 @@
     var b = this;
     setTimeout(function () { b.classList.remove('ascolta'); }, 6000);
   });
-  el('sos').addEventListener('click', function () {
-    var t = 'Aiuto. Dì: chiama il 112, oppure commissariato, pronto soccorso, farmacia, portami a casa.';
-    mostra({ titolo: 'Aiuto', testo: t, gradino: '' });
-    voce.parla(t, { livello: voce.EMERGENZA, ancheSeUguale: true });
-  });
+  el('sos').addEventListener('click', function () { dilloSubito(emergenza.scelte()); });
   el('altro').addEventListener('click', function () {
     var c = el('cassetto'), aperto = c.classList.toggle('aperto');
     this.setAttribute('aria-expanded', aperto ? 'true' : 'false');
@@ -365,6 +470,21 @@
     el('porta').hidden = false; acceso = false; voce.ferma();
   });
   el('dimmi-dove').addEventListener('click', diciDove);
+  el('chi-chiamare').addEventListener('click', function () {
+    var r = el('riga-contatto');
+    r.hidden = !r.hidden;
+    if (!r.hidden && contatto) { el('contatto-nome').value = contatto.nome || ''; el('contatto-tel').value = contatto.telefono || ''; }
+    if (!r.hidden) voce.parla('Scrivi il nome e il numero di chi deve venire ad aiutarti, poi salva.', { livello: voce.GUIDA, ancheSeUguale: true });
+  });
+  el('contatto-salva').addEventListener('click', function () {
+    var nome = el('contatto-nome').value.trim(), tel = el('contatto-tel').value.trim();
+    if (!nome || !tel) { voce.parla('Mi servono il nome e il numero.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    contatto = { nome: nome, telefono: tel };
+    try { localStorage.setItem('yourbea2-contatto', JSON.stringify(contatto)); } catch (e) {}
+    emergenza.conContatto(contatto);
+    el('riga-contatto').hidden = true;
+    voce.parla('Ho registrato ' + nome + '. In emergenza posso avvisarlo e dirgli dove sei.', { livello: voce.GUIDA, ancheSeUguale: true });
+  });
   el('manda-diario').addEventListener('click', function () {
     var s = posizione.leggi();
     var capo = 'Yourbea nuova — diario\n' + (navigator.userAgent || '') +

@@ -256,8 +256,70 @@ function Intorno(opzioni) {
     });
   }
 
+  /* ---------- 5. CERCARE UN INDIRIZZO, O UN SERVIZIO ----------
+     Restituisce CANDIDATI, non una risposta: la scelta la fa parti/guida.js,
+     che sa la regola del comune. Chiedere «via Vincenzo Gioberti, Latina» e
+     prendere il primo risultato portava a Cisterna di Latina. */
+  function cercaIndirizzo(testo, qui) {
+    var u = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(testo) +
+            '&lat=' + qui.lat + '&lon=' + qui.lon + '&limit=8';
+    return json(u).then(function (d) {
+      var f = (d && d.features) || [];
+      return f.filter(function (x) { return x.geometry && x.geometry.coordinates; }).map(function (x) {
+        var p = x.properties || {};
+        return {
+          nome: [p.name, p.street, p.city].filter(Boolean).slice(0, 2).join(', ') || testo,
+          citta: p.city || '', frazione: p.locality || p.district || '',
+          provincia: p.county || '', regione: p.state || '',
+          lat: x.geometry.coordinates[1], lon: x.geometry.coordinates[0]
+        };
+      });
+    }).then(function (lista) {
+      if (lista && lista.length) return lista;
+      // ripiego: Nominatim, senza riquadro se e' stata detta un'altra citta'
+      var u2 = 'https://nominatim.openstreetmap.org/search?format=json&limit=8&accept-language=it&q=' +
+               encodeURIComponent(testo);
+      return json(u2).then(function (j) {
+        return (j || []).map(function (r) {
+          var pezzi = String(r.display_name || '').split(',').map(function (x) { return x.trim(); });
+          return { nome: pezzi.slice(0, 2).join(', '), citta: pezzi[1] || '', frazione: '',
+                   provincia: pezzi[2] || '', regione: pezzi[3] || '',
+                   lat: parseFloat(r.lat), lon: parseFloat(r.lon) };
+        });
+      });
+    });
+  }
+
+  /* cercaServizio(): la farmacia, il commissariato, il bagno — prima fra
+     quello che la mappa ci ha già dato, poi chiedendo per etichetta.
+     Si cerca PER ETICHETTA e non per parola: cercando «farmacia» a Milano
+     rispondeva a 6,6 km avendone una a 212 metri. */
+  var ETICHETTE = {
+    farmacia: 'amenity=pharmacy', commissariato: 'amenity=police',
+    'pronto soccorso': 'amenity=hospital', fermata: 'highway=bus_stop',
+    supermercato: 'shop=supermarket', bagno: 'amenity=toilets',
+    bancomat: 'amenity=atm', 'ufficio postale': 'amenity=post_office',
+    bar: 'amenity=cafe', ristorante: 'amenity=restaurant'
+  };
+  function cercaServizio(tipo, qui) {
+    var e = ETICHETTE[tipo];
+    if (!e) return Promise.resolve([]);
+    var d = 0.014;
+    var box = (qui.lon - d) + ',' + (qui.lat + d) + ',' + (qui.lon + d) + ',' + (qui.lat - d);
+    var u = 'https://nominatim.openstreetmap.org/search?format=json&limit=10&accept-language=it' +
+            '&q=' + encodeURIComponent('[' + e + ']') + '&viewbox=' + box + '&bounded=1';
+    return json(u).then(function (j) {
+      return (j || []).map(function (r) {
+        var pezzi = String(r.display_name || '').split(',').map(function (x) { return x.trim(); });
+        return { nome: pezzi[0] || tipo, citta: pezzi[2] || '', frazione: '', provincia: '', regione: '',
+                 lat: parseFloat(r.lat), lon: parseFloat(r.lon) };
+      });
+    });
+  }
+
   return {
     strada: strada, servizi: servizi, luoghi: luoghi, percorso: percorso,
+    cercaIndirizzo: cercaIndirizzo, cercaServizio: cercaServizio,
     schedaDelPaese: function () { return cittaScheda; },
     // per le prove
     amministrativa: amministrativa, pulisci: pulisci, decodi: decodi
