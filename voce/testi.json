@@ -36,6 +36,10 @@
   "testo": "Il gonfalone con il motto Post fata resurgo e lo stemma civico con la torre, le otto stelle e la fenice."
  },
  {
+  "id": "poi-02-ancora",
+  "testo": "Da manuale: è il palazzo dei baroni che tenevano il feudo della Torre, con nucleo del Cinquecento. Diventò casa comunale dopo il 1699, l'anno del riscatto: i torresi pagarono di tasca propria la libertà dal regime feudale, e l'edificio del signore passò alla città che si era comprata da sé. È il passaggio politico più importante della storia locale, e si vede negli emblemi: il gonfalone porta il motto Post fata resurgo — dopo i fatti risorgo — e lo stemma civico ha la torre, le otto stelle e la fenice. Una città che per tre volte è stata sepolta dalla lava si è scelta la fenice come simbolo, e non per modo di dire."
+ },
+ {
   "id": "poi-03-nome",
   "testo": "Chiesa di Maria SS. Assunta"
  },
@@ -50,6 +54,10 @@
  {
   "id": "poi-03-dentro",
   "testo": "L'ipogeo con quattro fosse carnarie e due ossari. Il soffitto dei cunicoli è il deposito del 1794, il pavimento in alcuni tratti è l'antica strada che portava alla spiaggia."
+ },
+ {
+  "id": "poi-03-ancora",
+  "testo": "Da manuale: sta nel vecchio Borgo, nella zona detta La Ripa, ed è il luogo che racconta meglio la sepoltura del centro storico. La colata del 1794, spessa una decina di metri, passò proprio qui scendendo al mare, e la chiesa seicentesca restò sotto. Nell'ipogeo ci sono quattro fosse carnarie e due ossari, e la cosa da capire è la stratigrafia: il soffitto dei cunicoli è il deposito del 1794, il pavimento in alcuni tratti è l'antica strada. Si cammina fra due date, con sopra la testa la lava e sotto i piedi la città che c'era prima."
  },
  {
   "id": "poi-04-nome",
@@ -68,6 +76,10 @@
   "testo": "L'ipogeo: la chiesa inferiore sepolta, con il pavimento in riggiole settecentesche e una Madonna in gloria attribuita a Paolo De Matteis."
  },
  {
+  "id": "poi-04-ancora",
+  "testo": "Da manuale: il convento fu costruito fra il 1696 e il 1706 e la chiesa consacrata nel 1727. La lava del 1794 la seppellì quasi del tutto, e qui si vede cosa facevano i torresi dopo un'eruzione: nel 1804 ne costruirono una nuova sopra la vecchia, seguendo la pianta dei muri che ancora sporgevano. Quindi l'edificio di oggi sta in piedi sul suo predecessore. La chiesa inferiore è ancora là, come ipogeo, con il pavimento in riggiole settecentesche e una Madonna in gloria attribuita a Paolo De Matteis: si scende di qualche metro e si entra nel Settecento sepolto."
+ },
+ {
   "id": "poi-05-nome",
   "testo": "Chiesa di Santa Maria del Principio"
  },
@@ -84,6 +96,10 @@
   "testo": "L'edicola salvata dalla lava, e accanto alla statua l'ampolla che raccolse il liquido quando, nel 1861, sembrò piangere. Era sosta obbligata per i marinai di ritorno e per le gestanti, che ancora oggi vengono il 26 luglio."
  },
  {
+  "id": "poi-05-ancora",
+  "testo": "Da manuale: i torresi la chiamano Sant'Anna ed è il più antico luogo di culto della città, incassato nella roccia lavica. La colata del 1794 la ricoprì ma risparmiò l'altare con l'edicola votiva, che riemerse intatta: è il motivo per cui la ricostruzione fu immediata e la devozione non si interruppe. Accanto alla statua si conserva l'ampolla che raccolse il liquido quando, nel 1861, sembrò piangere. Per i marinai del corallo questa era sosta obbligata prima di partire, e quella è la chiave per capirla: non è una chiesa di rappresentanza, è il posto dove una città di naviganti veniva a chiedere di tornare."
+ },
+ {
   "id": "poi-06-nome",
   "testo": "Chiesa di Santa Maria di Costantinopoli"
  },
@@ -98,6 +114,10 @@
  {
   "id": "poi-06-dentro",
   "testo": "L'altare maggiore in marmi commessi attribuito ai Vaccaro, con la statua lignea della Madonna che stringe un ramo di corallo. Le acquasantiere scolpite con pescatori e barche."
+ },
+ {
+  "id": "poi-06-ancora",
+  "testo": "Da manuale: nata come cappella dei Carafa, passò al Pio Monte dei Marinai, la confraternita degli armatori di coralline fondata nel 1615: cioè diventò la chiesa della categoria che teneva in piedi l'economia della città. Più arretrata rispetto alla colata, fu una delle poche risparmiate nel 1794. L'altare maggiore è in marmi commessi, attribuito ai Vaccaro, e sopra c'è la statua lignea della Madonna che stringe un ramo di corallo: l'oggetto del mestiere entra dentro l'immagine sacra. Da guardare anche le acquasantiere scolpite. Qui il corallo non è un souvenir, è il motivo per cui questa chiesa è stata costruita e tenuta."
  },
  {
   "id": "poi-07-nome",
@@ -146,6 +166,10 @@
  {
   "id": "poi-09-dentro",
   "testo": "Il blocco di lava del 1737 che ostruisce ancora una delle porte, segnalato da una lapide: la testimonianza più diretta in città del rapporto fra culto e vulcano."
+ },
+ {
+  "id": "poi-09-ancora",
+  "testo": "Da manuale: è del 1565, fu sfiorata dalla lava del 1737 e restò quasi indenne nel 1794, e per questo, distrutta Santa Croce, fece da chiesa parrocchiale. Il convento annesso nel 1878 divenne la scuola di incisione del corallo: la chiesa che era sopravvissuta alla lava diventa la casa del mestiere che dava da vivere alla città. La cosa più diretta da vedere è il blocco di lava del 1737 che ostruisce ancora una delle porte, segnalato da una lapide: non è stato tolto, è stato lasciato lì come testimonianza. In nessun altro posto in città il rapporto fra culto e vulcano si legge così, su una porta murata dalla roccia."
  },
  {
   "id": "poi-10-nome",
@@ -200,6 +224,10 @@
   "testo": "La Madonna col Bambino con il Vesuvio e i velieri sul fondo, firmata Domenico Lettieri 1700. Il mosaico in riggiole della Madonna Stella Maris in facciata."
  },
  {
+  "id": "poi-12-ancora",
+  "testo": "Da manuale: è del 1801, la chiesa della gente di mare, affacciata sulla spiaggia, e la data va letta accanto a quella della colata del 1794: fu costruita pochi anni dopo che la lava aveva ridisegnato tutto il fronte a mare, su una linea di costa nuova. Dentro c'è la Madonna col Bambino col Vesuvio e i velieri sul fondo, firmata Domenico Lettieri 1700 — quindi un dipinto più vecchio della chiesa, portato qui. In facciata il mosaico in riggiole della Madonna Stella Maris. È la chiesa di chi parte: il titolo di Portosalvo dice esattamente cosa si veniva a chiedere."
+ },
+ {
   "id": "poi-13-nome",
   "testo": "Porto del Corallo"
  },
@@ -214,6 +242,10 @@
  {
   "id": "poi-13-dentro",
   "testo": "Il molo di levante detto la Scarpetta col fanale verde, il molo di ponente col fanale rosso. La spiaggia del Fronte con i cantieri più antichi."
+ },
+ {
+  "id": "poi-13-ancora",
+  "testo": "Da manuale: da qui partiva la flotta che ha fatto di Torre del Greco la capitale mondiale del corallo. La data che spiega tutto è il 1699, il riscatto: i torresi pagarono di tasca propria l'uscita dal regime feudale, e da uomini liberi armarono oltre duecento barche, le coralline, che raccoglievano corallo da Sciacca alla Sardegna fino alle coste d'Africa. Il porto si legge ancora così: il molo di levante, detto la Scarpetta, col fanale verde; il molo di ponente col fanale rosso; e la spiaggia del Fronte, dove stavano i cantieri più antichi. Una città che compra la propria libertà e la investe in barche."
  },
  {
   "id": "poi-14-nome",
@@ -254,6 +286,10 @@
  {
   "id": "poi-16-dentro",
   "testo": "Lo scalone del Sasso e le sale affrescate del piano nobile."
+ },
+ {
+  "id": "poi-16-ancora",
+  "testo": "Da manuale: nacque come fabbricato rurale del marchese di Vallelonga e fu trasformato in villa agli inizi del Settecento — il passaggio tipico delle dimore vesuviane, da azienda agricola a villa di delizia. Dopo i danni, nel 1843 la famiglia affidò il rifacimento a Camillo Napoleone Sasso, che gli diede lo scalone monumentale e le sale affrescate del piano nobile. Lo scalone è la cosa da guardare: nelle ville del Miglio d'Oro è l'elemento di rappresentanza per eccellenza, perché è la parte che il visitatore attraversa prima di essere ricevuto, e quindi quella su cui si spendeva di più."
  },
  {
   "id": "poi-17-nome",
@@ -316,6 +352,10 @@
   "testo": "La sacrestia superiore rivestita di boiserie in radica di noce, 1762. L'Annunziata in terracotta robbiana in facciata di Antonio Mennella. L'organo settecentesco a 350 canne."
  },
  {
+  "id": "poi-20-ancora",
+  "testo": "Da manuale: è del 1568 e fu una delle prime fondazioni cappuccine del Sud. Sta su un poggio circondato da un burrone, e quella posizione l'ha salvata due volte: nel 1631 e nel 1794 la lava si limitò a colmare il burrone intorno senza arrivare all'edificio. È il caso più chiaro, a Torre, di come la morfologia decida chi resta in piedi. Dentro, la sacrestia superiore è rivestita di boiserie in radica di noce del 1762; in facciata c'è l'Annunziata in terracotta robbiana di Antonio Mennella. La povertà cappuccina si vede nelle murature e si smentisce negli arredi: il legno di quella sacrestia è lavoro da ebanista di città."
+ },
+ {
   "id": "poi-21-nome",
   "testo": "Chiesa di San Giuseppe alle Paludi"
  },
@@ -342,6 +382,10 @@
  {
   "id": "poi-22-scheda",
   "testo": "Si sviluppava su tre piani: l'ultimo crollò con l'eruzione del 79, quello più basso fu sepolto dalla lava, e oggi si vede solo il piano intermedio. È la misura di come il Vesuvio lavora, togliendo sopra e sotto."
+ },
+ {
+  "id": "poi-22-ancora",
+  "testo": "Da manuale: la villa si sviluppava su tre piani, e di quei tre oggi se ne vede uno. L'ultimo crollò con l'eruzione del 79, quello più basso fu sepolto dalla lava di una colata successiva, e resta il piano intermedio. È la misura esatta di come lavora il Vesuvio: non seppellisce soltanto, toglie anche dall'alto, e quello che arriva fino a noi è quasi sempre una fascia centrale. Chi guarda queste murature guardi le quote: la differenza fra il livello di campagna antico e quello attuale è la storia eruttiva di questa costa."
  },
  {
   "id": "poi-23-nome",
@@ -1668,6 +1712,10 @@
   "testo": "Gli affreschi di Giacinto Diano e Paolo Sperduti, allievi del Vanvitelli, l'organo del 1784 e, sotto l'intonaco, i cicli tardo-trecenteschi col Giudizio universale sulla parete d'ingresso."
  },
  {
+  "id": "poi-112-ancora",
+  "testo": "Da manuale: la costruì nel Trecento la confraternita dei Flagellanti. La facciata ha un timpano curvo e un portale fiancheggiato da due fusti di colonne romane di reimpiego — a Venafro il reimpiego è la regola, perché la città antica era qui sotto. Il campanile è barocco con memorie rinascimentali, la cupola è affrescata. Dentro ci sono gli affreschi di Giacinto Diano e Paolo Sperduti, allievi del Vanvitelli, e l'organo del 1784. La cosa più interessante sta sotto l'intonaco: i cicli tardo-trecenteschi, cioè la chiesa prima del Settecento, conservata sotto quella che si vede."
+ },
+ {
   "id": "poi-113-nome",
   "testo": "Palazzo Caracciolo"
  },
@@ -1682,6 +1730,10 @@
  {
   "id": "poi-113-dentro",
   "testo": "I merli e la mole della torre, che si legge ancora sotto il palazzo."
+ },
+ {
+  "id": "poi-113-ancora",
+  "testo": "Da manuale: non è solo un palazzo nobiliare, è la Torre del Mercato: una struttura difensiva con massicci merli medievali, che sorvegliava la porta orientale di Venafro. Il palazzo è venuto dopo, intorno alla torre, e la torre si legge ancora sotto di lui — merli, spessori, proporzioni. Affaccia su piazza Cimorelli, il cuore civile del centro storico, e quella coppia di cose, torre e piazza, dice l'ordine delle priorità: prima controllare l'ingresso, poi commerciare, poi abitare con eleganza."
  },
  {
   "id": "poi-114-nome",
@@ -1724,6 +1776,10 @@
   "testo": "Le statue dei quattro evangelisti e il transetto che non c'è: è disegnato con lo stucco."
  },
  {
+  "id": "poi-116-ancora",
+  "testo": "Da manuale: la chiamano anche chiesa del Viatico, e il nome spiega la funzione: la costruì nella seconda metà del Cinquecento la confraternita che teneva l'ospizio dei malati, cioè un'opera assistenziale, e fu ampliata nella seconda metà del Seicento. La scalinata con balaustra solleva la facciata sopra la piazza — un espediente barocco per dare monumentalità a una chiesa piccola. Dentro c'è una navata unica, e la cosa da notare è il transetto che non c'è: è disegnato con lo stucco, cioè finto. Le statue dei quattro evangelisti completano l'inganno. È architettura povera di mezzi e ricca di scena, che è la definizione di tanto barocco di provincia."
+ },
+ {
   "id": "poi-117-nome",
   "testo": "Museo archeologico di Venafro"
  },
@@ -1740,6 +1796,10 @@
   "testo": "La Tavola Acquaria, la lastra di bronzo con il provvedimento di Augusto sull'acquedotto della città."
  },
  {
+  "id": "poi-117-ancora",
+  "testo": "Da manuale: il museo sta dentro il monastero seicentesco di Santa Chiara e tiene insieme quello che resta di Venafrum, dalla preistoria al medioevo, con i materiali dal teatro e dall'anfiteatro. Ha riaperto nel 1998 con un allestimento nuovo. Il pezzo che vale il viaggio è la Tavola Acquaria: una lastra di bronzo con il provvedimento di Augusto sull'acquedotto della città. Non è un oggetto d'arte, è un atto amministrativo inciso nel metallo — chi poteva prendere l'acqua, quanta, e con quali pene per gli abusi. Documenti come questo sono la ragione per cui dell'amministrazione romana sappiamo tanto."
+ },
+ {
   "id": "poi-118-nome",
   "testo": "Chiesa di San Francesco"
  },
@@ -1750,6 +1810,10 @@
  {
   "id": "poi-118-scheda",
   "testo": "Si chiama anche San Giovanni in Platea. L'impianto è trecentesco, l'aspetto barocco: navata unica con altari di marmo e un baldacchino baroccheggiante. Dalla chiesa si scende agli scavi sottostanti."
+ },
+ {
+  "id": "poi-118-ancora",
+  "testo": "Da manuale: si chiama anche San Giovanni in Platea. L'impianto è trecentesco, l'aspetto barocco: navata unica con altari di marmo e un baldacchino baroccheggiante — la solita operazione di riveste completo fatta fra Sei e Settecento su una chiesa mendicante. La cosa da non perdere è che dalla chiesa si scende agli scavi sottostanti: sotto il pavimento c'è la città antica. In poche decine di metri si passa dal marmo del Settecento alle murature romane, che è il modo più concreto di vedere come Venafro è fatta a strati."
  },
  {
   "id": "poi-119-nome",
@@ -1768,6 +1832,10 @@
   "testo": "Il reticolo regolare dei paramenti e il modo in cui la gradinata sfrutta la collina."
  },
  {
+  "id": "poi-119-ancora",
+  "testo": "Da manuale: è di età augustea e in opus reticulatum, il paramento a reticolo regolare che si riconosce a prima vista. La particolarità sta nella struttura: la cavea non poggia su sostruzioni ma è addossata al pendio del Monte Santa Croce, come nei teatri greci scavati nella roccia — una scelta che risparmia muratura e sfrutta la collina. La fronte scenica misura una sessantina di metri e la gradinata teneva circa tremilacinquecento persone: per una città come Venafrum vuol dire che il teatro era dimensionato su tutto il territorio intorno, non sui soli abitanti."
+ },
+ {
   "id": "poi-120-nome",
   "testo": "Cattedrale di Santa Maria Assunta"
  },
@@ -1782,6 +1850,10 @@
  {
   "id": "poi-120-dentro",
   "testo": "I cinque portali della facciata, fra cui la porta santa aperta almeno dal 1500, e il cappellone aggiunto sul finire del Seicento."
+ },
+ {
+  "id": "poi-120-ancora",
+  "testo": "Da manuale: è una delle chiese più grandi del Molise, e sta in piano, fuori dalle mura — una posizione che dice molto: la cattedrale nasce dove c'era il cimitero paleocristiano, non dentro il recinto difeso. Le origini risalgono al quinto secolo, sotto il vescovo Costantino. Poi i terremoti del 1349 e del 1456 e i rifacimenti barocchi l'hanno cambiata più volte, e i restauri degli anni Sessanta hanno riportato in luce l'impianto gotico. I cinque portali della facciata sono la cosa da guardare, fra cui la porta santa, aperta almeno dal 1500; il cappellone fu aggiunto sul finire del Seicento. Un edificio dove ogni secolo ha lasciato un segno e nessuno ha vinto del tutto."
  },
  {
   "id": "poi-121-nome",
@@ -1814,6 +1886,10 @@
  {
   "id": "poi-122-scheda",
   "testo": "Blocchi poligonali posati senza malta, incastrati l'uno nell'altro: è la tecnica più antica della zona. La cinta della città romana invece è in opera incerta, e un'iscrizione ricorda C. Aclutius Gallus, il magistrato straordinario incaricato di costruirla intorno al 40 avanti Cristo."
+ },
+ {
+  "id": "poi-122-ancora",
+  "testo": "Da manuale: blocchi poligonali posati senza malta, incastrati l'uno nell'altro per peso e forma: è la tecnica più antica della zona, quella che si chiama ciclopica o poligonale, di età preromana. La differenza si vede bene qui, perché la cinta della città romana è invece in opera incerta, con pietrame più piccolo e legato dalla calce: due tecniche a pochi metri di distanza, due epoche. Un'iscrizione ricorda C. Aclutius Gallus, il magistrato straordinario incaricato di costruirla. Chi guarda un muro poligonale guardi i giunti: non c'è un solo blocco uguale a un altro, ed è tutto calcolato."
  },
  {
   "id": "poi-123-nome",
@@ -2332,6 +2408,10 @@
   "testo": "Costruita nel Settecento fuori dalla porta del mercato, perché i mercanti potessero pregare senza entrare in città. Facciata barocca alta, divisa in ordini, con l'orologio; la pianta è centrale, con gli stucchi e una piccola cupola decorata."
  },
  {
+  "id": "poi-165-ancora",
+  "testo": "Da manuale: fu costruita nel Settecento fuori dalla porta del mercato, e il motivo è pratico: i mercanti potessero pregare senza entrare in città, con i carri e le bestie. La facciata è barocca, alta, divisa in ordini, con l'orologio; la pianta è centrale, con gli stucchi e una piccola cupola decorata. È il tipo della chiesa di soglia: nasce dove si paga il dazio e si scambia, e serve a chi sta di passaggio. Guardando dove sta, si capisce come funzionava l'ingresso di una città di mercato."
+ },
+ {
   "id": "poi-166-nome",
   "testo": "Chiesa di San Sebastiano"
  },
@@ -2342,6 +2422,10 @@
  {
   "id": "poi-166-scheda",
   "testo": "Progettata nel 1583 da Baldassarre Lombardo e portata a termine, nella struttura, da Beltrame Lombardo."
+ },
+ {
+  "id": "poi-166-ancora",
+  "testo": "Da manuale: fu progettata nel 1583 da Baldassarre Lombardo e portata a termine, nella struttura, da Beltrame Lombardo. Il nome dei due dice la cosa più interessante: erano una famiglia di costruttori, come tante che nel Cinquecento girava il Mezzogiorno di cantiere in cantiere portando un repertorio di soluzioni collaudate. Le dediche a san Sebastiano quasi sempre nascono da un voto per la peste, perché era il protettore invocato contro il contagio: la data e il titolare, insieme, raccontano un'epidemia."
  },
  {
   "id": "poi-167-nome",
@@ -2380,6 +2464,10 @@
   "testo": "Inaugurato il 18 novembre 1923, opera dello scultore Torquato Tamagnini, che di monumenti ai caduti ne fece a decine in tutta Italia in quegli anni."
  },
  {
+  "id": "poi-169-ancora",
+  "testo": "Da manuale: fu inaugurato il 18 novembre 1923 ed è opera dello scultore Torquato Tamagnini, che di monumenti ai caduti ne fece a decine in tutta Italia in quegli anni. È un dato che vale più di una descrizione: dopo il 1918 ogni comune volle il suo monumento, e la domanda fu talmente alta che nacquero scultori specializzati con un repertorio di modelli ripetibili. Riconoscere la mano di Tamagnini in paesi lontanissimi fra loro è il modo di capire come l'Italia ha elaborato quella guerra: con una produzione in serie del lutto."
+ },
+ {
   "id": "poi-170-nome",
   "testo": "Torre Bassano"
  },
@@ -2390,6 +2478,10 @@
  {
   "id": "poi-170-scheda",
   "testo": "La fece costruire l'Università torrese dentro il piano difensivo del viceré de Ribera: nel Cinquecento tutta la costa del Regno fu dotata di torri per avvistare le incursioni turche e dare l'allarme. Erano costruzioni tozze su base a tronco di piramide, buone per vedere lontano e resistere a un colpo di mano, non a un assedio."
+ },
+ {
+  "id": "poi-170-ancora",
+  "testo": "Da manuale: la fece costruire l'Università torrese dentro il piano difensivo del viceré de Ribera: nel Cinquecento tutta la costa del Regno fu dotata di torri per avvistare le incursioni turche e passarsi l'allarme a vista. Il tipo è riconoscibile e sempre lo stesso: costruzioni tozze su base scarpata, muri spessi, ingresso rialzato, pochissime aperture in basso. Non servivano a combattere ma a vedere e a segnalare, e la scarpa alla base serviva a far rimbalzare i colpi e a impedire che si scavasse sotto. Una catena di torri come questa era un sistema di comunicazione, non una serie di fortini."
  },
  {
   "id": "poi-171-nome",
@@ -2456,6 +2548,10 @@
   "testo": "Si apre il 3 febbraio, per la festa: si va a farsi toccare la gola con l'olio benedetto."
  },
  {
+  "id": "poi-175-ancora",
+  "testo": "Da manuale: nel 1669 il regio consigliere Antonio Fiorillo chiese alla curia di Napoli di poter costruire una cappella sul proprio fondo, a Calastro, per sé e per chi abitava lì intorno — ed è il meccanismo con cui nascevano quasi tutte le cappelle di campagna: un privato, un terreno, una licenza. La facciata è di pietra lavica, cioè del materiale che si aveva sotto i piedi, e dentro ci sono due altari. Si apre il 3 febbraio per la festa, quando si va a farsi toccare la gola con l'olio benedetto: il culto di san Biagio protegge dai mali della gola, e la cappella vive di quel giorno."
+ },
+ {
   "id": "poi-176-nome",
   "testo": "Chiesa dei Carmelitani Scalzi"
  },
@@ -2484,6 +2580,10 @@
   "testo": "L'altare ligneo intarsiato e pirografato, le pitture di Amedeo Trivisonno e i portali di bronzo di Alessandro Caetani."
  },
  {
+  "id": "poi-177-ancora",
+  "testo": "Da manuale: è la basilica dei patroni, costruita su strutture romane e restaurata nel 2001. L'interno è a due navate, con la cripta sotto: la pianta a due navate è irregolare e quasi sempre significa un ampliamento che ha inglobato qualcosa di preesistente. Dentro ci sono l'altare ligneo intarsiato e pirografato, le pitture di Amedeo Trivisonno e i portali di bronzo di Alessandro Caetani. Che una chiesa dei martiri stia sopra murature romane non è un caso: i martiri si seppellivano fuori città, lungo le strade, dove c'erano le tombe e le ville."
+ },
+ {
   "id": "poi-178-nome",
   "testo": "Chiesa dei Santi Martino e Nicola"
  },
@@ -2494,6 +2594,10 @@
  {
   "id": "poi-178-scheda",
   "testo": "Costruita intorno al 1200, in parte con materiali presi da edifici antichi. Ai lati del portale due nicchie reggono le figure di san Martino e san Nicola. I danni del novembre 1943 la chiusero, e chiusa è rimasta."
+ },
+ {
+  "id": "poi-178-ancora",
+  "testo": "Da manuale: fu costruita intorno al 1200, in parte con materiali presi da edifici antichi, e ai lati del portale due nicchie reggono le figure di san Martino e san Nicola. La data che conta per capirla, però, è un'altra: i danni del novembre 1943 — la Winter Line passava di qui — la chiusero, e chiusa è rimasta. Una chiesa di ottocento anni ferma da ottanta per una guerra: a Venafro il fronte non è un capitolo di storia lontana, è la ragione per cui un portale duecentesco oggi non si apre."
  },
  {
   "id": "poi-179-nome",
@@ -2508,6 +2612,10 @@
   "testo": "La progettò l'ingegner Gioacchino Luigi Mellucci sopra un edificio che c'era già, il Mulino della Corte, diventato centrale idroelettrica: è la casa dell'energia della città, vestita in forme liberty, poi usata come cinema."
  },
  {
+  "id": "poi-179-ancora",
+  "testo": "Da manuale: la progettò l'ingegner Gioacchino Luigi Mellucci sopra un edificio che c'era già, il Mulino della Corte, trasformato in centrale idroelettrica. Quindi è la casa dell'energia della città, vestita in forme liberty — e poi usata come cinema. È un caso tipico del primo Novecento: l'infrastruttura nuova si presenta al paese con l'abito del momento, perché deve essere accettata. La sequenza mulino, centrale, cinema racconta in tre parole cosa è cambiato in questa piana in cinquant'anni."
+ },
+ {
   "id": "poi-180-nome",
   "testo": "La Torricella"
  },
@@ -2518,6 +2626,10 @@
  {
   "id": "poi-180-scheda",
   "testo": "Una fortificazione in montagna di origine romana, restaurata: faceva parte del sistema che teneva d'occhio la piana."
+ },
+ {
+  "id": "poi-180-ancora",
+  "testo": "Da manuale: è una fortificazione in montagna di origine romana, restaurata, e faceva parte del sistema che teneva d'occhio la piana. Il principio è lo stesso delle torri costiere di tre secoli dopo: non resistere a un assedio, ma vedere e segnalare. Una torre in quota vale per quello che copre con lo sguardo, non per i suoi muri, e il modo giusto di guardarla è voltarsi e guardare quello che si vede da lì: la pianura, le strade, i valichi."
  },
  {
   "id": "poi-181-nome",
@@ -3444,6 +3556,10 @@
   "testo": "In via Giulia, un mascherone di marmo antico incastrato nel muro versa l'acqua in una vasca di granito: pezzi di epoche diverse rimessi insieme, come succede dappertutto a Roma."
  },
  {
+  "id": "poi-229-ancora",
+  "testo": "Da manuale: è il reimpiego fatto fontana. Un mascherone di marmo antico, incastrato nel muro, versa l'acqua in una vasca di granito anch'essa di spoglio: due pezzi romani di epoche diverse messi insieme nel Cinquecento per fare una mostra d'acqua in via Giulia, la strada che i Farnese consideravano casa loro. A Roma le fontane minori nascono quasi tutte così, con quello che si trovava negli scavi lì accanto. Da guardare: il bordo della vasca, dove si vedono i segni degli attrezzi moderni che l'hanno adattata, e la differenza di grana fra il marmo del volto e il granito del bacino."
+ },
+ {
   "id": "poi-230-nome",
   "testo": "Palazzo Zuccari, la casa dei mostri"
  },
@@ -3588,6 +3704,10 @@
   "testo": "Un portatore d'acqua di pietra, con la botte in braccio, incassato nel muro di via Lata: l'acqua esce dal cocchiume. Era l'insegna di un mestiere che a Roma esisteva davvero, prima che l'acqua arrivasse nelle case."
  },
  {
+  "id": "poi-238-ancora",
+  "testo": "Da manuale: è una delle statue parlanti di Roma, e la meno retorica di tutte: un portatore d'acqua di pietra, con la botte in braccio, incassato nel muro di via Lata, e l'acqua esce dal cocchiume, cioè dal tappo della botte. È del Cinquecento e rappresenta un mestiere vero, quello degli acquaroli che vendevano l'acqua a secchi prima che gli acquedotti papali tornassero a funzionare. La cosa che vale sapere è che il volto è consumato: generazioni di passanti l'hanno toccato, e una scultura di strada si logora dove la gente arriva con la mano."
+ },
+ {
   "id": "poi-239-nome",
   "testo": "Fontana dei Libri"
  },
@@ -3598,6 +3718,10 @@
  {
   "id": "poi-239-scheda",
   "testo": "In via degli Staderari, quattro libri di marmo aperti con la testa di cervo in mezzo: è una fontana rionale, fatta per dire dove si sta — i libri sono lo studio, il cervo è lo stemma del rione Sant'Eustachio."
+ },
+ {
+  "id": "poi-239-ancora",
+  "testo": "Da manuale: quattro libri di marmo aperti con la testa di cervo in mezzo, in via degli Staderari. È una delle fontanelle rionali che il Comune fece realizzare nel 1927 su disegno di Pietro Lombardi, con un'idea semplice e riuscita: ogni rione ha la sua fontana, e la fontana dice il rione con un emblema. Qui i libri stanno per lo studio — siamo accanto alla Sapienza vecchia e all'Archivio di Stato — e il cervo è lo stemma del rione Sant'Eustachio. Guardare queste fontane in fila, da un rione all'altro, è leggere una mappa fatta di oggetti."
  },
  {
   "id": "poi-240-nome",
@@ -4010,6 +4134,10 @@
  {
   "id": "poi-262-dentro",
   "testo": "L'orologio fermo alle tre del mattino, l'ora in cui la lava arrivò."
+ },
+ {
+  "id": "poi-262-ancora",
+  "testo": "Da manuale: tre ordini sovrapposti in forme barocche, e il primo è sotto terra. La lava del 1794 sommerse il piano basso, e il campanile che si vede comincia dove la colata si è fermata: quindi l'altezza che si misura da strada non è l'altezza del campanile, è quella che resta sopra il livello del 1794. L'orologio è fermo alle tre del mattino, l'ora in cui la lava arrivò, e non è stato rimesso in moto. Di solito un orologio fermo è trascuratezza; qui è un atto deliberato, e funziona come una data incisa."
  },
  {
   "id": "poi-263-nome",
@@ -5092,6 +5220,10 @@
   "testo": "Il portale gotico e, dentro, il soffitto di legno: una delle poche chiese napoletane rimaste delle dimensioni originali."
  },
  {
+  "id": "poi-317-ancora",
+  "testo": "Da manuale: fu fondata all'inizio del Quattrocento per un voto di Margherita di Durazzo, e la dedica spiega la committenza: santa Marta era molto venerata in Provenza, cioè nel mondo angioino da cui quella famiglia veniva. Nel Seicento la Confraternita dei Disciplinati decadde e la chiesa passò a cinque mastri scelti dal popolo, che istituirono una dote per le fanciulle povere. Un primo restauro è del 1646; l'anno dopo un incendio durante i tumulti di Masaniello la semidistrusse, e nel 1650 fu rimessa in piedi per volontà del vescovo Ascanio Filomarino. È una navata sola col soffitto a capriate: una delle poche chiese napoletane rimaste nelle dimensioni originali, perché era troppo stretta per essere ingrandita."
+ },
+ {
   "id": "poi-318-nome",
   "testo": "Chiostri di Monteoliveto, Sant'Anna dei Lombardi"
  },
@@ -5146,6 +5278,10 @@
  {
   "id": "poi-320-dentro",
   "testo": "La loggia con il pergolato di glicine, che dalla strada non si immagina."
+ },
+ {
+  "id": "poi-320-ancora",
+  "testo": "Da manuale: è l'unico palazzo di Napoli nato da un atto diplomatico. Era dei Sanseverino di Matera, e intorno al 1412 re Ladislao Primo lo donò alla Repubblica di Venezia perché ci abitassero gli ambasciatori e i consoli generali: una sede diplomatica dentro il decumano inferiore, che è durata oltre quattrocento anni. Dal diploma di concessione si capisce che allora si estendeva dal convento di San Domenico fino ai terreni dove nel 1512 fu ricostruito palazzo Filomarino: quindi molto più grande di adesso. Il momento di massimo splendore è fra Quattrocento e Cinquecento. Quello che resta, e che dalla strada non si immagina, è la loggia col giardino pensile al primo piano."
  },
  {
   "id": "poi-321-nome",
@@ -5502,6 +5638,10 @@
  {
   "id": "poi-338-dentro",
   "testo": "La cupola vista dal vico accanto, e i marmi policromi dell'altare maggiore, suoi."
+ },
+ {
+  "id": "poi-338-ancora",
+  "testo": "Da manuale: la storia di questa chiesa è la storia di un cantiere passato di mano. All'inizio, nel 1616, c'era una chiesetta; nel 1639 cinque monache agostiniane lasciarono l'Egiziaca a Forcella e fondarono qui il convento, in un palazzo annesso; nel 1648 promossero il rifacimento di tutto il complesso. Dal 1665 la direzione dei lavori fu di Francesco Antonio Picchiatti, che concepì la parte esterna, poi di Antonio Galluccio, e dal 1691 al 1716 di Arcangelo Guglielmelli. Mezzo secolo e tre architetti: per questo la facciata resta incompiuta e mostra la muratura, mentre dentro i marmi commessi coprono tutto. Il contrasto fra fuori e dentro non è un'idea d'autore, è il segno di un'opera finita a pezzi."
  },
  {
   "id": "poi-339-nome",
@@ -10520,6 +10660,10 @@
   "testo": "Dentro un palazzo signorile del centro, il museo racconta la Winter Line: la linea di difesa tedesca che nel 1943 passava di qui, e i mesi in cui Venafro fu prima linea."
  },
  {
+  "id": "poi-590-ancora",
+  "testo": "Da manuale: dentro un palazzo signorile del centro, il museo racconta la Winter Line, la linea di difesa tedesca che nel 1943 passava da qui, e i mesi in cui Venafro fu prima linea. È il contesto che spiega mezza città: le chiese chiuse dai bombardamenti, il cimitero militare francese, i restauri del dopoguerra. Un museo di guerra in un palazzo nobiliare è anche un fatto architettonico: nelle case grandi finivano i comandi, ed è il motivo per cui tanti palazzi del Sud hanno una storia militare che non si vede dalla facciata."
+ },
+ {
   "id": "poi-591-nome",
   "testo": "Acquedotto romano, il Rivus Venafranus"
  },
@@ -10530,6 +10674,10 @@
  {
   "id": "poi-591-scheda",
   "testo": "L'acquedotto augusteo portava a Venafrum l'acqua presa dal Volturno. È lo stesso di cui parla la lastra di bronzo conservata al museo, con il provvedimento di Augusto che ne regolava l'uso. I resti si vedono vicino al centro storico."
+ },
+ {
+  "id": "poi-591-ancora",
+  "testo": "Da manuale: l'acquedotto augusteo portava a Venafrum l'acqua presa dal Volturno, e di lui si parla nel documento più importante della città: la lastra di bronzo conservata al museo, con il provvedimento di Augusto che ne regolava l'uso. Avere l'acqua non bastava: serviva una norma su chi potesse derivarla e quanta, perché un acquedotto è un bene contesto. I resti si vedono vicino al centro storico. Chi li guarda tenga a mente che la pendenza di un condotto come questo si misurava in pochi centimetri per cento metri: è l'ingegneria più precisa che i romani facessero."
  },
  {
   "id": "poi-592-nome",
@@ -10544,6 +10692,10 @@
   "testo": "Il giardino pubblico della città, circa un ettaro con il laghetto e i campi da gioco: è il posto dove Venafro si siede."
  },
  {
+  "id": "poi-592-ancora",
+  "testo": "Da manuale: è il giardino pubblico della città, circa un ettaro con il laghetto e i campi da gioco. Vale citarlo in una guida per una ragione precisa: nei centri storici del Sud il giardino pubblico ottocentesco o novecentesco è spesso l'unico spazio aperto progettato come tale, cioè pensato per stare e non per passare. È il posto dove Venafro si siede, e in una città costruita in salita e a vicoli coperti, un ettaro in piano è un fatto urbanistico."
+ },
+ {
   "id": "poi-593-nome",
   "testo": "Parco regionale dell'olivo"
  },
@@ -10554,6 +10706,10 @@
  {
   "id": "poi-593-scheda",
   "testo": "Il primo parco regionale del Molise, fatto per tutelare gli oliveti storici della piana: alberi coltivati da secoli."
+ },
+ {
+  "id": "poi-593-ancora",
+  "testo": "Da manuale: è il primo parco regionale del Molise e fu fatto per tutelare gli oliveti storici della piana: alberi coltivati da secoli, non un bosco spontaneo. È una scelta che vale la pena capire — si mette sotto tutela un paesaggio agricolo, cioè il risultato di un lavoro umano continuo, e lo si protegge come si proteggerebbe un monumento. L'olivo di Venafro era citato dagli autori antichi fra i migliori d'Italia: la tutela qui non difende la natura dall'uomo, difende un uso dall'abbandono."
  },
  {
   "id": "poi-594-nome",
@@ -10984,6 +11140,10 @@
   "testo": "La vasca è cinquecentesca, di Giacomo della Porta; il moro al centro che lotta con un delfino lo disegnò Bernini quasi ottant'anni dopo. Le statue che si vedono sono copie: gli originali stanno a Villa Borghese."
  },
  {
+  "id": "poi-618-ancora",
+  "testo": "Da manuale: è una fontana in due tempi, e si vede. La vasca mossa, polilobata, è cinquecentesca, di Giacomo della Porta, del 1575; il gruppo centrale — il moro che lotta con un delfino — lo disegnò Bernini quasi ottant'anni dopo, nel 1653, quando piazza Navona era diventata il teatro dei Pamphilj. Due linguaggi sovrapposti: il profilo misurato del tardo Cinquecento e la torsione barocca. Le statue che si vedono oggi sono copie, gli originali sono al Museo di Roma: una fontana all'aperto in centro, dopo quattro secoli, il marmo non lo tiene più."
+ },
+ {
   "id": "poi-619-nome",
   "testo": "Fontana del Nettuno a Navona"
  },
@@ -11048,6 +11208,10 @@
   "testo": "Una conchiglia aperta con tre api dei Barberini che bevono sul bordo: era un abbeveratoio per i cavalli, posato all'angolo della strada. Bernini che lavora in piccolo."
  },
  {
+  "id": "poi-622-ancora",
+  "testo": "Da manuale: una conchiglia aperta con tre api dei Barberini che bevono sul bordo, del 1644, berniniana. Non nacque come ornamento: era un abbeveratoio per i cavalli, posato all'angolo della piazza perché chi passava potesse far bere la bestia. Le tre api sono l'arme di Urbano Ottavo, e l'iscrizione dice che l'acqua è a disposizione del pubblico e degli animali: una fontana che è insieme utilità, propaganda e scultura. Fu smontata e rimontata, come molte mostre d'acqua romane, e questo spiega perché oggi sta in un punto che non è esattamente quello originario."
+ },
+ {
   "id": "poi-623-nome",
   "testo": "Fontana di Santa Maria in Trastevere"
  },
@@ -11058,6 +11222,10 @@
  {
   "id": "poi-623-scheda",
   "testo": "È forse la fontana più antica di Roma ancora in funzione: rifatta più volte, da ultimo da Carlo Fontana, con le quattro conchiglie sul bordo della vasca. La piazza le è cresciuta attorno."
+ },
+ {
+  "id": "poi-623-ancora",
+  "testo": "Da manuale: è forse la fontana più antica di Roma ancora in funzione, e la sua storia è un elenco di rifacimenti: origini medievali, poi interventi di secolo in secolo, l'ultimo di Carlo Fontana, con le quattro conchiglie attorno alla vasca. Il punto interessante è perché sia sopravvissuta: stava nel mezzo di una piazza che ha sempre avuto acqua e sempre avuto gente, e una fontana usata è una fontana mantenuta. Quelle che si perdono sono quelle che smettono di servire. Guardarla significa guardare mille anni di manutenzione, non un progetto."
  },
  {
   "id": "poi-624-nome",
@@ -11104,6 +11272,10 @@
   "testo": "Una vasca ovale con il coperchio: fu coperta perché ci buttavano dentro i rifiuti, e il coperchio le ha dato il nome di zuppiera. Stava a Campo de' Fiori, fu spostata qui davanti alla Chiesa Nuova."
  },
  {
+  "id": "poi-626-ancora",
+  "testo": "Da manuale: una vasca ovale con il coperchio, del 1590, e il coperchio è la cosa che spiega tutto: fu messo perché la gente ci buttava dentro i rifiuti, e da lì il nome di zuppiera, la terrina. Prima stava in Campo de' Fiori, poi fu smontata e rimontata dove si vede oggi, davanti alla Chiesa Nuova. Vale raccontarla perché corregge un'idea sbagliata: le fontane romane non sono monumenti intoccabili, sono arredo urbano che si sposta, si copre, si adatta a come la città si comporta."
+ },
+ {
   "id": "poi-627-nome",
   "testo": "Fontana dei Tritoni"
  },
@@ -11114,6 +11286,10 @@
  {
   "id": "poi-627-scheda",
   "testo": "Due tritoni inginocchiati che reggono la conchiglia, in piazza Bocca della Verità: è l'ultima fontana romana prima che il barocco finisse."
+ },
+ {
+  "id": "poi-627-ancora",
+  "testo": "Da manuale: due tritoni inginocchiati che reggono la conchiglia, in piazza Bocca della Verità, del 1715. È l'ultima grande fontana romana prima che il barocco finisca, e si vede dalla simmetria: le due figure sono speculari, il gruppo è piatto, pensato per essere guardato da davanti. Confrontarla con il Moro di Bernini a piazza Navona è il modo più rapido di capire la differenza fra il barocco che si torce e il tardo barocco che si compone. L'acqua, qui, serve a tenere insieme la scena, non a muoverla."
  },
  {
   "id": "poi-628-nome",
@@ -11128,6 +11304,10 @@
   "testo": "Una mostra d'acqua piccola con la statua del prigioniero nella nicchia: è stata smontata e rimontata due volte in punti diversi della città."
  },
  {
+  "id": "poi-628-ancora",
+  "testo": "Da manuale: è una mostra d'acqua piccola, di fine Cinquecento, con la statua del prigioniero nella nicchia. La sua storia è il suo interesse: è stata smontata e rimontata due volte in punti diversi della città. Capita a molte fontane romane, e il motivo è sempre lo stesso — un muro che si abbatte, una strada che si allarga, un rione che si risana — ma pochi casi sono così documentati. Quando una fontana cambia posto perde il senso che aveva: era la fine di un condotto, l'arrivo dell'acqua in un punto preciso, e rimontata altrove diventa una scultura."
+ },
+ {
   "id": "poi-629-nome",
   "testo": "Fontana della Botte"
  },
@@ -11138,6 +11318,10 @@
  {
   "id": "poi-629-scheda",
   "testo": "Una botte di vino fra due misure da osteria: è la fontanella rionale di Trastevere, e dice il mestiere del quartiere."
+ },
+ {
+  "id": "poi-629-ancora",
+  "testo": "Da manuale: una botte di vino fra due misure da osteria, ed è la fontanella rionale di Trastevere, del 1927, della serie disegnata da Pietro Lombardi. L'emblema dice il mestiere del quartiere: qui arrivavano i carri del vino dei Castelli, e le due misure ai lati sono quelle che si usavano a mescere. È il tipo di dettaglio per cui vale la pena fermarsi: una fontana di novant'anni che racconta un commercio che non c'è più, in un quartiere che oggi vive di altro."
  },
  {
   "id": "poi-630-nome",
@@ -11152,6 +11336,10 @@
   "testo": "Una pigna di travertino sopra la vasca: è l'insegna del rione Pigna, che prende il nome dalla pigna di bronzo romana oggi in Vaticano."
  },
  {
+  "id": "poi-630-ancora",
+  "testo": "Da manuale: una pigna di travertino sopra la vasca, del 1927, della serie delle fontanelle rionali di Pietro Lombardi. È l'insegna del rione Pigna, che prende il nome dalla grande pigna di bronzo romana rimasta qui per secoli e oggi nel Cortile della Pigna in Vaticano. Quindi la fontana è la copia in pietra del ricordo di un oggetto che è stato portato via: un emblema di secondo grado. Nella Roma dei rioni funziona così — il nome resta attaccato al posto molto dopo che la cosa si è spostata."
+ },
+ {
   "id": "poi-631-nome",
   "testo": "Fontana dei Dioscuri"
  },
@@ -11164,6 +11352,10 @@
   "testo": "Sulla piazza del Quirinale: l'obelisco del mausoleo di Augusto messo in mezzo ai due colossi di Castore e Polluce con i cavalli, e sotto una vasca di granito presa dal Foro Romano. Tre pezzi antichi diversi montati insieme nell'Ottocento."
  },
  {
+  "id": "poi-631-ancora",
+  "testo": "Da manuale: sulla piazza del Quirinale, del 1818, ed è un montaggio di pezzi antichi fatto in età neoclassica: l'obelisco che veniva dal mausoleo di Augusto messo in mezzo ai due colossi di Castore e Polluce con i cavalli, che stavano alle Terme di Costantino. La vasca è un bacino di granito antico, trovato al Foro Romano. Quindi tre antichità diverse, di tre luoghi diversi, composte in una scenografia unica per chiudere la prospettiva della piazza papale. È il metodo romano per eccellenza: non si copia l'antico, si usa."
+ },
+ {
   "id": "poi-632-nome",
   "testo": "Fontana del Porto di Ripetta"
  },
@@ -11174,6 +11366,10 @@
  {
   "id": "poi-632-scheda",
   "testo": "Quello che resta del porto fluviale di Ripetta, smontato quando costruirono i muraglioni del Tevere: la fontana fu rimessa qui vicino, e segna il punto dove le barche scaricavano il vino e la legna."
+ },
+ {
+  "id": "poi-632-ancora",
+  "testo": "Da manuale: è quello che resta del porto fluviale di Ripetta, del 1704, dove attraccavano le barche che venivano dal Tevere. Il porto fu smontato quando costruirono i muraglioni del fiume, fra Otto e Novecento, e la fontana fu rimessa qui. Vale saperlo perché cambia come si guarda: non è una fontana nata per una piazza, è il pezzo superstite di un'infrastruttura, come una banchina o una gru. Il Tevere a Roma era una strada, e i muraglioni che l'hanno messo in sicurezza hanno cancellato quasi tutti i suoi approdi."
  },
  {
   "id": "poi-633-nome",
@@ -11940,6 +12136,10 @@
   "testo": "Le piastrelle azzurre e il profilo del monumento, che non somiglia a niente altro qui intorno."
  },
  {
+  "id": "poi-686-ancora",
+  "testo": "Da manuale: settantaseimila metri quadrati per i soldati del Corpo di spedizione francese caduti sulla linea invernale. Molti venivano dal Nordafrica, e il monumento lo dice: la forma richiama i minareti e il rivestimento è di piastrelle azzurre. È il pezzo di architettura più inatteso da queste parti, e non è una scelta decorativa: un cimitero di guerra parla ai vivi dei caduti, e quei caduti erano in gran parte musulmani. Guardare quel profilo e quelle piastrelle, in mezzo al Molise, è il modo più rapido di capire chi ha combattuto qui."
+ },
+ {
   "id": "poi-687-nome",
   "testo": "La Purtella"
  },
@@ -11950,6 +12150,10 @@
  {
   "id": "poi-687-scheda",
   "testo": "Una via interamente coperta, lunga appena cinque metri, che collega via delle Vergini con via Silvano: un passaggio sotto le case, di quelli che nei centri antichi si aprivano quando una famiglia costruiva sopra la strada."
+ },
+ {
+  "id": "poi-687-ancora",
+  "testo": "Da manuale: è una via interamente coperta, lunga appena cinque metri, che collega via delle Vergini con via Silvano. Sono passaggi che nei centri antichi si aprivano quando una famiglia costruiva sopra la strada: invece di chiuderla, la si scavalcava, e la città guadagnava una stanza e perdeva un pezzo di cielo. Camminare in un sottopasso come questo è il modo più diretto di capire che un centro storico non è stato progettato, è stato negoziato, metro per metro, fra chi ci abitava."
  },
  {
   "id": "poi-688-nome",
@@ -11988,6 +12192,10 @@
   "testo": "La cupola affrescata dal Correggio con l'Assunzione: una spirale di corpi che sale verso la luce, dipinta nel 1526. E la Deposizione dell'Antelami, nel transetto."
  },
  {
+  "id": "poi-689-ancora",
+  "testo": "Da manuale: il duomo fu consacrato nel 1106 ed è romanico padano: paramento in pietra, facciata a capanna con le logge sovrapposte, il protiro. La storia comincia prima: nel nono secolo un incendio distrusse l'antica basilica, e sotto il vescovo Guibodo la chiesa madre fu ricostruita in un sito poco distante da quello di prima — quindi questo non è il posto originario, è uno spostamento. Nel giugno 1834 papa Gregorio Sedicesimo l'ha elevata a basilica minore. Dentro, nella cupola, c'è l'Assunzione del Correggio, e la cattedrale è il punto di arrivo del percorso che, a Parma, si fa fra Steccata, San Giovanni e San Paolo: la stessa mano in quattro luoghi, a pochi minuti di cammino."
+ },
+ {
   "id": "poi-690-nome",
   "testo": "Chiesa di San Giovanni Evangelista"
  },
@@ -12002,6 +12210,10 @@
  {
   "id": "poi-690-dentro",
   "testo": "La spezieria del convento, l'Antica Spezieria di San Giovanni: scaffali, mortai e vasi rimasti come erano, una farmacia del Cinquecento intatta."
+ },
+ {
+  "id": "poi-690-ancora",
+  "testo": "Da manuale: l'abbazia benedettina fu costruita nel 980 dal vescovo Sigefredo Secondo, e il complesso comprende la chiesa, il monastero e l'antica spezieria. Nel 1477 un incendio lo danneggiò tutto; la basilica fu ricostruita dal 1490 circa, con progetto definitivo del 1510 di Bernardino Zaccagni, e i lavori si chiusero verso il 1519. Da quel momento parte l'impresa che conta: la decorazione del Correggio, che comincia con la lunetta del San Giovanni e l'aquila, intorno al 1520, e arriva alla cupola con l'Ascensione di Cristo, il tamburo e i quattro pennacchi. Chi entra guardi in alto e poi all'abside: è lo stesso pittore della Camera di San Paolo, a pochi anni di distanza, su una scala completamente diversa."
  },
  {
   "id": "poi-691-nome",
@@ -12020,6 +12232,10 @@
   "testo": "Gli affreschi del Parmigianino sull'arco presbiteriale, con le Vergini sagge e stolte: lavorò così lentamente che finì in tribunale."
  },
  {
+  "id": "poi-691-ancora",
+  "testo": "Da manuale: la chiesa fu realizzata fra il 1521 e il 1539, a pianta centrale, e la sua origine è un'immagine di strada: dal 1392 qui c'era un oratorio costruito per riparare una Madonna dipinta a fresco sulla parete esterna di una casa dell'allora strada San Barnaba, oggi strada Garibaldi. La devozione crebbe e l'oratorio diventò questo santuario rinascimentale, poi arricchito di forme barocche. Dal 1718 è sede dell'Ordine costantiniano di San Giorgio, e nel 2008 è stata elevata a basilica minore. Dentro, sull'arco presbiteriale, ci sono le Vergini savie e stolte del Parmigianino: un lavoro che gli costò una causa, perché lo tirò per le lunghe."
+ },
+ {
   "id": "poi-692-nome",
   "testo": "Camera di San Paolo"
  },
@@ -12036,6 +12252,10 @@
   "testo": "Il camino con Diana cacciatrice e il modo in cui le vele dipinte annullano la volta reale."
  },
  {
+  "id": "poi-692-ancora",
+  "testo": "Da manuale: è una stanza sola, nell'ex monastero di San Paolo, e vale un viaggio. L'affrescò il Correggio nel 1518-19 per la badessa Giovanna Piacenza, nel suo appartamento privato: la volta misura 697 per 645 centimetri e la decorazione prende anche la cappa del camino. La cosa da sapere, per capire cosa si sta guardando, è che quattro anni prima, nel 1514, la badessa aveva fatto affrescare la stanza attigua da Alessandro Araldi, un pittore della generazione precedente: le due stanze una accanto all'altra sono il confronto diretto fra il Quattrocento che finisce e quello che sta arrivando, e la badessa quel confronto l'ha scelto."
+ },
+ {
   "id": "poi-693-nome",
   "testo": "Complesso della Pilotta"
  },
@@ -12050,6 +12270,10 @@
  {
   "id": "poi-693-dentro",
   "testo": "La mole grezza senza rivestimento: si legge la costruzione, mattone su mattone."
+ },
+ {
+  "id": "poi-693-ancora",
+  "testo": "Da manuale: il nome non viene da un cognome ma da un gioco, la pelota basca che ci giocavano i soldati spagnoli. È un complesso costruito attorno al 1580, negli ultimi anni del ducato di Ottavio Farnese, e non nasce come palazzo unitario: si sviluppa intorno al Corridore, un lungo braccio rettilineo su pilastri che collegava la Rocchetta Viscontea — se ne vedono tracce sul Lungoparma — al Palazzo Ducale, che allora era un insieme di case dove la corte stava provvisoriamente. Quel palazzo e il teatro Reinach furono colpiti dal bombardamento aereo di maggio 1944 e demoliti nel dopoguerra: il grande vuoto di piazzale della Pace è quello che resta di loro. Guardando la Pilotta si guarda un edificio incompiuto e mutilato, e per questo leggibile."
  },
  {
   "id": "poi-694-nome",
@@ -12084,6 +12308,10 @@
   "testo": "Facciata neoclassica a dieci lesene e portico a cinque arcate, voluta da Maria Luigia. Dentro, quattro ordini di palchi e il loggione più temuto d'Italia."
  },
  {
+  "id": "poi-695-ancora",
+  "testo": "Da manuale: si chiamava Nuovo Ducale Teatro e lo volle Maria Luigia, perché il vecchio Teatro Ducale, fondato nel 1689, non bastava più alla città. Fu costruito sul terreno che era stato del monastero di Sant'Alessandro, su progetto dell'architetto di corte Nicola Bettoli: lavori cominciati nel 1821, milleottocento posti, otto anni di cantiere e un milione centonovantamila lire delle casse ducali. Fu inaugurato il 16 maggio 1829, e con scarso successo — cosa che vale raccontare, perché è diventato uno dei teatri di tradizione più temuti d'Italia: il pubblico di Parma è quello che fischia, e lo fa per competenza."
+ },
+ {
   "id": "poi-696-nome",
   "testo": "Galleria Nazionale"
  },
@@ -12094,6 +12322,10 @@
  {
   "id": "poi-696-scheda",
   "testo": "Dentro la Pilotta: la raccolta dei Farnese e dei Borbone, da Correggio e Parmigianino ai fiamminghi, allestita fra le strutture di mattoni lasciate a vista."
+ },
+ {
+  "id": "poi-696-ancora",
+  "testo": "Da manuale: la galleria sta dentro la Pilotta, e la sua storia è la storia di una collezione portata via e ricostruita. La cominciarono i Farnese nel Rinascimento — papa Paolo Terzo e il cardinale Alessandro — ma nel 1734 Carlo di Borbone la fece trasferire a Napoli: Parma rimase senza. La ricostruzione parte dal 1752 con l'accademia di belle arti e prende forma dal 1760, con doni, acquisti, opere degli accademici e restituzioni da Napoli e Caserta; nel 1787 Ferdinando comprò la collezione di quadri gotici toscani di un nobile. Oggi ci sono Beato Angelico, Cima da Conegliano, Correggio, Parmigianino, El Greco, Canaletto, Leonardo."
  },
  {
   "id": "poi-697-nome",
@@ -12128,6 +12360,10 @@
   "testo": "La farmacia dei benedettini, aperta al pubblico fino all'Ottocento: quattro sale con gli scaffali di noce, i vasi di maiolica e i mortai ancora al loro posto."
  },
  {
+  "id": "poi-698-ancora",
+  "testo": "Da manuale: è la farmacia dei benedettini, dentro l'abbazia di San Giovanni Evangelista, e di certo esisteva già nel 1201 — forse prima, e all'inizio solo per uso dei monaci. Verso la fine del Cinquecento i frati la riorganizzarono e le diedero un arredo nuovo, che in parte è quello che si vede ancora: scaffali, vasi, mortai al loro posto. Finì nel 1766, quando le leggi del primo ministro ducale Guillaume du Tillot costrinsero i monaci a secolarizzarla. Vale la pena entrarci per una ragione precisa: è un ambiente di lavoro conservato, non una ricostruzione, e di farmacie monastiche con l'arredo originale in Italia ne restano pochissime."
+ },
+ {
   "id": "poi-699-nome",
   "testo": "Palazzo del Governatore"
  },
@@ -12138,6 +12374,10 @@
  {
   "id": "poi-699-scheda",
   "testo": "Sulla piazza Garibaldi: la torre con l'orologio e la meridiana, e il fronte neoclassico rifatto dal Petitot, che unificò edifici diversi dietro una sola facciata."
+ },
+ {
+  "id": "poi-699-ancora",
+  "testo": "Da manuale: occupa tutto il lato nord di piazza Garibaldi e nacque fra il 1283 e il 1285 come Palazzo dei Mercanti, dopo aver abbattuto le case che stavano qui. La data da ricordare è un'altra: il 27 gennaio 1606 crollò l'altissima Torre civica e portò giù anche il palazzo del Comune. Da lì la necessità di rimettere mano a questo edificio, che fu unificato chiudendo il borgo di San Marco con un voltone; su quel voltone, nel 1673, l'ingegnere piacentino Gian Battista Barattieri alzò la torre che si vede. Quello che si guarda oggi è quindi un palazzo duecentesco con la pelle barocca e neoclassica: tre epoche sullo stesso muro."
  },
  {
   "id": "poi-700-nome",
@@ -12152,6 +12392,10 @@
   "testo": "Il giardino del palazzo ducale, disegnato all'italiana e poi rifatto alla francese dal Petitot: viali che convergono, il laghetto e il Palazzetto Eucherio Sanvitale."
  },
  {
+  "id": "poi-700-ancora",
+  "testo": "Da manuale: duecentoottomilasettecento metri quadrati di parco storico in Oltretorrente, e l'idea è del 1561, del duca Ottavio Farnese: lo volle attorno alla villa che fece costruire dove stava il trecentesco castello della Ghiara di Bernabò Visconti. Per farlo comprò i terreni intorno e abbatté vari edifici, tenendo in piedi una cosa sola, il rinascimentale Palazzetto Eucherio Sanvitale, che è ancora là. La sistemazione grande arriva più di un secolo dopo, nel 1690, per le nozze di Odoardo Secondo Farnese con Dorotea Sofia di Neuburg: i giardini di corte si rifanno per un matrimonio, ed è la regola, non l'eccezione."
+ },
+ {
   "id": "poi-701-nome",
   "testo": "Ponte romano"
  },
@@ -12162,6 +12406,10 @@
  {
   "id": "poi-701-scheda",
   "testo": "Sotto il livello della strada, in una cripta visitabile, ci sono le arcate del ponte romano sulla via Emilia: il torrente Parma allora passava di lì, e poi si è spostato."
+ },
+ {
+  "id": "poi-701-ancora",
+  "testo": "Da manuale: le arcate stanno sotto il livello della strada, in una cripta visitabile. Qui passava la via Emilia, la strada che il console Marco Emilio Lepido fece costruire per collegare in linea retta Rimini a Piacenza, e il torrente Parma allora scorreva in questo punto: il ponte serviva a scavalcarlo. Poi il torrente si è spostato, la città è cresciuta sopra, e del ponte è rimasto quello che si vede adesso qualche metro sotto i piedi dei passanti. È il modo più diretto per capire di quanto si alza il piano di una città in venti secoli."
  },
  {
   "id": "poi-702-nome",
@@ -12176,6 +12424,10 @@
   "testo": "Una fortezza a stella con cinque bastioni, costruita dai Farnese e mai usata per combattere: oggi è il parco dove i parmigiani corrono. Resta il portale monumentale d'ingresso."
  },
  {
+  "id": "poi-702-ancora",
+  "testo": "Da manuale: è una fortezza rinascimentale a pianta pentagonale, con cinque bastioni e un largo fossato intorno, costruita negli ultimi anni del Cinquecento su progetto del duca Alessandro Farnese — che di fortificazioni se ne intendeva, perché comandava eserciti. La direzione dei lavori fu degli ingegneri Giovanni Antonio Stirpio de' Brunelli e Genesio Bresciani, con la collaborazione di Smeraldo Smeraldi. La pianta a stella con i bastioni angolari è la risposta all'artiglieria: angoli ottusi, muri bassi e spessi, nessun punto morto sotto le mura. Oggi è un parco pubblico, e il modo migliore di capirla è camminare lungo il fossato e guardare come i bastioni si coprono l'uno con l'altro."
+ },
+ {
   "id": "poi-703-nome",
   "testo": "Casa della Musica"
  },
@@ -12188,6 +12440,10 @@
   "testo": "Dentro un palazzo cinquecentesco, il museo dell'opera e l'archivio del Teatro Regio: Parma è città di Verdi e di Toscanini, e qui se ne tiene la memoria."
  },
  {
+  "id": "poi-703-ancora",
+  "testo": "Da manuale: la sede è palazzo Cusani, rinascimentale, costruito nella seconda metà del Quattrocento da un ramo dei Cusani, casata nobile originaria di Milano. Nel Seicento il marchese Galeazzo Cusani lo donò al Comune di Parma, che lo assegnò all'Università: fu ristrutturato allora, e in quel cantiere furono sistemate le colonne di marmo del cortile — il pezzo migliore dell'edificio, e si vede entrando. Oggi dentro ci sono il museo dell'opera e l'archivio storico del Teatro Regio: in una città di Verdi e di Toscanini, è il posto dove quella memoria è tenuta in ordine."
+ },
+ {
   "id": "poi-704-nome",
   "testo": "Castello dei Burattini"
  },
@@ -12198,6 +12454,10 @@
  {
   "id": "poi-704-scheda",
   "testo": "La collezione di Giordano Ferrari: burattini, marionette, fondali e copioni di una tradizione che a Parma è mestiere serio."
+ },
+ {
+  "id": "poi-704-ancora",
+  "testo": "Da manuale: il museo sta nel complesso storico del monastero di San Paolo, affacciato sul giardino segreto, e raccoglie la collezione di Giordano Ferrari: in circa trecento metri quadrati sono esposti millecinquecento pezzi fra burattini, marionette, copioni, fotografie e manifesti. Non è una curiosità per bambini: il teatro di figura a Parma è un mestiere con una tradizione documentata, e questa raccolta ne conserva gli attrezzi, i testi e le facce."
  },
  {
   "id": "poi-705-nome",
@@ -12214,6 +12474,10 @@
  {
   "id": "poi-705-dentro",
   "testo": "Il rosone e, nelle murature, i segni delle strutture carcerarie rimosse."
+ },
+ {
+  "id": "poi-705-ancora",
+  "testo": "Da manuale: è gotica, ed è la prima sede dei francescani a Parma: fu costruita nel Duecento con i contributi spontanei della popolazione, che portò materiali e manodopera — una chiesa fatta per sottoscrizione, e si vede nella semplicità del laterizio. Da questo convento sono passati nomi che contano: fra' Salimbene de Adam, uno dei maggiori cronisti del Medioevo, qui avviato alla vita religiosa, e il beato Giovanni Buralli, ministro generale dell'Ordine fra il 1247 e il 1257. Nel 1260 Gherardo Segarelli, che diventerà il capo degli apostolici e finirà eretico, tentò inutilmente di entrarci."
  },
  {
   "id": "poi-706-nome",
@@ -14404,6 +14668,10 @@
   "testo": "Riportato alla luce nel Novecento sotto le case: la cavea è stata ricostruita, l'orchestra conserva ancora il pavimento in opus sectile di marmi colorati. Si usa ancora, d'estate, per il Festival."
  },
  {
+  "id": "poi-885-ancora",
+  "testo": "Da manuale: è del primo secolo avanti Cristo, ha un diametro di centoquattordici metri e quaranta, e la cavea ne misura circa settanta. Ma la cosa interessante è cosa gli è successo dopo: in epoca post-classica fu usato come cava di pietra, nel dodicesimo secolo sopra parte della scena fu costruita la chiesa di Sant'Agata, nel Duecento e nel Trecento le si affiancarono le case della famiglia Corvi, e alla fine del Trecento nel complesso si insediarono le monache benedettine che venivano dall'abbazia di San Paolo inter vineas. Un teatro romano che diventa cava, poi chiesa, poi case, poi monastero: a Spoleto la continuità d'uso si legge in un edificio solo."
+ },
+ {
   "id": "poi-886-nome",
   "testo": "Basilica di San Salvatore"
  },
@@ -14418,6 +14686,10 @@
  {
   "id": "poi-886-dentro",
   "testo": "Il presbiterio con le colonne e la trabeazione antica rimontate, e le cornici di marmo riusate nella facciata."
+ },
+ {
+  "id": "poi-886-ancora",
+  "testo": "Da manuale: è una delle testimonianze più importanti dell'architettura longobarda in Italia, e dal giugno 2011 fa parte del sito UNESCO «Longobardi in Italia: i luoghi del potere», insieme ad altri sei luoghi — a Spoleto c'è anche il Tempietto del Clitunno. Il rifacimento che la rende quello che è avvenne nell'ottavo secolo, per volontà monumentale dei duchi longobardi di Spoleto, su una chiesa paleocristiana più antica. La cosa da guardare, e che spiega tutto, è il reimpiego: colonne, capitelli e trabeazioni sono pezzi romani rilavorati e rimessi insieme. I longobardi non imitavano l'antico, lo smontavano e lo ricomponevano per dire di esserne gli eredi."
  },
  {
   "id": "poi-887-nome",
@@ -14436,6 +14708,10 @@
   "testo": "Il matroneo, e i capitelli: ognuno è diverso, nessuno è stato fatto per questa chiesa."
  },
  {
+  "id": "poi-887-ancora",
+  "testo": "Da manuale: sta dentro il cortile della residenza arcivescovile, e la sua stranezza è il matroneo — la galleria sopra le navate laterali, riservata alle donne — che in Umbria non ha altri esempi di questa età. Le notizie più antiche risalgono al decimo secolo, quando Spoleto era ancora capitale di un ducato potente, e prima qui c'era probabilmente la residenza dei duchi longobardi con la cappella di palazzo: la chiesa nasce quindi dentro un'area di potere. Verso l'anno 980, sotto Ottone Secondo, fu ritrovato in città il corpo del vescovo spoletino Giovanni Secondo, vescovo dal 492 al 546. Anche qui le colonne sono di spoglio, prese da edifici romani."
+ },
+ {
   "id": "poi-888-nome",
   "testo": "Basilica di San Ponziano"
  },
@@ -14446,6 +14722,10 @@
  {
   "id": "poi-888-scheda",
   "testo": "Fuori le mura, sul luogo della sepoltura del patrono. La facciata romanica è semplice, con il rosone e due leoni; sotto c'è la cripta, con le colonne romane di spoglio e gli affreschi."
+ },
+ {
+  "id": "poi-888-ancora",
+  "testo": "Da manuale: sta fuori le mura, sul luogo della sepoltura del patrono, e questa è la regola: i martiri si seppellivano lungo le strade, fuori città, e la chiesa nasce sulla tomba. La facciata romanica è semplice, con il rosone e due leoni ai lati del portale. Il pezzo che conta è sotto: la cripta, con le colonne di reimpiego e i capitelli diversi l'uno dall'altro, presi da edifici antichi. In una basilica così la parte più antica è quasi sempre quella in basso, perché il piano si alza coi secoli e il livello originario resta sepolto sotto quello nuovo."
  },
  {
   "id": "poi-889-nome",
@@ -14464,6 +14744,10 @@
   "testo": "I mosaici geometrici e l'impluvio: si cammina sul piano di casa di duemila anni fa."
  },
  {
+  "id": "poi-889-ancora",
+  "testo": "Da manuale: è un'abitazione signorile dell'inizio del primo secolo dopo Cristo, e la scoprì un archeologo di qui, Giuseppe Sordini, fra il 1885 e il 1886. Gli scavi andarono avanti a riprese fino al 1914, con un'interruzione di quattro anni dal 1886 e con il recupero completo degli ambienti presso il peristilio arrivato solo nel 1912, per mancanza di fondi: la storia dello scavo è anche una storia di bilanci. Quello che si visita sta sotto il livello della città moderna — le fondazioni del Palazzo comunale poggiano in parte su quest'area — e il pezzo più bello sono i pavimenti a mosaico dell'atrio con l'impluvium."
+ },
+ {
   "id": "poi-890-nome",
   "testo": "Palazzo Comunale"
  },
@@ -14474,6 +14758,10 @@
  {
   "id": "poi-890-scheda",
   "testo": "Il municipio, rifatto alla fine del Settecento, con la torre medievale rimasta. Sotto ci sta la casa romana, e dentro la Pinacoteca."
+ },
+ {
+  "id": "poi-890-ancora",
+  "testo": "Da manuale: sta a metà strada fra il foro — l'attuale piazza del Mercato — e piazza del Duomo, in quella che nel medioevo era la Vaita Palazzo, cioè la zona del potere da sempre. Le sue fondazioni poggiano in parte sulla Casa romana scoperta da Giuseppe Sordini nel 1885: il municipio sta letteralmente sopra una casa patrizia di duemila anni prima. Dal 1296 l'attività di governo della città si concentra qui; dell'aspetto che aveva prima del Duecento non si sa quasi niente, si sa che comprendeva un chiostro sotto i cui portici il podestà e il capitano del popolo svolgevano parte delle loro funzioni. La ristrutturazione lunga è finita nel 2007."
  },
  {
   "id": "poi-891-nome",
@@ -14504,6 +14792,10 @@
   "testo": "Quarantacinque metri, una delle torri gentilizie rimaste: il nome viene dall'olio bollente che si rovesciava dalle caditoie su chi tentava di forzare la porta sottostante, Porta Fuga."
  },
  {
+  "id": "poi-892-ancora",
+  "testo": "Da manuale: quarantacinque metri, ed è una delle torri gentilizie rimaste in piedi a Spoleto — di torri così le città medievali ne avevano a decine, e quasi tutte sono state tagliate. Il nome viene dall'olio bollente che si rovesciava dalle caditoie su chi tentava di forzare la porta sotto: le caditoie sono quelle aperture nel piano sporgente in alto, e servivano esattamente a quello. Una torre urbana non era un belvedere: era un'arma verticale in mano a una famiglia, dentro la città, contro le altre famiglie."
+ },
+ {
   "id": "poi-893-nome",
   "testo": "Teatro Nuovo Gian Carlo Menotti"
  },
@@ -14514,6 +14806,10 @@
  {
   "id": "poi-893-scheda",
   "testo": "Il teatro all'italiana della città, quattro ordini di palchi; dal 1958 è la sala principale del Festival dei Due Mondi, che Menotti fondò qui."
+ },
+ {
+  "id": "poi-893-ancora",
+  "testo": "Da manuale: è un teatro all'italiana inaugurato nel 1864 su progetto di Ireneo Aleandri, con la sala a ferro di cavallo, quattro ordini di palchi e il loggione, per settecentosettantadue posti effettivi. Dal 1947 è una delle sedi del Teatro lirico sperimentale e dal 1958 del Festival dei Due Mondi: è il teatro che ha fatto di Spoleto una città di festival, e porta il nome di Gian Carlo Menotti, che quel festival lo inventò. Nel 2026 l'UNESCO lo ha dichiarato patrimonio insieme ad altri teatri all'italiana. Chi entra guardi la forma della sala: il ferro di cavallo serve a far vedere il pubblico al pubblico, non solo il palco."
  },
  {
   "id": "poi-894-nome",
@@ -15008,6 +15304,10 @@
   "testo": "Chiesa di San Pietro extra moenia, nel centro di Spoleto."
  },
  {
+  "id": "poi-934-ancora",
+  "testo": "Da manuale: la costruì il vescovo Achilleo all'inizio del quinto secolo su un poggio alle falde del Monteluco, fuori le mura — da cui il nome — come luogo di sepoltura dei vescovi. Nel 1329 fu incendiata dai ghibellini durante una battaglia cittadina e ricostruita negli anni successivi. Dentro si venerano i corpi del vescovo Pietro, morto nel 594, che assistette alla nascita del Ducato longobardo, e del vescovo Giovanni Secondo, martirizzato sotto i Goti di Totila. Ma il motivo per cui si viene fin qui è la facciata romanica: i rilievi con le scene della morte del giusto e del peccatore, il bue, il lupo e le favole — una delle più ricche d'Umbria."
+ },
+ {
   "id": "poi-935-nome",
   "testo": "Chiesa di San Domenico"
  },
@@ -15018,6 +15318,10 @@
  {
   "id": "poi-935-scheda",
   "testo": "Chiesa di San Domenico, nel centro di Spoleto."
+ },
+ {
+  "id": "poi-935-ancora",
+  "testo": "Da manuale: si chiama dei Santi Domenico e Francesco e fu eretta in sobrio stile gotico, lentamente, a metà del Duecento, al posto di una cappella dedicata al Salvatore attorno alla quale era nato il primo convento domenicano. La data precisa è il 1248: in quell'anno la cappella e i locali adiacenti, che appartenevano ai monaci di San Pietro di Ferentillo, furono concessi a un gruppo di domenicani che da tempo chiedeva di stabilirsi a Spoleto, e grazie alle donazioni dei cittadini cominciò la costruzione. Da fuori si riconoscono le fasce bicrome in pietra: è l'edilizia mendicante, povera di decoro e grande di volume."
  },
  {
   "id": "poi-936-nome",
@@ -15032,6 +15336,10 @@
   "testo": "Basilica di San Gregorio Maggiore, nel centro di Spoleto."
  },
  {
+  "id": "poi-936-ancora",
+  "testo": "Da manuale: la chiesa nasce da un cimitero. Gregorio fu giustiziato nel vicino anfiteatro romano intorno all'anno 304, e il suo corpo fu raccolto con quelli di altri martiri da una vedova del posto, Abbondanza, che fondò qui un cimitero cristiano e una prima chiesa. Che la cosa sia andata così è confermato dai frammenti preromanici conservati sul posto — fra cui un pluteo dell'ottavo secolo, ancora visibile a destra della cappella degli Innocenti — e dal ritrovamento di ossa umane negli scavi. Quindi: un'esecuzione, una sepoltura clandestina, una basilica sopra. È la sequenza con cui sono nate molte chiese, raramente così documentata."
+ },
+ {
   "id": "poi-937-nome",
   "testo": "Chiesa di San Filippo Neri"
  },
@@ -15042,6 +15350,10 @@
  {
   "id": "poi-937-scheda",
   "testo": "Chiesa di San Filippo Neri, nel centro di Spoleto."
+ },
+ {
+  "id": "poi-937-ancora",
+  "testo": "Da manuale: fu edificata fra il 1640 e il 1671 su disegno di un architetto spoletino, Loreto Scelli, e di lui è l'unica opera rimasta — quindi chi guarda questa facciata guarda tutto quello che resta di un professionista del Seicento. La ragione della chiesa è una devozione cresciuta in fretta: dopo la canonizzazione del 1622, san Filippo Neri suscitò in città tanta ammirazione che nacque una confraternita a suo nome, con sede in Santa Maria delle Grazie; il vescovo Lorenzo Castrucci concesse poi un'altra chiesa, San Sabinuccio, ma la venerazione crebbe ancora e servì un edificio nuovo. È il caso di un culto che si costruisce la propria architettura in cinquant'anni."
  },
  {
   "id": "poi-938-nome",
