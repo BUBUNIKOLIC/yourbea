@@ -31,6 +31,7 @@ node prove/clip.js || mal=1
 echo
 echo "— le coordinate —"
 node prove/coordinate.js || mal=1
+node "$QUI/prove/schede-al-posto-giusto.js" || ESITO=1
 
 if [ "$RETE" = 1 ]; then
   echo

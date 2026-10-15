@@ -5761,7 +5761,7 @@
  },
  {
   "id": "poi-355-ancora",
-  "testo": "Da manuale: cantiere dal 1549 al 1695, tre architetti — Gabriele Riccardi, Francesco Antonio Zimbalo e Cesare Penna. La pietra leccese è un calcare tenero, lavorabile a scalpello come legno quando è appena cavato, che indurisce esposto all'aria: è la condizione materiale che rende possibile il barocco leccese, non una scelta di gusto. La facciata è divisa da una trabeazione mediana sorretta da tredici figure — cariatidi, mostri, animali — sopra la quale esplode la decorazione attorno al rosone, mentre la parte inferiore resta quasi liscia. La progressione dal basso verso l'alto, dal piano all'intagliato, è la struttura compositiva: senza quel contrasto la parte superiore sarebbe illeggibile."
+  "testo": "Da manuale: cominciata nel 1294, secondo la tradizione su progetto di Arnolfo di Cambio, e' la piu' grande chiesa francescana del mondo: centoquindici metri di lunghezza, pianta a croce egizia, tre navate su pilastri ottagonali e copertura a capriate lignee invece che a volte — i francescani costruivano poveri, e il tetto in legno costava meno. Proprio quella semplicita' la rende immensa. Nella navata e nei transetti ci sono le tombe di Michelangelo, Galileo, Machiavelli, Alfieri, Rossini e il cenotafio di Dante, e per questo Foscolo la chiamo' il tempio dell'itale glorie: dall'Ottocento e' il pantheon italiano. Nelle cappelle Bardi e Peruzzi, Giotto dipinse fra il 1320 e il 1325 le storie di san Francesco e dei due Giovanni, con le architetture che inquadrano le figure e lo spazio costruito prospetticamente. Nel chiostro, la Cappella de' Pazzi di Filippo Brunelleschi, 1442, e' una delle architetture piu' misurate del Rinascimento. L'alluvione del 4 novembre 1966 arrivo' qui a quasi cinque metri e danneggio' il Crocifisso di Cimabue, diventato il simbolo di quel disastro."
  },
  {
   "id": "poi-356-nome",
@@ -6956,6 +6956,10 @@
   "testo": "Il basamento della statua di Vittorio Emanuele II e, verso nord, l'arco d'ingresso della Galleria, messo esattamente in asse col transetto del Duomo."
  },
  {
+  "id": "poi-418-ancora",
+  "testo": "Da manuale: la piazza non e' medievale, e' ottocentesca. Fino al 1865 davanti al Duomo c'era un fitto reticolo di case, botteghe e chiesette; Giuseppe Mengoni vinse il concorso e fece demolire tutto, disegnando lo spazio rettangolare che vediamo, i portici uniformi sui lati lunghi e l'arco della Galleria come quinta. Mengoni mori' cadendo da un'impalcatura della Galleria nel 1877, pochi giorni prima dell'inaugurazione. Il sagrato e' in granito rosa di Baveno. La piazza nasce quindi come operazione urbanistica unitaria: isolare la cattedrale e darle una scena, la stessa idea che a Roma aveva liberato il Pantheon."
+ },
+ {
   "id": "poi-419-nome",
   "testo": "Galleria Vittorio Emanuele II"
  },
@@ -7172,6 +7176,10 @@
   "testo": "La cappella dell'ossario, a destra appena entrati: si entra liberamente."
  },
  {
+  "id": "poi-429-ancora",
+  "testo": "Da manuale: accanto alla chiesa c'e' un ossario del 1210, nato quando il cimitero dell'ospedale vicino non basto' piu'. Nel 1695 la cappella fu rifatta e le ossa, invece di essere nascoste, furono disposte come decorazione architettonica: crani incassati nelle lesene, femori a comporre cornici, fregi di vertebre. Sulla volta Sebastiano Ricci dipinse un Trionfo delle anime fra angeli, in contrasto voluto con cio' che sta sotto. Non e' macabro per gusto del macabro: e' la cultura barocca della morte come passaggio, resa in materiale. Il modello e' poi arrivato fino all'ossario di Sedlec in Boemia."
+ },
+ {
   "id": "poi-430-nome",
   "testo": "Biblioteca Ambrosiana"
  },
@@ -7186,6 +7194,10 @@
  {
   "id": "poi-430-dentro",
   "testo": "Il Codice Atlantico di Leonardo, la Canestra di frutta di Caravaggio e il cartone della Scuola di Atene di Raffaello, grande quanto l'affresco vaticano."
+ },
+ {
+  "id": "poi-430-ancora",
+  "testo": "Da manuale: fondata dal cardinale Federico Borromeo e aperta nel 1609, e' la prima biblioteca d'Europa aperta al pubblico — chiunque sapesse leggere poteva entrare, senza presentazione, in un'epoca in cui i libri stavano chiusi nei conventi. Borromeo mando' emissari in tutta Europa e in Oriente a comprare codici. Accanto fondo' nel 1618 la Pinacoteca, con la propria collezione: la Canestra di frutta di Caravaggio, primo quadro della storia in cui la natura morta e' il soggetto e non un dettaglio; il Musico di Leonardo; e il cartone preparatorio della Scuola di Atene di Raffaello, otto metri per tre, il piu' grande cartone rinascimentale conservato. La biblioteca custodisce anche il Codice Atlantico di Leonardo."
  },
  {
   "id": "poi-431-nome",
@@ -7364,6 +7376,10 @@
   "testo": "La cupola vista da sotto: la struttura è tutta a vista, non c'è una superficie piena."
  },
  {
+  "id": "poi-439-ancora",
+  "testo": "Da manuale: Guarino Guarini la costruisce fra il 1668 e il 1680 per i teatini, ed e' la dimostrazione di che cosa sapeva fare con la geometria. La pianta e' un ottagono con i lati concavi inscritto in un quadrato; sopra, la cupola non e' un guscio ma una stella di otto nervature che si incrociano lasciando vuoti gli spazi fra loro, cosi' la luce entra dalle finestre dietro e la struttura sembra sospesa. Sopra ancora, una seconda cupoletta. Non ha facciata propria: il re non voleva interrompere il fronte uniforme di piazza Castello, e dall'esterno sembra un palazzo. La chiesa e' la cappella palatina, collegata al Palazzo Reale."
+ },
+ {
   "id": "poi-440-nome",
   "testo": "Museo Egizio di Torino"
  },
@@ -7420,6 +7436,10 @@
   "testo": "La balaustra di marmo che recinta il punto esatto del miracolo, nel pavimento."
  },
  {
+  "id": "poi-442-ancora",
+  "testo": "Da manuale: costruita dal 1607 su progetto di Ascanio Vitozzi nel luogo dove, secondo la tradizione, nel 1453 un'ostia rubata si sarebbe sollevata in aria durante un furto, restando sospesa finche' il vescovo non la raccolse. La basilica nasce quindi su un punto preciso, segnato nel pavimento da una balaustra di marmo. L'interno, a navata unica con la volta affrescata, fu rivestito di marmi policromi nel Settecento. E' il luogo di origine della devozione eucaristica torinese e il motivo per cui la citta' ha quel nome in tutta la liturgia sabauda."
+ },
+ {
   "id": "poi-443-nome",
   "testo": "Santuario della Consolata"
  },
@@ -7436,6 +7456,10 @@
   "testo": "Il campanile romanico, rimasto in piedi fra le aggiunte barocche; e le pareti coperte di ex voto dipinti."
  },
  {
+  "id": "poi-443-ancora",
+  "testo": "Da manuale: tre edifici in uno. Resta il campanile romanico dell'Undicesimo secolo di Sant'Andrea; Guarino Guarini costruisce nel 1679 la chiesa ovale con la cappella esagonale; Filippo Juvarra nel 1729 aggiunge il presbiterio ovale, e nell'Ottocento Carlo Ceppi allarga ancora. Il risultato e' una sequenza di spazi centrali di forma diversa infilati uno nell'altro, che si attraversano camminando. E' il santuario piu' amato di Torino, e le pareti della cappella sono coperte di ex voto dipinti: centinaia di piccole tavole con l'incidente, la malattia, il naufragio e la grazia ricevuta — una storia della citta' raccontata dal basso."
+ },
+ {
   "id": "poi-444-nome",
   "testo": "Chiesa della Gran Madre di Dio"
  },
@@ -7450,6 +7474,10 @@
  {
   "id": "poi-444-dentro",
   "testo": "La scalinata e le due statue laterali, la Fede e la Religione: la leggenda torinese dice che la Fede indichi dove è nascosto il Graal."
+ },
+ {
+  "id": "poi-444-ancora",
+  "testo": "Da manuale: Ferdinando Bonsignore la progetta nel 1818 per celebrare il ritorno di Vittorio Emanuele Primo dopo Napoleone, e la copia dichiaratamente dal Pantheon: pronao a otto colonne corinzie, timpano, cupola emisferica su tamburo cilindrico. E' il neoclassicismo come atto politico — la Restaurazione che si veste da Roma antica. Sta in asse con il ponte Vittorio Emanuele Primo e chiude la prospettiva da piazza Vittorio: il punto in cui la citta' incontra la collina. Le due statue ai lati della scalinata, la Fede e la Religione, sono al centro di una leggenda esoterica torinese che non ha alcun fondamento nei documenti del cantiere."
  },
  {
   "id": "poi-445-nome",
@@ -7508,6 +7536,10 @@
   "testo": "I ritratti di Anton van Dyck della famiglia Brignole-Sale, dipinti quando il pittore stava a Genova."
  },
  {
+  "id": "poi-447-ancora",
+  "testo": "Da manuale: costruito fra il 1671 e il 1677 da Pietro Antonio Corradi per i fratelli Brignole-Sale, e' uno dei palazzi dei Rolli — le dimore che per decreto della Repubblica ospitavano a turno i sovrani in visita, sorteggiate da un elenco ufficiale: un sistema di ospitalita' di Stato unico in Europa, che vale a Strada Nuova il riconoscimento dell'Unesco. Il rosso dell'intonaco gli da' il nome. Dentro, la quadreria di famiglia e' rimasta al suo posto: Van Dyck, Guercino, Veronese, Durer. Nel 1874 Maria Brignole Sale De Ferrari, duchessa di Galliera, lo dono' alla citta' con tutto quello che conteneva. Il riallestimento di Franco Albini, fra il 1952 e il 1961, e' a sua volta un pezzo di storia del museo moderno: le opere staccate dalle pareti e sospese su supporti sottili, perche' si vedano come oggetti e non come arredo."
+ },
+ {
   "id": "poi-448-nome",
   "testo": "Palazzo Doria-Tursi"
  },
@@ -7522,6 +7554,10 @@
  {
   "id": "poi-448-dentro",
   "testo": "Il violino Cannone di Niccolò Paganini, conservato in una sala al primo piano e suonato una volta l'anno."
+ },
+ {
+  "id": "poi-448-ancora",
+  "testo": "Da manuale: 1565, di Domenico e Giovanni Ponzello per Niccolo' Grimaldi detto il Monarca, e' il piu' grande dei palazzi di Strada Nuova: tanto grande che per costruirlo si acquistarono due lotti e si sfondo' l'allineamento della via. La facciata in pietra di Finale e marmo rosa, il cortile a doppia loggia e lo scalone che sale su due rampe simmetriche sono il modello del palazzo genovese di rappresentanza. Dal 1848 e' il municipio. In una sala si conservano le lettere di Cristoforo Colombo e il violino di Niccolo' Paganini — il Cannone, costruito da Guarneri del Gesu' nel 1743, che il musicista lascio' per testamento alla citta' e che viene suonato poche volte l'anno."
  },
  {
   "id": "poi-449-nome",
@@ -7580,6 +7616,10 @@
   "testo": "Il campanile visto dal vico sotto: si restringe salendo, e le bifore si fanno più fitte."
  },
  {
+  "id": "poi-451-ancora",
+  "testo": "Da manuale: romanica del Dodicesimo secolo, e' una delle chiese meglio conservate della Genova medievale: tre navate su colonne di spoglio romane, capitelli reimpiegati, e soprattutto il campanile ottagonale a bifore sovrapposte, che e' il tipo genovese per eccellenza. Il portale ha l'architrave romano riusato. Dentro, il trittico dell'Adorazione dei Magi di Joos van Cleve, dipinto ad Anversa intorno al 1515 e arrivato qui per un committente genovese: il commercio fra Genova e le Fiandre portava anche i quadri."
+ },
+ {
   "id": "poi-452-nome",
   "testo": "Chiesa del Gesù e dei Santi Ambrogio e Andrea"
  },
@@ -7616,6 +7656,10 @@
   "testo": "Il campanile, che si vede dai vicoli solo alzando gli occhi fra le case, e il chiostro sul fianco."
  },
  {
+  "id": "poi-453-ancora",
+  "testo": "Da manuale: il nome viene dalle vigne che stavano qui prima che la citta' arrivasse, nel Decimo secolo. Dell'edificio romanico restano il campanile a cinque ordini di bifore e il chiostro; il resto fu rifatto in barocco fra Seicento e Settecento, con stucchi dorati e marmi policromi. La sovrapposizione e' leggibile dall'esterno in pochi passi: si gira l'angolo e si passa dal Mille al Settecento. E' una delle chiese piu' antiche della citta' e sta nel cuore del centro storico, nel reticolo di caruggi."
+ },
+ {
   "id": "poi-454-nome",
   "testo": "Palazzo San Giorgio"
  },
@@ -7632,6 +7676,10 @@
   "testo": "La facciata dipinta sul lato del porto, rifatta nel 1912 ricopiando i disegni antichi."
  },
  {
+  "id": "poi-454-ancora",
+  "testo": "Da manuale: costruito nel 1260 da frate Oliverio per il Comune, con i materiali del demolito palazzo veneziano degli ambasciatori, e' uno dei pochi edifici pubblici medievali rimasti a Genova. Nel 1407 vi si insedio' il Banco di San Giorgio, una delle prime banche moderne del mondo: raccoglieva il debito pubblico della Repubblica, batteva moneta, amministrava colonie. La facciata verso il porto e' affrescata da Lazzaro Tavarone, rifatta nell'Ottocento. La tradizione vuole che Marco Polo, prigioniero dei genovesi dopo la battaglia di Curzola del 1298, abbia dettato qui a Rustichello da Pisa il racconto dei suoi viaggi."
+ },
+ {
   "id": "poi-455-nome",
   "testo": "Basilica della Santissima Annunziata del Vastato"
  },
@@ -7646,6 +7694,10 @@
  {
   "id": "poi-455-dentro",
   "testo": "La volta affrescata e il luccichio dell'oro appena si apre la porta: è un effetto cercato."
+ },
+ {
+  "id": "poi-455-ancora",
+  "testo": "Da manuale: il vastato e' il terreno fuori le mura lasciato libero per ragioni difensive, dove la chiesa fu costruita nel Cinquecento. L'interno, rifatto dal 1591 con il finanziamento della famiglia Lomellini, e' il massimo del barocco genovese: ogni centimetro di volta e di parete e' affrescato o dorato, le colonne sono rivestite di marmo bianco e nero, e la luce arriva da sopra a far brillare l'oro. La facciata neoclassica con il pronao a sei colonne e' un'aggiunta dell'Ottocento, e il contrasto con l'interno e' totale: fuori severo, dentro incandescente."
  },
  {
   "id": "poi-456-nome",
@@ -7880,6 +7932,10 @@
   "testo": "Dalle gradinate alte, la veduta su Ponte Pietra e sul centro: è l'inquadratura per cui il teatro fu costruito lì."
  },
  {
+  "id": "poi-467-ancora",
+  "testo": "Da manuale: costruito alla fine del Primo secolo avanti Cristo sulla riva sinistra dell'Adige, sfrutta il pendio del colle di San Pietro per appoggiarci la cavea, secondo l'uso greco e non romano: a Roma i teatri si costruivano in piano su sostruzioni, qui la collina c'era e si e' usata. Con il tempo fu coperto da case, orti e da una chiesa; nell'Ottocento il commerciante Andrea Monga compro' l'intero isolato, fece demolire gli edifici a sue spese e riporto' alla luce la cavea, i loggiati e il palcoscenico. Il Teatro Romano e' quindi un monumento riscoperto da un privato, cosa rara. Sopra, il convento di San Girolamo e' oggi il Museo Archeologico."
+ },
+ {
   "id": "poi-468-nome",
   "testo": "Porta Borsari"
  },
@@ -7916,6 +7972,10 @@
   "testo": "Sulle basi, la firma dell'architetto Lucio Vitruvio Cerdone: è uno dei pochissimi casi in cui un progettista romano si è firmato."
  },
  {
+  "id": "poi-469-ancora",
+  "testo": "Da manuale: non e' un arco pubblico ma privato, cosa rarissima: lo fece costruire nel Primo secolo dopo Cristo la famiglia dei Gavi a cavallo della via Postumia, con le statue dei propri antenati nelle nicchie. L'architetto ci mise il nome — Lucius Vitruvius Cerdo, liberto — inciso sul pilastro: una firma d'autore nell'antichita' romana. Nel 1805 i francesi lo demolirono perche' ostruiva il passaggio, e i pezzi restarono accatastati per piu' di un secolo. Fu ricostruito nel 1932 accanto a Castelvecchio, con le pietre originali numerate. Sotto si vede ancora un tratto del basolato della via Postumia, coi solchi dei carri."
+ },
+ {
   "id": "poi-470-nome",
   "testo": "Chiesa di Sant'Anastasia"
  },
@@ -7930,6 +7990,10 @@
  {
   "id": "poi-470-dentro",
   "testo": "I gobbi, le due figure che reggono le acquasantiere all'ingresso; e in alto, nella cappella Pellegrini, San Giorgio e la principessa di Pisanello."
+ },
+ {
+  "id": "poi-470-ancora",
+  "testo": "Da manuale: la piu' grande chiesa di Verona, cominciata dai domenicani nel 1280 e mai finita in facciata, che e' rimasta in mattoni nudi. Dentro, dodici colonne di marmo rosso di Verona reggono le volte a crociera; all'ingresso, due acquasantiere sostenute da figure di mendicanti inginocchiati, i gobbi, scolpite nel Cinquecento e diventate il simbolo popolare della chiesa. Nella cappella Pellegrini, sopra l'arco, l'affresco di Pisanello con San Giorgio e la principessa, 1436-1438: cavalli visti di scorcio da dietro, armature lucenti, impiccati sullo sfondo — e' il capolavoro del gotico internazionale in Italia."
  },
  {
   "id": "poi-471-nome",
@@ -7948,6 +8012,10 @@
   "testo": "Il punto in cui il mattone diventa marmo, visibile dalla piazza; e dalla cima, la pianta della città romana riconoscibile nelle strade."
  },
  {
+  "id": "poi-471-ancora",
+  "testo": "Da manuale: cominciata nel 1172 dalla famiglia Lamberti, era alta la meta'; fu alzata fra il 1448 e il 1464 fino agli ottantaquattro metri attuali, e il cambio di materiale si legge sulla muratura — in basso tufo e mattoni a fasce, in alto marmo. In cima ci sono due campane con nomi e compiti diversi: la Marangona chiamava gli artigiani al lavoro e dava l'allarme per gli incendi, il Rengo convocava il consiglio cittadino e chiamava alle armi. E' la torre piu' alta di Verona e da sopra si vede l'ansa dell'Adige che chiude la citta' antica."
+ },
+ {
   "id": "poi-472-nome",
   "testo": "Piazza Bra"
  },
@@ -7962,6 +8030,10 @@
  {
   "id": "poi-472-dentro",
   "testo": "Il Liston: le lastre di marmo rosa di Sant'Ambrogio, consumate dal passaggio di due secoli."
+ },
+ {
+  "id": "poi-472-ancora",
+  "testo": "Da manuale: il nome viene da braida, parola longobarda che indica uno spazio aperto fuori dalle mura: qui, fino al Quattrocento, c'era il prato davanti alla citta', e l'Arena ci stava in mezzo isolata. La forma attuale e' settecentesca, con il Liston — il marciapiede largo in marmo rosa di Verona lungo il lato lungo, fatto per passeggiare e farsi vedere. Attorno, il Palazzo della Gran Guardia del 1610 e il Palazzo Barbieri dell'Ottocento. E' la piazza piu' grande di Verona, e la sua funzione non e' cambiata in tre secoli: ci si cammina avanti e indietro."
  },
  {
   "id": "poi-473-nome",
@@ -8240,6 +8312,10 @@
   "testo": "La cupola del battistero: ci si mette sotto e si guarda in su, è una delle cose più impressionanti del Trecento italiano."
  },
  {
+  "id": "poi-486-ancora",
+  "testo": "Da manuale: la cattedrale fu rifatta dal 1551 su un progetto che Michelangelo invio' da Roma e che i costruttori modificarono molto; la facciata e' rimasta in mattoni nudi, mai rivestita. Ma il pezzo che conta e' accanto: il Battistero romanico del Dodicesimo secolo, che fra il 1375 e il 1378 Giusto de' Menabuoi affresco' interamente. Nella cupola, il Paradiso: il Cristo al centro e intorno centinaia di santi disposti in cerchi concentrici, su fondo d'oro. E' uno dei cicli pittorici medievali piu' completi d'Europa, conservato perche' il battistero smise presto di essere usato e nessuno lo tocco'."
+ },
+ {
   "id": "poi-487-nome",
   "testo": "Caffè Pedrocchi"
  },
@@ -8254,6 +8330,10 @@
  {
   "id": "poi-487-dentro",
   "testo": "Il buco di proiettile austriaco del 1848 lasciato nel muro della Sala Bianca, con la targa."
+ },
+ {
+  "id": "poi-487-ancora",
+  "testo": "Da manuale: Giuseppe Jappelli lo costruisce fra il 1826 e il 1842, e per quasi un secolo resto' aperto giorno e notte senza porte — da cui il soprannome di caffe' senza porte. Fuori e' neoclassico con due logge doriche; dentro, le sale del piano nobile sono un viaggio per stili: etrusca, greca, romana, rinascimentale, ercolana, egizia, moresca, gotica. E' il manifesto dell'eclettismo ottocentesco applicato a un locale pubblico. L'8 febbraio 1848 gli studenti padovani vi si scontrarono con la polizia austriaca: nella Sala Bianca si conserva il foro di un proiettile, lasciato li' apposta."
  },
  {
   "id": "poi-488-nome",
@@ -8272,6 +8352,10 @@
   "testo": "Il coro ligneo intagliato e, nel braccio sinistro, l'accesso al sacello antico di San Prosdocimo, paleocristiano."
  },
  {
+  "id": "poi-488-ancora",
+  "testo": "Da manuale: una delle chiese piu' grandi della cristianita', rifatta dal 1532 su progetto di Andrea Moroni: ottanta metri di lunghezza, otto cupole, e la facciata lasciata in mattoni grezzi perche' i soldi finirono. Dentro, il Martirio di Santa Giustina di Paolo Veronese sull'altare maggiore, e il coro ligneo intagliato del Cinquecento. La parte piu' antica e' pero' sotto e di lato: il Sacello di San Prosdocimo, del Quinto secolo, con i plutei marmorei paleocristiani, e il Pozzo dei Martiri. Sta in fondo a Prato della Valle, e chiude la piazza."
+ },
+ {
   "id": "poi-489-nome",
   "testo": "Chiesa degli Eremitani"
  },
@@ -8286,6 +8370,10 @@
  {
   "id": "poi-489-dentro",
   "testo": "Quello che resta del Mantegna: due scene scampate perché staccate prima della guerra, e il resto ricomposto da ottantottomila frammenti raccolti fra le macerie."
+ },
+ {
+  "id": "poi-489-ancora",
+  "testo": "Da manuale: gotica del 1276, con il soffitto a carena di nave in legno. Nella cappella Ovetari, Andrea Mantegna dipinse fra il 1448 e il 1457, appena ventenne, le storie di san Giacomo e san Cristoforo: prospettive viste da sotto in su cosi' radicali che le figure sembrano sporgere dal muro, e l'architettura antica ricostruita con precisione archeologica. L'11 marzo 1944 un bombardamento alleato distrusse la cappella: gli affreschi andarono in centomila frammenti. Si sono salvate due scene, staccate prima della guerra, e il resto e' stato ricomposto a partire dal 1992 con un programma informatico che confronta i frammenti con le fotografie in bianco e nero. E' il piu' grande puzzle della storia del restauro."
  },
  {
   "id": "poi-490-nome",
@@ -8592,6 +8680,10 @@
   "testo": "Le logge del fianco con le botteghe, e il campanile rinascimentale di marmo bianco e rosa rimasto senza cuspide."
  },
  {
+  "id": "poi-505-ancora",
+  "testo": "Da manuale: consacrata nel 1135, ha la parte bassa della facciata romanica, con il protiro su leoni stilofori e il portale di Nicholaus, e la parte alta gotica, aggiunta un secolo dopo con le loggette cieche e il Giudizio Universale scolpito nella lunetta. Il fianco lungo su piazza Trento Trieste e' occupato dalla Loggia dei Merciai: botteghe ricavate nel muro della cattedrale e affittate dal Capitolo fin dal Duecento — la chiesa che si finanzia col commercio, e lo fa in facciata. Il campanile, attribuito a Leon Battista Alberti, e' rimasto incompiuto."
+ },
+ {
   "id": "poi-506-nome",
   "testo": "Palazzo Schifanoia"
  },
@@ -8768,6 +8860,10 @@
   "testo": "La loggia e le trifore, e dentro il museo con le sculture di Matteo Civitali."
  },
  {
+  "id": "poi-514-ancora",
+  "testo": "Da manuale: Paolo Guinigi, signore di Lucca dal 1400 al 1430, se la fece costruire fuori le mura come villa suburbana: mattoni, loggia a tre arcate al piano nobile, finestre a quadrifora. E' una delle poche residenze signorili del tardo gotico toscano rimaste, e si vede il passaggio dalla casa-fortezza alla villa di piacere. Dal 1924 e' il museo nazionale: vi si conservano i materiali archeologici del territorio, le sculture romaniche delle chiese lucchesi, i dipinti di Matteo Civitali e il sarcofago di Ilaria del Carretto — la moglie di Paolo Guinigi — di cui la statua di Jacopo della Quercia sta in Duomo."
+ },
+ {
   "id": "poi-515-nome",
   "testo": "Chiesa di San Francesco"
  },
@@ -8798,6 +8894,10 @@
  {
   "id": "poi-516-dentro",
   "testo": "Il basamento con la cripta a colonne, e il frontone spezzato: un elemento che Alberti prende dagli archi romani e che poi diventerà normale."
+ },
+ {
+  "id": "poi-516-ancora",
+  "testo": "Da manuale: Leon Battista Alberti la progetta nel 1460 per Ludovico Gonzaga, ed e' la prima chiesa rinascimentale a pianta centrale: una croce greca con i bracci uguali, sopra un alto basamento che contiene la cripta. La facciata, con il frontone spezzato e le lesene, e' una interpretazione libera del tempio antico, e nessuno sa con certezza come Alberti la volesse finire: cio' che si vede e' frutto di restauri novecenteschi. Fu costruita mentre Alberti scriveva il trattato di architettura, e vale come esperimento: la pianta centrale, perfetta geometricamente, si scontra con la liturgia che vuole un asse. La discussione durera' fino a San Pietro."
  },
  {
   "id": "poi-517-nome",
@@ -8836,6 +8936,10 @@
   "testo": "La cripta con la Pietà di Giovanni Bandini, e dal sagrato la veduta sulle colline marchigiane."
  },
  {
+  "id": "poi-518-ancora",
+  "testo": "Da manuale: la cattedrale rinascimentale di Francesco di Giorgio Martini crollo' nel terremoto del 1789, e Giuseppe Valadier la ricostrui' dal 1789 al 1801 in forme neoclassiche: facciata a sei colonne corinzie, interno a croce latina con la cupola. E' una delle sue opere maggiori prima di piazza del Popolo a Roma. Nel Museo Albani, accanto, si conservano le opere della cattedrale precedente e il Museo diocesano. Sotto, l'oratorio della Grotta, seicentesco, con stucchi e un gruppo in terracotta del Compianto."
+ },
+ {
   "id": "poi-519-nome",
   "testo": "Casa natale di Raffaello"
  },
@@ -8850,6 +8954,10 @@
  {
   "id": "poi-519-dentro",
   "testo": "La macina dei pigmenti nel cortile, e l'affresco della Madonna col Bambino attribuito al giovane Raffaello o al padre."
+ },
+ {
+  "id": "poi-519-ancora",
+  "testo": "Da manuale: Raffaello Sanzio nacque qui il 6 aprile 1483, in una casa di famiglia di mercanti e pittori: il padre Giovanni Santi era pittore di corte dei Montefeltro, e la bottega stava al piano terra. Si conserva il cortiletto con la pietra per macinare i colori. Nella stanza che la tradizione indica come quella natale c'e' un affresco di Madonna col Bambino attribuito a Giovanni Santi, oppure al figlio giovanissimo: la questione non e' risolta. La casa fu comprata nel 1873 dall'Accademia Raffaello per salvarla. E' una casa borghese del Quattrocento rimasta tale, ed e' per questo che vale la visita."
  },
  {
   "id": "poi-520-nome",
@@ -9148,6 +9256,10 @@
   "testo": "I due altari del transetto, uno di fronte all'altro, che fanno a gara di decorazione."
  },
  {
+  "id": "poi-534-ancora",
+  "testo": "Da manuale: costruita fra il 1591 e il 1639 dai teatini per la santa che fu patrona di Lecce prima di sant'Oronzo, ha la facciata in pietra leccese divisa in due ordini, con la statua della santa nella nicchia centrale: e' sobria rispetto a quello che il barocco leccese fara' dopo, e serve a datare l'inizio. L'interno, a croce latina con cappelle, e' tutto in pietra chiara e stucchi. La pietra leccese e' il motivo di tutto: e' tenera appena cavata e si lascia intagliare come legno, poi indurisce all'aria. Senza quella pietra il barocco di Lecce non esisterebbe."
+ },
+ {
   "id": "poi-535-nome",
   "testo": "Basilica di San Nicola"
  },
@@ -9162,6 +9274,10 @@
  {
   "id": "poi-535-dentro",
   "testo": "Il ciborio dell'altare, il più antico di Puglia; e la cattedra di Elia, 1105, scolpita con telamoni accucciati che reggono il sedile."
+ },
+ {
+  "id": "poi-535-ancora",
+  "testo": "Da manuale: cominciata nel 1087 per custodire le reliquie di san Nicola, portate via da Myra in Asia Minore da sessantadue marinai baresi, e consacrata nel 1197. E' il modello del romanico pugliese: facciata a salienti divisa da lesene, due torri ai lati, tre portali, e dentro tre navate con matronei e tre archi trasversali aggiunti nel Quattrocento per reggere la struttura. Il ciborio dell'altare, del 1150, e' il piu' antico della Puglia; la cattedra dell'abate Elia, in marmo, e' retta da figure di uomini piegati sotto il peso. Nella cripta, sulla tomba del santo, si celebra anche in rito ortodosso: e' uno dei pochi luoghi al mondo dove cattolici e ortodossi pregano lo stesso corpo."
  },
  {
   "id": "poi-536-nome",
@@ -9180,6 +9296,10 @@
   "testo": "Il rosone con le figure che lo circondano, e sul fianco la trulla, che da fuori sembra un trullo in muratura."
  },
  {
+  "id": "poi-536-ancora",
+  "testo": "Da manuale: costruita fra il 1170 e il 1178 sulle rovine della cattedrale bizantina distrutta da Guglielmo il Malo, ripete lo schema di San Nicola ma con piu' rigore: la facciata ha un rosone con figure mostruose intorno, i fianchi hanno le finestre a bifora con transenne traforate diverse una dall'altra. Sul lato destro c'e' la trulla, l'antico battistero a pianta circolare trasformato in sacrestia, con la cupola a cono. Sotto, il succorpo conserva i mosaici pavimentali della chiesa paleocristiana. Il 21 giugno, a mezzogiorno, il sole passa dal rosone e proietta sul pavimento un disco che coincide esattamente con il rosone di pietra incastonato a terra."
+ },
+ {
   "id": "poi-537-nome",
   "testo": "Castello Normanno-Svevo"
  },
@@ -9194,6 +9314,10 @@
  {
   "id": "poi-537-dentro",
   "testo": "Il portale federiciano con le colonne e i capitelli, e il fossato fra le due cinte, che si attraversa entrando."
+ },
+ {
+  "id": "poi-537-ancora",
+  "testo": "Da manuale: fondato da Ruggero Secondo nel 1131, distrutto dai baresi in rivolta e ricostruito da Federico Secondo dal 1233, e' il tipo del castello federiciano: pianta trapezoidale, due torri originali, mura a scarpa. Nel Cinquecento Isabella d'Aragona e la figlia Bona Sforza lo trasformarono in residenza rinascimentale e lo circondarono di bastioni a lancia contro l'artiglieria: si vedono i due momenti sovrapposti, la fortezza medievale dentro la fortificazione moderna. Il portale di Federico, con la decorazione a intrecci, e' sul fronte nord."
  },
  {
   "id": "poi-538-nome",
@@ -9252,6 +9376,10 @@
   "testo": "Le tre cupole rosse di San Cataldo, e nella Martorana il mosaico di Ruggero II incoronato da Cristo, in abiti bizantini."
  },
  {
+  "id": "poi-540-ancora",
+  "testo": "Da manuale: due chiese accanto, due culture sovrapposte. La Martorana, fondata nel 1143 dall'ammiraglio Giorgio d'Antiochia, ha i mosaici bizantini fatti da maestranze costantinopolitane, fra cui il pannello dove il Cristo incorona re Ruggero Secondo: il re indossa l'abito imperiale bizantino e l'iscrizione e' in greco — la monarchia normanna che si rappresenta come continuazione di Bisanzio. Accanto, San Cataldo, del 1154, ha tre cupolette rosse emisferiche su un cubo di pietra nuda, merlature arabe e nessuna decorazione interna: l'architettura islamica usata per una chiesa latina. Trenta metri separano i due edifici e tre civilta'."
+ },
+ {
   "id": "poi-541-nome",
   "testo": "Chiesa di San Giovanni degli Eremiti"
  },
@@ -9266,6 +9394,10 @@
  {
   "id": "poi-541-dentro",
   "testo": "Le cupole viste dal chiostro, e il giardino: è uno dei posti più silenziosi di Palermo."
+ },
+ {
+  "id": "poi-541-ancora",
+  "testo": "Da manuale: 1132, voluta da Ruggero Secondo su un edificio preesistente. Le cinque cupole rosse emisferiche, il cubo di muratura chiara, le finestre strette: la forma viene direttamente dall'architettura islamica siciliana, e per questo la chiesa e' il simbolo del periodo arabo-normanno. All'interno non c'e' decorazione: solo la pietra. Il chiostro duecentesco, con le colonnine binate e il giardino di agrumi e palme, e' stato ricomposto nell'Ottocento. Accanto restano i muri di una sala che era parte di una moschea precedente: il monastero fu costruito sopra, senza cancellarla."
  },
  {
   "id": "poi-542-nome",
@@ -9284,6 +9416,10 @@
   "testo": "La fontana a scivolo di marmo nella sala d'ingresso, e i condotti d'aria nelle pareti: è aria condizionata del XII secolo."
  },
  {
+  "id": "poi-542-ancora",
+  "testo": "Da manuale: il nome viene dall'arabo al-Aziza, la splendida. Cominciata da Guglielmo Primo nel 1165 e finita dal figlio, era il palazzo d'estate dei re normanni, in mezzo a un parco con lagune artificiali. L'invenzione e' il raffrescamento: nella sala della fontana l'acqua scende da una lastra di marmo inclinata e scorre in un canale nel pavimento, mentre le aperture allineate creano una corrente d'aria che passa sopra l'acqua e rinfresca tutta la sala. E' un impianto di condizionamento del Dodicesimo secolo, progettato da architetti di cultura islamica per un re cristiano. Le volte a muqarnas e le iscrizioni arabe completano il quadro."
+ },
+ {
   "id": "poi-543-nome",
   "testo": "Teatro Massimo"
  },
@@ -9298,6 +9434,10 @@
  {
   "id": "poi-543-dentro",
   "testo": "I due leoni di bronzo ai piedi della scalinata, e la sala a cinque ordini di palchi con il soffitto a petali mobili, che si aprono per l'aerazione."
+ },
+ {
+  "id": "poi-543-ancora",
+  "testo": "Da manuale: progettato da Giovan Battista Filippo Basile, vincitore del concorso del 1864, e finito dal figlio Ernesto nel 1897. Con i suoi settemilatrecento metri quadrati e' il piu' grande teatro lirico d'Italia e il terzo d'Europa. Il pronao a sei colonne corinzie su una scalinata, le due cupole e il corpo cilindrico della sala citano il tempio greco e il teatro antico: e' il neoclassicismo alla fine dell'Ottocento che cerca radici siciliane. La sala a ferro di cavallo ha un'acustica considerata eccezionale, dovuta anche al soffitto a petali mobili che si aprono per la ventilazione. Resto' chiuso per restauri dal 1974 al 1997, ventitre' anni."
  },
  {
   "id": "poi-544-nome",
@@ -9316,6 +9456,10 @@
   "testo": "Il corridoio dei professionisti, con gli abiti originali; e la bambina Rosalia Lombardo, imbalsamata nel 1920 con un metodo rimasto segreto fino al 2009."
  },
  {
+  "id": "poi-544-ancora",
+  "testo": "Da manuale: nel 1599 i cappuccini scoprirono che il loro cimitero sotterraneo conservava i corpi in modo naturale, per via del tufo asciutto e della ventilazione, e cominciarono a esporli. Nei secoli successivi la pratica si allargo' ai laici che pagavano, e oggi i corridoi contengono circa ottomila corpi divisi per categoria: religiosi, professionisti, soldati, donne, bambini. I vestiti sono quelli scelti in vita. L'ultima sepoltura e' del 1920: Rosalia Lombardo, bambina di due anni, imbalsamata dal chimico Alfredo Salafia con un metodo rimasto segreto fino al 2009 e ritrovato nei suoi appunti. E' il piu' grande insieme di mummie d'Europa e un documento sulla societa' palermitana di tre secoli."
+ },
+ {
   "id": "poi-545-nome",
   "testo": "Cattedrale di Sant'Agata"
  },
@@ -9330,6 +9474,10 @@
  {
   "id": "poi-545-dentro",
   "testo": "Le absidi normanne in via Vittorio Emanuele, dietro la chiesa, con le pietre laviche; e in facciata le colonne romane riusate."
+ },
+ {
+  "id": "poi-545-ancora",
+  "testo": "Da manuale: fondata nel 1094 da Ruggero Primo come chiesa fortificata — si vedono ancora le absidi in pietra lavica con le feritoie, alte e massicce. I terremoti del 1169 e del 1693 la distrussero due volte; la facciata attuale e' di Giovan Battista Vaccarini, 1736, in marmo bianco di Carrara con colonne di granito prese dal teatro romano. Dentro, la cappella di Sant'Agata custodisce il busto reliquiario e il fercolo che il 5 febbraio viene portato per la citta' dai devoti in sacco bianco: la festa di Sant'Agata e' fra le piu' grandi del mondo cattolico. Nella cattedrale e' sepolto anche Vincenzo Bellini."
  },
  {
   "id": "poi-546-nome",
@@ -9348,6 +9496,10 @@
   "testo": "Il contrasto fra la lava nera dell'elefante e il calcare bianco del basamento: è il motivo che regge tutta la Catania barocca."
  },
  {
+  "id": "poi-546-ancora",
+  "testo": "Da manuale: Giovan Battista Vaccarini la compose nel 1736 al centro della piazza del Duomo, montando un elefante di pietra lavica di epoca romana — o forse bizantina — sopra un basamento di marmo, e piantandogli sulla groppa un obelisco egizio di granito, anch'esso di riuso, con geroglifici che si riferiscono al culto di Iside. L'elefante, che i catanesi chiamano u Liotru, era gia' il simbolo della citta' nel Medioevo. Il montaggio di pezzi di epoche diverse e' deliberato, sul modello di Bernini a Roma: l'antico riusato per fondare l'identita' di una citta' ricostruita da zero dopo il terremoto del 1693."
+ },
+ {
   "id": "poi-547-nome",
   "testo": "Monastero dei Benedettini di San Nicolò l'Arena"
  },
@@ -9364,6 +9516,10 @@
   "testo": "Il chiostro con il caffeaus neogotico al centro, e sotto, nei sotterranei, la lava del 1669 e le terme romane."
  },
  {
+  "id": "poi-547-ancora",
+  "testo": "Da manuale: dopo il terremoto del 1693 i benedettini ricostruirono il monastero in grande: con i suoi oltre duecentodieci metri di fronte e' il secondo complesso monastico d'Europa per dimensione, dopo Mafra. La facciata del Settecento e' decorata a festoni e mascheroni; dentro ci sono due chiostri, uno con il caffeaus neogotico ottocentesco al centro. La chiesa di San Nicolo' l'Arena, accanto, e' rimasta incompiuta: la facciata e' un muro con i mozziconi delle colonne mai finite, e l'effetto e' quello di una rovina moderna. Sotto il pavimento si cammina su una strada romana e su una colata lavica del 1669. Dal 1977 e' la facolta' di Lettere, e Vasta e Consolo ne hanno scritto."
+ },
+ {
   "id": "poi-548-nome",
   "testo": "Castello Ursino"
  },
@@ -9378,6 +9534,10 @@
  {
   "id": "poi-548-dentro",
   "testo": "Il portale federiciano e, sui muri esterni, i blocchi di lava usati per il basamento."
+ },
+ {
+  "id": "poi-548-ancora",
+  "testo": "Da manuale: costruito fra il 1239 e il 1250 per Federico Secondo, e' un quadrato di quasi cinquanta metri di lato con quattro torri cilindriche agli angoli e quattro semicilindriche sui lati: la forma geometrica rigorosa dei castelli federiciani, pensata per l'artiglieria dell'epoca e per la rappresentanza del potere imperiale. Stava sul mare, su un promontorio; la colata lavica del 1669 lo circondo' e lo lascio' a ottocento metri dalla costa, cambiandogli il paesaggio intorno per sempre. Fu reggia aragonese, poi carcere, poi caserma; dal 1934 e' il museo civico."
  },
  {
   "id": "poi-549-nome",
@@ -9412,6 +9572,10 @@
   "testo": "Il lato aperto, che si capisce solo girandole intorno; e dalla cima, la vista sul golfo e sulle saline."
  },
  {
+  "id": "poi-550-ancora",
+  "testo": "Da manuale: 1305, di Giovanni Capula, costruita dai pisani per difendere il quartiere di Castello. E' alta trentasei metri e ha una caratteristica che si vede subito: il lato verso la citta' e' aperto, senza muro, con i ballatoi di legno a vista. Non e' un danno: era progettata cosi'. Se i nemici avessero conquistato la torre, dall'interno della citta' sarebbero rimasti esposti e senza riparo. E' una soluzione difensiva raffinata, usata nelle torri pisane. La pietra e' calcare bianco locale, cavato dalla collina stessa."
+ },
+ {
   "id": "poi-551-nome",
   "testo": "Basilica di San Saturnino"
  },
@@ -9426,6 +9590,10 @@
  {
   "id": "poi-551-dentro",
   "testo": "Il nucleo a cupola in mezzo all'area archeologica, e i sarcofagi romani sparsi nel prato attorno."
+ },
+ {
+  "id": "poi-551-ancora",
+  "testo": "Da manuale: del Quinto secolo, e' uno degli edifici paleocristiani piu' antichi della Sardegna e il piu' antico di Cagliari. Il nucleo originale e' la cupola su quattro arconi, in blocchi di calcare, costruita sul luogo dove secondo la tradizione fu sepolto Saturnino, martire sotto Diocleziano. I bracci furono aggiunti nell'Undicesimo secolo dai monaci vittorini di Marsiglia. I bombardamenti del 1943 distrussero gran parte della chiesa, e il restauro ha lasciato in vista quello che restava invece di ricostruire: si cammina fra i muri antichi all'aperto, e il quadrato con la cupola resta in piedi in mezzo."
  },
  {
   "id": "poi-552-nome",
@@ -9444,6 +9612,10 @@
   "testo": "I due mori di bronzo che battono le ore sulla torre del Municipio, e i mosaici d'oro della Prefettura, da guardare al tramonto."
  },
  {
+  "id": "poi-552-ancora",
+  "testo": "Da manuale: e' la piu' grande piazza d'Europa affacciata direttamente sul mare — su tre lati gli edifici, sul quarto l'Adriatico senza nulla in mezzo. La forma attuale e' di fine Ottocento, quando Trieste era il porto principale dell'impero austroungarico: il Palazzo del Municipio di Giuseppe Bruni, 1875, con la torre dell'orologio e i due mori che battono le ore; il Palazzo del Lloyd Triestino; il Palazzo del Governo con la facciata a mosaici dorati. Si chiamava piazza Grande e prese il nome attuale nel 1918. La pavimentazione in pietra arenaria, con le luci azzurre a terra, e' del 2001."
+ },
+ {
   "id": "poi-553-nome",
   "testo": "Cattedrale di San Giusto"
  },
@@ -9460,6 +9632,10 @@
   "testo": "Il rosone gotico in pietra carsica, e dentro i due mosaici absidali bizantini del XII e XIII secolo, uno per ciascuna delle chiese originarie."
  },
  {
+  "id": "poi-553-ancora",
+  "testo": "Da manuale: sul colle, dove c'era il foro romano, nel Quattordicesimo secolo due chiese affiancate — Santa Maria Assunta e San Giusto — furono unite in una sola abbattendo la parete in mezzo: per questo la cattedrale ha cinque navate disallineate e la facciata e' asimmetrica, con il rosone spostato. Il campanile ingloba i resti del propileo del tempio romano, e nella parte bassa si vedono le colonne antiche. Dentro, i mosaici bizantini del Dodicesimo secolo nelle due absidi, fatti da maestranze venete e ravennati. Accanto, l'orto lapidario raccoglie i marmi romani della citta'."
+ },
+ {
   "id": "poi-554-nome",
   "testo": "Castello di Miramare"
  },
@@ -9474,6 +9650,10 @@
  {
   "id": "poi-554-dentro",
   "testo": "Le stanze rimaste arredate com'erano, con la cabina-camera che riproduce quella della fregata Novara; e il parco con le specie esotiche."
+ },
+ {
+  "id": "poi-554-ancora",
+  "testo": "Da manuale: Massimiliano d'Asburgo, fratello dell'imperatore Francesco Giuseppe e comandante della marina austriaca, lo fece costruire dal 1856 su progetto di Carl Junker, su uno sperone di roccia sul mare. Lo arredo' come una nave: la sua camera da letto riproduce la cabina della fregata Novara. Nel 1864 parti' da qui per diventare imperatore del Messico, e nel 1867 fu fucilato a Queretaro; la moglie Carlotta impazzi'. Il parco di ventidue ettari fu disegnato da lui stesso con specie portate dai viaggi, su un terreno che era roccia nuda. La leggenda che chi ci abita faccia una brutta fine e' alimentata dalle morti dei successivi occupanti."
  },
  {
   "id": "poi-555-nome",
@@ -9512,6 +9692,10 @@
   "testo": "I piloni di sbieco rispetto all'asse del ponte: sono orientati sulla corrente, non sulla strada."
  },
  {
+  "id": "poi-556-ancora",
+  "testo": "Da manuale: cominciato da Augusto nel 14 dopo Cristo e finito da Tiberio nel 21, portava la via Emilia fuori da Rimini verso Piacenza. Cinque arcate in pietra d'Istria, piloni obliqui rispetto all'asse per assecondare la corrente, e un sistema di fondazioni su pali di quercia in un terreno instabile: e' in piedi da duemila anni e ha retto le piene, i terremoti e il tentativo dei goti di abbatterlo nel Sesto secolo. Ha portato traffico veicolare fino al 2018. Gli ingegneri lo studiano per le fondazioni: i piloni sono indipendenti l'uno dall'altro, cosi' il cedimento di uno non trascina gli altri."
+ },
+ {
   "id": "poi-557-nome",
   "testo": "Arco di Augusto"
  },
@@ -9526,6 +9710,10 @@
  {
   "id": "poi-557-dentro",
   "testo": "I quattro medaglioni con le divinità, e il fatto che l'arco sia rimasto in piedi mentre le mura ai lati sono state demolite nel 1935."
+ },
+ {
+  "id": "poi-557-ancora",
+  "testo": "Da manuale: eretto nel 27 avanti Cristo per decreto del Senato, e' il piu' antico arco romano conservato. Segnava il punto in cui la via Flaminia, che veniva da Roma, entrava in Rimini e incontrava la via Emilia: un arco di confine, non di trionfo. L'apertura e' larghissima — oltre otto metri — perche' non doveva avere porte: era un segno di pace, una citta' che non ha bisogno di chiudersi. Nei quattro clipei ci sono Giove, Apollo, Nettuno e Roma. La merlatura in cima e' un'aggiunta medievale, e le case che lo stringevano furono demolite nel 1938."
  },
  {
   "id": "poi-558-nome",
@@ -9544,6 +9732,10 @@
   "testo": "Il mastio tronco e le due torri: il castello si legge come un progetto interrotto, non come una rovina."
  },
  {
+  "id": "poi-558-ancora",
+  "testo": "Da manuale: Giancarlo Tramontano, conte di Matera dal 1497, lo fece cominciare nel 1501 su un colle fuori dall'abitato: un torrione centrale e due torri laterali, in blocchi di tufo. Doveva avere dodici torri e non fu mai finito, perche' nel 1514 il conte fu ucciso dai materani in rivolta per le tasse, in un vicolo accanto alla cattedrale che si chiama ancora via del Riscatto. Il castello resto' incompiuto come documento di quella rivolta: una fortezza che il popolo non ha lasciato completare."
+ },
+ {
   "id": "poi-559-nome",
   "testo": "Tempio di Apollo"
  },
@@ -9560,6 +9752,10 @@
   "testo": "Le due colonne rimaste in piedi con l'architrave, e sul gradino l'iscrizione greca arcaica di chi lo dedicò."
  },
  {
+  "id": "poi-559-ancora",
+  "testo": "Da manuale: primo quarto del Sesto secolo avanti Cristo, e' il piu' antico tempio dorico periptero della Sicilia e uno dei primi in pietra del mondo greco — prima si costruiva in legno e mattoni crudi. Le colonne sono monolitiche, bassissime e larghissime, molto ravvicinate: si vede la fase sperimentale, quando ancora non si sapeva quanto si potesse osare. Sul gradino superiore corre l'iscrizione dedicatoria ad Apollo, fra le piu' antiche iscrizioni monumentali greche d'Occidente. Dopo e' stato chiesa bizantina, moschea, di nuovo chiesa, caserma spagnola e case: gli scavi del Novecento hanno sfilato via tutto lasciando il tempio."
+ },
+ {
   "id": "poi-560-nome",
   "testo": "Fonte Aretusa"
  },
@@ -9574,6 +9770,10 @@
  {
   "id": "poi-560-dentro",
   "testo": "Il papiro e le anatre nel bacino, con il mare a tre metri dall'altra parte del muretto."
+ },
+ {
+  "id": "poi-560-ancora",
+  "testo": "Da manuale: una sorgente d'acqua dolce che sgorga a pochi metri dal mare, in riva al porto di Ortigia: un fatto geologico raro, dovuto a una falda che arriva da lontano sotto il livello marino. I greci ci costruirono sopra il mito: la ninfa Aretusa, inseguita dal fiume Alfeo, fu trasformata in sorgente da Artemide e riemerse qui, in Sicilia, dove Alfeo la raggiunse passando sotto il mare. Pindaro e Virgilio la citano. Nel bacino cresce il papiro, presente in Sicilia dall'antichita', e vivono anatre e pesci. L'acqua dolce accanto al mare era anche la ragione pratica per cui Ortigia fu scelta per fondare la citta'."
  },
  {
   "id": "poi-561-nome",
@@ -9610,6 +9810,10 @@
  {
   "id": "poi-562-dentro",
   "testo": "La Venere Anadiomene, copia romana di un originale ellenistico, e il sarcofago di Adelfia, paleocristiano, con duecento figure scolpite."
+ },
+ {
+  "id": "poi-562-ancora",
+  "testo": "Da manuale: fondato nel 1886 e intitolato all'archeologo trentino che scavo' la Sicilia greca per quarant'anni, e' fra i piu' importanti musei archeologici d'Europa per la Magna Grecia. L'edificio e' moderno, a pianta esagonale su tre settori, pensato perche' il percorso segua la cronologia. Fra i pezzi, la Venere Anadiomene detta Landolina, copia romana del Secondo secolo da un originale ellenistico: senza testa, con il panneggio che scivola, fu trovata nel 1804 e Maupassant le dedico' pagine entusiaste. E i corredi delle colonie greche, dai primi insediamenti all'eta' romana."
  },
  {
   "id": "poi-563-nome",
@@ -9748,6 +9952,10 @@
   "testo": "Nella cripta, i due leoni stilofori romanici rimasti dal portale medievale; e il Compianto in terracotta di Alfonso Lombardi."
  },
  {
+  "id": "poi-569-ancora",
+  "testo": "Da manuale: e' la vera cattedrale di Bologna, non San Petronio — che e' una basilica civica, voluta dal Comune e non dal vescovo, e per questo piu' grande e piu' famosa. San Pietro fu fondata nel Decimo secolo, bruciata, ricostruita e rifatta piu' volte: la facciata e' del 1605, l'interno barocco e' di Giovanni Battista Torri. Restano la cripta romanica con le colonne antiche e il campanile, che ingloba una torre circolare del Nono secolo e ha la campana maggiore detta la Nonna, di oltre tremila chili, ancora suonata a sistema bolognese — i campanari la fanno girare a corda, in piedi sul castello."
+ },
+ {
   "id": "poi-570-nome",
   "testo": "Santuario di Santa Maria della Vita"
  },
@@ -9784,6 +9992,10 @@
   "testo": "Sopra il portale, la Madonna di terracotta di Niccolò dell'Arca; e l'orologio con le due torri a fianco."
  },
  {
+  "id": "poi-571-ancora",
+  "testo": "Da manuale: nato come casa del giurista Accursio nel Duecento, comprato dal Comune nel 1287 e ampliato nei secoli, e' il municipio di Bologna. La facciata mette insieme epoche diverse: il portale di Galeazzo Alessi del 1555, la statua in bronzo di papa Gregorio Decimoterzo — bolognese, quello del calendario — e la Madonna in terracotta di Niccolo' dell'Arca, 1478. Dentro, lo scalone a cordonata di Bramante, fatto a rampe larghe e basse perche' ci salissero i cavalli. La torre ha l'orologio dal 1444. Nella Sala Rossa si sposano i bolognesi, e nelle Collezioni Comunali c'e' la quadreria della citta'."
+ },
+ {
   "id": "poi-572-nome",
   "testo": "Basilica di San Giacomo Maggiore"
  },
@@ -9798,6 +10010,10 @@
  {
   "id": "poi-572-dentro",
   "testo": "La Cappella Bentivoglio, con la pala di Lorenzo Costa e la tomba di Anton Galeazzo scolpita da Jacopo della Quercia."
+ },
+ {
+  "id": "poi-572-ancora",
+  "testo": "Da manuale: gotica, cominciata nel 1267 dagli agostiniani, con il portico laterale quattrocentesco lungo via Zamboni — trentacinque arcate su colonne, uno dei portici piu' belli della citta'. Dentro, la cappella Bentivoglio del 1486 e' il luogo in cui la signoria bolognese si fece ritrarre: la pala di Francesco Francia con la famiglia inginocchiata, gli affreschi di Lorenzo Costa con il Trionfo della Fama e il Trionfo della Morte, e la tomba di Anton Galeazzo Bentivoglio scolpita da Jacopo della Quercia. E' la cappella gentilizia piu' completa del Rinascimento emiliano, rimasta intatta anche dopo la cacciata della famiglia nel 1506."
  },
  {
   "id": "poi-573-nome",
