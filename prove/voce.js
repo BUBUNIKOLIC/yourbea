@@ -285,7 +285,10 @@ prova('in coda resta la più importante, non l\'ultima arrivata', async () => {
   await attesa(20);
   dire(['strada'], 'Guida', GUIDA);       // va in coda
   dire(['racconto'], 'Racconto');          // più basso: si butta
-  if (!inCoda || inCoda.liv !== GUIDA) guasto('la coda non tiene la frase di guida');
+  // la coda ora e' una fila ordinata per importanza, non una casella sola
+  const fila = Array.isArray(inCoda) ? inCoda : (inCoda ? [inCoda] : []);
+  if (!fila.length || fila[0].liv !== GUIDA) guasto('la coda non tiene la frase di guida');
+  if (fila.some((x) => x.liv === RACCONTO)) guasto('il racconto non andava messo in coda sotto un\'emergenza');
   await finisciTutte();
 });
 

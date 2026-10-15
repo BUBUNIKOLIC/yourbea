@@ -4826,11 +4826,18 @@
     }
     if(window.speechSynthesis)try{window.speechSynthesis.cancel();}catch(e){}
   }
+  function prossimaDallaFila(){
+    if(!inCoda) return null;
+    if(!Array.isArray(inCoda)){ var u=inCoda; inCoda=null; return u; }
+    var p=inCoda.shift();
+    if(!inCoda.length) inCoda=null;
+    return p||null;
+  }
   function finito(mio){
     if(mio!==turno)return;
     staParlando=false;
     livelloInCorso=0;
-    if(inCoda){ var c=inCoda; inCoda=null; dire(c.ids,c.testo,c.liv); }
+    var c=prossimaDallaFila(); if(c) dire(c.ids,c.testo,c.liv);
   }
   // il ripiego con la voce del telefono: solo se il turno è ancora suo
   function ripiego(mio,testo){
@@ -4918,8 +4925,17 @@
     if(altreCopieStannoParlando() && liv!==EMERGENZA) return;
     diciAlleAltreCopie(testo);   // prende il lucchetto e avvisa le altre
     if(staParlando){
+      /* Una fila vera, non una casella sola.
+         Con una casella sola ogni frase nuova cancellava quella in attesa:
+         all'avvio l'app ne prova a dire cinque in dieci secondi, e
+         l'utente ne sentiva una. Sembrava muta. Ora aspettano in fila,
+         le piu' importanti davanti, e la fila non supera le quattro —
+         oltre, la roba vecchia non serve piu' a nessuno. */
       var accoda=function(){
-        if(!inCoda||liv>=inCoda.liv)inCoda={ids:ids,testo:testo,liv:liv};
+        if(!Array.isArray(inCoda)) inCoda = inCoda ? [inCoda] : [];
+        inCoda.push({ids:ids,testo:testo,liv:liv});
+        inCoda.sort(function(a,b){ return b.liv-a.liv; });   // prima le importanti
+        if(inCoda.length>4) inCoda.length=4;
       };
       // piu' basso di quello che sta parlando: il racconto si butta, il
       // resto aspetta il suo turno
@@ -4934,9 +4950,10 @@
        avviso di attraversamento — quel racconto non si butta: torna in
        coda e riprende da capo appena l'avviso ha finito. Prima spariva, e
        chi ascoltava sentiva una frase che non finiva mai piu'. */
-    if(staParlando && livelloInCorso && liv>livelloInCorso && ultimaFrase &&
-       (!inCoda || livelloInCorso>=inCoda.liv)){
-      inCoda={ids:ultimaFrase.ids, testo:ultimaFrase.testo, liv:livelloInCorso, ripresa:true};
+    if(staParlando && livelloInCorso && liv>livelloInCorso && ultimaFrase){
+      if(!Array.isArray(inCoda)) inCoda = inCoda ? [inCoda] : [];
+      inCoda.unshift({ids:ultimaFrase.ids, testo:ultimaFrase.testo, liv:livelloInCorso, ripresa:true});
+      if(inCoda.length>4) inCoda.length=4;
     }
     ultimaFrase={ids:ids,testo:testo};
     zittisci();
@@ -5249,7 +5266,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='85';
+  var VERSIONE='86';
   /* Una guardia: se per qualunque motivo questo script venisse eseguito
      due volte nella stessa pagina, il secondo si ferma qui. Due motori
      nella stessa pagina significano due code, due turni e due voci che
@@ -6366,7 +6383,11 @@
     audio();
     if(S.voice){S.said={};accendiRadio();avviaAscolto();
       var bp=el('parla'); if(bp)bp.hidden=false;
-      if(window.urbeaNativo){ var b2=el('parla'); if(b2)b2.hidden=false; }dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.',GUIDA);}
+      if(window.urbeaNativo){ var b2=el('parla'); if(b2)b2.hidden=false; }
+    // «modalita' voce attiva» si dice solo se la accendi tu dal tasto:
+    // entrando da «guidami a voce» lo sai gia', e sono parole in piu'
+    // davanti a chi aspetta di sentire dove si trova
+    if(!porta || porta.hidden) dire(['frase-voce-attiva'],'Modalità voce attiva. Ti annuncio ogni luogo che passi, da che parte e a quanti metri.',GUIDA);}
     else{ spegniRadio(); fermaAscolto(); var bp2=el('parla'); if(bp2)bp2.hidden=true; zittisci(); staParlando=false; livelloInCorso=0; inCoda=null; }
     render();
   });
@@ -7604,7 +7625,7 @@
                   'per quello restano il bastone, il cane e le tue orecchie.';
             try{ liveEl.textContent=a; }catch(e){}
             try{ parlaLibero(a, GUIDA); }catch(e){}
-          }, 2800);
+          }, 9000);
         }
       }catch(e){}
       // si dice subito che cosa sta succedendo, senza aspettare il GPS
@@ -7661,7 +7682,6 @@
         attesa=setTimeout(function(){
           if(porta.hidden)return;
           S.libero=true; entra(true);
-          dire(['frase-parto-libero'],'Comincio col cammino libero. Quando vuoi, dimmi: percorsi.',GUIDA);
         },12000);
       }
     }
