@@ -34,8 +34,18 @@ function Mondo() {
     play() {
       if (m.audioNegato) { const e = new Error('no'); e.name = 'NotAllowedError'; return Promise.reject(e); }
       if (!m.clipEsistenti.has(this.id)) {
-        m.tempi.push({ quando: m.adesso + 10, f: () => { if (this.onerror) this.onerror({}); } });
-        return Promise.resolve();
+        /* COME FA IL BROWSER DAVVERO con una clip che non c'è: prima
+           l'elemento va in errore, e SUBITO DOPO la promessa di play()
+           viene rigettata con NotSupportedError. Qui dentro, fino al
+           15/10 sera, la promessa si risolveva e basta: per questo il
+           motore sembrava a posto mentre nel riquadro del browser diceva
+           la stessa frase quattro volte. */
+        return new Promise((res, rej) => {
+          m.tempi.push({ quando: m.adesso + 10, f: () => {
+            if (this.onerror) this.onerror({});
+            const e = new Error('non si può suonare'); e.name = 'NotSupportedError'; rej(e);
+          } });
+        });
       }
       if (m.clipLente.has(this.id)) {
         // la clip esiste ma non comincia mai: currentTime resta 0
@@ -121,6 +131,42 @@ prova('MAI SILENZIO: una clip che non parte passa alla voce di sistema in 3,5 s'
   if (!m.sistema.length) guasto('dopo 4 secondi è ancora muto: è il difetto di tutti e quattro i provatori');
   m.passano(9000);
   if (m.motore.staParlando()) guasto('resta occupato dopo il ripiego');
+});
+
+prova('la stessa frase non si dice quattro volte quando mancano le clip', async () => {
+  /* 15/10 sera, provando le passeggiate nel riquadro del browser: per UN
+     cenno solo, il diario segnava quattro «VOCE DI SISTEMA» con la stessa
+     frase. Succede perché ogni clip che non c'è bussa due volte — l'errore
+     dell'elemento e la promessa di play() rigettata — e il secondo colpo
+     passava il controllo. Non è un caso di laboratorio: sul telefono le
+     4.026 clip dei nomi non stanno in cassaforte, si scaricano quando
+     servono, e finché non ci sono questa è la normalità. */
+  const m = Mondo(); m.clipEsistenti = new Set([]);
+  m.motore.parla('proprio a destra, a pochi passi, Battistero di Parma.',
+                 { clip: ['dir-proprio-a-destra', 'm-passi', 'poi-688-nome', 'poi-688-intro', 'frase-chiedi'] });
+  for (let g = 0; g < 8; g++) { m.passano(500); await respira(); }
+  if (!m.sistema.length) guasto('senza clip la frase va detta lo stesso');
+  if (m.sistema.length > 1) guasto('detta ' + m.sistema.length + ' volte: ' + m.sistema.join(' | '));
+});
+
+prova('la clip saltata non parla sopra quella che sta suonando', async () => {
+  /* Il colpo in ritardo di una clip saltata — la promessa di play()
+     rigettata dopo che la catena è già andata avanti — azzerava `inCorso`,
+     cioè il riferimento alla clip che in quel momento stava suonando, e
+     faceva partire la voce di sistema sopra di lei: due voci insieme, il
+     difetto della sorella di Vince. */
+  const m = Mondo(); m.clipEsistenti = new Set(['esiste']);
+  m.motore.parla('Battistero di Parma.', { clip: ['manca', 'esiste'] });
+  m.passano(20);              // «manca» va in errore, parte «esiste»
+  await respira();            // e qui arriva il rifiuto in ritardo di «manca»
+  m.passano(20);
+  await respira();
+  if (m.suonando !== 1) guasto('«esiste» doveva restare in suono: ' + m.suonando);
+  if (m.sistema.length) guasto('e nessuno doveva parlarci sopra: ' + m.sistema.join(' | '));
+  /* e la clip che suona deve restare afferrabile: se «inCorso» è stato
+     azzerato, un'emergenza non riesce più a zittirla */
+  m.motore.ferma();
+  if (m.suonando !== 0) guasto('«ferma» non è riuscito a zittire la clip: resta ' + m.suonando);
 });
 
 prova('clip che non esiste: si salta e si prosegue, niente blocco', () => {

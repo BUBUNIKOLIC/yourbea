@@ -121,8 +121,15 @@ function MotoreVoce(opzioni) {
     return null;
   }
 
+  var dettaDaSistema = -1;        // il turno in cui la voce di sistema ha già parlato
   function conLaVoceDiSistema(mio, testo) {
     if (mio !== turno) return;
+    /* UNA FRASE, UNA VOLTA. Qualunque strada porti qui — clip mancante,
+       clip lenta, audio negato — per un turno si ripiega una volta sola.
+       È l'ultima difesa: le strade che ci arrivano sono tre e si
+       incrociano in ordini diversi a seconda del telefono. */
+    if (dettaDaSistema === mio) { diario('GIÀ DETTA A VOCE, non la ripeto'); return; }
+    dettaDaSistema = mio;
     if (!sintesi) { finito(mio); return; }
     diario('VOCE DI SISTEMA: ' + String(testo).slice(0, 40));
     try { sintesi.parla(testo); } catch (e) {}
@@ -189,7 +196,14 @@ function MotoreVoce(opzioni) {
       var p;
       try { p = a.play(); } catch (e) { p = null; }
       if (p && p.catch) p.catch(function (err) {
-        gestita = true;                        // qualunque esito, qui è gestita
+        /* UNA CLIP BUSSA DUE VOLTE. Quando il file non c'è, il browser fa
+           partire l'errore dell'elemento E POI rigetta la promessa di
+           play(): due colpi per la stessa clip. Qui `gestita` si segnava
+           ma non si guardava, così il secondo colpo ripiegava di nuovo
+           sulla voce di sistema — e con cinque clip la stessa frase si
+           sentiva quattro volte (15/10, provando le passeggiate). */
+        if (gestita) return;
+        gestita = true;
         if (mio !== turno) return;
         // pause() fa rigettare con AbortError: è un'interruzione voluta,
         // non un guasto, e non si ripiega
