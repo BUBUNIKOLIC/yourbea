@@ -235,6 +235,7 @@ prova('«avvisa» chiama, e dice che si può avere il messaggio', () => {
   const d = e.comando('avvisa mariolina', { via: 'Via dei Corazzieri' });
   if (!d || d.tipo !== 'chiama-contatto') guasto('«avvisa» deve chiamare: la chiamata parte da sola');
   if (!/messaggio/i.test(d.testo)) guasto('deve offrire anche lo scritto');
+  if (!/premi Chiama/i.test(d.testo)) guasto('chi non vede deve sapere che esce la finestra di Apple e cosa farci');
   if (!/Via dei Corazzieri/.test(d.testo)) guasto('deve dire cosa raccontare quando risponde');
   const m = (d.mosse || [])[0];
   if (!m || m.cosa !== 'chiama') guasto('manca la mossa della chiamata');

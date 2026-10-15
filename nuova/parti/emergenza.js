@@ -105,7 +105,14 @@ function Emergenza(opzioni) {
       /* DOPPIA STRADA, e il tempo di cambiare idea: la chiamata parte dopo
          quasi tre secondi, e in quei tre secondi basta dire «messaggio».
          Chi non vede non ha un tasto «annulla» da cercare. */
-      testo: 'Chiamo ' + contatto.nome + '.' + (via ? ' Quando risponde dille che sei in ' + via + '.' : '') +
+      /* L'ULTIMO TOCCO ESISTE E SI DICE. Apple non lascia telefonare
+         nessuna app di nascosto: esce una finestra di sistema, e ci scrive
+         il numero, non il nome — provato il 15/10, anche col prefisso
+         giusto. Non si può cambiare quella finestra; si può dire a chi non
+         vede che sta per uscire e cosa farci, invece di lasciarlo davanti a
+         uno schermo muto a chiedersi se la chiamata è partita. */
+      testo: 'Chiamo ' + contatto.nome + '. Esce la finestra del telefono: premi Chiama.' +
+             (via ? ' Poi dille che sei in ' + via + '.' : '') +
              ' Se preferisci il messaggio scritto, dì: messaggio.',
       mosse: [{ cosa: 'chiama', numero: numeroTelefono(contatto.telefono), fraMillisecondi: 2600 }]
     };
