@@ -314,6 +314,7 @@
       return true;
     }
     if (r.cosa === 'contatto-senza-numero') {
+      if (chiediAllaRubrica(r.nome, 'niente')) return true;
       inAttesaDi = { cosa: 'numero', nome: r.nome };
       voce.parla(r.nome + '. Adesso dimmi il suo numero, col prefisso, una cifra per volta.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
@@ -322,12 +323,54 @@
     return false;
   }
 
-  function salvaContatto(nome, numero) {
+  /* ---------- la rubrica del telefono ----------
+     «E bisogna digitare. Un non vedente come fa?» (Vince, stasera). Non fa:
+     per questo il numero non si chiede più se il telefono ce l'ha già. Si
+     dice «avvisa Mariolina», il guscio cerca in rubrica e la chiama. Il
+     numero dettato resta come seconda strada: nel browser, o se la rubrica
+     non si può guardare. */
+  var cercatoInRubrica = null;      // { nome, poi: 'chiamata' | 'messaggio' }
+
+  function chiediAllaRubrica(nome, poi) {
+    if (!window.urbeaRubrica) return false;
+    var bello = maiuscolaNome(nome);
+    cercatoInRubrica = { nome: bello, poi: poi || 'chiamata' };
+    diario('RUBRICA: cerco ' + bello);
+    voce.parla('Cerco ' + bello + ' nella tua rubrica.', { livello: voce.GUIDA, ancheSeUguale: true });
+    try { window.urbeaRubrica(nome); } catch (e) { return false; }
+    return true;
+  }
+
+  window.urbeaDallaRubrica = function (nome, numero, guaio) {
+    var chiesto = cercatoInRubrica; cercatoInRubrica = null;
+    diario('RUBRICA: ' + nome + ' → ' + (guaio || numero));
+    if (numero) {
+      salvaContatto(nome, numero, chiesto && chiesto.poi !== 'niente');
+      if (!chiesto || chiesto.poi === 'niente') return;   // registrato e basta
+      var s = posizione.leggi();
+      var dove = { via: ultimaStrada || '', lat: s.lat, lon: s.lon };
+      dilloSubito(chiesto.poi === 'messaggio'
+        ? emergenza.avvisaContatto(dove) : emergenza.chiamaContatto(dove));
+      return;
+    }
+    /* niente numero: si dice perché, e si offre la strada che resta —
+       dettarlo. Mai lasciare in sospeso chi ha chiesto aiuto. */
+    var chi = (chiesto && chiesto.nome) || nome;
+    inAttesaDi = { cosa: 'numero', nome: maiuscolaNome(chi) };
+    voce.parla(guaio === 'niente-permesso'
+      ? 'Non posso guardare la tua rubrica: se vuoi, dallo nelle impostazioni. Intanto dimmi il numero di ' + chi + ', una cifra per volta.'
+      : 'In rubrica ' + chi + ' non lo trovo. Dimmi il suo numero, una cifra per volta.',
+      { livello: voce.GUIDA, ancheSeUguale: true });
+  };
+  function maiuscolaNome(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
+
+  function salvaContatto(nome, numero, dallaRubrica) {
     contatto = { nome: nome, telefono: numero };
     try { localStorage.setItem('yourbea2-contatto', JSON.stringify(contatto)); } catch (e) {}
     emergenza.conContatto(contatto);
     scriviTastoAvvisa();
     el('contatto-nome').value = nome; el('contatto-tel').value = numero;
+    if (dallaRubrica) return;       // qui la frase la dice chi ha chiamato
     voce.parla('Registrato. ' + nome + ' è chi avviso: basta dire «avvisa ' + nome + '» e la chiamo.',
                { livello: voce.GUIDA, ancheSeUguale: true });
   }
@@ -561,10 +604,12 @@
       /* chiede di avvisare qualcuno di cui non ho il numero: lo dico e apro
          subito il posto dove scriverlo, se no resta una frase e basta. */
       if (em.tipo === 'chi-e') {
+        /* il numero lo ha il telefono: si guarda lì prima di chiederlo */
+        if (chiediAllaRubrica(em.nome, /messaggio|whatsapp|scrivi/.test(t) ? 'messaggio' : 'chiamata')) return true;
         dilloSubito(em);
         apriCassetto(true);
         var rc = el('riga-contatto'); rc.hidden = false;
-        el('contatto-nome').value = em.nome.charAt(0).toUpperCase() + em.nome.slice(1);
+        el('contatto-nome').value = maiuscolaNome(em.nome);
         el('contatto-tel').focus();
         return true;
       }

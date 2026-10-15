@@ -36,6 +36,7 @@ targets:
         UIBackgroundModes: [audio, location]
         NSLocationWhenInUseUsageDescription: "Yourbea ti dice dove sei e cosa hai intorno: senza la posizione non può farlo."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Serve anche con lo schermo spento, perché l'app ti accompagna mentre cammini col telefono in tasca."
+        NSContactsUsageDescription: "Per avvisare chi scegli tu dicendo solo il suo nome: il numero lo prende dalla tua rubrica, così non devi scriverlo."
         NSMicrophoneUsageDescription: "Per capire quando dici «dove sono», «approfondisci» o «portami a»."
         NSSpeechRecognitionUsageDescription: "Le tue richieste vengono riconosciute per rispondere a voce."
         ITSAppUsesNonExemptEncryption: false

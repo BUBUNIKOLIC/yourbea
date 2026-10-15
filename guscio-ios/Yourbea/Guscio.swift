@@ -31,6 +31,7 @@ import WebKit
 import CoreLocation
 import AVFoundation
 import Speech
+import Contacts
 
 let INDIRIZZO = "https://bubunikolic.github.io/yourbea/nuova/"
 
@@ -101,6 +102,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaAscolta = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'ascolta' }); };
   window.urbeaChiudiAscolto = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'chiudi' }); };
   window.urbeaDiario = function (t) { webkit.messageHandlers.guscio.postMessage({ cosa: 'diario', testo: String(t) }); };
+  window.urbeaRubrica = function (nome) { webkit.messageHandlers.guscio.postMessage({ cosa: 'rubrica', nome: String(nome) }); };
   """
 
   /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
@@ -131,12 +133,59 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     case "ascolta": vuoleAscoltare = true; apriMicrofono()
     case "chiudi": vuoleAscoltare = false; chiudiMicrofono()
     case "diario": NSLog("YOURBEA %@", (d["testo"] as? String) ?? "")
+    case "rubrica": cercaInRubrica((d["nome"] as? String) ?? "")
     default: break
     }
   }
 
   private func allaPagina(_ js: String) {
     DispatchQueue.main.async { self.pagina.evaluateJavaScript(js, completionHandler: nil) }
+  }
+
+  /* LA RUBRICA. «E bisogna scrivere», ha detto Vince: per registrare chi
+     avvisare bisognava dettare un numero cifra per cifra, quando quel
+     numero sta gia nel telefono. Si dice il nome e basta: il guscio cerca
+     in rubrica e passa il numero alla pagina. Il permesso lo chiede iOS la
+     prima volta, e se dice di no si torna al numero dettato: non si resta
+     senza strada. */
+  private func cercaInRubrica(_ nome: String) {
+    let cercato = nome.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !cercato.isEmpty else { return }
+    let store = CNContactStore()
+    store.requestAccess(for: .contacts) { [weak self] concesso, _ in
+      guard let self = self else { return }
+      guard concesso else { self.rispondiRubrica(cercato, nil, "niente-permesso"); return }
+      let chiavi = [CNContactGivenNameKey, CNContactFamilyNameKey,
+                    CNContactPhoneNumbersKey] as [CNKeyDescriptor]
+      do {
+        let trovati = try store.unifiedContacts(
+          matching: CNContact.predicateForContacts(matchingName: cercato), keysToFetch: chiavi)
+        /* si prende il cellulare, se c'e': a chi ti deve venire a prendere
+           si telefona sul cellulare, non in ufficio */
+        for c in trovati {
+          let numeri = c.phoneNumbers
+          let cellulare = numeri.first(where: { $0.label == CNLabelPhoneNumberMobile || $0.label == CNLabelPhoneNumberiPhone })
+          if let n = (cellulare ?? numeri.first)?.value.stringValue {
+            let nomeIntero = [c.givenName, c.familyName].filter { !$0.isEmpty }.joined(separator: " ")
+            self.rispondiRubrica(nomeIntero.isEmpty ? cercato : nomeIntero, n, nil)
+            return
+          }
+        }
+        self.rispondiRubrica(cercato, nil, "non-trovato")
+      } catch {
+        self.rispondiRubrica(cercato, nil, "non-trovato")
+      }
+    }
+  }
+
+  private func rispondiRubrica(_ nome: String, _ numero: String?, _ guaio: String?) {
+    func pulito(_ t: String) -> String {
+      return t.replacingOccurrences(of: "\\", with: "").replacingOccurrences(of: "\"", with: "")
+    }
+    let n = numero == nil ? "null" : "\"\(pulito(numero!))\""
+    let g = guaio == nil ? "null" : "\"\(guaio!)\""
+    NSLog("YOURBEA rubrica: %@ -> %@", nome, guaio ?? (numero ?? "?"))
+    allaPagina("window.urbeaDallaRubrica && window.urbeaDallaRubrica(\"\(pulito(nome))\", \(n), \(g))")
   }
 
   // MARK: la posizione

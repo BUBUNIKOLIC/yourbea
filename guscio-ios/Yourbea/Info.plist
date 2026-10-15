@@ -22,6 +22,8 @@
 	<string>1</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSContactsUsageDescription</key>
+	<string>Per avvisare chi scegli tu dicendo solo il suo nome: il numero lo prende dalla tua rubrica, così non devi scriverlo.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Serve anche con lo schermo spento, perché l'app ti accompagna mentre cammini col telefono in tasca.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
