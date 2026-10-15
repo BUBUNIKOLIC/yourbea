@@ -192,6 +192,16 @@
     }
   }
 
+  /* la scena intorno: la mappa la scaricavamo e non la diceva nessuno */
+  var scena = Scena({ dist: posizione.dist, verso: posizione.verso });
+  function raccontaScena() {
+    var s = posizione.leggi();
+    if (!s.pronto || !acceso) return;
+    var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
+                             direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
+    if (d) dillo(d);
+  }
+
   var clip = Clip();
 
   /* ---------- l'emergenza e la guida ---------- */
@@ -518,8 +528,15 @@
         if (dove === ultimaStrada) return;
         ultimaStrada = dove;
         dillo({ tipo: 'strada', testo: 'Sei in ' + dove + '.', livello: 'guida' });
+        scena.dimentica();          // strada nuova, scena nuova: si può ridire
       });
-      intorno.servizi(s.lat, s.lon).then(function (v) { if (v) SERVIZI = v; });
+      intorno.servizi(s.lat, s.lon).then(function (v) {
+        if (!v) return;
+        SERVIZI = v;
+        /* appena si sa cosa c'è intorno, lo si dice: è la cosa che a chi non
+           vede serve più di tutte, e al turista racconta dov'è capitato. */
+        raccontaScena();
+      });
       intorno.luoghi(s.lat, s.lon).then(function (nuovi) {
         if (!nuovi || !nuovi.length) return;
         /* Wikipedia risponde anche su luoghi che abbiamo già scritti a mano,
