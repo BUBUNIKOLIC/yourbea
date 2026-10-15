@@ -16,6 +16,10 @@
   "testo": "L'orologio del campanile, fermo alle tre del mattino: l'ora in cui la lava arrivò. L'ipogeo e i cunicoli scavati nella lava del 1794 sotto il pavimento. L'urna di san Vincenzo Romano. L'interno è a stucchi bianchi; sotto la chiesa si visitano gli ambienti sepolti dalla lava. Basilica minore dal 1957: conserva le spoglie di san Vincenzo Romano, che ne fu parroco dal 1799 al 1831 e ne guidò la ricostruzione."
  },
  {
+  "id": "poi-01-ancora",
+  "testo": "Da manuale: la chiesa madre di Torre del Greco, dell'inizio del Cinquecento, fu quasi distrutta dall'eruzione del 15 giugno 1794, quando la lava sommerse il centro storico sotto dieci metri. Sul campanile l'orologio e' fermo sulle tre del mattino: l'ora in cui la colata lo raggiunse, e nessuno l'ha piu' rimesso in moto. La ricostruzione fu opera di Vincenzo Romano, parroco qui dal 1795 al 1831, che la porto' avanti chiedendo l'aiuto della popolazione e lavorando lui stesso al cantiere — lo chiamavano il prete faticatore. E' sepolto in questa chiesa, ed e' stato proclamato santo da papa Francesco il 14 ottobre 2018."
+ },
+ {
   "id": "poi-02-nome",
   "testo": "Palazzo Baronale, oggi Municipio"
  },
@@ -158,6 +162,10 @@
  {
   "id": "poi-10-dentro",
   "testo": "Incisioni su corallo, su lava, su conchiglia rosa e tigrata, su madreperla e avorio: il repertorio di una città che vive di questo mestiere."
+ },
+ {
+  "id": "poi-10-ancora",
+  "testo": "Da manuale: Torre del Greco lavora il corallo dal Cinquecento, e nel 1878, con decreto regio del 23 giugno, vi fu istituita la Scuola per la lavorazione del corallo: una delle piu' antiche scuole d'arte d'Italia, diventata Istituto Statale d'Arte nel 1968. Il museo annesso, aperto nel 1933, raccoglie i pezzi migliori prodotti dalla scuola e dalle botteghe della citta', e racconta il passaggio dal lavoro liscio — grani e tubetti per le collane — all'intaglio artistico e al cammeo. La sede e' un convento barocco accanto alla chiesa del Carmine, ricostruito nella seconda meta' del Seicento dopo che l'eruzione del 1631 aveva distrutto quello cinquecentesco."
  },
  {
   "id": "poi-11-nome",
@@ -514,6 +522,10 @@
  {
   "id": "poi-34-dentro",
   "testo": "I conetti di scoria allineati sulla frattura eruttiva e il tracciato della colata, che si segue a vista fino ai tetti del centro."
+ },
+ {
+  "id": "poi-34-ancora",
+  "testo": "Da manuale: la notte del 15 giugno 1794 si aprirono sul fianco del Vesuvio alcune bocche allineate, a circa quattrocento metri di quota, e la lava scese verso il mare in poche ore seppellendo il centro di Torre del Greco sotto dieci metri. Fu una delle eruzioni laterali piu' distruttive del vulcano in epoca storica. Le bocche si riconoscono ancora come coni bassi e spaccature allineate lungo la stessa frattura: e' la direzione che la lava prendera' anche le volte successive, perche' segue la debolezza strutturale del fianco. La citta' fu ricostruita sopra la colata, ed e' per questo che il livello del suolo nel centro e' piu' alto delle fondazioni antiche."
  },
  {
   "id": "poi-35-nome",
