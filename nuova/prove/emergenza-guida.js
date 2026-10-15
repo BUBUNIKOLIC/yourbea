@@ -89,7 +89,9 @@ prova('le parole dell\'emergenza si riconoscono', () => {
     ['ho bisogno di aiuto', 'scelte'],
     ['commissariato più vicino', 'cerca'],
     ['portami al pronto soccorso', 'cerca'],
-    ['avvisa Vince', 'avvisa']
+    /* «avvisa» CHIAMA: la telefonata parte da sola, il messaggio no */
+    ['avvisa Vince', 'chiama-contatto'],
+    ['manda un messaggio a Vince', 'avvisa']
   ];
   casi.forEach(([frase, atteso]) => {
     const r = e.comando(frase, DOVE);
@@ -207,7 +209,7 @@ prova('un nome che non conosco: lo dice, non resta zitta', () => {
 
 prova('il nome registrato apre il messaggio, e non promette l\'invio', () => {
   const e = Emergenza({ contatto: { nome: 'Mariolina', telefono: '+393331234567' } });
-  const d = e.comando('avvisa mariolina', { via: 'Via dei Corazzieri', lat: 41.8, lon: 12.5 });
+  const d = e.comando('manda un messaggio a mariolina', { via: 'Via dei Corazzieri', lat: 41.8, lon: 12.5 });
   if (!d || d.tipo !== 'avvisa') guasto('col numero in mano deve avvisare');
   if (!/premi invia/i.test(d.testo)) guasto('nessuna app manda un SMS di nascosto: va detto');
   const m = (d.mosse || [])[0];
@@ -222,6 +224,30 @@ prova('il numero per WhatsApp: col prefisso, in cifre', () => {
   if (n('333 123 4567') !== '393331234567') guasto('un numero italiano senza prefisso va completato: ' + n('333 123 4567'));
   if (n('0039 333 1234567') !== '393331234567') guasto('lo 00 si toglie: ' + n('0039 333 1234567'));
   if (n('+44 7700 900123') !== '447700900123') guasto('un numero straniero non si tocca: ' + n('+44 7700 900123'));
+});
+
+/* LA DOPPIA STRADA, chiesta da Vince il 15/10: «metti doppia opzione».
+   Chi non vede deve poter fare tutto a voce, e un messaggio scritto nessuna
+   app lo manda da sola: la chiamata sì. Quindi «avvisa» chiama, e l'app
+   offre il messaggio a chi preferisce quello. */
+prova('«avvisa» chiama, e dice che si può avere il messaggio', () => {
+  const e = Emergenza({ contatto: { nome: 'Mariolina', telefono: '+393331234567' }, io: 'Vince' });
+  const d = e.comando('avvisa mariolina', { via: 'Via dei Corazzieri' });
+  if (!d || d.tipo !== 'chiama-contatto') guasto('«avvisa» deve chiamare: la chiamata parte da sola');
+  if (!/messaggio/i.test(d.testo)) guasto('deve offrire anche lo scritto');
+  if (!/Via dei Corazzieri/.test(d.testo)) guasto('deve dire cosa raccontare quando risponde');
+  const m = (d.mosse || [])[0];
+  if (!m || m.cosa !== 'chiama') guasto('manca la mossa della chiamata');
+  if (!m || m.fraMillisecondi < 2000) guasto('serve il tempo di dire «messaggio» prima che parta');
+});
+
+prova('nel messaggio d\'aiuto c\'è prima chi sei', () => {
+  /* «il primo messaggio è sono io, il secondo sono in via dei Corazzieri» */
+  const e = Emergenza({ contatto: { nome: 'Mariolina', telefono: '+393331234567' }, io: 'Vince' });
+  const d = e.avvisaContatto({ via: 'Via dei Corazzieri', lat: 41.8, lon: 12.5 });
+  const t = d.mosse[0].testo;
+  if (t.indexOf('Sono Vince') !== 0) guasto('deve cominciare dicendo chi è: ' + t);
+  if (t.indexOf('Via dei Corazzieri') < 0) guasto('e poi dove sei');
 });
 
 /* ==================== il conto ==================== */

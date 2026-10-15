@@ -30,6 +30,7 @@
 function Emergenza(opzioni) {
   var o = opzioni || {};
   var contatto = o.contatto || null;          // { nome, telefono }
+  var io_ = o.io || '';                       // come si chiama chi usa l'app
 
   /* scelte(): cosa dice il tasto rosso, subito. */
   function scelte() {
@@ -68,7 +69,11 @@ function Emergenza(opzioni) {
                testo: 'Non ho un contatto da avvisare. Puoi registrarlo nel cassetto, con nome e numero.' };
     }
     var via = dove && dove.via ? (dove.via + (dove.civico ? ' ' + dove.civico : '')) : 'non lo so dire';
-    var messaggio = 'Ho bisogno di aiuto. Sono in ' + via +
+    /* PRIMA CHI SEI, POI DOVE SEI. Vince, il 15/10: «il primo messaggio è
+       sono io, il secondo sono in via dei Corazzieri». Un messaggio che
+       arriva da un numero e non dice chi è, chi lo riceve lo guarda due
+       volte prima di capire — e nel frattempo tu aspetti. */
+    var messaggio = (io_ ? 'Sono ' + io_ + '. ' : '') + 'Ho bisogno di aiuto. Sono in ' + via +
                     (dove && dove.lat ? ' — https://maps.google.com/?q=' + dove.lat + ',' + dove.lon : '') + '.';
     return {
       tipo: 'avvisa', livello: 'emergenza', subito: true,
@@ -77,6 +82,32 @@ function Emergenza(opzioni) {
          lo preme la persona — un tasto solo, ma va detto. */
       testo: 'Apro WhatsApp su ' + contatto.nome + ', col messaggio già scritto: la via e il punto sulla mappa. Premi invia.',
       mosse: [{ cosa: 'messaggio', numero: contatto.telefono, testo: messaggio }]
+    };
+  }
+
+  /* chiamaContatto(): la cosa che funziona DAVVERO senza mani.
+     Vince, il 15/10: «un non vedente deve fare tutto a voce… e lo invia
+     anche a voce». Un messaggio scritto no: nessuna app su iPhone manda un
+     SMS o un WhatsApp da sola, l'invio lo preme una persona — e dire di
+     averlo mandato quando non è partito sarebbe la bugia peggiore di tutte.
+     La TELEFONATA invece parte da sola. Quindi «avvisa Mariolina» la chiama,
+     e intanto l'app dice a voce dove sei, così chi ha bisogno sa cosa dire
+     appena quella risponde. Il messaggio scritto resta per chi può premere:
+     «manda un messaggio a Mariolina». */
+  function chiamaContatto(dove) {
+    if (!contatto || !contatto.telefono) {
+      return { tipo: 'niente-contatto', livello: 'emergenza', subito: true,
+               testo: 'Non ho ancora nessuno da avvisare. Dimmi: il mio contatto è, il nome, e poi il numero.' };
+    }
+    var via = dove && dove.via ? (dove.via + (dove.civico ? ' ' + dove.civico : '')) : '';
+    return {
+      tipo: 'chiama-contatto', livello: 'emergenza', subito: true,
+      /* DOPPIA STRADA, e il tempo di cambiare idea: la chiamata parte dopo
+         quasi tre secondi, e in quei tre secondi basta dire «messaggio».
+         Chi non vede non ha un tasto «annulla» da cercare. */
+      testo: 'Chiamo ' + contatto.nome + '.' + (via ? ' Quando risponde dille che sei in ' + via + '.' : '') +
+             ' Se preferisci il messaggio scritto, dì: messaggio.',
+      mosse: [{ cosa: 'chiama', numero: contatto.telefono, fraMillisecondi: 2600 }]
     };
   }
 
@@ -125,18 +156,22 @@ function Emergenza(opzioni) {
        leggere la rubrica da dentro una pagina web: il numero non ce l'ha e
        non se lo inventa. Ma il silenzio su una richiesta d'aiuto è la cosa
        peggiore che possa fare: dice che non ce l'ha, e dove scriverlo. */
-    var chiesto = t.match(/\b(?:avvisa|avverti|chiama|telefona a)\s+([a-z]{3,}(?:\s+[a-z]{3,})?)/);
+    /* «manda un messaggio» chiede il testo; tutto il resto è una chiamata */
+    var scritto = /\b(?:messaggio|whatsapp|scrivi|sms)\b/.test(t);
+    var chiesto = t.match(/\b(?:avvisa|avverti|chiama|telefona a|manda un messaggio a|manda un whatsapp a|scrivi a)\s+([a-z]{3,}(?:\s+[a-z]{3,})?)/);
     if (chiesto) {
       var chi = chiesto[1].replace(/\b(?:il|lo|la|mio|mia|suo|sua|per favore|subito)\b/g, '').trim();
       var suo = contatto && contatto.nome ? String(contatto.nome).toLowerCase() : '';
-      if (chi && suo && (suo.indexOf(chi) >= 0 || chi.indexOf(suo) >= 0)) return avvisaContatto(dove);
+      if (chi && suo && (suo.indexOf(chi) >= 0 || chi.indexOf(suo) >= 0)) {
+        return scritto ? avvisaContatto(dove) : chiamaContatto(dove);
+      }
       if (chi) {
         return { tipo: 'chi-e', nome: chi, livello: 'emergenza', subito: true,
                  testo: 'Non ho il numero di ' + chi + '. Dimmelo scrivendolo nel cassetto, in «chi avvisare»: da li in poi lo avviso io, con la via e il punto sulla mappa.' };
       }
     }
     if (contatto && contatto.nome && ha('avvisa', 'chiama il contatto')) {
-      return avvisaContatto(dove);
+      return scritto ? avvisaContatto(dove) : chiamaContatto(dove);
     }
     if (ha('aiuto', 'emergenza', 'soccorso', 'ho bisogno')) return scelte();
     return null;
@@ -144,9 +179,10 @@ function Emergenza(opzioni) {
 
   return {
     scelte: scelte, chiama112: chiama112, derubato: derubato,
-    avvisaContatto: avvisaContatto, cerca: cerca, comando: comando,
+    avvisaContatto: avvisaContatto, chiamaContatto: chiamaContatto, cerca: cerca, comando: comando,
     numeroWhatsApp: numeroWhatsApp,
     conContatto: function (c) { contatto = c; },
+    chiSono: function (n) { io_ = n; },
     contatto: function () { return contatto; }
   };
 }

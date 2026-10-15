@@ -199,7 +199,11 @@
   try { contatto = JSON.parse(localStorage.getItem('yourbea2-contatto') || 'null'); } catch (e) {}
   var casa = '';
   try { casa = localStorage.getItem('yourbea2-casa') || ''; } catch (e) {}
-  var emergenza = Emergenza({ contatto: contatto });
+  var ioSonoIo = '';
+  try { ioSonoIo = localStorage.getItem('yourbea2-io') || ''; } catch (e) {}
+  var dettatura = Dettatura();
+  var inAttesaDi = null;       // { cosa:'numero', nome } | { cosa:'conferma', nome, numero }
+  var emergenza = Emergenza({ contatto: contatto, io: ioSonoIo });
   var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       diario: diario });
@@ -207,15 +211,24 @@
   /* esegui(): le mosse che l'emergenza chiede — chiamare, mandare un
      messaggio. Si fanno QUI, dopo che la frase e' stata detta: se no la
      chiamata parte mentre l'app sta ancora parlando e non si sente niente. */
+  /* le mosse in attesa si possono fermare: finché la chiamata non è
+     partita, «messaggio» o «ferma» la annullano. Senza questo la doppia
+     strada sarebbe finta. */
+  var mosseInAttesa = [];
+  function fermaLeMosse() {
+    mosseInAttesa.forEach(function (id) { clearTimeout(id); });
+    if (mosseInAttesa.length) diario('MOSSE annullate');
+    mosseInAttesa = [];
+  }
   function esegui(mosse) {
     if (!mosse) return;
     mosse.forEach(function (m) {
-      setTimeout(function () {
+      mosseInAttesa.push(setTimeout(function () {
         try {
           if (m.cosa === 'chiama') location.href = 'tel:' + m.numero;
           else if (m.cosa === 'messaggio') location.href = suWhatsApp(m.numero, m.testo);
         } catch (e) { diario('MOSSA non riuscita: ' + m.cosa); }
-      }, m.fraMillisecondi || 1500);
+      }, m.fraMillisecondi || 1500));
     });
   }
   /* suWhatsApp(): il messaggio si manda da WhatsApp, non con gli SMS —
@@ -229,7 +242,7 @@
 
   /* avvisaOra(): il tasto. Se il contatto non c'e' non si inventa niente:
      lo dice e apre il posto dove scriverlo. */
-  function avvisaOra() {
+  function avvisaOra(come) {
     if (!contatto || !contatto.telefono) {
       voce.parla('Non ho ancora nessuno da avvisare. Scrivi qui il nome e il numero, col prefisso, e poi basta un tasto.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
@@ -240,12 +253,83 @@
     }
     var s = posizione.leggi();
     var dove = { via: ultimaStrada || '', lat: s.lat, lon: s.lon };
-    dilloSubito(emergenza.avvisaContatto(dove));
+    fermaLeMosse();
+    dilloSubito(come === 'messaggio' ? emergenza.avvisaContatto(dove) : emergenza.chiamaContatto(dove));
   }
 
   function scriviTastoAvvisa() {
-    el('avvisa-contatto').textContent = contatto && contatto.nome
-      ? ('📣 Avvisa ' + contatto.nome) : '📣 Avvisa il mio contatto';
+    var n = contatto && contatto.nome;
+    el('avvisa-contatto').textContent = n ? ('📞 Chiama ' + n) : '📞 Chiama il mio contatto';
+    el('messaggio-contatto').textContent = n ? ('📣 Messaggio a ' + n) : '📣 Mandagli un messaggio';
+  }
+
+  /* ---------- le frasi che impostano le cose ----------
+     «Un non vedente deve fare tutto a voce»: niente dev'essere raggiungibile
+     solo col dito. Qui si risponde alle frasi capite da parti/dettatura.js. */
+  function dalDettato(t) {
+    var r = dettatura.capisci(t);
+
+    // sto aspettando il numero, o un sì
+    if (inAttesaDi && r && r.cosa === 'numero' && inAttesaDi.cosa === 'numero') {
+      inAttesaDi = { cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
+      voce.parla('Ho sentito: ' + dettatura.leggiCifre(r.numero) + '. È giusto? Dì sì, oppure ripeti il numero.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (inAttesaDi && inAttesaDi.cosa === 'conferma' && r && (r.cosa === 'si' || r.cosa === 'no' || r.cosa === 'numero')) {
+      if (r.cosa === 'numero') {
+        inAttesaDi = { cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
+        voce.parla('Allora: ' + dettatura.leggiCifre(r.numero) + '. È giusto?', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      if (r.cosa === 'no') {
+        inAttesaDi = { cosa: 'numero', nome: inAttesaDi.nome };
+        voce.parla('Va bene, dimmi di nuovo il numero, una cifra per volta.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      salvaContatto(inAttesaDi.nome, inAttesaDi.numero);
+      inAttesaDi = null;
+      return true;
+    }
+    if (!r) return false;
+
+    if (r.cosa === 'casa') {
+      casa = r.indirizzo;
+      try { localStorage.setItem('yourbea2-casa', casa); } catch (e) {}
+      el('casa-indirizzo').value = casa;
+      voce.parla('Casa tua è ' + casa + '. Quando vuoi, dimmi «portami a casa».', { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (r.cosa === 'io') {
+      ioSonoIo = r.nome;
+      try { localStorage.setItem('yourbea2-io', ioSonoIo); } catch (e) {}
+      emergenza.chiSono(ioSonoIo);
+      voce.parla('Ciao ' + ioSonoIo + '. Nel messaggio d\'aiuto dirò che sei tu.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (r.cosa === 'contatto') {
+      inAttesaDi = { cosa: 'conferma', nome: r.nome, numero: r.numero };
+      voce.parla(r.nome + ', numero: ' + dettatura.leggiCifre(r.numero) + '. È giusto? Dì sì, oppure ripeti il numero.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (r.cosa === 'contatto-senza-numero') {
+      inAttesaDi = { cosa: 'numero', nome: r.nome };
+      voce.parla(r.nome + '. Adesso dimmi il suo numero, col prefisso, una cifra per volta.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    return false;
+  }
+
+  function salvaContatto(nome, numero) {
+    contatto = { nome: nome, telefono: numero };
+    try { localStorage.setItem('yourbea2-contatto', JSON.stringify(contatto)); } catch (e) {}
+    emergenza.conContatto(contatto);
+    scriviTastoAvvisa();
+    el('contatto-nome').value = nome; el('contatto-tel').value = numero;
+    voce.parla('Registrato. ' + nome + ' è chi avviso: basta dire «avvisa ' + nome + '» e la chiamo.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
   }
 
   function dilloSubito(d) {
@@ -459,7 +543,15 @@
       if (ha('turismo')) { entra('cultura'); return true; }
       if (ha('utilita')) { entra('servizi'); return true; }
     }
-    if (ha('ferma')) { voce.ferma(); guida.lascia(); return true; }
+    if (ha('ferma')) { fermaLeMosse(); voce.ferma(); guida.lascia(); return true; }
+    /* «messaggio» da solo, subito dopo «avvisa»: ferma la chiamata e manda
+       lo scritto. È la seconda strada della doppia opzione. */
+    if (/^(?:messaggio|il messaggio|manda il messaggio|scrivi|whatsapp)$/.test(t) && contatto && contatto.telefono) {
+      fermaLeMosse();
+      var sm = posizione.leggi();
+      dilloSubito(emergenza.avvisaContatto({ via: ultimaStrada || '', lat: sm.lat, lon: sm.lon }));
+      return true;
+    }
     // l'emergenza viene prima di tutto
     var s0 = posizione.leggi();
     var dove0 = { via: ultimaStrada, lat: s0.lat, lon: s0.lon };
@@ -478,6 +570,7 @@
       }
       dilloSubito(em); return true;
     }
+    if (dalDettato(t)) return true;
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
     if (ha('portami a casa', 'torniamo a casa', 'riportami a casa', 'andiamo a casa', 'voglio tornare a casa')) { aCasa(); return true; }
@@ -492,7 +585,11 @@
     if (ha('dove')) { diciDove(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
-      voce.parla('Puoi dire: ancora, avanti, dove sono, cosa c\'è qui intorno, ferma.', { livello: voce.GUIDA, ancheSeUguale: true });
+      voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
+                 'Portami a, e un indirizzo. Portami a casa. Avvisa, e il nome del tuo contatto. ' +
+                 'E per registrare: mi chiamo, e il tuo nome. Casa mia è, e la via. ' +
+                 'Il mio contatto è, il nome, e poi il numero.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
     return false;
@@ -608,7 +705,8 @@
 
   /* il tasto di casa, e il posto dove si scrive l'indirizzo */
   el('vai-a-casa').addEventListener('click', aCasa);
-  el('avvisa-contatto').addEventListener('click', avvisaOra);
+  el('avvisa-contatto').addEventListener('click', function () { avvisaOra('chiamata'); });
+  el('messaggio-contatto').addEventListener('click', function () { avvisaOra('messaggio'); });
   scriviTastoAvvisa();
   el('dove-abito').addEventListener('click', function () {
     var r = el('riga-casa');
