@@ -458,7 +458,16 @@
   body[data-testo="enorme"] .claim,body[data-testo="enorme"] h2.eyebrow{font-size:12px}
 
   /* in modalità voce si parte già grandi */
-  body[data-voice="1"]{--fs:22px}
+  /* la misura della guida vocale vale finche' non ne scegli una tu: prima
+     questa riga, scritta dopo le altre, bloccava il testo a 22px e
+     «ingrandisci» cambiava l'etichetta del tasto senza ingrandire niente */
+  body[data-voice="1"]:not([data-testo="grande"]):not([data-testo="enorme"]){--fs:22px}
+  /* e quando una misura la scegli tu, in guida vocale parte da piu' in alto:
+     con 22 e 22 «ingrandisci» non ingrandiva niente */
+  body[data-voice="1"][data-testo="grande"]{--fs:26px}
+  body[data-voice="1"][data-testo="enorme"]{--fs:31px}
+  body[data-voice="1"][data-testo="enorme"] .say .what{font-size:50px;line-height:1.04}
+  body[data-voice="1"][data-testo="enorme"] .btn{font-size:27px;padding:26px 16px}
   body[data-voice="1"] .say .what{font-size:38px}
 
   #testo-piu{flex:0 0 auto;min-width:0;padding:16px 18px;font-weight:700;letter-spacing:.02em}
@@ -5030,7 +5039,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='51';
+  var VERSIONE='54';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -5444,6 +5453,118 @@
     bodyEl.className='body idle';
     bodyEl.textContent=(tipoDa(o.p)||o.p.n)+(o.p.y?' · '+o.p.y:'')+' — cammina, te lo racconto quando ci sei';
   }
+
+  /* ---------- la strada che stai facendo ----------
+     Per chi non vede, sapere di camminare in via tale e che fra quaranta
+     metri arriva l'incrocio con via tal altra vale piu' di tutti i monumenti
+     messi insieme: e' quello che permette di orientarsi davvero, invece di
+     essere accompagnati.
+     Il modo e' semplice: si chiede a OpenStreetMap il nome della strada sotto
+     i piedi, e quello di un punto quaranta metri piu' avanti nella direzione
+     in cui cammini. Se i due nomi sono diversi, davanti c'e' un incrocio.
+     Si parla solo quando qualcosa cambia: la strada quando cambia strada,
+     l'incrocio quando ne arriva uno nuovo. Se si parlasse a ogni passo
+     diventerebbe insopportabile dopo due minuti. */
+  var LIBERO='_parlato_';   /* un id che non esiste apposta: le clip non
+                               possono contenere i nomi delle strade, e cosi'
+                               la frase la dice il sintetizzatore — con la
+                               stessa voce, Alice, come le clip incise */
+  function parlaLibero(testo,livello){ dire([LIBERO],testo,livello); }
+
+  var viaSotto='', viaDetta='', viaQuando=0, viaLat=0, viaLon=0;
+  var incrocioDetto='', incrocioQuando=0;
+
+  function nomeViaIn(lat,lon,quando){
+    if(!window.fetch){quando('');return;}
+    var u='https://photon.komoot.io/reverse?lat='+lat+'&lon='+lon+'&limit=1';
+    var stop=null,orologio=null;
+    try{ stop=new AbortController(); orologio=setTimeout(function(){try{stop.abort();}catch(e){}},6000); }catch(e){}
+    fetch(u,{signal:stop?stop.signal:undefined})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(orologio)clearTimeout(orologio);
+        var pr=(d.features&&d.features[0]&&d.features[0].properties)||{};
+        /* «street» e' la via dell'indirizzo; se il punto e' esso stesso una
+           strada, il nome sta in «name» con osm_key=highway */
+        var via=pr.street || (pr.osm_key==='highway' ? (pr.name||'') : '') || '';
+        quando(via);
+      })
+      .catch(function(){ if(orologio)clearTimeout(orologio); quando(''); });
+  }
+
+  function puntoAvanti(metri){
+    var r=S.hd*Math.PI/180;
+    return [ S.lat + (metri*Math.cos(r))/111320,
+             S.lon + (metri*Math.sin(r))/(111320*Math.cos(S.lat*Math.PI/180)) ];
+  }
+
+  function guardaLaStrada(){
+    if(!S.voice||!S.pronto)return;            // serve a chi cammina a voce
+    if(meta)return;                            // se ti sto portando da qualche parte, basta quello
+    if(Date.now()-viaQuando<15000)return;      // non piu' di una volta ogni quindici secondi
+    // e solo se ti sei davvero mosso: da fermo la strada non cambia
+    if(viaLat && dist(S.lat,S.lon,viaLat,viaLon)<15)return;
+    viaQuando=Date.now(); viaLat=S.lat; viaLon=S.lon;
+    nomeViaIn(S.lat,S.lon,function(qui){
+      if(!qui)return;
+      var cambiata=(qui!==viaSotto);
+      viaSotto=qui;
+      if(cambiata && qui!==viaDetta){
+        viaDetta=qui;
+        statusEl.textContent='sei in '+qui;
+        parlaLibero('Sei in '+qui+'.',GUIDA);
+        return;                                // una cosa per volta
+      }
+      // l'incrocio: si guarda quaranta metri davanti, e solo se si sa da che
+      // parte sei girato — se no «davanti» non vuol dire niente
+      if(!versoAffidabile())return;
+      if(Date.now()-incrocioQuando<40000)return;
+      var pa=puntoAvanti(42);
+      nomeViaIn(pa[0],pa[1],function(la){
+        if(!la||la===qui)return;
+        if(la===incrocioDetto)return;          // gia' detto, non si ripete
+        incrocioDetto=la; incrocioQuando=Date.now();
+        parlaLibero('Fra una quarantina di metri, incrocio con '+la+'.',GUIDA);
+      });
+    });
+  }
+
+  /* I percorsi, chiesti mentre cammini. Prima rispondeva solo la schermata
+     d'ingresso: l'app prometteva «quando vuoi, dimmi: percorsi» e poi
+     restava zitta. */
+  var propostiPercorsi=[];
+  function percorsiDaQui(){
+    if(!S.pronto){ dire(['frase-casa-senza-posizione'],'Prima devo sapere dove sei: premi Avvia.',GUIDA); return true; }
+    try{ ordinaPercorsi(); }catch(e){}
+    var sel=el('route');
+    if(!sel||!sel.options.length){ dire(['frase-niente-di-questi'],'Qui vicino non ne trovo.',GUIDA); return true; }
+    propostiPercorsi=[];
+    var nomi=[];
+    for(var i=0;i<Math.min(3,sel.options.length);i++){
+      propostiPercorsi.push(sel.options[i].value);
+      nomi.push(sel.options[i].textContent.replace(/\s+/g,' ').trim());
+    }
+    parlaLibero('I percorsi più vicini. Primo: '+nomi.join('. Poi: ')+
+                '. Per seguirne uno, dimmi: comincia il primo.',GUIDA);
+    return true;
+  }
+  function avviaPercorso(quale){
+    var v=propostiPercorsi[quale];
+    if(!v){ dire(['frase-non-capito'],'Non ho capito quale.',GUIDA); return true; }
+    var sel=el('route');
+    if(!sel){ return true; }
+    sel.value=v;
+    try{ sel.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){}
+    S.libero=false;
+    var nome='';
+    try{ nome=sel.options[sel.selectedIndex].textContent.replace(/\s+/g,' ').trim(); }catch(e){}
+    // prima si conferma, poi si ridisegna: al contrario l'annuncio del
+    // primo luogo del percorso copriva la conferma e sembrava non aver fatto nulla
+    parlaLibero('Seguiamo '+(nome||'questo percorso')+'.',EMERGENZA);
+    setTimeout(function(){ try{ render(); }catch(e){} }, 1200);
+    return true;
+  }
+
   function render(){var items=around();
     // se si sta parlando di un luogo, la direzione e i metri si aggiornano
     // mentre cammini: prima restavano quelli del momento dell'annuncio
@@ -5456,11 +5577,12 @@
       if(whereEl.textContent!==testa)whereEl.textContent=testa;
       puntaBussola(versoAffidabile()?rel:null, m);
     }
-    if(document.hidden){drawList(items);narrate(items);return;}
+    if(document.hidden){drawList(items);narrate(items);try{guardaLaStrada();}catch(e){}return;}
     if(!S.voice){drawStrip(items);muoviMappa();
       if(Date.now()-ultimoDisegno>4000){ultimoDisegno=Date.now();disegnaMappa();}}
     drawList(items);
-    if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}}
+    if(meta){guidaVersoMeta();}else{narrate(items);mostraAttesa(items);}
+    try{ guardaLaStrada(); }catch(e){}}
 
 
 
@@ -5889,6 +6011,10 @@
           var t = via ? ('Ci siamo. Sei in '+via+'. Cammina pure.')
                       : 'Ci siamo, ti ho trovato. Cammina pure.';
           try{ liveEl.textContent=t; }catch(e){}
+          // la via l'ha appena detta: chi guarda la strada non la ripeta
+          // tre secondi dopo. «Via Sacra, Roma» qui, «Via Sacra» di la':
+          // si segna solo la prima parte, prima della virgola.
+          if(via){ viaSotto=viaDetta=String(via).split(',')[0].trim(); }
           if(via) speak(t, true);
           else    dire(['frase-ci-siamo'],t,GUIDA);
         });
@@ -6355,7 +6481,10 @@
     // finche' la schermata d'ingresso e' aperta si sceglie parlando
     var pt=el('porta');
     if(pt && !pt.hidden && typeof window.portaScegli==='function'){
-      if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso'))return window.portaScegli('percorso');
+      if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso')){
+        if(window.portaScegli && window.portaScegli('percorso'))return true;
+        return percorsiDaQui();
+      }
       if(ha('libero','libera','cammino','cammina','vai','comincia','parti','andiamo')||haL('libero'))return window.portaScegli('libero');
     }
     if(ha('approfondisci','dimmi di piu','raccontami','racconta','di piu','spiega')||haL('approfondisci')){ deepen(); return true; }
@@ -6501,6 +6630,13 @@
       testoPiuGrande();
       dire(['frase-testo-grande'],'Ho ingrandito il testo.',GUIDA);
       return true;
+    }
+    if(ha('percorso','percorsi','itinerario','itinerari')||haL('percorso')){
+      return percorsiDaQui();
+    }
+    if(ha('comincia il primo','segui il primo','il primo','comincia il secondo','il secondo','comincia il terzo','il terzo')&&propostiPercorsi.length){
+      var quale = ha('il terzo','comincia il terzo') ? 2 : (ha('il secondo','comincia il secondo') ? 1 : 0);
+      return avviaPercorso(quale);
     }
     if(ha('comandi','che posso dire','cosa posso dire','istruzioni','che si dice')){
       dire(['frase-aiuto'],'Puoi dire: approfondisci, avanti, ripeti, dove sono, oppure ferma.',GUIDA);

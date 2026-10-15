@@ -93,6 +93,34 @@ async function coordinate(qids) {
   return fuori;
 }
 
+/* Secondo parere, solo per le schede sospette. Delle cinque segnalate il
+   15/10, quattro erano buone: OSM dava esattamente il nostro punto (zero
+   metri) e Wikidata un altro — la sede vecchia di una biblioteca, un oggetto
+   diverso con lo stesso nome, un bene diffuso come i portici di Bologna.
+   Una sola era da guardare. Quindi: se OSM conferma noi, non è un errore
+   nostro; se OSM sta con Wikidata e non con noi, allora sì. */
+async function secondoParere(nome, lat, lon) {
+  /* cercato per nome e basta, Nominatim pesca gli omonimi: «Castello
+     Pandone» gli ha fatto tirare fuori un castello a 19 km. Quindi si cerca
+     solo dentro un riquadro di una trentina di chilometri attorno al nostro
+     punto: se il luogo è dove diciamo noi, lì dentro lo trova. */
+  const d0 = 0.15;
+  const riquadro = (lon - d0) + ',' + (lat + d0) + ',' + (lon + d0) + ',' + (lat - d0);
+  const u = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&bounded=1&viewbox=' +
+    riquadro + '&q=' + encodeURIComponent(nome);
+  try {
+    const r = await fetch(u, { headers: { 'User-Agent': UA } });
+    if (!r.ok) return null;
+    const d = await r.json();
+    let meglio = null;
+    for (const x of d) {
+      const dd = dist(lat, lon, parseFloat(x.lat), parseFloat(x.lon));
+      if (!meglio || dd < meglio.d) meglio = { d: dd, lat: parseFloat(x.lat), lon: parseFloat(x.lon), nome: x.display_name };
+    }
+    return meglio;
+  } catch (e) { return null; }
+}
+
 (async () => {
   const daFare = POI.filter((p) => TUTTI || !cache[chiaveDi(p)]);
 
@@ -131,12 +159,31 @@ async function coordinate(qids) {
     ' | da guardare: ' + sbagliate.length + ' | omonimi lontani, ignorati: ' + omonimi.length);
 
   if (sbagliate.length) {
-    console.log('NO  ' + sbagliate.length + ' schede fra ' + SOGLIA + ' m e ' + (OMONIMO / 1000) + ' km dal punto di Wikidata: da guardare a mano');
-    sbagliate.sort((a, b) => b.c.scarto - a.c.scarto).slice(0, 20).forEach((x) => {
-      console.log('      - ' + x.p.n + ': ' + x.c.scarto + ' m | nostro ' + x.p.lat + ',' + x.p.lon +
-        ' | ' + x.c.qid + ' ' + x.c.lat.toFixed(5) + ',' + x.c.lon.toFixed(5));
-    });
-    process.exit(1);
+    console.log('schede lontane dal punto di Wikidata: ' + sbagliate.length + '. Chiedo a OpenStreetMap chi ha ragione.');
+    const vere = [], confermate = [];
+    for (const x of sbagliate.sort((a, b) => b.c.scarto - a.c.scarto)) {
+      const osm = await secondoParere(x.p.n, x.p.lat, x.p.lon);
+      await attesa(1100); // Nominatim: una richiesta al secondo, non di più
+      const daNoi = osm ? Math.round(osm.d) : null;
+      const daLoro = osm ? Math.round(dist(x.c.lat, x.c.lon, osm.lat, osm.lon)) : null;
+      if (osm && daNoi <= 150) confermate.push({ x, daNoi, daLoro });
+      else vere.push({ x, osm, daNoi, daLoro });
+    }
+    if (confermate.length) {
+      console.log('--  ' + confermate.length + ' le conferma OpenStreetMap al nostro punto: Wikidata indica un altro oggetto, non è un errore nostro');
+      confermate.forEach((c) => console.log('      - ' + c.x.p.n + ': OSM a ' + c.daNoi + ' m da noi, ' + c.daLoro + ' m da Wikidata'));
+    }
+    if (vere.length) {
+      console.log('NO  ' + vere.length + ' schede da guardare a mano: né Wikidata né OSM stanno al nostro punto');
+      vere.forEach((v) => {
+        console.log('      - ' + v.x.p.n + ': ' + v.x.c.scarto + ' m da Wikidata | nostro ' + v.x.p.lat + ',' + v.x.p.lon +
+          ' | ' + v.x.c.qid + ' ' + v.x.c.lat.toFixed(5) + ',' + v.x.c.lon.toFixed(5) +
+          (v.osm ? ' | OSM ' + v.osm.lat.toFixed(5) + ',' + v.osm.lon.toFixed(5) + ' (' + v.daNoi + ' m da noi)' : ' | OSM: niente'));
+      });
+      process.exit(1);
+    }
+    console.log('SI  nessun errore nostro: tutte quelle lontane da Wikidata sono confermate da OSM');
+    process.exit(0);
   }
   console.log('SI  nessuna scheda lontana dal punto di Wikidata (soglia ' + SOGLIA + ' m)');
   process.exit(0);
