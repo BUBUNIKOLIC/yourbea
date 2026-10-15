@@ -725,6 +725,18 @@
   .porta-scelta b{font-family:var(--tecnica);font-weight:700;color:#EAF7F9}
   .porta-scelta span{color:#8FA3A9}
   .porta-scelta:active{border-color:var(--filo-forte) !important}
+  /* la riga per installare, sulla schermata d'ingresso: discreta ma
+     sempre visibile, perche' in fondo al pannello dell'aiuto non la
+     trovava nessuno */
+  .porta-installa{
+    display:block;width:100%;margin-top:4px;padding:14px;font:inherit;
+    font-family:var(--tecnica);font-size:15px;letter-spacing:.04em;
+    color:var(--ciano);background:rgba(47,227,242,.06);
+    border:1px dashed var(--filo);border-radius:0;
+    clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+  .porta-installa[hidden]{display:none}
+  .porta-installa:active{background:rgba(47,227,242,.12)}
 
   /* su uno schermo piccolo si taglia meno e si stringe il passo */
   @media (max-width:420px){
@@ -812,6 +824,7 @@
   </button>
   <button class="porta-cambia" id="porta-cambia" hidden>Cambia modo</button>
   <select id="porta-lingua" class="porta-lingua" aria-label="Lingua / Language"></select>
+  <button class="porta-installa" id="porta-installa" hidden>Metti l’icona sul telefono</button>
   <div id="porta-modo" hidden>
     <button class="porta-scelta porta-voce" id="scelta-libera">
       <b>Cammino libero</b>
@@ -5100,7 +5113,7 @@
   /* ---------- la versione e l'aggiornamento ----------
      Senza un numero visibile non si capisce che cosa sta girando sul
      telefono: la copia salvata può restare indietro per giorni. */
-  var VERSIONE='63';
+  var VERSIONE='65';
   (function(){
     var e=el('versione'); if(e)e.textContent='Yourbea · versione '+VERSIONE;
     if(!('serviceWorker' in navigator))return;
@@ -7455,20 +7468,97 @@
     leggiCasa();
   })();
 
-  /* ---------- l'icona sul telefono, con un tasto solo ---------- */
+  /* ---------- l'icona sul telefono ----------
+     La sorella di Vince ha disinstallato l'app, ha aperto il link e non ha
+     trovato nessun modo di installarla. Il manifest era a posto: il
+     problema e' che il link arrivava da WhatsApp, e WhatsApp apre le pagine
+     in un browser suo, dentro l'applicazione, dove l'installazione non
+     esiste. Stessa cosa con Instagram, Facebook e Messenger.
+     Il tasto quindi non si nasconde piu': o installa, o spiega come fare. */
   (function(){
     var bott=el('install'), invito=null;
     if(!bott)return;
+
+    var ua=navigator.userAgent||'';
+    var dentroUnApp = /\bFB[AV]V\b|FBAN|FB_IAB|Instagram|Line\/|WhatsApp|wv\)/i.test(ua)
+                      || (/\bwv\b/.test(ua));
+    var iPhone = /iPhone|iPad|iPod/i.test(ua);
+    var safari = iPhone && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+    var giaInstallata = (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
+                        || window.navigator.standalone===true;
+
+    function spiega(){
+      var t;
+      if(giaInstallata) return;
+      if(dentroUnApp){
+        t = iPhone
+          ? 'Questa pagina e\u2019 aperta dentro un\u2019altra applicazione, e da qui non si puo\u2019 installare. Tocca i tre puntini in alto a destra e scegli «Apri in Safari»: poi il tasto condividi, e «Aggiungi alla schermata Home».'
+          : 'Questa pagina e\u2019 aperta dentro un\u2019altra applicazione, e da qui non si puo\u2019 installare. Tocca i tre puntini in alto a destra e scegli «Apri in Chrome»: poi il menu di Chrome, e «Installa app».';
+      } else if(iPhone){
+        t = safari
+          ? 'Su iPhone si fa cosi\u2019: tocca il tasto condividi in basso — il quadrato con la freccia — scorri e scegli «Aggiungi alla schermata Home».'
+          : 'Su iPhone l\u2019icona si aggiunge solo da Safari. Apri questo stesso indirizzo in Safari, poi tasto condividi e «Aggiungi alla schermata Home».';
+      } else {
+        t = 'Apri il menu del browser — i tre puntini in alto — e scegli «Installa app» o «Aggiungi a schermata Home». Se non c\u2019e\u2019, lascia la pagina aperta mezzo minuto e riprova.';
+      }
+      try{ liveEl.textContent=t; }catch(e){}
+      try{ bodyEl.className='body'; bodyEl.textContent=t; }catch(e){}
+      try{ parlaLibero(t, GUIDA); }catch(e){ try{ speak(t); }catch(_){} }
+    }
+
     window.addEventListener('beforeinstallprompt',function(e){
       e.preventDefault(); invito=e; bott.hidden=false;
+      bott.textContent='Metti l\u2019icona sul telefono';
+      var bp2=el('porta-installa');
+      if(bp2){ bp2.hidden=false; bp2.textContent='Metti l\u2019icona sul telefono'; }
     });
     bott.addEventListener('click',function(){
-      if(!invito)return;
-      invito.prompt();
-      invito.userChoice.then(function(){ invito=null; bott.hidden=true; });
+      audio();
+      if(invito){
+        invito.prompt();
+        invito.userChoice.then(function(){ invito=null; bott.hidden=true; });
+        return;
+      }
+      spiega();                      // niente invito: si spiega a parole
     });
     window.addEventListener('appinstalled',function(){ invito=null; bott.hidden=true; });
-    if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)bott.hidden=true;
+
+    /* lo stesso tasto, ma sulla schermata d'ingresso: e' li' che arriva
+       chi apre il link, e li' deve trovarlo */
+    var bp=el('porta-installa');
+    if(bp && !giaInstallata){
+      bp.hidden=false;
+      if(dentroUnApp) bp.textContent='Come installarla (va aperta in Chrome)';
+      else if(iPhone) bp.textContent='Come mettere l\u2019icona sul telefono';
+      bp.addEventListener('click',function(e){
+        e.stopPropagation();          // se no la porta crede che tu voglia entrare
+        audio();
+        if(invito){
+          invito.prompt();
+          invito.userChoice.then(function(){ invito=null; bp.hidden=true; bott.hidden=true; });
+          return;
+        }
+        spiegaNellaPorta();
+      });
+    }
+    function spiegaNellaPorta(){
+      var t;
+      if(dentroUnApp) t = iPhone
+        ? 'Questa pagina e\u2019 aperta dentro un\u2019altra applicazione: tocca i tre puntini in alto a destra, «Apri in Safari», poi il tasto condividi e «Aggiungi alla schermata Home».'
+        : 'Questa pagina e\u2019 aperta dentro un\u2019altra applicazione: tocca i tre puntini in alto a destra, «Apri in Chrome», poi il menu di Chrome e «Installa app».';
+      else if(iPhone) t='Tocca il tasto condividi in basso — il quadrato con la freccia — scorri e scegli «Aggiungi alla schermata Home».';
+      else t='Apri il menu del browser, i tre puntini in alto a destra, e scegli «Installa app».';
+      if(bp){ bp.textContent=t; bp.style.textAlign='left'; bp.style.lineHeight='1.45'; }
+      try{ speak(t); }catch(e){}
+    }
+
+    // il tasto si vede sempre, tranne quando l'app e' gia' installata
+    if(giaInstallata){ bott.hidden=true; if(bp)bp.hidden=true; }
+    else{
+      bott.hidden=false;
+      if(dentroUnApp) bott.textContent='Come installarla (apri in Chrome)';
+      else if(iPhone) bott.textContent='Come mettere l\u2019icona sul telefono';
+    }
   })();
 
   render();
