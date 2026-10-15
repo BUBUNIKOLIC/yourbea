@@ -197,6 +197,12 @@
   function raccontaScena() {
     var s = posizione.leggi();
     if (!s.pronto || !acceso) return;
+    /* LA SCENA E' DI UTILITA'. Piazze, alberi, attraversamenti e negozi
+       servono a orientarsi e a sbrigare le cose. In Turismo no: li si parla
+       di arte, architettura e storia, e basta. Parole di Vince, il 15/10:
+       «aspetta, questa e' utilita'; turismo informazioni artistiche,
+       architettoniche e storiche». */
+    if (modo !== 'servizi') return;
     var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
                              direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
     if (d) dillo(d);
