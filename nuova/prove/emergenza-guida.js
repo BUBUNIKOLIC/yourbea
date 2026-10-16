@@ -337,6 +337,31 @@ prova('le parole che contano: via e numero non distinguono niente', () => {
   if (p.indexOf('via') >= 0 || p.indexOf('numero') >= 0) guasto('via e numero stanno in ogni indirizzo: ' + p.join(','));
 });
 
+/* ARRIVARE NON BASTA. «Descrizione indirizzo di casa… navigatore
+   pedonale» (Vince, 16/10): un navigatore per chi guida dice «sei
+   arrivato» e ha finito, perché poi uno guarda. A piedi e senza vedere,
+   il numero giusto non serve se non sai da che parte è la porta. */
+prova('all\'arrivo si dice da che parte è, e cosa ha accanto', () => {
+  const g = Guida({ dist, verso });
+  const meta = { n: 'Via dei Corazzieri 47', lat: 41.8240, lon: 12.4814 };
+  g.vaiA(meta, { lat: 41.8230, lon: 12.4814, direzione: 0, direzioneBuona: true }, DOVE, null);
+  /* arrivo camminando verso nord, con la meta appena a destra */
+  const d = g.passo({ lat: 41.82398, lon: 12.48128, direzione: 0, direzioneBuona: true },
+                    5000, { accanto: 'la Tabaccheria Focone' });
+  if (!d || d.tipo !== 'arrivato') guasto('non ha detto che sei arrivato: ' + JSON.stringify(d));
+  if (d && !/destra|sinistra|davanti|dietro/.test(d.testo)) guasto('non dice da che parte: ' + d.testo);
+  if (d && !/Tabaccheria/.test(d.testo)) guasto('non dice cosa c\'è accanto: ' + d.testo);
+});
+
+prova('senza bussola si dice comunque che sei arrivato', () => {
+  const g = Guida({ dist, verso });
+  const meta = { n: 'casa tua', lat: 41.8240, lon: 12.4814 };
+  g.vaiA(meta, { lat: 41.8230, lon: 12.4814 }, DOVE, null);
+  const d = g.passo({ lat: 41.82399, lon: 12.48141 }, 5000, {});
+  if (!d || d.tipo !== 'arrivato') guasto('l\'arrivo si dice sempre');
+  if (d && /destra|sinistra/.test(d.testo)) guasto('ma non si inventa il lato: ' + d.testo);
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');

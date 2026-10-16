@@ -148,12 +148,27 @@ function Guida(opzioni) {
   }
 
   /* passo(): si chiama a ogni posizione nuova mentre si va verso la meta. */
-  function passo(qui, adesso) {
+  function passo(qui, adesso, s) {
     if (!meta) return null;
     var d = dist(qui.lat, qui.lon, meta.lat, meta.lon);
     if (d < ARRIVATO) {
-      var n = meta.n; meta = null; svolte = []; prossima = 0; preavvisata = -1; linea = [];
-      return { tipo: 'arrivato', livello: 'emergenza', testo: 'Sei arrivato: ' + n + '.' };
+      var n = meta.n;
+      /* ARRIVARE NON BASTA: BISOGNA SAPERE DOVE VOLTARSI. Un navigatore
+         per chi guida dice «sei arrivato» e ha finito, perché poi uno
+         guarda. A piedi, e senza vedere, il numero giusto non serve a
+         niente se non sai da che parte è la porta. Si dice da che lato
+         rispetto a come stai camminando, e cosa ha accanto — una
+         tabaccheria, un bar — che è il modo in cui si riconoscono i posti
+         davvero. L'accanto lo passa chi chiama, dai dati dei negozi. */
+      var lato = direzione(qui, meta);
+      var dove = lato === 'continua così' ? 'proprio davanti a te'
+               : lato === 'gira a destra' ? 'sulla destra'
+               : lato === 'gira a sinistra' ? 'sulla sinistra'
+               : lato ? 'dietro di te' : '';
+      var accanto = s && s.accanto ? ' Accanto c\'è ' + s.accanto + '.' : '';
+      meta = null; svolte = []; prossima = 0; preavvisata = -1; linea = [];
+      return { tipo: 'arrivato', livello: 'emergenza',
+               testo: 'Sei arrivato: ' + n + (dove ? ', ' + dove : '') + '.' + accanto };
     }
     // REGOLA 2: la svolta quando ci sei quasi sopra
     if (svolte.length && prossima < svolte.length) {

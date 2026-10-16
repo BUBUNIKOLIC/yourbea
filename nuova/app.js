@@ -887,8 +887,20 @@
     }
     // se ti sto portando da qualche parte, parla la guida e basta
     if (guida.meta()) {
+      /* cosa c'è accanto alla meta: serve per riconoscerla arrivando */
+      var m4 = guida.meta();
+      var accanto = '';
+      if (m4) {
+        var piuVicino = null, dpiu = 30;
+        (SERVIZI.punti || []).forEach(function (p) {
+          if (!p.nome) return;
+          var dd = posizione.dist(m4.lat, m4.lon, p.lat, p.lon);
+          if (dd < dpiu) { dpiu = dd; piuVicino = p; }
+        });
+        if (piuVicino) accanto = piuVicino.nome;
+      }
       var g = guida.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
-                            direzioneBuona: s.direzioneBuona }, Date.now());
+                            direzioneBuona: s.direzioneBuona }, Date.now(), { accanto: accanto });
       if (g) dilloSubito(g);
       /* FUORI STRADA: un navigatore non si limita a dirlo, ne cerca un
          altro. Il percorso si richiede da dove sei adesso, verso la stessa
@@ -947,6 +959,7 @@
     intorno: ['intorno', 'descriv', 'cosa c e', 'che c e', 'elenco', 'cosa vedi'],
     civico: ['civic', 'che numero', 'numero sono', 'numero siamo'],
     negozi: ['negozi', 'un negozio', 'negozio', 'che negozi', 'botteghe'],
+    casamia: ['dove abito', 'dov e casa', 'qual e casa', 'che indirizzo ho', 'casa mia dov'],
     turismo: ['turismo', 'turista'],
     utilita: ['utilita', 'servizi'],
     /* LA LETTURA. «Scritto» da solo tiene tutte le forme in cui la gente la
@@ -1074,6 +1087,21 @@
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
+    /* «dov'è casa mia»: chi non vede non può aprire le impostazioni per
+       controllare cosa abbiamo salvato. Glielo si dice. */
+    if (ha('casamia')) {
+      if (casa) {
+        voce.parla('Casa tua è ' + casa + '. Dimmi «portami a casa» e ti ci porto.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      } else if (casaPunto) {
+        voce.parla('Casa tua è un punto che avevi segnato: non ne so l\'indirizzo, ma so arrivarci.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      } else {
+        voce.parla('Non so ancora dove abiti. Dimmi: casa mia è, e poi la via e il numero.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      }
+      return true;
+    }
     if (ha('negozi')) { diciINegozi(); return true; }
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
