@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=21">
-<link rel="stylesheet" href="stile.css?v=21">
+<link rel="stylesheet" href="mappa/leaflet.css?v=22">
+<link rel="stylesheet" href="stile.css?v=22">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -57,9 +57,18 @@
      gira). Avvisa il contatto in tutt'e due, perché un guaio capita anche
      mentre si guarda una chiesa. -->
 <div id="casa-riga">
-  <button class="tasto vai grande" id="vai-a-casa">🏠 Portami a casa</button>
-  <button class="tasto grande avvisa" id="avvisa-contatto">📞 Chiama il mio contatto</button>
-  <button class="tasto grande" id="messaggio-contatto">📣 Mandagli un messaggio</button>
+  <button class="tasto vai grande" id="vai-a-casa">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.2 12 4l9 7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 10.4V19a1 1 0 0 0 1 1h3.2v-4.6h4.4V20h3.2a1 1 0 0 0 1-1v-8.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Portami a casa</span>
+  </button>
+  <button class="tasto grande avvisa" id="avvisa-contatto">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.3 3.6h3l1.5 3.8-2 1.4a12.5 12.5 0 0 0 6.4 6.4l1.4-2 3.8 1.5v3a2 2 0 0 1-2.2 2A17.4 17.4 0 0 1 4.3 5.8a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Chiama il mio contatto</span>
+  </button>
+  <button class="tasto grande" id="messaggio-contatto">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.5 12.2c0 3.9-3.8 7-8.5 7a9.8 9.8 0 0 1-2.6-.35L4.2 20.4l1.3-3.4A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Mandagli un messaggio</span>
+  </button>
 </div>
 
 <!-- La mappa è per chi sta accanto: fuori dal giro del lettore di schermo,
@@ -94,24 +103,24 @@
 
 <nav class="barra" aria-label="Comandi">
   <button class="tasto vai" id="avvia">Avvia</button>
-  <button class="tasto tondo" id="parla" aria-label="Parla: dimmi un comando">🎙</button>
-  <button class="tasto tondo sos" id="sos" aria-label="Aiuto">🆘</button>
-  <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
+  <button class="tasto tondo" id="parla" aria-label="Parla: dimmi un comando"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  <button class="tasto tondo sos" id="sos" aria-label="Aiuto"><span aria-hidden="true">SOS</span></button>
+  <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/voce.js?v=21"></script>
-<script src="parti/racconto.js?v=21"></script>
-<script src="parti/clip.js?v=21"></script>
-<script src="parti/posizione.js?v=21"></script>
-<script src="parti/intorno.js?v=21"></script>
-<script src="parti/emergenza.js?v=21"></script>
-<script src="parti/dettatura.js?v=21"></script>
-<script src="parti/guida.js?v=21"></script>
-<script src="parti/passeggiata.js?v=21"></script>
-<script src="mappa/leaflet.js?v=21"></script>
-<script src="parti/scena.js?v=21"></script>
-<script src="parti/mappa.js?v=21"></script>
-<script src="app.js?v=21"></script>
+<script src="parti/voce.js?v=22"></script>
+<script src="parti/racconto.js?v=22"></script>
+<script src="parti/clip.js?v=22"></script>
+<script src="parti/posizione.js?v=22"></script>
+<script src="parti/intorno.js?v=22"></script>
+<script src="parti/emergenza.js?v=22"></script>
+<script src="parti/dettatura.js?v=22"></script>
+<script src="parti/guida.js?v=22"></script>
+<script src="parti/passeggiata.js?v=22"></script>
+<script src="mappa/leaflet.js?v=22"></script>
+<script src="parti/scena.js?v=22"></script>
+<script src="parti/mappa.js?v=22"></script>
+<script src="app.js?v=22"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -142,7 +151,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=21", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=22", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

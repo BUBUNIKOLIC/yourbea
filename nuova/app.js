@@ -86,7 +86,9 @@
 
   /* ---------- lo schermo ---------- */
   function mostra(cosa) {
-    if (cosa.dove !== undefined) el('dove').textContent = cosa.dove || '—';
+    /* la riga di sopra vuota resta VUOTA: col trattino al posto suo, sullo
+       schermo restava un segno che non voleva dire niente. */
+    if (cosa.dove !== undefined) el('dove').textContent = cosa.dove || '';
     if (cosa.titolo !== undefined) el('cosa').textContent = cosa.titolo;
     if (cosa.testo !== undefined) {
       el('corpo').textContent = cosa.testo;
@@ -290,8 +292,10 @@
 
   function scriviTastoAvvisa() {
     var n = contatto && contatto.nome;
-    el('avvisa-contatto').textContent = n ? ('📞 Chiama ' + n) : '📞 Chiama il mio contatto';
-    el('messaggio-contatto').textContent = n ? ('📣 Messaggio a ' + n) : '📣 Mandagli un messaggio';
+    /* solo la parola, non il tasto: l'icona è disegnata nella pagina e
+       riscrivendo tutto il contenuto sparirebbe */
+    el('avvisa-contatto').querySelector('span').textContent = n ? ('Chiama ' + n) : 'Chiama il mio contatto';
+    el('messaggio-contatto').querySelector('span').textContent = n ? ('Messaggio a ' + n) : 'Mandagli un messaggio';
   }
 
   /* ---------- le frasi che impostano le cose ----------
@@ -418,6 +422,13 @@
     if (d.tipo === 'furto' || d.tipo === 'scelte' || d.tipo === 'chiama') return 'Aiuto';
     if (d.tipo === 'parto' || d.tipo === 'svolta' || d.tipo === 'manca') return guida.meta() ? ('→ ' + guida.meta().n) : 'In cammino';
     if (d.tipo === 'arrivato') return 'Arrivato';
+    /* una frase che non parla di un monumento non si tiene il titolo del
+       monumento di prima: sullo schermo si leggeva «Basilica della
+       Steccata» sopra un testo che parlava di panchine. */
+    if (d.tipo === 'scena' || d.tipo === 'intorno') return 'Qui intorno';
+    if (d.tipo === 'strada' || d.tipo === 'dove') return 'Dove sei';
+    if (d.tipo === 'chiama-contatto' || d.tipo === 'avvisa' || d.tipo === 'chi-e') return 'Aiuto';
+    if (d.tipo === 'lascio' || d.tipo === 'avanti' || d.tipo === 'niente') return 'Yourbea';
     return el('cosa').textContent;
   }
 
@@ -508,7 +519,7 @@
                titolo: d.luogo.n, testo: d.tipo === 'cenno' ? (d.luogo.t || '') : d.testo,
                gradino: gradinoScritto(d) });
     } else {
-      mostra({ titolo: el('cosa').textContent, testo: d.testo });
+      mostra({ titolo: titoloDi(d), testo: d.testo, dove: '', gradino: '' });
     }
     alLettore(d.testo);
   }
@@ -525,6 +536,14 @@
     if (d.tipo === 'finita') return 'Passeggiata finita.';
     return '';
   }
+
+  /* IL RIQUADRO RESPIRA MENTRE PARLA. Chi accompagna capisce a colpo
+     d'occhio se l'app sta dicendo qualcosa o se e' muta: prima, da fuori,
+     erano identiche. Per chi non vede non cambia niente. */
+  setInterval(function () {
+    var ora = voce.staParlando() ? 'si' : 'no';
+    if (document.body.dataset.parla !== ora) document.body.dataset.parla = ora;
+  }, 300);
 
   /* ---------- il giro: a ogni posizione nuova ---------- */
   var ultimaStrada = '', ultimaStradaQuando = 0;

@@ -327,3 +327,35 @@ body[data-modo="turismo"]::after{
   opacity:.11;
 }
 #porta > *{position:relative;z-index:1}
+
+/* ---------- le icone dei tasti ----------
+   Disegnate, non emoji: le emoji cambiano faccia da un telefono all'altro,
+   si colorano da sole e fanno giocattolo. Queste prendono il colore del
+   tasto e restano uguali ovunque. Per chi non vede non cambia niente: il
+   nome del tasto lo dice l'aria-label, e l'icona è aria-hidden. */
+.tasto{display:inline-flex;align-items:center;justify-content:center;gap:12px}
+.tasto svg{width:23px;height:23px;flex:none}
+.tasto.tondo svg{width:27px;height:27px}
+.tasto.grande svg{width:25px;height:25px}
+.tasto.sos span{font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+
+/* ---------- il riquadro respira mentre parla ----------
+   Chi accompagna capisce a colpo d'occhio se l'app sta dicendo qualcosa:
+   prima, da fuori, l'app muta e l'app che parlava erano identiche. */
+body[data-parla="si"] .dice{border-color:rgba(231,198,90,.45)}
+body[data-parla="si"] .dice::before{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  body[data-parla="si"] .dice{animation:respira 2.1s ease-in-out infinite}
+  @keyframes respira{
+    0%,100%{box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(231,198,90,.12)}
+    50%{box-shadow:0 20px 54px rgba(0,0,0,.5), 0 0 26px rgba(231,198,90,.16), 0 0 0 1px rgba(231,198,90,.3)}
+  }
+}
+body[data-modo="turismo"][data-parla="si"] .dice{border-color:rgba(91,227,255,.45)}
+@media (prefers-reduced-motion:no-preference){
+  body[data-modo="turismo"][data-parla="si"] .dice{animation:respiraCiano 2.1s ease-in-out infinite}
+  @keyframes respiraCiano{
+    0%,100%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(91,227,255,.1)}
+    50%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 30px rgba(91,227,255,.18), 0 0 0 1px rgba(91,227,255,.34)}
+  }
+}
