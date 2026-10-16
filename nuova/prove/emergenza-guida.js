@@ -187,7 +187,7 @@ prova('SENZA PERCORSO si dice da che parte, rispetto a chi cammina', () => {
   const d = g.vaiA(meta, { lat: 41.4658, lon: 12.9078, direzione: 45, direzioneBuona: true }, DOVE, null);
   if (!/Ti porto a Farmacia Pirani/.test(d.testo)) guasto('non dice dove ti porta');
   if (!/non ho la strada passo passo/i.test(d.testo)) guasto('non ammette che non ha il percorso');
-  if (/nord|sud|est|ovest/i.test(d.testo)) guasto('i punti cardinali a chi cammina non dicono niente: ' + d.testo);
+  if (/\b(?:nord|sud|est|ovest)\b/i.test(d.testo)) guasto('i punti cardinali a chi cammina non dicono niente: ' + d.testo);
   if (!/continua così/i.test(d.testo)) guasto('andando verso la meta si dice continua così: ' + d.testo);
 
   const g2 = Guida({ dist, verso });
@@ -274,6 +274,37 @@ prova('il numero della chiamata porta il prefisso, se no iOS mostra le cifre', (
   if (n !== '+393331234567') guasto('numero da chiamare sbagliato: ' + n);
   const e2 = Emergenza({ contatto: { nome: 'John', telefono: '+44 7700 900123' } });
   if (e2.chiamaContatto({}).mosse[0].numero !== '+447700900123') guasto('un numero straniero non si tocca');
+});
+
+/* GLI UNDICI CHILOMETRI, 16/10. «Portami a casa» con casa scritta «Via dei
+   Corazzieri n. 47»: il cercatore, confuso dal «n. 47», ha risposto con un
+   posto che si chiama «Non si mangia» in via degli Equi, e l'app ci è
+   andata. Un candidato che non ha nemmeno una parola in comune con quello
+   che è stato chiesto non è un candidato. */
+prova('un candidato che non c\'entra niente si scarta', () => {
+  const g = Guida({ dist, verso });
+  const qui = { lat: 41.8232, lon: 12.4814 };
+  const candidati = [
+    { nome: 'Non si mangia, Via degli Equi', citta: 'Roma', lat: 41.8925, lon: 12.5160 },
+    { nome: 'Via dei Corazzieri, Roma', citta: 'Roma', lat: 41.8250, lon: 12.4820 }
+  ];
+  const scelto = g.scegli(candidati, [], qui, 'via dei corazzieri n. 47');
+  if (!scelto || !/Corazzieri/.test(scelto.nome)) guasto('ha scelto: ' + (scelto && scelto.nome));
+});
+
+prova('se nessun candidato c\'entra, non ci si incammina', () => {
+  const g = Guida({ dist, verso });
+  const qui = { lat: 41.8232, lon: 12.4814 };
+  const scelto = g.scegli([{ nome: 'Non si mangia, Via degli Equi', citta: 'Roma', lat: 41.89, lon: 12.51 }],
+                          [], qui, 'via dei corazzieri 47');
+  if (scelto) guasto('meglio dire che non si trova che portare a undici chilometri');
+});
+
+prova('le parole che contano: via e numero non distinguono niente', () => {
+  const g = Guida({ dist, verso });
+  const p = g.parolePiene('portami a via dei corazzieri numero 47');
+  if (p.indexOf('corazzieri') < 0) guasto('ha perso la parola che conta');
+  if (p.indexOf('via') >= 0 || p.indexOf('numero') >= 0) guasto('via e numero stanno in ogni indirizzo: ' + p.join(','));
 });
 
 /* ==================== il conto ==================== */

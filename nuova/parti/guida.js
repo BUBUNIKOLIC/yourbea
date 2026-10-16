@@ -72,9 +72,37 @@ function Guida(opzioni) {
     return true;
   }
 
-  /* scegli(): fra i candidati di un cercatore di indirizzi, quello giusto. */
-  function scegli(candidati, parole, qui) {
+  /* parolePiene(): le parole che contano in una richiesta — via, piazza,
+     numero e gli articoli non distinguono niente. */
+  function parolePiene(testo) {
+    var fuori = ['via', 'viale', 'piazza', 'corso', 'largo', 'vicolo', 'strada', 'numero',
+                 'civico', 'del', 'dei', 'della', 'degli', 'delle', 'portami', 'casa'];
+    return normalizza(testo).split(' ').filter(function (w) {
+      return w.length >= 4 && fuori.indexOf(w) < 0 && !/^\d+$/.test(w);
+    });
+  }
+
+  /* scegli(): fra i candidati di un cercatore di indirizzi, quello giusto.
+     Il 16/10 «portami a casa», con casa scritta «Via dei Corazzieri n. 47»,
+     ha portato Vince a UNDICI CHILOMETRI, da un posto che si chiama «Non si
+     mangia», in via degli Equi. Il cercatore, confuso dal «n. 47», aveva
+     risposto con quello; e noi lo abbiamo preso senza guardare se c'entrava
+     qualcosa. Adesso un candidato che non ha NESSUNA parola in comune con
+     quello che è stato chiesto si scarta: se restano solo quelli, si dice
+     che non si è trovato, invece di incamminarsi. */
+  function scegli(candidati, parole, qui, testo) {
     if (!candidati || !candidati.length) return null;
+    if (testo) {
+      var piene = parolePiene(testo);
+      if (piene.length) {
+        var pertinenti = candidati.filter(function (c) {
+          var suo = normalizza([c.nome, c.citta, c.frazione].filter(Boolean).join(' '));
+          return piene.some(function (w) { return suo.indexOf(w) >= 0; });
+        });
+        if (pertinenti.length) candidati = pertinenti;
+        else return null;
+      }
+    }
     if (parole.length) {
       var ordine = [
         function (c) { return cittaCombacia(c.citta, parole); },
@@ -181,6 +209,7 @@ function Guida(opzioni) {
   return {
     vaiA: vaiA, passo: passo, lascia: lascia, dalComando: dalComando,
     scegli: scegli, cittaNelTesto: cittaNelTesto, cittaCombacia: cittaCombacia,
+    parolePiene: parolePiene,
     meta: function () { return meta; },
     svolteRimaste: function () { return Math.max(0, svolte.length - prossima); }
   };

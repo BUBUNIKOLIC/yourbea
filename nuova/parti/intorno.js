@@ -102,7 +102,7 @@ function Intorno(opzioni) {
     var dla = 0.0011, dlo = 0.0014 / Math.cos(lat * Math.PI / 180);
     var bb = (lon - dlo) + ',' + (lat - dla) + ',' + (lon + dlo) + ',' + (lat + dla);
     return conTempo(prendi('https://api.openstreetmap.org/api/0.6/map?bbox=' + bb)).then(function (xml) {
-      var fuori = { punti: [], aree: [], alberi: [] };
+      var fuori = { punti: [], aree: [], alberi: [], vie: [] };
       if (!xml || !leggiXML) { memoria.servizi[k] = { quando: ora(), valore: fuori }; return fuori; }
       var doc;
       try { doc = leggiXML(xml); } catch (e) { return fuori; }
@@ -134,6 +134,20 @@ function Intorno(opzioni) {
         var tw = {}, tg2 = vie[w].getElementsByTagName('tag');
         for (var z = 0; z < tg2.length; z++) tw[tg2[z].getAttribute('k')] = tg2[z].getAttribute('v');
         var nd = vie[w].getElementsByTagName('nd');
+        /* LE STRADE CON IL NOME. «Superavo gli incroci e non mi dicevi quali
+           strade superavo» (Vince, 16/10): per chi non vede un incrocio con
+           il nome è il punto fermo che dice dove sei arrivato, più di
+           qualunque monumento. Erano già in questa risposta e non le
+           leggeva nessuno. */
+        if (tw.highway && tw.name &&
+            ['motorway', 'trunk', 'motorway_link', 'trunk_link', 'raceway'].indexOf(tw.highway) < 0) {
+          var linea = [];
+          for (var q = 0; q < nd.length; q++) {
+            var cc = dove[nd[q].getAttribute('ref')];
+            if (cc) linea.push(cc);
+          }
+          if (linea.length > 1) fuori.vie.push({ nome: tw.name, punti: linea });
+        }
         if (tw.natural === 'tree_row') {
           for (var y = 0; y < nd.length; y++) { var c = dove[nd[y].getAttribute('ref')]; if (c) fuori.alberi.push(c); }
           continue;
@@ -153,7 +167,8 @@ function Intorno(opzioni) {
         if (punti.length) fuori.aree.push({ cosa: tipoA, nome: nome, punti: punti, servizio: tipoA, grande: true });
       }
       memoria.servizi[k] = { quando: ora(), valore: fuori };
-      diario('MAPPA: ' + fuori.punti.length + ' punti, ' + fuori.aree.length + ' aree, ' + fuori.alberi.length + ' alberi');
+      diario('MAPPA: ' + fuori.punti.length + ' punti, ' + fuori.aree.length + ' aree, ' +
+             fuori.alberi.length + ' alberi, ' + fuori.vie.length + ' strade');
       return fuori;
     });
   }

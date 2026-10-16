@@ -205,6 +205,9 @@
 
   /* la scena intorno: la mappa la scaricavamo e non la diceva nessuno */
   var scena = Scena({ dist: posizione.dist, verso: posizione.verso });
+  /* gli incroci: «superavo gli incroci e non mi dicevi quali strade
+     superavo». È roba di Utilità: in Turismo si parla d'arte. */
+  var incroci = Incroci({ dist: posizione.dist, verso: posizione.verso });
   function raccontaScena() {
     var s = posizione.leggi();
     if (!s.pronto || !acceso) return;
@@ -587,7 +590,9 @@
   /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
      nostri, poi fra i servizi, poi fra gli indirizzi — e la citta' detta
      dall'utente vince sempre (il difetto che portava a Cisterna di Latina). */
+  var metaInDubbio = null;
   function portamiA(cosa) {
+    metaInDubbio = null;
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
     /* alla guida serve anche come sei girato: senza, non può dire
@@ -595,7 +600,12 @@
        dice niente. */
     var qui = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
     var parole = guida.cittaNelTesto(cosa);
-    var cerca = cosa.toLowerCase();
+    /* «n. 47», «numero 47», «civico 47» mandano in confusione il cercatore
+       di indirizzi: il 16/10 «via dei Corazzieri n. 47» ha tirato fuori un
+       ristorante a undici chilometri. Il numero si tiene, la parola no. */
+    var pulita = String(cosa).replace(/\b(?:n\.?|numero|civico)\s*(\d+)/gi, '$1')
+                             .replace(/\s+/g, ' ').trim();
+    var cerca = pulita.toLowerCase();
     diario('PORTAMI A: ' + cerca);
     voce.parla("Cerco l'indirizzo, un momento.", { livello: voce.GUIDA, ancheSeUguale: true });
 
@@ -611,9 +621,9 @@
     // 2. un servizio (farmacia, commissariato, fermata...)
     var tipo = ['farmacia', 'commissariato', 'pronto soccorso', 'fermata', 'supermercato', 'bagno', 'bancomat', 'ufficio postale', 'bar', 'ristorante']
       .find(function (x) { return cerca.indexOf(x) >= 0; });
-    var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(cosa, qui);
+    var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(pulita, qui);
     cercatore.then(function (candidati) {
-      var scelto = guida.scegli(candidati, parole, qui);
+      var scelto = guida.scegli(candidati, parole, qui, tipo ? '' : pulita);
       if (!scelto) {
         voce.parla("Questo indirizzo non l'ho trovato.", { livello: voce.GUIDA, ancheSeUguale: true });
         return;
@@ -624,6 +634,18 @@
       var nome = scelto.nome;
       if (scelto.citta && parole.length && nome.toLowerCase().indexOf(scelto.citta.toLowerCase()) < 0) {
         nome += ', ' + scelto.citta;
+      }
+      /* IL PARACADUTE. Se l'unico posto trovato è lontanissimo e nessuno ha
+         nominato un'altra città, quasi sempre è l'indirizzo sbagliato: si
+         chiede, non ci si incammina per undici chilometri a piedi. */
+      var quanto = posizione.dist(qui.lat, qui.lon, scelto.lat, scelto.lon);
+      if (quanto > 3000 && !parole.length) {
+        diario('LONTANO: ' + nome + ' a ' + Math.round(quanto) + ' m, chiedo');
+        metaInDubbio = { n: nome, lat: scelto.lat, lon: scelto.lon };
+        voce.parla('Il più vicino che trovo è ' + nome + ', a ' + (Math.round(quanto / 100) / 10) +
+                   ' chilometri. Se è quello, dimmi: sì. Se no, ripeti l\'indirizzo con la città.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return;
       }
       partiVerso({ n: nome, lat: scelto.lat, lon: scelto.lon }, qui);
     });
@@ -706,6 +728,14 @@
 
     var lista = vicini();
     disegnaMappa(s, lista);
+    /* l'incrocio si guarda a ogni passo: venticinque metri si attraversano
+       in dieci secondi, e dirlo dopo non serve a niente */
+    if (modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
+      var inc = incroci.quale({ qui: { lat: s.lat, lon: s.lon }, vie: SERVIZI.vie,
+                                strada: ultimaStrada, direzione: s.direzione,
+                                direzioneBuona: s.direzioneBuona });
+      if (inc) dillo(inc);
+    }
     // la strada, una volta al minuto
     /* LA STRADA SI CHIEDE QUANDO TI SEI MOSSO, non all'ora.
        «Ho girato da via Laurentina a via dei Corazzieri e non mi ha detto
@@ -799,7 +829,13 @@
     avanti: ['avanti', 'vai oltre', 'prossimo', 'salta'],
     ferma: ['ferma', 'basta', 'silenzio', 'zitto', 'stop'],
     dove: ['dove sono', 'dove mi trovo', 'in che strada sono'],
-    intorno: ['cosa c e qui intorno', 'cosa c e intorno', 'elenco', 'che cosa c e'],
+    /* LE PAROLE, NON LE FRASI. Il 16/10 Vince ha chiesto tre volte, a voce:
+       «mi puoi descrivere che c'è intorno», «mi puoi dire i numeri civici
+       cosa c'è intorno», «oltre agli attraversamenti mi puoi descrivere…» —
+       e l'app è rimasta zitta tutte e tre, perché cercava la frase esatta.
+       Chi parla non ripete una formula: si riconosce la parola che conta. */
+    intorno: ['intorno', 'descriv', 'cosa c e', 'che c e', 'elenco', 'cosa vedi'],
+    civico: ['civic', 'che numero', 'numero sono', 'numero siamo'],
     turismo: ['turismo', 'turista'],
     utilita: ['utilita', 'servizi'],
     aiuto: ['aiuto', 'comandi', 'che posso dire']
@@ -874,6 +910,12 @@
       }
       dilloSubito(em); return true;
     }
+    if (metaInDubbio && /^(?:si|si grazie|va bene|esatto|confermo|quello)$/.test(t)) {
+      var m2 = metaInDubbio; metaInDubbio = null;
+      partiVerso(m2, { lat: posizione.leggi().lat, lon: posizione.leggi().lon,
+                       direzione: posizione.leggi().direzione, direzioneBuona: posizione.leggi().direzioneBuona });
+      return true;
+    }
     if (dalDettato(t)) return true;
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
@@ -911,6 +953,7 @@
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
+    if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
       voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
@@ -943,11 +986,40 @@
     else p = 'indietro a sinistra';
     return p + ', a ' + (Math.round(o.m / 10) * 10) + ' metri';
   }
+  /* diciIlCivico(): «i numeri civici» — chiesto a voce il 16/10. */
+  function diciIlCivico() {
+    var s = posizione.leggi();
+    if (!s.pronto) { voce.parla('Non so ancora dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    intorno.strada(s.lat, s.lon).then(function (v) {
+      if (!v || !v.via) { dillo({ tipo: 'dove', testo: 'La strada non la so dire.', livello: 'guida' }); return; }
+      dillo({ tipo: 'dove', livello: 'guida',
+              testo: v.civico ? ('Sei davanti al civico ' + v.civico + ' di ' + v.via + '.')
+                              : ('Sei in ' + v.via + ', ma il numero civico qui non è segnato sulla mappa.') });
+    });
+  }
+
+  /* diciIntorno(): quando lo CHIEDE la persona, si dice tutto quello che
+     c'è — la scena (la piazza, gli alberi, i negozi, gli attraversamenti) e
+     i luoghi. E si dice ANCHE se l'abbiamo appena detto: i tempi di riposo
+     servono per quando parla l'app di sua iniziativa, non per quando una
+     domanda la fa qualcuno. Il 16/10 Vince ha chiesto «oltre agli
+     attraversamenti mi puoi descrivere, se c'è un parco sulla destra, il
+     benzinaio sulla sinistra» e si è sentito elencare solo i monumenti. */
   function diciIntorno() {
-    var lista = vicini().slice(0, 5);
-    if (!lista.length) { voce.parla('Qui intorno non ho niente da dirti.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
-    var frasi = lista.map(function (o) { return o.p.n + ', ' + versoParole(o); });
-    dillo({ tipo: 'elenco', testo: frasi.join('. ') + '.', livello: 'guida' });
+    var s = posizione.leggi();
+    var pezzi = [];
+    if (s.pronto) {
+      scena.dimenticaTutto();
+      var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
+                               direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
+      if (d) pezzi.push(d.testo);
+    }
+    var lista = vicini().filter(function (o) { return o.p.k; }).slice(0, 3);
+    if (lista.length) {
+      pezzi.push(lista.map(function (o) { return o.p.n + ', ' + versoParole(o); }).join('. ') + '.');
+    }
+    if (!pezzi.length) { voce.parla('Qui intorno non ho niente da dirti.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    dillo({ tipo: 'elenco', testo: pezzi.join(' '), livello: 'guida' });
   }
 
   /* ---------- l'ascolto ---------- */
