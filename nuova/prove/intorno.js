@@ -68,6 +68,33 @@ prova('la strada: via, civico e città', async () => {
   if (s.citta !== 'Parma') guasto('città persa');
 });
 
+/* IL BUCO DEL 16/10, chiuso. «Se faccio un viale mi dice sempre che lo sto
+   imboccando?» No — tranne qui: in mezzo al viale la cosa più vicina era un
+   bar senza indirizzo, e il nome del bar passava per nome della strada. */
+prova('IL NOME DI UN NEGOZIO NON È UNA STRADA', async () => {
+  const { i } = mondo({ 'photon.komoot.io/reverse': { features: [{ properties: {
+    name: 'Bar Roma', osm_key: 'amenity', osm_value: 'bar', city: 'Roma' } }] } });
+  const s = await i.strada(41.9, 12.49);
+  if (s && s.via) guasto('ha preso il nome del bar per una strada: ' + s.via);
+  if (!s || s.citta !== 'Roma') guasto('la città si deve tenere comunque');
+});
+
+prova('una strada senza «street» ma che È una strada si prende', async () => {
+  const { i } = mondo({ 'photon.komoot.io/reverse': { features: [{ properties: {
+    name: 'Viale Guglielmo Marconi', osm_key: 'highway', osm_value: 'secondary', city: 'Roma' } }] } });
+  const s = await i.strada(41.86, 12.47);
+  if (!s || s.via !== 'Viale Guglielmo Marconi') guasto('ha buttato una strada vera: ' + JSON.stringify(s));
+});
+
+prova('«street» vince comunque, anche sopra un negozio', async () => {
+  const { i } = mondo({ 'photon.komoot.io/reverse': { features: [{ properties: {
+    name: 'Bar Roma', street: 'Viale Guglielmo Marconi', housenumber: '47',
+    osm_key: 'amenity', osm_value: 'bar' } }] } });
+  const s = await i.strada(41.861, 12.471);
+  if (!s || s.via !== 'Viale Guglielmo Marconi') guasto('via sbagliata: ' + JSON.stringify(s));
+  if (s.civico !== '47') guasto('civico perso');
+});
+
 prova('una richiesta che non torna non blocca: risponde niente', async () => {
   const { i } = mondo({ 'photon.komoot.io/reverse': 'mai' });
   const t0 = Date.now();

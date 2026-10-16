@@ -189,6 +189,99 @@ prova('il semaforo che SUONA viene prima di tutto', () => {
   if (!/acustico/.test(piu)) guasto('anche quando sono tanti: ' + piu);
 });
 
+/* ============================================================
+   AI LATI — «cioè basta dire: a destra trovi il ristorante, a sinistra
+   questo; così copri il buco e descrivi» (Vince, 16/10).
+   Il buco: in mezzo a un viale la via può non arrivare da Photon, e dove
+   prima si diceva il nome di un bar al posto della strada ora si tacerebbe.
+   Qui si controlla che al posto del silenzio arrivi una descrizione, e che
+   non dica mai una parte sbagliata.                                        */
+
+/* guardando a nord (direzione 0): est è a destra, ovest a sinistra */
+const A_DESTRA = { lat: QUI.lat, lon: QUI.lon + 0.00035, nome: 'Da Mario', cosa: 'ristorante' };
+const A_SINISTRA = { lat: QUI.lat, lon: QUI.lon - 0.00035, nome: 'Pirani', cosa: 'farmacia' };
+const DAVANTI = { lat: QUI.lat + 0.00035, lon: QUI.lon, nome: 'Il Portico', cosa: 'bar' };
+
+prova('AI LATI: a destra una cosa, a sinistra una cosa', () => {
+  const w = mondo();
+  const d = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true,
+                         punti: [A_DESTRA, A_SINISTRA] });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (!/^A destra trovi il ristorante Da Mario/.test(d.testo)) guasto('destra sbagliata: ' + d.testo);
+  if (!/a sinistra la farmacia Pirani\.$/.test(d.testo)) guasto('sinistra sbagliata: ' + d.testo);
+  if (d.livello !== 'cenno') guasto('deve essere un cenno, non tagliare un racconto');
+  console.log('      → ' + d.testo);
+});
+
+prova('REGOLA b — senza bussola non si dice destra e sinistra', () => {
+  const w = mondo();
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: false, punti: [A_DESTRA, A_SINISTRA] }))
+    guasto('ha detto una parte senza sapere come sei girato');
+  if (w.s.aiLati({ qui: QUI, direzioneBuona: true, punti: [A_DESTRA, A_SINISTRA] }))
+    guasto('ha detto una parte senza direzione');
+});
+
+prova('REGOLA c — quello che hai davanti non è «a destra»', () => {
+  const w = mondo();
+  const d = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [DAVANTI] });
+  if (d) guasto('ha messo di lato una cosa che hai davanti: ' + d.testo);
+});
+
+prova('REGOLA c — e nemmeno quello che hai dietro', () => {
+  const w = mondo();
+  const dietro = { lat: QUI.lat - 0.00035, lon: QUI.lon, nome: 'Il Portico', cosa: 'bar' };
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [dietro] }))
+    guasto('ha messo di lato una cosa che hai dietro');
+});
+
+prova('REGOLA a — una per lato, non un elenco', () => {
+  const w = mondo();
+  const tre = [A_DESTRA,
+               { lat: QUI.lat, lon: QUI.lon + 0.00045, nome: 'Conad', cosa: 'supermercato' },
+               { lat: QUI.lat, lon: QUI.lon + 0.00055, nome: 'Rossi', cosa: 'tabaccheria' }];
+  const d = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: tre });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (/Conad|Rossi/.test(d.testo)) guasto('ha elencato: ' + d.testo);
+  if (!/Da Mario/.test(d.testo)) guasto('non ha preso il più vicino: ' + d.testo);
+});
+
+prova('REGOLA d — gli stessi due nomi non si ridicono subito', () => {
+  const w = mondo();
+  const uno = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [A_DESTRA, A_SINISTRA] });
+  if (!uno) { guasto('la prima non è uscita'); return; }
+  w.passano(20000);
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [A_DESTRA, A_SINISTRA] }))
+    guasto('ha ridetto le stesse due cose dopo venti secondi');
+  w.passano(200000);
+  if (!w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [A_DESTRA, A_SINISTRA] }))
+    guasto('dopo tre minuti si può ridire');
+});
+
+prova('un lato solo: si dice quello e basta', () => {
+  const w = mondo();
+  const d = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [A_SINISTRA] });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (/a destra/.test(d.testo)) guasto('ha inventato la destra: ' + d.testo);
+  if (!/^A sinistra trovi la farmacia Pirani\.$/.test(d.testo)) guasto('frase sgangherata: ' + d.testo);
+});
+
+prova('niente intorno: niente da dire, e non scoppia', () => {
+  const w = mondo();
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [] })) guasto('ha parlato nel vuoto');
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true })) guasto('ha parlato senza punti');
+  const senzaNome = { lat: QUI.lat, lon: QUI.lon + 0.00035, cosa: 'panchina' };
+  if (w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [senzaNome] }))
+    guasto('ha detto una cosa senza nome');
+});
+
+prova('il nome da solo non dice niente: si dice anche cos\'è', () => {
+  const w = mondo();
+  const d = w.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true,
+                         punti: [{ lat: QUI.lat, lon: QUI.lon + 0.0003, nome: 'Farmacia Pirani', cosa: 'farmacia' }] });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (/farmacia Farmacia/i.test(d.testo)) guasto('ha raddoppiato la parola: ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della scena');

@@ -61,8 +61,23 @@ function Intorno(opzioni) {
     return json('https://photon.komoot.io/reverse?lat=' + lat + '&lon=' + lon + '&limit=1')
       .then(function (d) {
         var p = (d && d.features && d.features[0] && d.features[0].properties) || null;
+        /* IL NOME DI UNA STRADA, NON QUELLO DI UN NEGOZIO.
+           Photon, chiesto un punto, torna la cosa più vicina: se è un
+           indirizzo ha «street», e va bene; ma se la cosa più vicina è un
+           bar senza indirizzo, «street» è vuoto e «name» è «Bar Roma».
+           Prendendo «name» alla cieca, in mezzo a un viale l'app diceva
+           «Sei entrato in Bar Roma» e subito dopo «Sei entrato in viale
+           Marconi»: l'annuncio della strada ripartiva da capo, col nome
+           sbagliato, proprio il difetto che avevamo chiuso guardando il
+           nome invece del civico (Vince, 16/10: «se faccio un viale mi
+           dice sempre che lo sto imboccando?»).
+           Il nome si accetta solo se quella cosa È una strada: in Photon
+           lo dicono osm_key «highway» o il tipo «street». Se non lo è, la
+           via resta vuota — e chi chiama non dice niente. Meglio tacere
+           che dire il nome di un bar al posto della strada. */
+        var eUnaStrada = p && (p.osm_key === 'highway' || p.type === 'street');
         var v = p ? {
-          via: p.street || p.name || '',
+          via: p.street || (eUnaStrada ? (p.name || '') : ''),
           civico: p.housenumber || '',
           citta: p.city || p.county || p.district || ''
         } : null;

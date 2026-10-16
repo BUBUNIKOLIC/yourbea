@@ -805,7 +805,7 @@
     /* una frase che non parla di un monumento non si tiene il titolo del
        monumento di prima: sullo schermo si leggeva «Basilica della
        Steccata» sopra un testo che parlava di panchine. */
-    if (d.tipo === 'scena' || d.tipo === 'intorno') return 'Qui intorno';
+    if (d.tipo === 'scena' || d.tipo === 'intorno' || d.tipo === 'lati') return 'Qui intorno';
     if (String(d.tipo).indexOf('lettura') === 0) return 'Quello che c\'è scritto';
     if (d.tipo === 'strada' || d.tipo === 'dove') return 'Dove sei';
     if (d.tipo === 'chiama-contatto' || d.tipo === 'avvisa' || d.tipo === 'chi-e') return 'Aiuto';
@@ -1034,7 +1034,22 @@
       ultimaStradaQuando = Date.now();
       ultimaStradaDove = { lat: s.lat, lon: s.lon };
       intorno.strada(s.lat, s.lon).then(function (v) {
-        if (!v || !v.via) return;
+        /* LA VIA NON SI SA: SI DESCRIVE QUELLO CHE HAI AI LATI.
+           «Cioè basta dire: a destra trovi il ristorante, a sinistra
+           questo; così copri il buco e descrivi» (Vince, 16/10).
+           Photon in mezzo a un viale può non dare la strada, e da quando
+           il nome di un negozio non passa più per nome di via (il difetto
+           del «Sei entrato in Bar Roma») qui resterebbe silenzio. Per chi
+           non vede il silenzio è la cosa peggiore: al suo posto va una
+           descrizione, che è poi il mestiere dell'app. */
+        if (!v || !v.via) {
+          var lati = scena.aiLati({ qui: { lat: s.lat, lon: s.lon },
+                                    direzione: s.direzione,
+                                    direzioneBuona: s.direzioneBuona,
+                                    punti: SERVIZI.punti || [] });
+          if (lati) { diario('VIA SCONOSCIUTA: descrivo i lati'); dillo(lati); }
+          return;
+        }
         var dove = v.via + (v.civico ? ' ' + v.civico : '');
         /* SI ANNUNCIA LA STRADA, NON IL CIVICO. «Ero in via Guglielmo
            Marconi e mi continuava a dire: hai imboccato via Marconi, ma

@@ -64,7 +64,7 @@ prova('REGOLA 5 — le frasi per camminare non si toccano', () => {
 prova('REGOLA 5 — niente parole di vista', () => {
   const m = Modi({ caso: conCaso([0.9, 0.0, 0.9, 0.33, 0.9, 0.66, 0.9, 0.99]) });
   for (let i = 0; i < 40; i++) {
-    ['cenno', 'scena', 'passaggio'].forEach((tipo) => {
+    ['cenno', 'scena', 'passaggio', 'lati'].forEach((tipo) => {
       const v = m.veste(tipo, 'Il marciapiede è largo.');
       if (/\b(guarda|guardi|vedi|vede|osserva)\b/i.test(v)) guasto('parola di vista in «' + tipo + '»: ' + v);
     });
@@ -75,6 +75,7 @@ prova('le tre frasi vere, vestite, si leggono bene', () => {
   const m = Modi({ caso: conCaso([0.9, 0.0]) });
   const casi = [
     ['cenno', 'Hai appena passato il Teatro Regio, 40 metri dietro di te.'],
+    ['lati', 'A destra trovi il ristorante Da Mario, a sinistra la farmacia Pirani.'],
     ['scena', 'Il marciapiede è largo. Ci sono tre alberi; due attraversamenti.'],
     ['passaggio', 'Stai passando lo scivolo del marciapiede, col percorso tattile.']
   ];

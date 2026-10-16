@@ -20,7 +20,7 @@
       cerimoniosa.
    4. IL NOME COL CONTAGOCCE. «Vince, sulla destra…» ogni tanto scalda; a
       ogni frase diventa una presa in giro.
-   5. SOLO TRE TIPI DI FRASE, E NESSUNA CHE SERVA A CAMMINARE. Svolte,
+   5. SOLO QUATTRO TIPI DI FRASE, E NESSUNA CHE SERVA A CAMMINARE. Svolte,
       preavvisi, incroci, arrivi ed emergenza non si toccano mai: lì le
       parole in più sono mezzo secondo rubato a chi deve girare adesso.
       Niente parole di vista — «guarda», «vedi»: per metà di chi la usa
@@ -34,15 +34,17 @@ function Modi(opzioni) {
   var caso = o.caso || Math.random;
   var nome = o.nome || '';
 
-  /* REGOLA 5: questi tre, e nient'altro. Gli attacchi sono scelti perché
+  /* REGOLA 5: questi quattro, e nient'altro. Gli attacchi sono scelti perché
      stanno davanti alla frase così com'è:
        cenno     → «Sulla destra, a 30 metri, la farmacia.»
                    «Hai appena passato il teatro, 40 metri dietro di te.»
        scena     → «Il marciapiede è largo. Ci sono tre alberi…»
-       passaggio → «Stai passando lo scivolo del marciapiede…»            */
+       passaggio → «Stai passando lo scivolo del marciapiede…»
+       lati      → «A destra trovi il ristorante Da Mario, a sinistra…»    */
   var ATTACCHI = {
     cenno:     ['Senti, ', 'Ecco, ', 'Allora, '],
     scena:     ['Allora, ', 'Dunque, ', 'Intorno a te, ', 'Qui '],
+    lati:      ['Allora, ', 'Dunque, ', 'Qui '],
     passaggio: ['Adesso ', 'In questo momento ', 'Ecco, ']
   };
 

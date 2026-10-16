@@ -243,10 +243,81 @@ function Scena(opzioni) {
   function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 
   function dimentica() { ultima = ''; ultimaQuando = 0; }
-  function dimenticaTutto() { dimentica(); dettiPezzi = {}; }
+  function dimenticaTutto() { dimentica(); dettiPezzi = {}; dimenticaILati(); }
+
+  /* ============================================================
+     QUANDO LA VIA NON SI SA: SI DICE COSA HAI AI LATI
+     «Cioè basta dire: a destra trovi il ristorante, a sinistra questo —
+     così copri il buco e descrivi» (Vince, 16/10).
+
+     Il buco: la via arriva da Photon, e in mezzo a un viale può non
+     arrivare affatto (la cosa più vicina è un bar senza indirizzo). Prima
+     si prendeva il nome del bar per il nome della strada; adesso quel nome
+     si butta — e senza una frase al suo posto resterebbe silenzio, che per
+     chi non vede è la cosa peggiore.
+
+     Le sue regole:
+     a. UNA PER LATO, NON UN ELENCO. Vale la REGOLA 3 di qui sopra: a destra
+        una cosa, a sinistra una cosa. Il resto si chiede.
+     b. SENZA BUSSOLA NON SI DICE NIENTE. «A destra» con la direzione
+        sbagliata manda una persona dalla parte opposta: senza direzione
+        buona questa frase non esiste.
+     c. SOLO QUELLO CHE È DAVVERO DI FIANCO. Da 30 a 150 gradi per lato:
+        quello che hai davanti non è «a destra», e quello che hai dietro
+        nemmeno.
+     d. NON SI RIPETE. Gli stessi due nomi non si ridicono per tre minuti:
+        camminando piano si tornerebbe a dirli ogni venti secondi.          */
+  var AI_LATI = o.aiLati || 180000;
+  var ultimiLati = '', ultimiLatiQuando = 0;
+
+  function aiLati(situazione) {
+    var qui = situazione.qui;
+    if (!qui || situazione.direzioneBuona === false) return null;        // REGOLA b
+    if (typeof situazione.direzione !== 'number') return null;
+
+    var destra = null, sinistra = null, dD = 1e9, dS = 1e9;
+    (situazione.punti || []).forEach(function (p) {
+      if (!p.nome) return;
+      var m = dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (m > (situazione.fin || 60)) return;
+      var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - situazione.direzione + 540) % 360) - 180;
+      var a = Math.abs(rel);
+      if (a < 30 || a > 150) return;                                    // REGOLA c
+      if (rel > 0) { if (m < dD) { dD = m; destra = p; } }
+      else { if (m < dS) { dS = m; sinistra = p; } }
+    });
+    if (!destra && !sinistra) return null;
+
+    var pezzi = [];
+    /* «trovi» sono le parole sue: «a destra trovi il ristorante, a sinistra
+       questo». Si dice una volta, sul primo lato, e sull'altro si sottintende:
+       «a destra trovi X, a sinistra Y» — ripeterlo due volte suona a elenco. */
+    if (destra) pezzi.push('a destra ' + (pezzi.length ? '' : 'trovi ') + comeSiChiama(destra));   // REGOLA a
+    if (sinistra) pezzi.push('a sinistra ' + (pezzi.length ? '' : 'trovi ') + comeSiChiama(sinistra));
+    var testo = capo(pezzi.join(', ')) + '.';
+
+    if (testo === ultimiLati && ora() - ultimiLatiQuando < AI_LATI) return null;   // REGOLA d
+    ultimiLati = testo; ultimiLatiQuando = ora();
+    /* è un cenno: non taglia un racconto a metà, e se non c'è posto si
+       butta — fra un po' se ne presenta un altro */
+    return { tipo: 'lati', livello: 'cenno', testo: testo };
+  }
+
+  /* comeSiChiama(): «il ristorante Da Mario» se so cos'è, «Da Mario» se no.
+     Il nome da solo non dice niente a chi non lo conosce: «a destra Da
+     Mario» non si capisce se è un bar, un negozio o un portone. */
+  function comeSiChiama(p) {
+    var c = p.cosa || p.categoria || '';
+    if (!c) return p.nome;
+    if (p.nome.toLowerCase().indexOf(String(c).toLowerCase()) === 0) return p.nome;
+    return (femmina(c) ? 'la ' : 'il ') + c + ' ' + p.nome;
+  }
+
+  function dimenticaILati() { ultimiLati = ''; ultimiLatiQuando = 0; }
 
   return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, dimenticaTutto: dimenticaTutto, attraversamenti: attraversamenti,
-           laForma: laForma, dimentica: dimentica };
+           laForma: laForma, dimentica: dimentica,
+           aiLati: aiLati, dimenticaILati: dimenticaILati };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Scena;
