@@ -20,8 +20,9 @@ telefono e senza rete.
       parti/racconto.js     cosa dire e quando: il racconto a gradini
       prove/voce.js         11 prove — ognuna è un difetto che qualcuno ha sentito
       prove/racconto.js     12 prove — compreso il difetto di Gabri a Parma
-      parti/passeggiata.js  i giri a tappe             (26 prove)
-      dati/passeggiate.json 101 passeggiate, 732 tappe
+      parti/passeggiata.js  i giri a tappe             (30 prove)
+      dati/passeggiate.json 136 passeggiate, 977 tappe, 31 città
+      strumenti/            gli attrezzi che scrivono i dati
 
 ## Le regole, e chi le ha dettate
 
@@ -61,7 +62,25 @@ luoghi da raccontare).
    offriva come seconda un giro di Mantova «a 52 chilometri da te»;
 6. «zitto» zittisce, «ferma» lascia il giro: non sono la stessa cosa;
 7. la scena intorno — piazze, alberi, attraversamenti, negozi — resta di
-   Utilità: in una passeggiata si parla di arte, architettura e storia.
+   Utilità: in una passeggiata si parla di arte, architettura e storia;
+8. una passeggiata **a tema** porta il testo suo, tappa per tappa — in
+   «Caravaggio a Roma» di San Luigi dei Francesi si dice la cappella
+   Contarelli, non la facciata — e allora le clip incise del luogo si
+   buttano, perché direbbero un'altra cosa;
+9. se si entra pagando, la tappa lo dice.
+
+**I giri, e da dove vengono** (16/10). Dalle 102 linee della vecchia app ne
+sono rimasti 101; `strumenti/fai-i-giri.py` ne ha aggiunti 33 nelle città
+d'arte, mettendo in fila i luoghi che hanno davvero la scheda — mai più di
+cinquecento metri fra una tappa e l'altra — e chiedendo a Valhalla la strada
+vera, perché una riga dritta passa dentro i palazzi. `strumenti/caravaggio.py`
+scrive i due giri a tema, con le opere verificate una per una il 16/10: è lì
+dentro che sta scritto dove sono oggi.
+Due correzioni ai dati vecchi, trovate facendo questo lavoro:
+- il Martirio di sant'Orsola non è più a Palazzo Zevallos dal 2022 — è alle
+  Gallerie d'Italia, in via Toledo 177 — e l'app ci mandava ancora la gente;
+- 83 giri si dicevano più corti del vero, perché i metri erano quelli della
+  linea disegnata a mano e non del cammino fra le tappe.
 
 Mentre una passeggiata è in corso parla solo lei: il racconto tace, se no al
 Battistero si sentono due voci dire due cose diverse sullo stesso luogo.

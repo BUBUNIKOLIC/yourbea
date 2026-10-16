@@ -40,6 +40,15 @@ TAPPE_MAX = 8
 TAPPE_MIN = 4
 SOVRAPPOSTO = 0.6      # oltre questo, è un giro che c'è già (REGOLA 4)
 
+# 6. UNA TAPPA SI RAGGIUNGE DALLA STRADA. La Cappella Sistina e le Stanze di
+#    Raffaello stanno in fondo a sette chilometri di Musei Vaticani: mettere
+#    in fila «Cappella Sistina, San Pietro, Stanze di Raffaello» disegna un
+#    giro che nessuno può camminare. Il museo intero resta (Musei Vaticani è
+#    una tappa onesta: ci si entra dalla strada); le sale dentro no.
+#    E «Fermi fountain» è un nome arrivato dall'inglese: in una frase
+#    italiana detta a voce suona come un errore.
+FUORI = {'Cappella Sistina', 'Stanze di Raffaello', 'Fermi fountain'}
+
 CITTA = [('Roma', 41.8955, 12.4823), ('Napoli', 40.848, 14.257), ('Torre del Greco', 40.787, 14.3683),
          ('Venafro', 41.486, 14.045), ('Parma', 44.8032, 10.329), ('Spoleto', 42.7345, 12.738),
          ('Firenze', 43.7714, 11.2547), ('Venezia', 45.434, 12.338), ('Milano', 45.4642, 9.19),
@@ -70,7 +79,30 @@ def citta_di(lat, lon):
 
 
 def valhalla(punti, prove=2):
-    """La strada vera, a piedi. Restituisce (linea, metri) o (None, None)."""
+    """La strada vera, a piedi. Restituisce (linea, metri) o (None, None).
+    IL SERVIZIO NE PRENDE DIECI PER VOLTA: «Exceeded max locations: 10». I
+    giri lunghi — quelli della vecchia app arrivano a ventinove tappe — si
+    chiedono a pezzi di dieci, agganciati per l'ultima tappa, e poi si
+    rimette tutto in fila. Senza questo i giri più ricchi restavano con i
+    metri sbagliati, che è proprio quello che si stava correggendo."""
+    if len(punti) > 10:
+        linea, metri = [], 0
+        i = 0
+        while i < len(punti) - 1:
+            pezzo = punti[i:i + 10]
+            l, m = _una_strada(pezzo, prove)
+            if not l:
+                return None, None
+            linea.extend(l if not linea else l[1:])
+            metri += m
+            i += 9                      # l'ultima del pezzo è la prima del prossimo
+            if i < len(punti) - 1:
+                time.sleep(1.1)
+        return linea, metri
+    return _una_strada(punti, prove)
+
+
+def _una_strada(punti, prove=2):
     corpo = json.dumps({
         'locations': [{'lat': round(p[0], 5), 'lon': round(p[1], 5)} for p in punti],
         'costing': 'pedestrian',
@@ -148,6 +180,24 @@ def corto(nome):
     return nome
 
 
+def titolo_di(citta, catena):
+    """IL TITOLO DICE LE COSE GROSSE, non la prima e l'ultima. «Roma — da
+    Fontana del Trullo a Fontana di Corot» è un giro che passa dall'Ara Pacis
+    e dal Mausoleo di Augusto e non lo dice: chi sceglie a voce, da quel
+    titolo, non capisce cosa va a vedere. Si nominano le tre tappe più
+    importanti, nell'ordine in cui si incontrano."""
+    def peso(p):
+        return (-(p.get('k') or 1), 0 if p.get('a') else 1, -len(p.get('d') or ''))
+    grosse = sorted(catena, key=peso)[:3]
+    grosse = [p for p in catena if p in grosse]          # rimesse in ordine di cammino
+    nomi = [corto(p['n']) for p in grosse]
+    if len(nomi) >= 3:
+        return '%s — %s, %s e %s' % (citta, nomi[0], nomi[1], nomi[2])
+    if len(nomi) == 2:
+        return '%s — %s e %s' % (citta, nomi[0], nomi[1])
+    return '%s — %s' % (citta, nomi[0])
+
+
 def fai_i_giri(luoghi, esistenti, asciutto=False):
     usati_prima = {}
     for g in esistenti:
@@ -156,7 +206,8 @@ def fai_i_giri(luoghi, esistenti, asciutto=False):
     insiemi_esistenti = [set(t['n'] for t in g['t']) for g in esistenti]
     ids = set(g['id'] for g in esistenti)
 
-    buoni = [p for p in luoghi if p.get('k', 0) >= 1 and (p.get('d') or '').strip()]
+    buoni = [p for p in luoghi if p.get('k', 0) >= 1 and (p.get('d') or '').strip()
+             and p['n'] not in FUORI]
     per_citta = {}
     for p in buoni:
         c = citta_di(p['lat'], p['lon'])
@@ -212,7 +263,7 @@ def fai_i_giri(luoghi, esistenti, asciutto=False):
         if metri > 4000:
             print('   SALTATO (a piedi sono %d m): %s' % (metri, n['id']), file=sys.stderr)
             continue
-        titolo = '%s — da %s a %s' % (n['citta'], corto(catena[0]['n']), corto(catena[-1]['n']))
+        titolo = titolo_di(n['citta'], catena)
         fatti.append({'id': n['id'], 'tema': tema_di(catena), 'n': titolo, 'citta': n['citta'],
                       'metri': metri,
                       't': [{'n': p['n'], 'la': round(p['lat'], 5), 'lo': round(p['lon'], 5)} for p in catena],

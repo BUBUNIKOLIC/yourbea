@@ -429,6 +429,67 @@ prova('le passeggiate vere si leggono tutte, e ogni tappa ha una scheda', () => 
   });
 });
 
+prova('un giro a tema dice sempre se si paga', () => {
+  /* Vince, 16/10: «se una tappa è dentro un museo a pagamento, va detto
+     nella scheda». Chi non vede non può leggere il cartello all'ingresso, e
+     il turista che arriva davanti a una biglietteria che non si aspettava
+     ha già perso il giro. Vale per le tappe che si portano il testo loro:
+     quelle sono le tappe dei giri a tema, scritte a mano. */
+  const qui = path.join(__dirname, '..');
+  const dati = JSON.parse(fs.readFileSync(path.join(qui, 'dati/passeggiate.json'), 'utf8'));
+  const tema = dati.filter((g) => (g.t || []).some((t) => t.d));
+  if (!tema.length) return guasto('di giri a tema non ce n\'è nessuno');
+  tema.forEach((g) => {
+    g.t.forEach((t) => {
+      if (!t.d) return guasto(g.id + ': la tappa ' + t.n + ' non ha il suo testo');
+      if (!/si paga|biglietto|non si paga|ingresso libero|gratis/i.test(t.d)) {
+        guasto(g.id + ' — ' + t.n + ': non dice come si entra');
+      }
+    });
+  });
+});
+
+prova('le lunghezze dei giri sono quelle che si camminano', () => {
+  /* una riga dritta fra due tappe passa dentro i palazzi e dà una
+     lunghezza più corta del vero: i metri li deve dire chi conosce le
+     strade. Un cammino non può essere più corto della linea d'aria che
+     unisce le stesse tappe: se lo è, qualcuno ha tirato righe. */
+  const qui = path.join(__dirname, '..');
+  const dati = JSON.parse(fs.readFileSync(path.join(qui, 'dati/passeggiate.json'), 'utf8'));
+  dati.forEach((g) => {
+    let aria = 0;
+    for (let i = 1; i < g.t.length; i++) aria += dist(g.t[i - 1].la, g.t[i - 1].lo, g.t[i].la, g.t[i].lo);
+    if (g.metri < Math.round(aria) - 1) guasto(g.id + ': ' + g.metri + ' m dichiarati, ma in linea d\'aria sono già ' + Math.round(aria));
+    if (!g.p || g.p.length < 2) guasto(g.id + ': senza la linea della strada la mappa non disegna niente');
+  });
+});
+
+prova('nessun giro ripassa dalla stessa tappa, e due giri non sono lo stesso giro', () => {
+  const qui = path.join(__dirname, '..');
+  const dati = JSON.parse(fs.readFileSync(path.join(qui, 'dati/passeggiate.json'), 'utf8'));
+  const insiemi = [];
+  dati.forEach((g) => {
+    const nomi = g.t.map((t) => t.n);
+    if (new Set(nomi).size !== nomi.length) guasto(g.id + ' passa due volte dallo stesso luogo');
+    /* due giri con lo stesso nome in codice: «comincia quello» ne prende
+       sempre uno solo, e l'altro non si può chiedere. Nei dati della vecchia
+       app ce n'erano due chiamati «napoli-sanita». */
+    if (insiemi.some((x) => x.id === g.id)) guasto('due giri si chiamano tutti e due ' + g.id);
+    const mio = new Set(nomi);
+    insiemi.forEach((altro) => {
+      /* il giro «al contrario» è voluto, e nella vecchia app si chiamava
+         così: «roma» e «roma-rev», dal Colosseo a Palazzo Chigi e indietro.
+         Quello non è un doppione: è l'altro senso di marcia. */
+      if (g.id === altro.id + '-rev' || altro.id === g.id + '-rev') return;
+      const comuni = [...mio].filter((n) => altro.nomi.has(n)).length;
+      if (comuni / mio.size > 0.8 && comuni / altro.nomi.size > 0.8) {
+        guasto(g.id + ' e ' + altro.id + ' sono lo stesso giro con due nomi');
+      }
+    });
+    insiemi.push({ id: g.id, nomi: mio });
+  });
+});
+
 prova('una passeggiata vera si fa da capo a fondo', () => {
   /* il giro di Parma, la città dove la nuova app è stata provata: si comincia, si arriva
      al Duomo, si sente la scheda, si va avanti, e alla fine si chiude */
