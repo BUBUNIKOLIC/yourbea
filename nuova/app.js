@@ -208,6 +208,10 @@
   /* gli incroci: «superavo gli incroci e non mi dicevi quali strade
      superavo». È roba di Utilità: in Turismo si parla d'arte. */
   var incroci = Incroci({ dist: posizione.dist, verso: posizione.verso });
+  /* quello che passi, mentre lo passi — e in TUTTE E DUE le modalità:
+     «lo stesso sia per utilità che per turismo» (Vince, 16/10). Una
+     fermata o uno scalino servono anche a chi sta guardando una chiesa. */
+  var passaggi = Passaggi({ dist: posizione.dist, verso: posizione.verso });
   function raccontaScena() {
     var s = posizione.leggi();
     if (!s.pronto || !acceso) return;
@@ -730,6 +734,9 @@
     disegnaMappa(s, lista);
     /* l'incrocio si guarda a ogni passo: venticinque metri si attraversano
        in dieci secondi, e dirlo dopo non serve a niente */
+    var pass = passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
+                                   direzione: s.direzione, direzioneBuona: s.direzioneBuona });
+    if (pass) dillo(pass);
     if (modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
       var inc = incroci.quale({ qui: { lat: s.lat, lon: s.lon }, vie: SERVIZI.vie,
                                 strada: ultimaStrada, direzione: s.direzione,
@@ -761,6 +768,7 @@
         dillo({ tipo: 'strada', livello: 'guida',
                 testo: (cambiata ? 'Sei entrato in ' : 'Sei in ') + dove + '.' });
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
+        passaggi.stradaNuova();
       });
       intorno.servizi(s.lat, s.lon).then(function (v) {
         if (!v) return;

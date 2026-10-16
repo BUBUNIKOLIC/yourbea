@@ -1,0 +1,133 @@
+/* LE PROVE DEI PASSAGGI — nuova Yourbea
+   «Serve uno strumento per avere dati su quello che c'è intorno man mano
+   che avanziamo su una strada» (Vince, 16/10). Dire le cose nel momento in
+   cui ci passi davanti è la differenza fra una cartina letta ad alta voce e
+   qualcuno che cammina con te.
+   Si lancia:  node nuova/prove/passaggi.js                                  */
+
+'use strict';
+const Passaggi = require('../parti/passaggi.js');
+
+let errori = [], fatti = [];
+function guasto(m) { errori.push(m); }
+function prova(nome, f) {
+  errori = [];
+  try { f(); } catch (e) { guasto('è scoppiata: ' + e.message); }
+  if (errori.length) { console.log('NO  ' + nome); errori.forEach((e) => console.log('      ' + e)); fatti.push(false); }
+  else { console.log('SI  ' + nome); fatti.push(true); }
+}
+
+function dist(la1, lo1, la2, lo2) {
+  const R = 6371000, r = Math.PI / 180;
+  const a = Math.sin((la2 - la1) * r / 2) ** 2 +
+            Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin((lo2 - lo1) * r / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function verso(la1, lo1, la2, lo2) {
+  const r = Math.PI / 180;
+  const y = Math.sin((lo2 - lo1) * r) * Math.cos(la2 * r);
+  const x = Math.cos(la1 * r) * Math.sin(la2 * r) - Math.sin(la1 * r) * Math.cos(la2 * r) * Math.cos((lo2 - lo1) * r);
+  return (Math.atan2(y, x) / r + 360) % 360;
+}
+function mondo(t0) {
+  let adesso = t0 || 1000000;
+  return { p: Passaggi({ dist, verso, ora: () => adesso }), passano(ms) { adesso += ms; } };
+}
+
+const QUI = { lat: 41.8230, lon: 12.4814 };
+const vicino = (dlat, dlon) => ({ lat: QUI.lat + dlat, lon: QUI.lon + dlon });
+const FARMACIA = Object.assign({ cosa: 'farmacia', servizio: 'farmacia', nome: 'Farmacia Pirani' }, vicino(0, 0.00012));
+const PANCHINA = Object.assign({ cosa: 'panchina', servizio: 'panchina', nome: '' }, vicino(0.00008, 0));
+const NEGOZIO_MUTO = Object.assign({ cosa: 'negozio di vestiti', servizio: 'negozio di vestiti', nome: '' }, vicino(0, 0.00010));
+const LONTANO = Object.assign({ cosa: 'bar', servizio: 'bar', nome: 'Bar Roma' }, vicino(0.0009, 0));
+
+prova('dice quello che passi quando ce l\'hai di fianco', () => {
+  const w = mondo();
+  const d = w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true });
+  if (!d) guasto('a dieci metri va detto');
+  if (d && !/Farmacia Pirani/.test(d.testo)) guasto('ha detto: ' + d.testo);
+  if (d && !/destra/.test(d.testo)) guasto('andando a nord, una cosa a est è a destra: ' + d.testo);
+});
+
+prova('quello lontano non si annuncia: a quaranta metri non lo trovi', () => {
+  const w = mondo();
+  if (w.p.prossimo({ qui: QUI, punti: [LONTANO], direzione: 0, direzioneBuona: true })) guasto('ha annunciato un bar a cento metri');
+});
+
+prova('la stessa cosa non si dice due volte', () => {
+  const w = mondo();
+  if (!w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true })) guasto('la prima volta si dice');
+  w.passano(20000);
+  if (w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true })) guasto('ripassandoci davanti l\'ha ridetta');
+});
+
+prova('cambiando strada si ricomincia da capo', () => {
+  const w = mondo();
+  w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true });
+  w.p.stradaNuova();
+  w.passano(20000);
+  if (!w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true })) guasto('in una strada nuova si ridice');
+});
+
+prova('non più di una ogni otto secondi: non è una filastrocca', () => {
+  const w = mondo();
+  const altra = Object.assign({ cosa: 'bar', servizio: 'bar', nome: 'Bar Poeta' }, vicino(0.00005, 0.00005));
+  if (!w.p.prossimo({ qui: QUI, punti: [FARMACIA, altra], direzione: 0, direzioneBuona: true })) guasto('la prima si dice');
+  if (w.p.prossimo({ qui: QUI, punti: [FARMACIA, altra], direzione: 0, direzioneBuona: true })) guasto('due nello stesso istante');
+  w.passano(9000);
+  if (!w.p.prossimo({ qui: QUI, punti: [FARMACIA, altra], direzione: 0, direzioneBuona: true })) guasto('dopo nove secondi tocca alla seconda');
+});
+
+prova('un negozio senza nome non si dice, una panchina sì', () => {
+  /* «negozio di vestiti» non dice niente a nessuno; una panchina serve,
+     perché ci si siede */
+  const w = mondo();
+  if (w.p.vaDetto(NEGOZIO_MUTO)) guasto('un negozio senza nome è rumore');
+  if (!w.p.vaDetto(PANCHINA)) guasto('la panchina serve anche senza nome');
+});
+
+prova('gli attraversamenti no: quelli li riassume la scena', () => {
+  const w = mondo();
+  const att = Object.assign({ cosa: 'attraversamento', servizio: 'attraversamento', semaforo: false }, vicino(0, 0.00008));
+  if (w.p.vaDetto(att)) guasto('detti uno per uno diventano la filastrocca di cui Vince si è lamentato');
+});
+
+prova('senza sapere come cammini, niente destra e sinistra e niente nord', () => {
+  const w = mondo();
+  const d = w.p.prossimo({ qui: QUI, punti: [FARMACIA] });
+  if (!d) guasto('il nome si dice lo stesso');
+  if (d && /destra|sinistra|davanti/.test(d.testo)) guasto('inventate: ' + d.testo);
+  if (d && /\b(?:nord|sud|est|ovest)\b/i.test(d.testo)) guasto('i cardinali no: ' + d.testo);
+});
+
+prova('se il nome non dice cos\'è, si aggiunge il tipo', () => {
+  const w = mondo();
+  const daMario = Object.assign({ cosa: 'bar', servizio: 'bar', nome: 'Da Mario' }, vicino(0, 0.00012));
+  const d = w.p.prossimo({ qui: QUI, punti: [daMario], direzione: 0, direzioneBuona: true });
+  if (d && !/bar/.test(d.testo)) guasto('«Da Mario» da solo non fa capire che è un bar: ' + d.testo);
+});
+
+prova('di una fermata si dicono le LINEE, non che esiste', () => {
+  /* «è importante per i non vedenti: fermate autobus, treni, metro»
+     (Vince, 16/10). Sapere che c'è una fermata non porta da nessuna
+     parte: serve sapere cosa ci passa. */
+  const w = mondo();
+  const fermata = Object.assign({ cosa: "fermata dell'autobus", servizio: "fermata dell'autobus",
+                                  nome: 'Corazzieri', linee: '671;773' }, vicino(0, 0.00012));
+  const d = w.p.prossimo({ qui: QUI, punti: [fermata], direzione: 0, direzioneBuona: true });
+  if (!d) guasto('una fermata a dieci metri va detta');
+  if (d && !/671/.test(d.testo)) guasto('senza le linee non serve: ' + d.testo);
+  if (d && !/Corazzieri/.test(d.testo)) guasto('e col suo nome: ' + d.testo);
+  if (d && d.livello !== 'guida') guasto('una fermata non è un cenno: è il modo di andarsene da lì');
+});
+
+prova('l\'ingresso della metropolitana si dice anche senza nome', () => {
+  const w = mondo();
+  const metro = Object.assign({ cosa: 'ingresso della metropolitana', servizio: 'ingresso della metropolitana', nome: '' }, vicino(0.00008, 0));
+  if (!w.p.vaDetto(metro)) guasto('un vedente lo trova dalla scalinata, chi non vede no');
+});
+
+const passate = fatti.filter(Boolean).length;
+console.log('');
+console.log(passate + '/' + fatti.length + ' prove dei passaggi');
+process.exit(passate === fatti.length ? 0 : 1);

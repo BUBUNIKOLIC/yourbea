@@ -148,8 +148,59 @@ function Intorno(opzioni) {
             tattile: t.tactile_paving === 'yes', lat: la, lon: lo });
           continue;
         }
+        /* LE COSE CHE SI PRENDONO ADDOSSO, e quelle che aiutano.
+           Stavano nella mappa da sempre e non le leggeva nessuno: per chi
+           cammina senza vedere un palo in mezzo al marciapiede conta più di
+           un monumento, e uno scivolo al posto del gradino cambia la
+           strada che sceglie. Aggiunte il 16/10, quando Vince ha chiesto
+           «maggiori dettagli» su quello che si passa. */
+        if (t.barrier === 'bollard' || t.barrier === 'block') {
+          fuori.punti.push({ cosa: 'paletto', servizio: 'paletto', nome: '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.highway === 'street_lamp') {
+          fuori.punti.push({ cosa: 'lampione', servizio: 'lampione', nome: '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.highway === 'elevator') {
+          fuori.punti.push({ cosa: 'ascensore', servizio: 'ascensore', nome: t.name || '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.kerb === 'lowered' || t.barrier === 'kerb' && t.kerb === 'lowered') {
+          fuori.punti.push({ cosa: 'scivolo del marciapiede', servizio: 'scivolo del marciapiede',
+                             nome: '', tattile: t.tactile_paving === 'yes', lat: la, lon: lo });
+          continue;
+        }
+        if (t.amenity === 'post_box') {
+          fuori.punti.push({ cosa: 'cassetta postale', servizio: 'cassetta postale', nome: '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.entrance === 'main' && t.name) {
+          fuori.punti.push({ cosa: 'ingresso', servizio: 'ingresso', nome: t.name, lat: la, lon: lo });
+          continue;
+        }
+        /* I MEZZI PUBBLICI. «È importante per i non vedenti: fermate
+           autobus, treni, metro» (Vince, 16/10). Per chi non vede la
+           fermata non è un dettaglio del paesaggio: è il modo di andarsene
+           da lì. E l'ingresso della metropolitana, che un vedente trova
+           dalla scalinata, senza occhi non si trova affatto. */
+        if (t.railway === 'subway_entrance' || t.entrance === 'subway') {
+          fuori.punti.push({ cosa: 'ingresso della metropolitana', servizio: 'ingresso della metropolitana',
+                             nome: t.name || '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.railway === 'tram_stop') {
+          fuori.punti.push({ cosa: 'fermata del tram', servizio: 'fermata del tram',
+                             nome: t.name || '', linee: t.route_ref || '', lat: la, lon: lo });
+          continue;
+        }
+        if (t.railway === 'station' || t.railway === 'halt') {
+          fuori.punti.push({ cosa: 'stazione', servizio: 'stazione', nome: t.name || '', lat: la, lon: lo });
+          continue;
+        }
         if (t.highway === 'bus_stop' || t.public_transport === 'platform') {
-          fuori.punti.push({ cosa: 'fermata', nome: t.name || '', linee: t.route_ref || '', lat: la, lon: lo });
+          fuori.punti.push({ cosa: 'fermata dell\'autobus', servizio: 'fermata dell\'autobus',
+                             nome: t.name || '', linee: t.route_ref || '', lat: la, lon: lo });
           continue;
         }
         var tipo = PUNTI[t.amenity] || PUNTI['shop:' + t.shop] || PUNTI[t.leisure] || null;
@@ -173,6 +224,16 @@ function Intorno(opzioni) {
             if (cc) linea.push(cc);
           }
           if (linea.length > 1) fuori.vie.push({ nome: tw.name, punti: linea });
+        }
+        /* le scale sono una via, non un punto: si prende il primo gradino */
+        if (tw.highway === 'steps') {
+          var pr = dove[nd[0] && nd[0].getAttribute('ref')];
+          if (pr) {
+            fuori.punti.push({ cosa: 'scalini', servizio: 'scalini',
+                               nome: tw.name || '', quanti: parseInt(tw.step_count || '0', 10) || 0,
+                               corrimano: tw.handrail === 'yes', lat: pr[0], lon: pr[1] });
+          }
+          continue;
         }
         if (tw.natural === 'tree_row') {
           for (var y = 0; y < nd.length; y++) { var c = dove[nd[y].getAttribute('ref')]; if (c) fuori.alberi.push(c); }
