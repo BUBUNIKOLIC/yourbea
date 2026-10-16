@@ -212,6 +212,38 @@
      «lo stesso sia per utilità che per turismo» (Vince, 16/10). Una
      fermata o uno scalino servono anche a chi sta guardando una chiesa. */
   var passaggi = Passaggi({ dist: posizione.dist, verso: posizione.verso });
+
+  /* ---------- i negozi della nostra mappa ----------
+     Scaricati una volta da Overture, filtrati a quello che si incontra
+     camminando, tradotti e tagliati a quadretti da un chilometro. Qui si
+     prendono solo i quadretti dove sei, e si uniscono a quello che la
+     mappa viva dice adesso — senza ripetere le stesse cose. */
+  var negozi = Negozi({ dist: posizione.dist });
+  var QUADRETTI = {};            // quelli già scaricati, o che non esistono
+  var NOSTRI = [];               // i luoghi dei quadretti intorno
+
+  function prendiQuadretti(s) {
+    var voluti = negozi.quadretti(s.lat, s.lon);
+    var mancano = voluti.filter(function (q) { return QUADRETTI[q] === undefined; });
+    mancano.forEach(function (q) {
+      QUADRETTI[q] = null;                            // segnato: non si richiede
+      fetch('dati/negozi/' + q + '.json' + VER).then(function (r) {
+        return r.ok ? r.json() : [];
+      }).then(function (roba) {
+        QUADRETTI[q] = roba || [];
+        if (roba && roba.length) diario('NOSTRI: ' + roba.length + ' luoghi nel quadretto ' + q);
+        rifaiNostri(voluti);
+      }).catch(function () { QUADRETTI[q] = []; });
+    });
+    rifaiNostri(voluti);
+  }
+  function rifaiNostri(voluti) {
+    var tutti = [];
+    voluti.forEach(function (q) {
+      if (QUADRETTI[q] && QUADRETTI[q].length) tutti = tutti.concat(QUADRETTI[q]);
+    });
+    NOSTRI = tutti;
+  }
   function raccontaScena() {
     var s = posizione.leggi();
     if (!s.pronto || !acceso) return;
@@ -791,8 +823,10 @@
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
         passaggi.stradaNuova();
       });
+      prendiQuadretti(s);
       intorno.servizi(s.lat, s.lon).then(function (v) {
         if (!v) return;
+        v.punti = negozi.unisci(v.punti || [], NOSTRI);
         SERVIZI = v;
         /* appena si sa cosa c'è intorno, lo si dice: è la cosa che a chi non
            vede serve più di tutte, e al turista racconta dov'è capitato. */
