@@ -45,6 +45,7 @@ const ESSENZIALI = [
   './parti/intorno.js' + V,
   './parti/emergenza.js' + V,
   './parti/guida.js' + V,
+  './parti/lettura.js' + V,
   './parti/passeggiata.js' + V,
   './parti/musica.js' + V,
   './parti/pulizia.js' + V,

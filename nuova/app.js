@@ -247,6 +247,13 @@
   try { ioSonoIo = localStorage.getItem('yourbea2-io') || ''; } catch (e) {}
   var dettatura = Dettatura();
 
+  /* LEGGERE QUELLO CHE LA FOTOCAMERA HA DAVANTI. Lo scatto e il
+     riconoscimento del testo li fa il guscio con Vision, dentro iOS: gratis,
+     senza rete e senza chiavi di nessuno. Cosa dire di quelle righe — quale
+     viene prima, quali sono rumore, quante per volta — sta in
+     parti/lettura.js, con le sue prove. */
+  var lettura = Lettura({});
+
   /* ---------- la vecchia Yourbea si butta da sé ----------
      «Fai in modo che chi scarica la nuova butti in automatico la vecchia».
      Chi aveva la vecchia si porta dietro il suo service worker — che se
@@ -552,6 +559,7 @@
        monumento di prima: sullo schermo si leggeva «Basilica della
        Steccata» sopra un testo che parlava di panchine. */
     if (d.tipo === 'scena' || d.tipo === 'intorno') return 'Qui intorno';
+    if (String(d.tipo).indexOf('lettura') === 0) return 'Quello che c\'è scritto';
     if (d.tipo === 'strada' || d.tipo === 'dove') return 'Dove sei';
     if (d.tipo === 'chiama-contatto' || d.tipo === 'avvisa' || d.tipo === 'chi-e') return 'Aiuto';
     if (d.tipo === 'lascio' || d.tipo === 'avanti' || d.tipo === 'niente') return 'Yourbea';
@@ -844,6 +852,10 @@
     negozi: ['negozi', 'un negozio', 'negozio', 'che negozi', 'botteghe'],
     turismo: ['turismo', 'turista'],
     utilita: ['utilita', 'servizi'],
+    /* LA LETTURA. «Scritto» da solo tiene tutte le forme in cui la gente la
+       chiede — «che c'è scritto», «cosa c'è scritto qui», «leggimi quello
+       che è scritto» — e «cartello» la frase più naturale di tutte. */
+    leggi: ['leggi', 'scritto', 'cartello', 'targa', 'citofono'],
     aiuto: ['aiuto', 'comandi', 'che posso dire']
   };
   function normalizza(t) {
@@ -923,6 +935,12 @@
       return true;
     }
     if (dalDettato(t)) return true;
+    /* LEGGERE: prima di «portami a» e delle passeggiate, perché «leggi il
+       cartello» non è un posto dove andare; e prima di «intorno», perché
+       «che c'è scritto» contiene «che c'è» e finirebbe a elencare i
+       monumenti invece di leggere il cartello che hai in mano. */
+    if (lettura.inCorso() && ha('ancora')) { diciLaLettura(lettura.ancora()); return true; }
+    if (ha('leggi')) { leggiIlCartello(); return true; }
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
     if (ha('portami a casa', 'torniamo a casa', 'riportami a casa', 'andiamo a casa', 'voglio tornare a casa')) { aCasa(); return true; }
@@ -964,6 +982,7 @@
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
       voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
+                 'Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell\'autobus. ' +
                  'Passeggiate, e ti dico i giri a tappe che ci sono qui: poi «comincia la prima». ' +
                  'Musica, per accenderla o spegnerla. ' +
                  'Portami a, e un indirizzo. Portami a casa. Avvisa, e il nome del tuo contatto. ' +
@@ -1056,6 +1075,56 @@
     if (!pezzi.length) { voce.parla('Qui intorno non ho niente da dirti.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
     dillo({ tipo: 'elenco', testo: pezzi.join(' '), livello: 'guida' });
   }
+
+  /* ---------- leggere i cartelli ----------
+     «E se si usassero degli occhiali con la fotocamera?» (Vince). Per
+     leggere non servono: la fotocamera ce l'ha il telefono, e il
+     riconoscimento del testo sta dentro iOS. Qui si chiede lo scatto al
+     guscio e si dice quello che ha letto. Le regole stanno in
+     parti/lettura.js (18 prove). */
+  function leggiIlCartello() {
+    if (!window.urbeaLeggi) {
+      /* nel browser la fotocamera non si apre così: non si promette una
+         cosa che non si può fare, e non si resta zitti. */
+      diario('LEGGO: niente porta urbeaLeggi (non siamo nel guscio)');
+      diciLaLettura(lettura.senzaGuscio());
+      return;
+    }
+    diario('LEGGO: chiedo lo scatto');
+    /* si dice subito che sta guardando: per chi non vede il silenzio e
+       l'app rotta sono la stessa cosa, e lo scatto può volere un secondo. */
+    voce.parla(lettura.aspetta().testo, { livello: voce.GUIDA, ancheSeUguale: true });
+    mostra({ titolo: 'Leggo', dove: '', gradino: '',
+             testo: 'Tieni il telefono fermo verso quello che vuoi leggere.', attesa: true });
+    try { window.urbeaLeggi(); }
+    catch (e) { diario('LEGGO: la porta non risponde'); diciLaLettura(lettura.senzaGuscio()); }
+  }
+
+  /* diciLaLettura(): si dice SEMPRE, anche se è la stessa frase di prima —
+     l'ha chiesta la persona, e due cartelli identici esistono. */
+  function diciLaLettura(d) {
+    if (!d) return;
+    dilloSubito(d);
+    if (d.quante) {
+      /* ALL'ULTIMA RIGA NON SI OFFRE LA PROSSIMA. Provandola nel browser lo
+         schermo diceva «dimmi ancora per la prossima» sulla riga tre di
+         tre: chi legge lo schermo — chi accompagna — ci casca. */
+      var ultima = ((d.quale || 0) + 1) >= d.quante;
+      mostra({ gradino: 'Riga ' + ((d.quale || 0) + 1) + ' di ' + d.quante +
+                        (ultima ? '. Era l\'ultima.' : '. Dimmi «ancora» per la prossima.') });
+    }
+  }
+
+  /* la porta che il guscio richiama con le righe lette. Nel quaderno resta
+     cosa ha letto e quanto ci ha messo: «non ha letto» e «ha letto una cosa
+     sbagliata» non devono essere la stessa riga di diario. */
+  window.urbeaLetto = function (righe, ms, guaio) {
+    var grezze = (righe && righe.length) || 0;
+    var d = lettura.risposta(righe || [], guaio || null);
+    diario('LETTO: ' + grezze + ' righe grezze in ' + (ms === undefined ? '?' : ms) + ' ms → ' +
+           (guaio ? ('guaio ' + guaio) : (lettura.tutte().join(' | ') || 'niente di leggibile')));
+    diciLaLettura(d);
+  };
 
   /* ---------- l'ascolto ---------- */
   var ascolto = null, ascoltoVoluto = false, micChiuso = false;
@@ -1152,6 +1221,7 @@
 
   /* il tasto di casa, e il posto dove si scrive l'indirizzo */
   el('vai-a-casa').addEventListener('click', aCasa);
+  el('leggi-cartello').addEventListener('click', leggiIlCartello);
   el('avvisa-contatto').addEventListener('click', function () { avvisaOra('chiamata'); });
   el('messaggio-contatto').addEventListener('click', function () { avvisaOra('messaggio'); });
   scriviTastoAvvisa();
@@ -1263,6 +1333,7 @@
       luoghi: LUOGHI.length, vicini: vicini().slice(0, 5).map(function (o) { return o.p.n + ' ' + Math.round(o.m) + 'm'; }),
       staParlando: voce.staParlando(), inCoda: voce.inCoda().length,
       inCorso: racconto.inCorso() ? racconto.inCorso().n : null,
+      saLeggere: !!window.urbeaLeggi, lettura: lettura.aChePunto(),
       passeggiate: passeggiata.quante(),
       passeggiata: passeggiata.inCorso() ? passeggiata.inCorso().n : null,
       tappa: passeggiata.tappa() ? (passeggiata.tappa().n + ' — ' + JSON.stringify(passeggiata.aChePunto())) : null

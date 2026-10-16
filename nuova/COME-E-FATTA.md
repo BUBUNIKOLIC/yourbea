@@ -22,6 +22,7 @@ telefono e senza rete.
       prove/racconto.js     12 prove — compreso il difetto di Gabri a Parma
       parti/passeggiata.js  i giri a tappe             (38 prove)
       parti/musica.js       il tappeto sotto la voce   (8 prove)
+      parti/lettura.js      leggere i cartelli         (22 prove)
       dati/passeggiate.json 136 passeggiate, 977 tappe, 31 città
       strumenti/            gli attrezzi che scrivono i dati
 
@@ -85,6 +86,38 @@ solo in Turismo — in Utilità mai, nemmeno accesa a mano —, volume basso, e 
 spegne con un tasto o dicendo «musica». Sotto la voce scende, in emergenza si
 ferma, e su una svolta o un attraversamento tace per otto secondi: anche in
 Turismo chi ascolta può essere una persona che non vede.
+
+**Leggere quello che la fotocamera ha davanti** (`parti/lettura.js`, 16/10).
+Vince ha chiesto se servivano degli occhiali con la fotocamera. Per LEGGERE
+no: la fotocamera ce l'ha il telefono e il riconoscimento del testo sta
+dentro iOS — Vision — quindi è gratis, funziona senza rete, nessuna chiave
+di nessuno e nessuna fotografia esce dal telefono. Si dice «leggi», «che c'è
+scritto», «leggi il cartello», o si preme il tasto grande in Utilità; il
+guscio fa UNO scatto con la fotocamera posteriore e consegna alla pagina le
+righe lette, ognuna col suo riquadro. Le regole (22 prove):
+1. **prima le righe grandi**, non quelle che arrivano prima: su un cartello
+   il nome della via è scritto grande e il resto è contorno, e il
+   riconoscimento le consegna nell'ordine che vuole lui. Si ordina per
+   altezza delle lettere;
+2. **le righe sulla stessa altezza sono una riga sola**: «VIA DEI» e
+   «CORAZZIERI» stanno affiancate e tornano separate — lette una per volta
+   sembrano due cose diverse;
+3. si buttano le righe **di una o due lettere** e quelle di soli simboli
+   (rumore: un bordo, un'ombra, un graffio) — **ma non le cifre**: «64» è il
+   numero dell'autobus e «47» è il civico, ed è quello che si cercava;
+4. **una riga per volta**: si dice quante sono e poi la prima, «ancora» va
+   avanti. Venti righe di un menu lette di fila non se le ricorda nessuno, e
+   intanto non si sente la strada. Passati due minuti «ancora» torna a voler
+   dire il monumento che hai accanto;
+5. **se non si è letto niente non si tace**: «non riesco a leggere niente,
+   prova ad avvicinarti, o a girare il telefono» — perché dal di fuori il
+   silenzio e l'app rotta sono la stessa cosa. E il permesso negato si dice
+   per quello che è, con dove si dà.
+Nel quaderno della camminata (`Documents/traccia-AAAA-MM-GG.txt`) il guscio
+scrive **cosa ha letto e quanto ci ha messo**: «non legge» e «legge una cosa
+sbagliata» non devono essere la stessa riga di diario. Descrivere una
+**scena** è un'altra cosa e verrà dopo: quella vuole un modello che guarda
+l'immagine, e un server che tenga la chiave.
 
 **I giri, e da dove vengono** (16/10). Dalle 102 linee della vecchia app ne
 sono rimasti 101; `strumenti/fai-i-giri.py` ne ha aggiunti 33 nelle città

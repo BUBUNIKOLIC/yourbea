@@ -224,6 +224,11 @@ body[data-modo="utilita"] #mappa{display:none}
 #casa-riga[hidden]{display:none}
 #vai-a-casa{display:none}
 body[data-modo="utilita"] #vai-a-casa{display:block}
+/* LEGGERE I CARTELLI: il tasto sta in Utilità, dove si cammina per arrivare
+   da qualche parte e un numero di autobus o un citofono si leggono di
+   fretta. A voce («leggi») si può chiedere anche in Turismo. */
+#leggi-cartello{display:none}
+body[data-modo="utilita"] #leggi-cartello{display:block}
 .tasto.avvisa{border-color:rgba(224,81,63,.5);color:#F6C3BB;background:rgba(224,81,63,.1)}
 #riga-casa[hidden]{display:none}
 
