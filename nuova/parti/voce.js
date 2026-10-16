@@ -49,7 +49,19 @@ function MotoreVoce(opzioni) {
 
   // --- le soglie, tutte in un posto, tutte spiegate ---
   var TEMPO_CLIP = o.tempoClip || 3500;     // una clip che non parte entro questo si abbandona
-  var TEMPO_FRASE = o.tempoFrase || 9000;   // tetto totale per una frase, qualunque cosa accada
+  var TEMPO_FRASE = o.tempoFrase || 9000;   // tetto per una frase corta
+  /* IL TETTO DEVE CRESCERE COL TESTO. Il tetto esiste perché una frase non
+     resti appesa per sempre se l'audio si blocca — ma era FISSO a nove
+     secondi, e la scheda di un monumento dura mezzo minuto: dopo nove
+     secondi il motore la dava per finita e ci montava sopra la frase dopo.
+     Con le nostre 633 schede scritte a mano non si vedeva quasi mai; con
+     le 4.964 di Wikipedia, lunghe il doppio, sarebbe successo di continuo.
+     Adesso il tetto è la stima della durata più metà, e non scende mai
+     sotto i nove secondi né sale oltre il minuto e mezzo. */
+  function tetto(testo, quanteClip) {
+    var stima = quanteClip ? (quanteClip * 9000) : (1200 + String(testo || '').length * 55);
+    return Math.max(TEMPO_FRASE, Math.min(90000, Math.round(stima * 1.5)));
+  }
   var DOPPIONE = o.doppione || 8000;        // la stessa frase non si ridice entro questo
   var CODA_MAX = o.codaMax || 4;
 
@@ -134,7 +146,7 @@ function MotoreVoce(opzioni) {
     diario('VOCE DI SISTEMA: ' + String(testo).slice(0, 40));
     try { sintesi.parla(testo); } catch (e) {}
     // non sappiamo quando finisce: si stima dalla lunghezza, con un tetto
-    fra(function () { finito(mio); }, Math.min(TEMPO_FRASE, 1200 + String(testo).length * 55));
+    fra(function () { finito(mio); }, 1200 + String(testo).length * 55);
   }
 
   /* avvia(): fa parlare una frase. Qui dentro non si decide niente: le
@@ -149,10 +161,10 @@ function MotoreVoce(opzioni) {
     microfono.chiudi();
     diario('PARLA (' + f.livello + '): ' + String(f.testo).slice(0, 60));
 
-    // il tetto: qualunque cosa vada storta, entro TEMPO_FRASE si va avanti
+    // il tetto: qualunque cosa vada storta, entro il tetto si va avanti
     fra(function () {
       if (mio === turno && parlando) { diario('TETTO: la frase non si è chiusa, vado avanti'); finito(mio); }
-    }, TEMPO_FRASE);
+    }, tetto(f.testo, f.clip && f.clip.length));
 
     if (!f.clip || !f.clip.length || !Audio_) { conLaVoceDiSistema(mio, f.testo); return; }
 

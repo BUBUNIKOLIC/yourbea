@@ -283,6 +283,34 @@ prova('senza condizione la coda scorre come prima', () => {
   if (!/Cambellotti/.test(m.dette.join(' | '))) guasto('la seconda frase doveva uscire lo stesso');
 });
 
+/* LA SCHEDA LUNGA NON SI TAGLIA A META.
+   16/10, domanda di Vince: «mentre descrivi un monumento, s'interrompe?».
+   Il tetto per frase era fisso a nove secondi — serve perché una frase non
+   resti appesa se l'audio si blocca — ma la scheda di un monumento dura
+   mezzo minuto: dopo nove secondi il motore la dava per finita e ci
+   montava sopra la frase dopo. Con le 633 schede scritte da noi non si
+   vedeva quasi mai; con le 4.964 di Wikipedia sarebbe successo sempre. */
+prova('una scheda lunga non viene tagliata dopo nove secondi', () => {
+  const m = Mondo();
+  const lunga = 'La basilica di Santo Spirito è una delle principali chiese di Firenze. ' +
+    'Sorge nel quartiere di Oltrarno, e la sua costruzione fu avviata su progetto di ' +
+    'Filippo Brunelleschi nel 1444, proseguita dopo la sua morte da Antonio Manetti, ' +
+    'Giovanni da Gaiole e Salvi d\'Andrea, che completò la cupola nel 1481.';
+  m.motore.parla(lunga, { livello: 2 });
+  m.passano(9500);
+  if (!m.motore.staParlando()) guasto('a nove secondi e mezzo stava ancora parlando, e invece l\'ha chiusa');
+  if (m.diario.some((r) => /TETTO/.test(r))) guasto('il tetto è scattato su una frase che stava andando bene');
+  m.passano(40000);
+  if (m.motore.staParlando()) guasto('dopo quaranta secondi deve comunque essere finita');
+});
+
+prova('una frase corta resta col suo tetto di nove secondi', () => {
+  const m = Mondo();
+  m.motore.parla('Sei in via dei Corazzieri.', { livello: 2 });
+  m.passano(9500);
+  if (m.motore.staParlando()) guasto('una frase corta non può restare appesa dieci secondi');
+});
+
 /* ==================== il conto ==================== */
 (async () => {
   for (const p of prove) {
