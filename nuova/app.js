@@ -752,6 +752,21 @@
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
     var preso = voce.parla(d.testo, { clip: clipDi(d), livello: liv });
     if (!preso) { diario('non detta: ' + String(d.testo).slice(0, 40)); return; }
+    /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
+       ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha
+       perso il filo di dove si trova — e chi non vede non può recuperarlo
+       con un'occhiata. Si dice solo dopo le schede lunghe, non dopo i
+       cenni, e solo se nel frattempo non è arrivato niente di più
+       importante: se l'app sta già dicendo una svolta, questa si butta. */
+    if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') {
+      var viaOra = ultimaStrada;
+      if (viaOra) {
+        voce.parla('Adesso sei in ' + viaOra + '.', {
+          livello: voce.CENNO, ancheSeUguale: true,
+          valida: function () { return !guida.meta(); }
+        });
+      }
+    }
     if (d.luogo) {
       mostra({ dove: d.tipo === 'cenno' ? d.testo.split(',').slice(0, 2).join(',') : '',
                titolo: d.luogo.n, testo: d.tipo === 'cenno' ? (d.luogo.t || '') : d.testo,

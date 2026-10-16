@@ -101,7 +101,18 @@ function Racconto(opzioni) {
       var o = intorno[i], p = o.p;
       if (!daRaccontare(p)) continue;           // qui si raccontano i luoghi
       if (giaDetto(p, qui)) continue;
-      if (Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150)) continue;
+      /* QUELLO CHE TI SEI GIÀ LASCIATO DIETRO. «E hai passato questo
+         monumento altrettanto importante… se non lo è, dietro di te hai
+         superato» (Vince, 16/10). Camminando si passa accanto a una chiesa
+         senza accorgersene, e un secondo dopo è alle spalle: tacere vuol
+         dire fargliela perdere per sempre. Si dice in due modi: quello che
+         conta si racconta come gli altri, dicendo che è dietro; quello che
+         conta meno è una riga sola, e solo finché è a portata di mano. */
+      var dietro = Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150);
+      if (dietro) {
+        if (situazione.direzioneBuona === false) continue;   // senza bussola «dietro» è una bugia
+        if (rango(p) >= 2 ? o.m > 120 : o.m > 45) continue;
+      }
       if (o.m > raggio(p, modo)) continue;
       detti[p.n] = { quando: ora(), lat: qui.lat, lon: qui.lon };
       inCorso = p;
@@ -113,14 +124,26 @@ function Racconto(opzioni) {
          le clip incise sono pezzi: «sulla destra» + «a 80 metri» + il nome.
          Chi riceve questa risposta non deve ricalcolarli, se no il testo e
          l'audio si disallineano. */
-      return { tipo: 'cenno', luogo: p, livello: liv,
+      if (dietro && rango(p) < 2) {
+        /* uno minore, già superato: una riga e si va avanti — non si fa
+           tornare indietro nessuno per una cosa che non lo merita */
+        return { tipo: 'superato', luogo: p, livello: 'cenno',
+                 rel: o.rel, metri: Math.round(o.m), direzioneBuona: true,
+                 testo: 'Dietro di te hai superato ' + p.n + '.' };
+      }
+      return { tipo: 'cenno', luogo: p, livello: liv, dietro: dietro,
                rel: o.rel, metri: Math.round(o.m),
                direzioneBuona: situazione.direzioneBuona !== false,
                cardinale: situazione.cardinale || null,
                /* senza sapere come sei girato, «sulla destra» sarebbe una
                   bugia e «a nord» non dice niente: restano i metri */
-               testo: (situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
-                      metri(o.m) + ', ' + p.n + '.' };
+               /* «e a pochi passi hai…»: prima dove, poi quanto, poi cosa.
+                  Dietro si dice con parole sue, se no sembra un posto
+                  nuovo invece di uno che ti sei perso. */
+               testo: dietro
+                 ? ('Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.')
+                 : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
+                    metri(o.m) + ', ' + p.n + '.') };
     }
     return null;
   }
@@ -156,15 +179,19 @@ function Racconto(opzioni) {
     var r = rango(p);
     return r >= 3 ? Math.round(base * 1.7) : (r === 2 ? Math.round(base * 1.3) : base);
   }
+  /* QUATTRO PAROLE, NON SETTE. «In Utilità metti avanti, dietro, destra,
+     sinistra. Non nord» (Vince, 16/10). «Proprio a destra» e «indietro a
+     destra» sembrano precise e invece fanno fermare a pensare: chi
+     cammina senza vedere ha bisogno di una parola sola, che il corpo
+     esegue senza tradurla. */
   function versoTesto(o) {
     var r = o.rel;
-    if (Math.abs(r) <= 20) return 'dritto davanti';
-    if (r > 20 && r <= 70) return 'sulla destra';
-    if (r > 70 && r <= 110) return 'proprio a destra';
-    if (r > 110) return 'indietro a destra';
-    if (r < -20 && r >= -70) return 'sulla sinistra';
-    if (r < -70 && r >= -110) return 'proprio a sinistra';
-    return 'indietro a sinistra';
+    /* venticinque gradi, non trentacinque: a trenta gradi e ottanta metri
+       una cosa è già quaranta metri di lato, e «davanti a te» manderebbe
+       una persona a cercarla dritto. La prova lo ha preso al volo. */
+    if (Math.abs(r) <= 25) return 'davanti a te';
+    if (Math.abs(r) > 145) return 'dietro di te';
+    return r > 0 ? 'sulla destra' : 'sulla sinistra';
   }
   function metri(m) {
     if (m < 25) return 'a pochi passi';

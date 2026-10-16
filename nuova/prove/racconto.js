@@ -189,6 +189,38 @@ prova('le chiese segnate 2 e 3 si raccontano', () => {
   if (!d) guasto('una chiesa k=2 non veniva raccontata mai');
 });
 
+/* QUELLO CHE TI SEI LASCIATO DIETRO, chiesto da Vince il 16/10: «e hai
+   passato questo monumento altrettanto importante… se non lo è, dietro di
+   te hai superato». Camminando si passa accanto a una chiesa senza
+   accorgersene: tacere vuol dire fargliela perdere per sempre. */
+prova('un monumento importante superato si dice lo stesso', () => {
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BATTISTERO, 70, 178]]),
+                           modo: 'cultura', direzioneBuona: true });
+  if (!d) guasto('un luogo importante a settanta metri dietro va detto');
+  if (d && !/dietro di te/i.test(d.testo)) guasto('deve dire che è dietro: ' + d.testo);
+  if (d && d.tipo !== 'cenno') guasto('e si deve poter chiedere «ancora»: è un racconto come gli altri');
+});
+
+prova('uno minore superato è solo una riga, e solo se è vicino', () => {
+  const m = mondo();
+  const vicino = m.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 30, 175]]),
+                                modo: 'cultura', direzioneBuona: true });
+  if (!vicino || vicino.tipo !== 'superato') guasto('a trenta metri si dice, in una riga: ' + JSON.stringify(vicino));
+  const m2 = mondo();
+  const lontano = m2.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 90, 175]]),
+                                  modo: 'cultura', direzioneBuona: true });
+  if (lontano) guasto('a novanta metri dietro non si fa tornare indietro nessuno');
+});
+
+prova('senza bussola non si dice mai «dietro»', () => {
+  /* se non si sa come sei girato, «dietro di te» è una bugia */
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BATTISTERO, 70, 178]]),
+                           modo: 'cultura', direzioneBuona: false });
+  if (d && /dietro/i.test(d.testo)) guasto('inventato: ' + d.testo);
+});
+
 /* ==================== il conto ==================== */
 const passate = fatti.filter(Boolean).length;
 console.log('');
