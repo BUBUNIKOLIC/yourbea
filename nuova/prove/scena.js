@@ -94,14 +94,16 @@ prova('dice da che parte rispetto a te, non i gradi', () => {
   if (d && !/destra/.test(d.testo)) guasto('e quella a est, con la faccia a nord, è a destra: ' + d.testo);
 });
 
-prova('senza bussola si ripiega sui punti cardinali', () => {
+prova('senza bussola NON si dicono i punti cardinali', () => {
   const w = mondo();
   const d = w.s.descrivi({ qui: QUI, direzione: 0, direzioneBuona: false, strada: 'Via Mazzini',
     mappa: { aree: [], alberi: [], punti: [
       { cosa: 'farmacia', servizio: 'farmacia', nome: 'Farmacia Pirani', lat: QUI.lat + 0.0003, lon: QUI.lon },
       { cosa: 'bar', servizio: 'bar', nome: 'Bar Roma', lat: QUI.lat, lon: QUI.lon + 0.0004 }] } });
   if (d && /destra|sinistra|davanti a te/.test(d.testo)) guasto('senza sapere come sei girato, destra e sinistra sono bugie: ' + d.testo);
-  if (d && !/a nord|a est|a sud|a ovest/.test(d.testo)) guasto('restano i punti cardinali: ' + (d && d.testo));
+  /* «ma io non so nord sud est dove sono»: si dice solo quanto manca */
+  if (d && /\ba nord\b|\ba est\b|\ba sud\b|\ba ovest\b/.test(d.testo)) guasto('il nord a chi cammina non dice niente: ' + d.testo);
+  if (d && !/passi/.test(d.testo)) guasto('resta la distanza, che è vera lo stesso: ' + d.testo);
 });
 
 prova('non dice mai dove mettere i piedi', () => {
@@ -132,8 +134,37 @@ prova('la stessa scena non si ripete subito', () => {
   const primo = w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via Mazzini', mappa });
   if (!primo) guasto('la prima volta si dice');
   if (w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via Mazzini', mappa })) guasto('due volte di fila no');
-  w.passano(100000);
-  if (!w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via Mazzini', mappa })) guasto('dopo un minuto e mezzo si può ridire');
+  /* e ogni PEZZO ha il suo riposo: i servizi 150 secondi, gli
+     attraversamenti 180, gli alberi 300. Passati quelli, si ridice. */
+  w.passano(320000);
+  if (!w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via Mazzini', mappa })) guasto('passato il riposo si può ridire');
+});
+
+prova('non ripete gli attraversamenti a ogni frase', () => {
+  /* «diceva sempre più avanti ci sono dei passaggi pedonali» (Vince, 16/10,
+     camminando a Roma): ce n'è uno a ogni incrocio, e finivano in ogni
+     descrizione. La seconda volta non dicono più niente di nuovo. */
+  const w = mondo();
+  const attr = [];
+  for (let i = 0; i < 4; i++) attr.push({ cosa: 'attraversamento', semaforo: false, lat: QUI.lat + 0.0001 * i, lon: QUI.lon });
+  const mappa = { aree: [], alberi: [], punti: attr.concat([
+    { cosa: 'farmacia', servizio: 'farmacia', nome: 'Farmacia Pirani', lat: QUI.lat + 0.0002, lon: QUI.lon },
+    { cosa: 'bar', servizio: 'bar', nome: 'Bar Roma', lat: QUI.lat, lon: QUI.lon + 0.0003 },
+    { cosa: 'panetteria', servizio: 'panetteria', nome: 'Forno Anna', lat: QUI.lat - 0.0002, lon: QUI.lon }]) };
+  const primo = w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via dei Corazzieri', mappa });
+  if (!primo || !/attraversamenti/.test(primo.testo)) guasto('la prima volta gli attraversamenti si dicono');
+  w.passano(25000);
+  const dopo = w.s.descrivi({ qui: { lat: QUI.lat + 0.0006, lon: QUI.lon }, direzione: 0, strada: 'Via dei Corazzieri', mappa });
+  if (dopo && /attraversamenti/.test(dopo.testo)) guasto('venticinque secondi dopo li ha ridetti: ' + dopo.testo);
+});
+
+prova('la scena è un cenno: non taglia mai un racconto', () => {
+  const w = mondo();
+  const d = w.s.descrivi({ qui: QUI, direzione: 0, strada: 'Via Mazzini', mappa: { aree: [], alberi: [], punti: [
+    { cosa: 'farmacia', servizio: 'farmacia', nome: 'Farmacia Pirani', lat: QUI.lat + 0.0002, lon: QUI.lon },
+    { cosa: 'bar', servizio: 'bar', nome: 'Bar Roma', lat: QUI.lat, lon: QUI.lon + 0.0003 }] } });
+  if (!d) guasto('aveva qualcosa da dire');
+  if (d && d.livello !== 'cenno') guasto('a livello di guida taglia in faccia una chiesa raccontata a metà');
 });
 
 prova('gli alberi si dicono da che lato stanno', () => {

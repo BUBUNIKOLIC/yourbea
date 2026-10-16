@@ -36,6 +36,11 @@ function Scena(opzioni) {
   var DI_NUOVO = o.diNuovo || 90000;      // la stessa scena non prima di così
 
   var ultima = '', ultimaQuando = 0;
+  /* ogni PEZZO si ricorda da solo quando è stato detto: la frase intera
+     cambia sempre un po' — un passo, un metro, un negozio diverso — e
+     bastava quello per ridire la stessa cosa. */
+  var dettiPezzi = {};
+  var QUANTO = { forma: 240000, alberi: 300000, attraversamenti: 180000, servizio: 150000 };
 
   function passi(m) { return 'a ' + passiNudi(m); }
   /* passiNudi(): «pochi passi», «una ventina di passi», «110 passi» — la
@@ -56,12 +61,14 @@ function Scena(opzioni) {
     return nomi[d] || (p + ' passi');
   }
 
+  /* daCheParte(): «davanti», «a destra»… e NIENTE punti cardinali.
+     «Ma io non so nord sud est dove sono» (Vince, 16/10, camminando). Il
+     nord non ce l'ha in testa nessuno per strada, e a chi non vede non
+     serve a niente. Se non si sa come sei girato non si dice la parte: si
+     dice solo quanto manca, che è vero lo stesso. */
   function daCheParte(qui, lat, lon, direzione, buona) {
     var g = verso(qui.lat, qui.lon, lat, lon);
-    if (!buona) {
-      var card = ['a nord', 'a nord-est', 'a est', 'a sud-est', 'a sud', 'a sud-ovest', 'a ovest', 'a nord-ovest'];
-      return card[Math.round(g / 45) % 8];
-    }
+    if (!buona || typeof direzione !== 'number') return null;
     var r = ((g - direzione + 540) % 360) - 180;
     if (Math.abs(r) <= 25) return 'davanti a te';
     if (r > 25 && r <= 115) return 'sulla destra';
@@ -115,10 +122,12 @@ function Scena(opzioni) {
     var parti = {};
     vicini.forEach(function (p) {
       var d = daCheParte(qui, p[0], p[1], direzione, buona);
-      parti[d] = (parti[d] || 0) + 1;
+      if (d) parti[d] = (parti[d] || 0) + 1;
     });
     var dove = Object.keys(parti).sort(function (a, b) { return parti[b] - parti[a]; })[0];
-    return vicini.length >= 8 ? ('alberi in fila ' + dove) : ('qualche albero ' + dove);
+    var tanti = vicini.length >= 8;
+    if (!dove) return tanti ? 'alberi lungo la strada' : 'qualche albero vicino';
+    return tanti ? ('alberi in fila ' + dove) : ('qualche albero ' + dove);
   }
 
   function attraversamenti(qui, punti) {
@@ -148,34 +157,61 @@ function Scena(opzioni) {
     });
     return buoni.slice(0, quanti || 2).map(function (p) {
       var m = dist(qui.lat, qui.lon, p.lat, p.lon);
-      return (p.nome ? p.nome : p.cosa) + ' ' + daCheParte(qui, p.lat, p.lon, direzione, buona) + ', ' + passi(m);
+      var parte = daCheParte(qui, p.lat, p.lon, direzione, buona);
+      return (p.nome ? p.nome : p.cosa) + (parte ? ' ' + parte : '') + ', ' + passi(m);
     });
   }
 
   /* descrivi(): la scena, in una frase sola. null se non c'è niente da dire
      o se è la stessa di poco fa. */
+  /* fresco(): questo pezzo si può dire, o l'ha già sentito poco fa?
+     REGOLA 7, nata camminando: «diceva sempre più avanti ci sono dei
+     passaggi pedonali». Gli attraversamenti ci sono a ogni incrocio, e a
+     ogni descrizione finivano dentro: la seconda volta non dicono più
+     niente di nuovo, la terza danno fastidio. Ogni genere di cosa ha il suo
+     tempo di riposo, e il confronto è sul SENSO — «due attraversamenti» e
+     «tre attraversamenti» sono la stessa notizia. */
+  function fresco(genere, chiave) {
+    var k = genere + '|' + String(chiave);
+    var quando = dettiPezzi[k] || 0;
+    if (ora() - quando < (QUANTO[genere] || 120000)) return false;
+    dettiPezzi[k] = ora();
+    return true;
+  }
+
   function descrivi(s) {
     var qui = s.qui, d = s.direzione, buona = s.direzioneBuona !== false;
     var mappa = s.mappa || { punti: [], aree: [], alberi: [] };
     var pezzi = [];
+    var capo1 = null;
 
     var forma = laForma(qui, mappa.aree);
     if (forma) {
-      pezzi.push('Sei ' + (forma.nome ? 'in ' + forma.nome : 'in ' + unA(forma.cosa)) +
-                 (forma.largo >= 25 ? ', larg' + (femmina(forma.cosa) ? 'a' : 'o') + ' ' + passiNudi(forma.largo) : ''));
+      capo1 = 'Sei ' + (forma.nome ? 'in ' + forma.nome : 'in ' + unA(forma.cosa)) +
+              (forma.largo >= 25 ? ', larg' + (femmina(forma.cosa) ? 'a' : 'o') + ' ' + passiNudi(forma.largo) : '');
+      if (!fresco('forma', forma.nome || forma.cosa)) capo1 = null;
     } else if (s.strada) {
-      pezzi.push('Sei in ' + s.strada);
+      capo1 = 'Sei in ' + s.strada;
+      if (!fresco('forma', s.strada)) capo1 = null;
     }
+    if (capo1) pezzi.push(capo1);
 
     var alb = alberi(qui, mappa.alberi, d, buona);
-    if (alb) pezzi.push(alb);
+    if (alb && fresco('alberi', alb.replace(/\d+/g, ''))) pezzi.push(alb);
 
     var att = attraversamenti(qui, mappa.punti);
-    if (att) pezzi.push(att);
+    /* il senso, non le parole: cambia il numero ma la notizia è la stessa */
+    if (att && fresco('attraversamenti', att.replace(/\d+/g, 'n'))) pezzi.push(att);
 
     /* REGOLA 3: tre cose. I servizi entrano solo se c'è ancora posto. */
     var quanti = Math.max(0, 4 - pezzi.length);
-    if (quanti) servizi(qui, mappa.punti, d, buona, quanti).forEach(function (t) { pezzi.push(t); });
+    if (quanti) {
+      servizi(qui, mappa.punti, d, buona, quanti + 3).forEach(function (t) {
+        if (pezzi.length >= 4) return;
+        var nome = t.split(' ')[0];
+        if (fresco('servizio', nome)) pezzi.push(t);
+      });
+    }
 
     if (pezzi.length < 2) return null;
     var testo = pezzi.shift() + '. ' + capo(pezzi.join('; ')) + '.';
@@ -183,7 +219,14 @@ function Scena(opzioni) {
     // REGOLA 6: la stessa scena non si ripete
     if (testo === ultima && ora() - ultimaQuando < DI_NUOVO) return null;
     ultima = testo; ultimaQuando = ora();
-    return { tipo: 'scena', livello: 'guida', testo: testo };
+    /* REGOLA 8: la scena è un CENNO, non una guida. Camminando, Vince ha
+       sentito una chiesa raccontata a metà e tagliata in faccia dalla voce
+       che diceva gli attraversamenti: era la scena, che a livello di guida
+       passava sopra al racconto. La scena non taglia mai niente — aspetta
+       il suo turno, e se non c'è posto si butta: fra un minuto ce n'è
+       un'altra. Quello che FERMA uno per strada (svolte, attraversamenti
+       dentro una guida, emergenza) viaggia su altri livelli. */
+    return { tipo: 'scena', livello: 'cenno', testo: testo };
   }
 
   function unA(c) { return (femmina(c) ? 'una ' : 'un ') + c; }
@@ -191,8 +234,9 @@ function Scena(opzioni) {
   function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 
   function dimentica() { ultima = ''; ultimaQuando = 0; }
+  function dimenticaTutto() { dimentica(); dettiPezzi = {}; }
 
-  return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, attraversamenti: attraversamenti,
+  return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, dimenticaTutto: dimenticaTutto, attraversamenti: attraversamenti,
            laForma: laForma, dimentica: dimentica };
 }
 

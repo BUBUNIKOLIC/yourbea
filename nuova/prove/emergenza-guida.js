@@ -177,12 +177,26 @@ prova('L\'ARRIVO si dice una volta sola, e la guida finisce', () => {
   if (due) guasto('dice l\'arrivo due volte');
 });
 
-prova('SENZA PERCORSO resta la bussola, e si dice', () => {
+prova('SENZA PERCORSO si dice da che parte, rispetto a chi cammina', () => {
+  /* «Ma io non so nord sud est dove sono… forse dovresti dirmi continua
+     così» — Vince, 16/10, camminando. Il nord non ce l'ha in testa nessuno,
+     e a chi non vede non serve a niente: conta da che parte sei girato,
+     e quello si sa dallo spostamento. */
   const g = Guida({ dist, verso });
-  const d = g.vaiA({ n: 'Farmacia Pirani', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, null);
+  const meta = { n: 'Farmacia Pirani', lat: 41.4700, lon: 12.9120 };
+  const d = g.vaiA(meta, { lat: 41.4658, lon: 12.9078, direzione: 45, direzioneBuona: true }, DOVE, null);
   if (!/Ti porto a Farmacia Pirani/.test(d.testo)) guasto('non dice dove ti porta');
-  if (!/non ho il percorso/i.test(d.testo)) guasto('non ammette che non ha il percorso');
-  if (!/a nord-est|a est|a nord/.test(d.testo)) guasto('non dice la direzione');
+  if (!/non ho la strada passo passo/i.test(d.testo)) guasto('non ammette che non ha il percorso');
+  if (/nord|sud|est|ovest/i.test(d.testo)) guasto('i punti cardinali a chi cammina non dicono niente: ' + d.testo);
+  if (!/continua così/i.test(d.testo)) guasto('andando verso la meta si dice continua così: ' + d.testo);
+
+  const g2 = Guida({ dist, verso });
+  const indietro = g2.vaiA(meta, { lat: 41.4658, lon: 12.9078, direzione: 225, direzioneBuona: true }, DOVE, null);
+  if (!/torna indietro/i.test(indietro.testo)) guasto('andando dalla parte opposta si dice torna indietro: ' + indietro.testo);
+
+  const g3 = Guida({ dist, verso });
+  const fermo = g3.vaiA(meta, { lat: 41.4658, lon: 12.9078 }, DOVE, null);
+  if (!/qualche passo/i.test(fermo.testo)) guasto('senza sapere come sei girato non si inventa: ' + fermo.testo);
 });
 
 prova('«lascia perdere» spegne la guida', () => {

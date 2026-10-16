@@ -108,7 +108,8 @@ function Guida(opzioni) {
     // REGOLA 5: senza percorso, resta la bussola
     diario('GUIDA: senza percorso, uso la bussola');
     return { tipo: 'parto', livello: 'guida',
-             testo: dovesei + 'Ti porto a ' + m.n + ': ' + direzione(qui, m) + ', ' + metri(quantoManca) + '. Non ho il percorso: ti dico la direzione mano a mano.' };
+             testo: dovesei + 'Ti porto a ' + m.n + ', ' + metri(quantoManca) + '. ' +
+                    capo(versoDove(qui, m)) + '. Non ho la strada passo passo: ti dico da che parte mano a mano.' };
   }
 
   /* passo(): si chiama a ogni posizione nuova mentre si va verso la meta. */
@@ -131,16 +132,33 @@ function Guida(opzioni) {
     // e ogni tanto quanto manca, se ci si è spostati
     if (Math.abs(quantoManca - d) > 25 && adesso - ultimoAvviso > 12000) {
       quantoManca = d; ultimoAvviso = adesso;
-      return { tipo: 'manca', livello: 'guida', testo: direzione(qui, meta) + ', ' + metri(d) + '.' };
+      return { tipo: 'manca', livello: 'guida', testo: capo(versoDove(qui, meta)) + ', ' + metri(d) + '.' };
     }
     return null;
   }
 
+  /* direzione(): da che parte, detto a chi CAMMINA.
+     «Ma io non so nord sud est dove sono… forse dovresti dirmi continua
+     così» — Vince, 16/10, in strada. Ed è esatto: il nord non ce l'ha
+     nessuno in testa mentre cammina, e a chi non vede non serve a niente.
+     Quello che si può sapere è da che parte stai andando, perché lo dice lo
+     spostamento fra due posizioni; e allora si parla rispetto a TE.
+     Se non si sa ancora come sei girato non si inventa un punto cardinale:
+     si chiede di fare due passi, e dopo si sa. */
   function direzione(qui, m) {
     var g = verso(qui.lat, qui.lon, m.lat, m.lon);
-    var punti = ['a nord', 'a nord-est', 'a est', 'a sud-est', 'a sud', 'a sud-ovest', 'a ovest', 'a nord-ovest'];
-    return punti[Math.round(g / 45) % 8];
+    if (!qui || typeof qui.direzione !== 'number' || qui.direzioneBuona === false) return null;
+    var r = ((g - qui.direzione + 540) % 360) - 180;
+    if (Math.abs(r) <= 30) return 'continua così';
+    if (r > 30 && r <= 110) return 'gira a destra';
+    if (r < -30 && r >= -110) return 'gira a sinistra';
+    return 'torna indietro';
   }
+  function versoDove(qui, m) {
+    var d = direzione(qui, m);
+    return d || 'fai qualche passo e ti dico da che parte';
+  }
+  function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
   function metri(m) {
     if (m < 25) return 'a pochi passi';
     if (m < 1000) return 'a ' + (Math.round(m / 10) * 10) + ' metri';

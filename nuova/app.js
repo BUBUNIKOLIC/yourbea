@@ -216,8 +216,22 @@
     if (modo !== 'servizi') return;
     var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
                              direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
-    if (d) dillo(d);
+    if (d) { dillo(d); return; }
+    /* se non dice niente deve restare scritto PERCHÉ: «all'andata non c'era
+       una descrizione della realtà» (Vince, 16/10) e dal di fuori una
+       scena muta e una scena che non ha niente da dire sono identiche. */
+    diario('SCENA: niente da dire — ' + (SERVIZI.punti || []).length + ' punti, ' +
+           (SERVIZI.aree || []).length + ' aree, ' + (SERVIZI.alberi || []).length + ' alberi, strada «' +
+           (ultimaStrada || '?') + '»');
   }
+
+  /* LA SCENA SI PROVA A DIRE OGNI VENTI SECONDI, non una volta al minuto.
+     Prima poteva parlare solo nell'istante in cui arrivava la risposta
+     della mappa — cioè al massimo una volta al minuto, e solo se quella
+     richiesta partiva: camminando, in mezzo, c'era il silenzio. Qui si
+     prova spesso; a non ripetersi ci pensa parti/scena.js, che la stessa
+     scena non la dice due volte. */
+  setInterval(function () { if (acceso && modo === 'servizi') raccontaScena(); }, 20000);
 
   var clip = Clip();
 
@@ -550,7 +564,7 @@
     if (!casa && casaPunto) {
       var s0 = posizione.leggi();
       if (!s0.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
-      var qui0 = { lat: s0.lat, lon: s0.lon };
+      var qui0 = { lat: s0.lat, lon: s0.lon, direzione: s0.direzione, direzioneBuona: s0.direzioneBuona };
       var meta0 = { n: 'casa tua', lat: casaPunto.lat, lon: casaPunto.lon };
       diario('A CASA: il punto segnato nella vecchia');
       Promise.all([intorno.strada(qui0.lat, qui0.lon), intorno.percorso(qui0, meta0)]).then(function (r) {
@@ -576,7 +590,10 @@
   function portamiA(cosa) {
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
-    var qui = { lat: s.lat, lon: s.lon };
+    /* alla guida serve anche come sei girato: senza, non può dire
+       «continua così» e finirebbe a dire il nord, che a chi cammina non
+       dice niente. */
+    var qui = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
     var parole = guida.cittaNelTesto(cosa);
     var cerca = cosa.toLowerCase();
     diario('PORTAMI A: ' + cerca);
@@ -670,7 +687,7 @@
   }, 300);
 
   /* ---------- il giro: a ogni posizione nuova ---------- */
-  var ultimaStrada = '', ultimaStradaQuando = 0;
+  var ultimaStrada = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
   posizione.quando(function (cosa, s) {
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
@@ -690,14 +707,29 @@
     var lista = vicini();
     disegnaMappa(s, lista);
     // la strada, una volta al minuto
-    if (Date.now() - ultimaStradaQuando > 60000) {
+    /* LA STRADA SI CHIEDE QUANDO TI SEI MOSSO, non all'ora.
+       «Ho girato da via Laurentina a via dei Corazzieri e non mi ha detto
+       nulla; solo dopo, a casa, mi ha detto sei in via dei Corazzieri»
+       (Vince, 16/10). Chiedendola una volta al minuto, la svolta si scopre
+       quando ormai non serve più. Adesso si chiede dopo quaranta metri —
+       una curva sta tutta lì dentro — o comunque ogni quaranta secondi se
+       si sta fermi. */
+    var mossoDi = ultimaStradaDove
+      ? posizione.dist(ultimaStradaDove.lat, ultimaStradaDove.lon, s.lat, s.lon) : 9999;
+    if (mossoDi > 40 || Date.now() - ultimaStradaQuando > 40000) {
       ultimaStradaQuando = Date.now();
+      ultimaStradaDove = { lat: s.lat, lon: s.lon };
       intorno.strada(s.lat, s.lon).then(function (v) {
         if (!v || !v.via) return;
         var dove = v.via + (v.civico ? ' ' + v.civico : '');
         if (dove === ultimaStrada) return;
+        var viaPrima = (ultimaStrada || '').split(' ').slice(0, 3).join(' ');
+        var viaOra = v.via;
+        var cambiata = viaPrima && viaOra && ultimaStrada.indexOf(viaOra) < 0;
         ultimaStrada = dove;
-        dillo({ tipo: 'strada', testo: 'Sei in ' + dove + '.', livello: 'guida' });
+        /* entrare in una strada nuova è la notizia; cambiare civico no */
+        dillo({ tipo: 'strada', livello: 'guida',
+                testo: (cambiata ? 'Sei entrato in ' : 'Sei in ') + dove + '.' });
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
       });
       intorno.servizi(s.lat, s.lon).then(function (v) {
@@ -728,7 +760,8 @@
     }
     // se ti sto portando da qualche parte, parla la guida e basta
     if (guida.meta()) {
-      var g = guida.passo({ lat: s.lat, lon: s.lon }, Date.now());
+      var g = guida.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
+                            direzioneBuona: s.direzioneBuona }, Date.now());
       if (g) dilloSubito(g);
       return;
     }
