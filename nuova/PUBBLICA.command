@@ -17,5 +17,14 @@ sed -i '' "s/^const VERSIONE = $vecchia;/const VERSIONE = $nuova;/" nuova/sw.js
 echo "versione $vecchia → $nuova (pagina e cassaforte)"
 ./nuova/PROVA-LA-NUOVA.command | tee /tmp/prove-yourbea.txt
 grep -q "TUTTO A POSTO" /tmp/prove-yourbea.txt || { echo "NON pubblico: qualcosa non passa."; exit 1; }
-git add -A && git commit -q -m "${1:-Nuova Yourbea: versione $nuova}" && git push -q origin HEAD
+# NON `git add -A`: il 16/10 si e' portato dentro il guscio iOS lasciato a
+# meta' da chi ci stava lavorando in quel momento, e l'ha committato con il
+# messaggio di un'altra cosa. Qui si pubblica il sito, e il sito e' questo:
+git add nuova sw.js index.html vecchia.html manifest.webmanifest icons prove PROVA-TUTTO.command 2>/dev/null
+echo "— quello che va in linea —"
+git diff --cached --name-only | sed 's/^/   /'
+fuori=$(git status --short | grep -v '^[MARD]' | grep -v '^??' | sed 's/^/   /')
+[ -n "$fuori" ] && { echo "— lasciato fuori (lo pubblica chi ci sta lavorando) —"; echo "$fuori"; }
+git diff --cached --quiet && { echo "niente da pubblicare."; exit 0; }
+git commit -q -m "${1:-Nuova Yourbea: versione $nuova}" && git push -q origin HEAD
 echo "in linea: https://bubunikolic.github.io/yourbea/nuova/"
