@@ -24,7 +24,7 @@
    diverso (`/yourbea/nuova/` contro `/yourbea/`) e per le pagine della
    nuova vince il piu' preciso, cioe' questo.                              */
 
-const VERSIONE = 44;
+const VERSIONE = 45;
 const CASSAFORTE = 'yourbea-nuova-v' + VERSIONE;
 const MIO_PREFISSO = 'yourbea-nuova-v';
 const V = '?v=' + VERSIONE;
@@ -153,6 +153,38 @@ self.addEventListener('message', (e) => {
 });
 
 /* ---------- le richieste ---------- */
+const QUADRETTI = 'yourbea-quadretti';
+const QUANTI_QUADRETTI = 250;        // una ventina di megabyte
+
+async function quadretto(richiesta) {
+  const c = await caches.open(QUADRETTI);
+  const trovato = await c.match(richiesta);
+  if (trovato) {
+    /* rimetterlo in fondo alla fila è il modo di dire «questo serve
+       ancora»: la Cache API restituisce le chiavi nell'ordine in cui sono
+       state scritte, e noi buttiamo dalla testa. */
+    c.put(richiesta, trovato.clone()).catch(() => {});
+    return trovato;
+  }
+  try {
+    const r = await fetch(richiesta);
+    if (r && r.ok) {
+      await c.put(richiesta, r.clone());
+      const chiavi = await c.keys();
+      if (chiavi.length > QUANTI_QUADRETTI) {
+        for (const vecchia of chiavi.slice(0, chiavi.length - QUANTI_QUADRETTI)) {
+          c.delete(vecchia).catch(() => {});
+        }
+      }
+    }
+    return r;
+  } catch (x) {
+    /* senza rete e senza copia: un quadretto che non c'è vuol dire che lì
+       l'app dirà solo quello che sa dalla mappa viva. Non è un guasto. */
+    return new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
 
@@ -173,6 +205,20 @@ self.addEventListener('fetch', (e) => {
         return r;
       }).catch(() => caches.match('./index.html').then((h) => h || caches.match('./')))
     );
+    return;
+  }
+
+  /* I QUADRETTI DEI NEGOZI E DEI MONUMENTI: si tengono, ma con un tetto.
+     «Un 20 mega magari si possono tenere… quelli importanti» (Vince,
+     16/10). Sono 60 MB in tutto e non stanno in un telefono; ma le strade
+     che uno fa tornano sempre, quindi quelli già camminati valgono oro
+     quando la rete non c'è. Si tengono in una cassaforte a parte, con un
+     tetto di 250 quadretti — una ventina di mega — e quando è piena si
+     butta il PIÙ VECCHIO DI USO, non il più vecchio di scaricamento:
+     ogni volta che un quadretto serve torna in fondo alla fila, così
+     quelli di casa e del giro di tutti i giorni non se ne vanno mai. */
+  if (/\/dati\/(negozi|cultura)\//.test(e.request.url)) {
+    e.respondWith(quadretto(e.request));
     return;
   }
 

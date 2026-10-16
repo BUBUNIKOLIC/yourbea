@@ -223,6 +223,21 @@
   var NOSTRI = [];               // i luoghi dei quadretti intorno
 
   var CULTURA = {};              // i monumenti, quadretto per quadretto
+
+  function prendiPerIlGiro(tappe) {
+    var voluti = {};
+    (tappe || []).forEach(function (t) {
+      if (t && t.lat) negozi.quadretti(t.lat, t.lon).forEach(function (q) { voluti[q] = true; });
+    });
+    var elenco = Object.keys(voluti);
+    if (!elenco.length) return;
+    diario('GIRO: mi porto avanti con ' + elenco.length + ' quadretti');
+    elenco.forEach(function (q) {
+      ['negozi', 'cultura'].forEach(function (dove) {
+        fetch('dati/' + dove + '/' + q + '.json' + VER).catch(function () {});
+      });
+    });
+  }
   function prendiQuadretti(s) {
     var voluti = negozi.quadretti(s.lat, s.lon);
     var mancano = voluti.filter(function (q) { return QUADRETTI[q] === undefined; });
@@ -1071,6 +1086,12 @@
       var dovesono = { lat: sp.lat, lon: sp.lon, direzione: sp.direzione, direzioneBuona: sp.direzioneBuona };
       if (pq.cosa === 'elenco') { dillo(passeggiata.elenco(dovesono)); return true; }
       dillo(passeggiata.comincia(pq.quale !== undefined ? pq.quale : pq.nome, dovesono));
+      /* I QUADRETTI DEL GIRO, PRESI SUBITO. «O i percorsi principali»
+         (Vince, 16/10): quando si comincia una passeggiata si sa già dove
+         si passerà, e la rete adesso c'è — in un vicolo fra due palazzi
+         magari no. Si scaricano in anticipo i quadretti di tutte le tappe:
+         restano nella cassaforte dei quadretti, che tiene i 250 più usati. */
+      prendiPerIlGiro(passeggiata.tappeTutte());
       return true;
     }
     if (passeggiata.inCorso()) {

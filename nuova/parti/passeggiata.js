@@ -455,6 +455,9 @@ function Passeggiata(opzioni) {
     passo: passo, filo: filo, avanti: avanti, ancora: ancora, ferma: ferma, dallaVoce: dallaVoce,
     quanto: quanto, dove: dove,
     inCorso: function () { return in_corso; },
+    /* tutte le tappe del giro in corso: servono a chi scarica i dati per
+       prenderseli PRIMA, mentre la rete c'è ancora */
+    tappeTutte: function () { return in_corso ? in_corso.tappe.slice() : []; },
     tappa: function () { return in_corso ? in_corso.tappe[quale] : null; },
     aChePunto: function () { return in_corso ? { quale: quale + 1, quante: in_corso.tappe.length } : null; },
     linea: function () { return in_corso ? in_corso.linea : null; },
