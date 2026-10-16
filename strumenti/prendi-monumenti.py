@@ -28,13 +28,59 @@ CHIAMATA = 'Yourbea/1.0 (guida vocale per non vedenti; viarkdimeglio@gmail.com)'
 # castelli, torri, fontane, ponti, piazze, teatri, monumenti
 TIPI = """wd:Q16970 wd:Q23413 wd:Q33506 wd:Q41176 wd:Q3947 wd:Q2080521 wd:Q811979
           wd:Q4989906 wd:Q44539 wd:Q483453 wd:Q12518 wd:Q174782 wd:Q43229
-          wd:Q1081138 wd:Q24354 wd:Q207694 wd:Q2065736 wd:Q56242440 wd:Q317557"""
+          wd:Q1081138 wd:Q24354 wd:Q207694 wd:Q2065736 wd:Q56242440 wd:Q317557
+          wd:Q16560 wd:Q2651004 wd:Q82117 wd:Q537127 wd:Q158438 wd:Q91312
+          wd:Q19899465 wd:Q96371632 wd:Q81851 wd:Q108325 wd:Q39614 wd:Q1497375
+          wd:Q22746 wd:Q55177716 wd:Q179700 wd:Q839954 wd:Q57831 wd:Q1128397
+          wd:Q44613 wd:Q96371565 wd:Q210077 wd:Q797765 wd:Q72926449 wd:Q2977
+          wd:Q163687 wd:Q120560 wd:Q160742 wd:Q3329412 wd:Q2087181 wd:Q1970365
+          wd:Q3867560 wd:Q17431399 wd:Q16735822 wd:Q12104174 wd:Q97662266
+          wd:Q2398990 wd:Q92755865 wd:Q124830213 wd:Q124830411 wd:Q94701721
+          wd:Q56242215 wd:Q1129743 wd:Q1370598 wd:Q2977"""
+# LA LISTA ERA TROPPO CORTA, E SI VEDEVA SOLO CONTANDO.
+# Pisa, 16/10: 143 luoghi trovati e dentro non c'erano la Torre, il Duomo, il
+# Battistero e il Camposanto. Chiesto a Wikidata cosa c'e' davvero in quel
+# pezzo di citta' con una voce su Wikipedia: 134 classi diverse, e la lista ne
+# chiedeva 19. Mancava perfino «palazzo» — trentasei solo a Pisa.
+# Provato prima con «wdt:P31/wdt:P279*», che segue le sottoclassi e le
+# prenderebbe tutte: la domanda va in timeout, ed e' esattamente il modo in
+# cui Roma e' rimasta vuota il 15/10. Quindi la classe resta esatta e la
+# lista si allunga: le classi nuove sono quelle viste a Pisa piu' le grandi
+# famiglie che mancavano (cattedrale, basilica, abbazia, battistero,
+# campanile, torre pendente).
+# FUORI DI PROPOSITO: dipinti, sculture e pulpiti (sono DENTRO una chiesa,
+# non posti dove si cammina), la citta' stessa, le universita' come ente e
+# gli istituti di ricerca.
 
-def chiedi(url, dati=None):
-    r = urllib.request.Request(url, data=dati, headers={'User-Agent': CHIAMATA,
-                                                        'Accept': 'application/json'})
-    with urllib.request.urlopen(r, timeout=120) as f:
-        return json.load(f)
+def chiedi(url, dati=None, prove=6):
+    """SI RIPROVA, E SE NON SI RIESCE SI GRIDA.
+    Questo e' il punto dove Roma e' rimasta vuota il 15/10: Wikidata ha dato
+    502, nessuno ha riprovato, lo script e' andato avanti zitto e la citta' e'
+    finita in linea con i negozi e zero monumenti. Se n'e' accorto Vince
+    chiedendo «verificato?», un giorno dopo.
+    Due regole, e valgono per qualunque cosa si scarichi:
+    1. UN 502 NON E' UNA RISPOSTA. Si aspetta e si riprova, sei volte, con
+       l'attesa che si allunga: Wikidata va a ondate e dopo un minuto passa.
+    2. NON SI RESTITUISCE MAI «NIENTE» COME SE FOSSE UN RISULTATO. Se dopo sei
+       tentativi non risponde, si alza l'eccezione e il programma muore con
+       un errore: meglio fermarsi e rifare, che pubblicare una citta' vuota."""
+    ultimo = None
+    for tentativo in range(prove):
+        r = urllib.request.Request(url, data=dati, headers={'User-Agent': CHIAMATA,
+                                                            'Accept': 'application/json'})
+        try:
+            with urllib.request.urlopen(r, timeout=120) as f:
+                return json.load(f)
+        except Exception as e:
+            ultimo = e
+            if tentativo + 1 == prove:
+                break
+            attesa = 10 * (tentativo + 1)
+            print('   %s non risponde (%s): riprovo fra %d s'
+                  % (NOME, str(e)[:48], attesa), file=sys.stderr)
+            time.sleep(attesa)
+    raise RuntimeError('%s: dopo %d tentativi non risponde nessuno (%s)'
+                       % (NOME, prove, ultimo))
 
 def daWikidata():
     q = """
@@ -44,6 +90,12 @@ SELECT ?x ?xLabel ?tipoLabel ?anno ?architettoLabel ?coord ?art WHERE {
     bd:serviceParam wikibase:cornerSouthWest "Point(%s %s)"^^geo:wktLiteral .
     bd:serviceParam wikibase:cornerNorthEast "Point(%s %s)"^^geo:wktLiteral .
   }
+  # LA CLASSE ESATTA, E LA LISTA VA TENUTA COMPLETA. Provato con
+  # «wdt:P31/wdt:P279*», che segue le sottoclassi: la domanda va in timeout —
+  # ed e' esattamente il modo in cui Roma e' rimasta vuota il 15/10. Quindi
+  # la classe resta esatta e le classi che mancano si aggiungono a TIPI: si
+  # scoprono chiedendo a Wikidata cosa c'e' in un pezzo di citta' che ha una
+  # voce su Wikipedia e che la lista non prende (vedi cosa-manca.py).
   ?x wdt:P31 ?tipo . VALUES ?tipo { %s }
   OPTIONAL { ?x wdt:P571 ?anno }
   OPTIONAL { ?x wdt:P84 ?architetto }
