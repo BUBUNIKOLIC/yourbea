@@ -24,40 +24,33 @@ function Pronuncia(opzioni) {
   /* parola scritta -> come va detta. Si confronta senza maiuscole e si
      rimette la maiuscola se c'era. */
   var COME = o.come || {
-    // quelle che cambiano senso
-    'ancora': 'ancòra',
+    /* QUELLE CHE CAMBIANO SENSO — vengono prima di tutte */
+    'ancora': 'ancòra',          // di nuovo, non quella della nave
     'ancore': 'ancòre',
-    // quelle che la voce sbaglia e basta
+    /* QUELLE CHE LA VOCE SBAGLIA DAVVERO, e che l'app dice spesso.
+       Contate nella traccia di una giornata vera: «scivolo» 28 volte,
+       «tattile» a ogni attraversamento col percorso per non vedenti. */
     'tattile': 'tàttile',
     'tattili': 'tàttili',
+    'scivolo': 'scìvolo',
+    'scivoli': 'scìvoli',
     'mobili': 'mòbili',
-    'subito': 'sùbito',
     'principi': 'prìncipi',
-    'tenere': 'tenére',
-    'dedica': 'dèdica',
+    'subito': 'sùbito',
     'abitano': 'àbitano',
-    'edificio': 'edifìcio',
-    'nuvola': 'nùvola',
-    'portico': 'pòrtico',
-    'portici': 'pòrtici',
-    'cupola': 'cùpola',
-    'cupole': 'cùpole',
-    'basilica': 'basìlica',
-    'basiliche': 'basìliche',
-    'facciata': 'facciàta',
-    'arcata': 'arcàta',
-    'altare': 'altàre',
     'abside': 'àbside',
     'absidi': 'àbsidi',
-    'navata': 'navàta',
-    'cripta': 'crìpta',
-    'battistero': 'battistèro',
-    'campanile': 'campanìle',
-    'chiostro': 'chiòstro',
-    'loggia': 'lòggia',
-    'nicchia': 'nìcchia',
-    'statua': 'stàtua',
-    'statue': 'stàtue'
+    'basilica': 'basìlica',
+    'basiliche': 'basìliche',
+    'cupola': 'cùpola',
+    'cupole': 'cùpole',
+    'portico': 'pòrtico',
+    'portici': 'pòrtici',
+    'nuvola': 'nùvola'
+    /* NON si mettono qui: facciata, altare, navata, campanile, chiostro,
+       statua, edificio. La voce le legge bene, e ogni accento scritto in
+       più è un modo di peggiorare una parola che andava. Era la regola
+       scritta due righe sopra, e l'avevo già tradita io. */
   };
 
   function sistema(testo) {

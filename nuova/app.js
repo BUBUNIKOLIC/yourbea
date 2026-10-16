@@ -763,14 +763,14 @@
       return;
     }
     diario('A CASA: ' + casa);
-    portamiA(casa);
+    portamiA(casa, true);
   }
 
   /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
      nostri, poi fra i servizi, poi fra gli indirizzi — e la citta' detta
      dall'utente vince sempre (il difetto che portava a Cisterna di Latina). */
   var metaInDubbio = null;
-  function portamiA(cosa) {
+  function portamiA(cosa, eCasa) {
     metaInDubbio = null;
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
@@ -818,7 +818,11 @@
          nominato un'altra città, quasi sempre è l'indirizzo sbagliato: si
          chiede, non ci si incammina per undici chilometri a piedi. */
       var quanto = posizione.dist(qui.lat, qui.lon, scelto.lat, scelto.lon);
-      if (quanto > 3000 && !parole.length) {
+      /* per CASA TUA non si chiede: l'indirizzo l'hai dato tu, e che sia
+         lontano è normale — il 16/10, da Trastevere, l'app ha chiesto
+         conferma per via dei Corazzieri a 5,6 chilometri, che era
+         esattamente casa sua. */
+      if (quanto > 3000 && !parole.length && !eCasa) {
         diario('LONTANO: ' + nome + ' a ' + Math.round(quanto) + ' m, chiedo');
         metaInDubbio = { n: nome, lat: scelto.lat, lon: scelto.lon };
         voce.parla('Il più vicino che trovo è ' + nome + ', a ' + (Math.round(quanto / 100) / 10) +
