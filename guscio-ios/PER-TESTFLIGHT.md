@@ -9,7 +9,7 @@ solo cosa devi premere tu, nell'ordine.
 
 Il pacchetto da mandare ad Apple è questo file:
 
-    guscio-ios/build/export/Yourbea.ipa        (408 KB)
+    guscio-ios/build/export/Yourbea.ipa        (412 KB)
 
 Dentro c'è: **versione 2.0.0, build 3**, firmata per la distribuzione
 («Apple Distribution: VINCENZO DI MEGLIO»), con l'icona 1024 senza
@@ -40,7 +40,7 @@ cd "$HOME/Desktop/ARCHIVIO DESKTOP/vdm-app" && xcrun altool --upload-app -t ios 
   --apiIssuer $(grep '^EMITTENTE=' chiavi/notarizzazione.txt | cut -d= -f2)
 ```
 
-Sono 408 KB, ci mette meno di un minuto. Devi leggere l'ultima riga:
+Sono 412 KB, ci mette meno di un minuto. Devi leggere l'ultima riga:
 **`UPLOAD SUCCEEDED with no errors`**. Se in mezzo scrive `WILL RETRY PART`
 o «connessione persa», non conta niente: riprova da sola.
 
