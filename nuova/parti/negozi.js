@@ -87,7 +87,35 @@ function Negozi(opzioni) {
     return fuori;
   }
 
-  return { quadretti: quadretti, unisci: unisci, nome: nome };
+  /* perIlRacconto(): i monumenti scaricati da Wikidata e Wikipedia
+     diventano luoghi da raccontare, nella forma che usa parti/racconto.js.
+     Quello che abbiamo scritto a mano vince sempre: le nostre schede sono
+     fatte per essere ascoltate camminando, quelle di Wikipedia sono fatte
+     per essere lette. Si aggiunge solo quello che non abbiamo. */
+  function perIlRacconto(cultura, nostri) {
+    var fuori = [];
+    (cultura || []).forEach(function (x) {
+      if (!x.n || !x.d) return;                 // senza scheda non c'è niente da dire
+      var suo = normalizza(x.n);
+      var gia = (nostri || []).some(function (p) {
+        if (dist(p.lat, p.lon, x.lat, x.lon) < 60) return true;
+        var n2 = normalizza(p.n);
+        return n2 && suo && (n2 === suo || n2.indexOf(suo) >= 0 || suo.indexOf(n2) >= 0);
+      });
+      if (gia) return;
+      /* l'anno e l'architetto sono la cosa che si dice meglio a voce:
+         «chiesa del 1252, di Filippo Brunelleschi» sta in due secondi,
+         l'articolo intero no. */
+      var intro = x.t || '';
+      if (x.y) intro += (intro ? ' del ' : 'Del ') + x.y;
+      if (x.arch && x.arch.length) intro += ', di ' + x.arch.join(' e ');
+      fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
+                   d: x.d, i: '', a: '', intro: intro, daWiki: true });
+    });
+    return fuori;
+  }
+
+  return { quadretti: quadretti, unisci: unisci, nome: nome, perIlRacconto: perIlRacconto };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Negozi;

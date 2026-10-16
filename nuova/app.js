@@ -222,6 +222,7 @@
   var QUADRETTI = {};            // quelli già scaricati, o che non esistono
   var NOSTRI = [];               // i luoghi dei quadretti intorno
 
+  var CULTURA = {};              // i monumenti, quadretto per quadretto
   function prendiQuadretti(s) {
     var voluti = negozi.quadretti(s.lat, s.lon);
     var mancano = voluti.filter(function (q) { return QUADRETTI[q] === undefined; });
@@ -236,6 +237,24 @@
       }).catch(function () { QUADRETTI[q] = []; });
     });
     rifaiNostri(voluti);
+
+    /* i monumenti: stessi quadretti, altra cartella. Entrano fra i luoghi
+       da raccontare, non fra i servizi. */
+    voluti.filter(function (q) { return CULTURA[q] === undefined; }).forEach(function (q) {
+      CULTURA[q] = null;
+      fetch('dati/cultura/' + q + '.json' + VER).then(function (r) {
+        return r.ok ? r.json() : [];
+      }).then(function (roba) {
+        CULTURA[q] = roba || [];
+        if (!roba || !roba.length) return;
+        var nuovi = negozi.perIlRacconto(roba, LUOGHI);
+        if (nuovi.length) {
+          LUOGHI = LUOGHI.concat(nuovi);
+          diario('MONUMENTI: ' + nuovi.length + ' nuovi dal quadretto ' + q + ' (totali ' + LUOGHI.length + ')');
+          stato('pronta · <b>' + LUOGHI.length + '</b> luoghi');
+        }
+      }).catch(function () { CULTURA[q] = []; });
+    });
   }
   function rifaiNostri(voluti) {
     var tutti = [];

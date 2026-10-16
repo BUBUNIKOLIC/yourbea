@@ -78,6 +78,33 @@ prova('i dati che abbiamo scaricato esistono davvero', () => {
   if (/[a-z]_[a-z]/.test(uno[0].t)) guasto('il tipo è rimasto in inglese: ' + uno[0].t);
 });
 
+prova('i monumenti di Wikipedia diventano luoghi da raccontare', () => {
+  const cultura = [{ n: 'basilica di Santo Spirito', t: 'chiesa', y: 1252,
+                     arch: ['Filippo Brunelleschi'], lat: 43.7670, lon: 11.2470,
+                     d: 'La basilica di Santo Spirito è una delle principali chiese di Firenze.' }];
+  const nuovi = n.perIlRacconto(cultura, []);
+  if (nuovi.length !== 1) guasto('non lo ha preso');
+  if (nuovi[0].k !== 1) guasto('deve essere un luogo, non un servizio');
+  if (!/1252/.test(nuovi[0].intro) || !/Brunelleschi/.test(nuovi[0].intro)) {
+    guasto('anno e architetto si dicono in due secondi, l\'articolo no: ' + nuovi[0].intro);
+  }
+});
+
+prova('senza scheda non si prende: non c\'è niente da dire', () => {
+  const nuovi = n.perIlRacconto([{ n: 'chiesa senza voce', t: 'chiesa', lat: 43.77, lon: 11.25 }], []);
+  if (nuovi.length) guasto('un nome da solo non è un racconto');
+});
+
+prova('quello che abbiamo scritto a mano vince su Wikipedia', () => {
+  /* le nostre schede sono fatte per essere ascoltate camminando, quelle di
+     Wikipedia per essere lette */
+  const nostri = [{ n: 'Battistero di San Giovanni', lat: 43.7731, lon: 11.2549, k: 1,
+                    d: 'Ottagono rivestito di marmo bianco e verde…' }];
+  const cultura = [{ n: 'battistero di San Giovanni', t: 'battistero', lat: 43.77311, lon: 11.25491,
+                     d: 'Il battistero di San Giovanni è un edificio religioso di Firenze.' }];
+  if (n.perIlRacconto(cultura, nostri).length) guasto('lo ha aggiunto due volte');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei negozi');
