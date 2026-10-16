@@ -20,7 +20,8 @@ telefono e senza rete.
       parti/racconto.js     cosa dire e quando: il racconto a gradini
       prove/voce.js         11 prove — ognuna è un difetto che qualcuno ha sentito
       prove/racconto.js     12 prove — compreso il difetto di Gabri a Parma
-      parti/passeggiata.js  i giri a tappe             (30 prove)
+      parti/passeggiata.js  i giri a tappe             (38 prove)
+      parti/musica.js       il tappeto sotto la voce   (8 prove)
       dati/passeggiate.json 136 passeggiate, 977 tappe, 31 città
       strumenti/            gli attrezzi che scrivono i dati
 
@@ -69,13 +70,33 @@ luoghi da raccontare).
    buttano, perché direbbero un'altra cosa;
 9. se si entra pagando, la tappa lo dice.
 
+**Il filo fra una tappa e l'altra** (16/10). Fra due chiese c'era silenzio, e
+sono i minuti in cui uno cammina e ascolta meglio: adesso lì va il racconto
+che le lega — perché si va da questa a quella, cosa è successo in mezzo. Esce
+come **cenno**, cioè al livello che il motore della voce butta quando c'è di
+meglio da dire: una svolta, un attraversamento o l'emergenza gli passano
+sopra. Tace a sessanta metri dalla tappa, per non tagliare l'arrivo; tace se
+sei fermo, perché fermo il racconto è quello della chiesa; e chi cammina
+veloce si perde dei pezzi senza ritrovarseli addosso dopo.
+
+**La musica** (`parti/musica.js`). Tre tappeti fatti in casa in `musica/`
+(licenza nostra, vedi `musica/DA-DOVE-VIENE.md`). Le regole, dette da Vince:
+solo in Turismo — in Utilità mai, nemmeno accesa a mano —, volume basso, e si
+spegne con un tasto o dicendo «musica». Sotto la voce scende, in emergenza si
+ferma, e su una svolta o un attraversamento tace per otto secondi: anche in
+Turismo chi ascolta può essere una persona che non vede.
+
 **I giri, e da dove vengono** (16/10). Dalle 102 linee della vecchia app ne
 sono rimasti 101; `strumenti/fai-i-giri.py` ne ha aggiunti 33 nelle città
 d'arte, mettendo in fila i luoghi che hanno davvero la scheda — mai più di
 cinquecento metri fra una tappa e l'altra — e chiedendo a Valhalla la strada
 vera, perché una riga dritta passa dentro i palazzi. `strumenti/caravaggio.py`
 scrive i due giri a tema, con le opere verificate una per una il 16/10: è lì
-dentro che sta scritto dove sono oggi.
+dentro che sta scritto dove sono oggi. `strumenti/bernini-borromini.py` scrive
+il terzo, raccontato «come un documentario» (parole di Vince): una scena in
+apertura, un filo che tiene tutte le tappe, la riga finale che lancia la
+prossima — e la leggenda del Nilo che si copre gli occhi detta per quello che
+è, una leggenda, perché la fontana è del 1651 e la facciata viene dopo.
 Due correzioni ai dati vecchi, trovate facendo questo lavoro:
 - il Martirio di sant'Orsola non è più a Palazzo Zevallos dal 2022 — è alle
   Gallerie d'Italia, in via Toledo 177 — e l'app ci mandava ancora la gente;

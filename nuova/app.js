@@ -291,6 +291,33 @@
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       diario: diario });
 
+  /* la musica sotto il racconto: solo in Turismo e piano, con le regole in
+     parti/musica.js (8 prove). Qui c'è solo l'elemento audio. */
+  var musica = Musica({});
+  try { musica.accendi(localStorage.getItem('yourbea2-musica') !== 'no'); } catch (e) {}
+  var tappeto = null, tappetoQuale = '';
+  function suonaMusica(d) {
+    if (!d.suona) {
+      if (tappeto && !tappeto.paused) { try { tappeto.pause(); } catch (e) {} }
+      return;
+    }
+    if (!tappeto || tappetoQuale !== d.brano) {
+      if (tappeto) { try { tappeto.pause(); } catch (e) {} }
+      try { tappeto = new Audio('musica/' + d.brano + '.m4a' + VER); } catch (e) { return; }
+      tappeto.loop = true;              // sono cuciti per girare senza stacco
+      tappetoQuale = d.brano;
+    }
+    tappeto.volume = d.volume;
+    if (tappeto.paused) { var p = tappeto.play(); if (p && p.catch) p.catch(function () {}); }
+  }
+  /* il giro della musica: una volta ogni mezzo secondo, così l'abbassata
+     sotto la voce si sente morbida e non a scatti. */
+  setInterval(function () {
+    if (!acceso) { suonaMusica({ suona: false }); return; }
+    suonaMusica(musica.decide({ modo: modo, staParlando: voce.staParlando(),
+                                livello: voce.livello() === voce.EMERGENZA ? 'emergenza' : 'guida' }));
+  }, 500);
+
   /* le passeggiate: i giri a tappe della vecchia app. Le regole stanno in
      parti/passeggiata.js, con 21 prove; qui si attaccano soltanto alla voce,
      alla posizione e alla mappa. */
@@ -466,8 +493,20 @@
                { livello: voce.GUIDA, ancheSeUguale: true });
   }
 
+  /* laStradaVienePrima(): quando l'app dice dove si gira, o nomina un
+     attraversamento, la musica tace per qualche secondo. Anche in Turismo
+     chi ascolta può essere una persona che non vede. */
+  function laStradaVienePrima(d) {
+    if (!d) return;
+    if (d.livello === 'emergenza' || d.tipo === 'svolta' || d.tipo === 'parto' ||
+        d.tipo === 'manca' || d.tipo === 'arrivato' || /attraversament/i.test(d.testo || '')) {
+      musica.taciPerLaStrada();
+    }
+  }
+
   function dilloSubito(d) {
     if (!d) return;
+    laStradaVienePrima(d);
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
     voce.parla(d.testo, { livello: liv, ancheSeUguale: true });
     mostra({ titolo: titoloDi(d), testo: d.testo, gradino: '' });
@@ -581,6 +620,7 @@
 
   function dillo(d) {
     if (!d) return;
+    laStradaVienePrima(d);
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
     var preso = voce.parla(d.testo, { clip: clipDi(d), livello: liv });
     if (!preso) { diario('non detta: ' + String(d.testo).slice(0, 40)); return; }
@@ -683,9 +723,13 @@
        sentirebbero due voci dire due cose diverse sullo stesso luogo. La
        strada, la scena e l'emergenza restano, perché quelle servono sempre. */
     if (passeggiata.inCorso()) {
-      var pp = passeggiata.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
-                                   direzioneBuona: s.direzioneBuona });
-      if (pp) dillo(pp);
+      var dove = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
+      var pp = passeggiata.passo(dove);
+      if (pp) { dillo(pp); return; }
+      /* e fra una tappa e l'altra, il filo che le lega: esce come cenno,
+         quindi una svolta o un'emergenza gli passano sopra. */
+      var f = passeggiata.filo(dove, Date.now());
+      if (f) dillo(f);
       return;
     }
     // e il racconto
@@ -812,6 +856,11 @@
       if (ha('ancora')) { dillo(passeggiata.ancora()); return true; }
       if (ha('avanti')) { dillo(passeggiata.avanti(qui2)); return true; }
     }
+    if (/\bmusica\b/.test(t)) {
+      if (/spegni|togli|basta|senza|no/.test(t)) { cambiaMusica(false); return true; }
+      if (/accendi|metti|voglio|si/.test(t)) { cambiaMusica(true); return true; }
+      cambiaMusica(); return true;
+    }
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
@@ -819,6 +868,7 @@
     if (ha('aiuto')) {
       voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
                  'Passeggiate, e ti dico i giri a tappe che ci sono qui: poi «comincia la prima». ' +
+                 'Musica, per accenderla o spegnerla. ' +
                  'Portami a, e un indirizzo. Portami a casa. Avvisa, e il nome del tuo contatto. ' +
                  'E per registrare: mi chiamo, e il tuo nome. Casa mia è, e la via. ' +
                  'Il mio contatto è, il nome, e poi il numero.',
@@ -958,6 +1008,22 @@
     el('riga-casa').hidden = true;
     voce.parla('Casa tua è ' + casa + '. Da adesso basta dire «portami a casa».', { livello: voce.GUIDA, ancheSeUguale: true });
   });
+  function scriviTastoMusica() {
+    try { el('musica').textContent = musica.eAccesa() ? 'Musica: accesa' : 'Musica: spenta'; } catch (e) {}
+  }
+  function cambiaMusica(accendere) {
+    var ora = accendere === undefined ? !musica.eAccesa() : !!accendere;
+    musica.accendi(ora);
+    try { localStorage.setItem('yourbea2-musica', ora ? 'si' : 'no'); } catch (e) {}
+    scriviTastoMusica();
+    voce.parla(ora
+      ? (modo === 'cultura' ? 'Musica accesa, piano, sotto il racconto.'
+                            : 'Musica accesa: si sentirà in Turismo. In Utilità resta muta.')
+      : 'Musica spenta.', { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+  el('musica').addEventListener('click', function () { cambiaMusica(); });
+  scriviTastoMusica();
+
   el('testo-piu').addEventListener('click', function () {
     var ora = document.body.dataset.testo;
     var prossimo = ora === 'normale' ? 'grande' : (ora === 'grande' ? 'enorme' : 'normale');

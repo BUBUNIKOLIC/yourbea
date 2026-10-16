@@ -81,7 +81,33 @@ function mondo() {
   const pa = Passeggiata({ dist, verso, ora: () => adesso });
   pa.conDati(DATI, LUOGHI);
   pa.passano = (ms) => { adesso += ms; };
+  pa.quandoE = () => adesso;
   return pa;
+}
+
+/* un giro col filo: due tappe e tre pezzi di racconto da dire camminando */
+const COL_FILO = [{
+  id: 'filo', tema: 'arte', citta: 'Parma', n: 'Il filo', metri: 500,
+  p: [[44.80309, 10.33024], [44.80430, 10.32690]],
+  t: [{ n: 'Duomo di Parma', la: 44.80309, lo: 10.33024, d: 'La prima tappa.',
+        poi: ['Primo pezzo del racconto.', 'Secondo pezzo.', 'Terzo pezzo.'] },
+      { n: 'Palazzo della Pilotta', la: 44.80430, lo: 10.32690, d: 'La seconda tappa.',
+        poi: ['Pezzo della seconda strada.'] },
+      { n: 'Santa Maria della Steccata', la: 44.80183, lo: 10.32700, d: 'La terza tappa.' }]
+}];
+function mondoColFilo() {
+  let adesso = 1000000;
+  const pa = Passeggiata({ dist, verso, ora: () => adesso });
+  pa.conDati(COL_FILO, LUOGHI);
+  pa.passano = (ms) => { adesso += ms; };
+  pa.quandoE = () => adesso;
+  return pa;
+}
+/* un punto a tot metri dal Duomo verso la Pilotta, per camminare davvero */
+function lungoLaStrada(frazione) {
+  const a = { lat: 44.80309, lon: 10.33024 }, b = { lat: 44.80430, lon: 10.32690 };
+  return { lat: a.lat + (b.lat - a.lat) * frazione, lon: a.lon + (b.lon - a.lon) * frazione,
+           direzione: 0, direzioneBuona: true };
 }
 const AL_DUOMO = { lat: 44.80309, lon: 10.33024, direzione: 180, direzioneBuona: true };
 const LONTANO = { lat: 44.81500, lon: 10.34500, direzione: 0, direzioneBuona: true };
@@ -242,6 +268,101 @@ prova('«ferma» lascia la passeggiata, e una volta sola', () => {
   if (pa.inCorso()) guasto('e non si sta più seguendo niente');
   if (pa.ferma()) guasto('due volte no: non c\'è più niente da lasciare');
   if (pa.passo(AL_DUOMO)) guasto('e lasciata non parla più addosso al Duomo');
+});
+
+prova('fra una tappa e l\'altra racconta, un pezzo per volta', () => {
+  /* fra due tappe c'era silenzio, e sono i minuti in cui uno cammina e
+     avrebbe più voglia di ascoltare */
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));                       // la prima tappa, raccontata
+  pa.passano(20000);
+  const uno = pa.filo(lungoLaStrada(0.2), pa.quandoE());
+  if (!uno) return guasto('camminando il filo parte');
+  if (!/Primo pezzo/.test(uno.testo)) guasto('si comincia dal primo: ' + uno.testo);
+  /* uno per volta: subito dopo, niente */
+  if (pa.filo(lungoLaStrada(0.25), pa.quandoE())) guasto('due pezzi di fila no');
+  pa.passano(20000);
+  const due = pa.filo(lungoLaStrada(0.4), pa.quandoE());
+  if (!due || !/Secondo pezzo/.test(due.testo)) guasto('poi il secondo: ' + (due && due.testo));
+});
+
+prova('il filo non copre mai una frase che serve a muoversi', () => {
+  /* esce come «cenno»: è il livello che il motore della voce butta quando
+     c'è di meglio da dire — una svolta, un attraversamento, l'emergenza */
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));
+  pa.passano(20000);
+  const d = pa.filo(lungoLaStrada(0.2), pa.quandoE());
+  if (!d) return guasto('il filo c\'è');
+  if (d.livello !== 'cenno') guasto('deve essere sacrificabile, non «' + d.livello + '»');
+});
+
+prova('fermo non si racconta il filo: fermo si racconta la tappa', () => {
+  /* il filo è il racconto della strada: chi sta fermo davanti a una chiesa
+     vuole sentire della chiesa */
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));
+  pa.passano(20000);
+  const primo = pa.filo(lungoLaStrada(0.2), pa.quandoE());
+  if (!primo) return guasto('il primo pezzo parte camminando');
+  pa.passano(60000);
+  if (pa.filo(lungoLaStrada(0.2), pa.quandoE())) guasto('fermo nello stesso punto, il filo tace');
+});
+
+prova('vicino alla tappa il filo tace, per non tagliare l\'arrivo', () => {
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));
+  pa.passano(30000);
+  if (pa.filo(lungoLaStrada(0.97), pa.quandoE())) guasto('a venti passi dalla tappa non si comincia un racconto');
+});
+
+prova('chi cammina veloce perde dei pezzi e non se li ritrova addosso', () => {
+  /* rimettere in coda quello che restava farebbe sentire il racconto della
+     strada mentre sei già davanti alla chiesa */
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));
+  pa.passano(20000);
+  pa.filo(lungoLaStrada(0.2), pa.quandoE());                  // solo il primo pezzo
+  const arrivo = { lat: PILOTTA.lat, lon: PILOTTA.lon, direzione: 0, direzioneBuona: true };
+  const t = pa.passo(arrivo);
+  if (!t || !/seconda tappa/.test(t.testo)) guasto('arrivato, si racconta la tappa: ' + (t && t.testo));
+  pa.passano(60000);
+  const dopo = pa.filo(arrivo, pa.quandoE());
+  if (dopo) guasto('e il filo di prima non torna: ' + dopo.testo);
+});
+
+prova('appena arrivato a una tappa il filo tace: parla la tappa', () => {
+  /* se il pezzo di strada seguente partisse subito, si sentirebbe il
+     racconto del cammino sopra la scheda della chiesa a cui sei appena
+     arrivato: due cose diverse nello stesso momento */
+  const pa = mondoColFilo();
+  pa.comincia('filo', lungoLaStrada(0));
+  pa.passo(lungoLaStrada(0));
+  pa.passano(60000);
+  const arrivo = { lat: PILOTTA.lat, lon: PILOTTA.lon, direzione: 0, direzioneBuona: true };
+  const t = pa.passo(arrivo);
+  if (!t) return guasto('alla seconda tappa si racconta la tappa');
+  if (pa.filo(arrivo, pa.quandoE())) guasto('e il filo della strada dopo aspetta');
+  /* ma ripartendo, dopo un po\' di strada, riprende */
+  pa.passano(20000);
+  const verso3 = { lat: 44.80300, lon: 10.32695, direzione: 0, direzioneBuona: true };
+  const d = pa.filo(verso3, pa.quandoE());
+  if (!d || !/seconda strada/.test(d.testo)) guasto('rimesso in cammino, riprende: ' + (d && d.testo));
+});
+
+prova('un giro senza filo non inventa niente da dire', () => {
+  const pa = mondo();
+  pa.comincia('parma-centro', AL_DUOMO);
+  pa.passo(AL_DUOMO);
+  pa.passano(40000);
+  if (pa.filo({ lat: 44.80280, lon: 10.33030, direzione: 0, direzioneBuona: true }, pa.quandoE())) {
+    guasto('dove non c\'è racconto scritto, si tace');
+  }
 });
 
 prova('«zitto» zittisce, «ferma» lascia il giro', () => {
@@ -442,10 +563,30 @@ prova('un giro a tema dice sempre se si paga', () => {
   tema.forEach((g) => {
     g.t.forEach((t) => {
       if (!t.d) return guasto(g.id + ': la tappa ' + t.n + ' non ha il suo testo');
-      if (!/si paga|biglietto|non si paga|ingresso libero|gratis/i.test(t.d)) {
+      if (!/si paga|senza pagare|bigliett|ingresso libero|gratis|non si paga/i.test(t.d)) {
         guasto(g.id + ' — ' + t.n + ': non dice come si entra');
       }
     });
+  });
+});
+
+prova('un giro a tema ha il filo fra una tappa e l\'altra', () => {
+  /* «arricchirli di racconti fra una tappa e l'altra» (Vince, 16/10): fra
+     due chiese ci sono i minuti in cui uno cammina e ascolta meglio. Un
+     giro a tema senza filo è un elenco di schede. L'ultima tappa non ne ha
+     bisogno: dopo non si cammina più. */
+  const qui = path.join(__dirname, '..');
+  const dati = JSON.parse(fs.readFileSync(path.join(qui, 'dati/passeggiate.json'), 'utf8'));
+  const tema = dati.filter((g) => (g.t || []).some((t) => t.d));
+  tema.forEach((g) => {
+    const conFilo = g.t.slice(0, -1).filter((t) => (t.poi || []).length).length;
+    if (conFilo < g.t.length - 2) {
+      guasto(g.id + ': solo ' + conFilo + ' tappe su ' + (g.t.length - 1) + ' hanno il racconto della strada');
+    }
+    g.t.forEach((t) => (t.poi || []).forEach((pz) => {
+      if (pz.length > 320) guasto(g.id + ' — ' + t.n + ': un pezzo di filo lungo ' + pz.length + ' caratteri non si ascolta camminando');
+      if (/\battraversa\b|\bgira a\b|\bprosegui\b/i.test(pz)) guasto(g.id + ': il filo non dà ordini sui piedi — ' + pz);
+    }));
   });
 });
 

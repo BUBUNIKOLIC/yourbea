@@ -63,6 +63,11 @@ function Passeggiata(opzioni) {
   var raccontate = {};                      // le tappe già raccontate
   var proposte = [];                        // l'ultimo elenco detto, per «comincia la prima»
   var annunciate = {};                      // tappa -> quando ne ho detto il nome
+  var filoFatto = {};                       // i pezzi di racconto già detti
+  var filoQuando = 0, filoDove = null;      // quando e dove ho detto l'ultimo
+  var FILO_OGNI = o.filoOgni || 18000;      // non più spesso di così
+  var FILO_PASSI = o.filoPassi || 25;       // e solo se ti sei mosso di tanto
+  var FILO_BASTA = o.filoBasta || 60;       // vicino alla tappa, si tace
   var APPENA = o.appena || 30000;           // vedi racconta(): niente nome due volte di fila
 
   /* conDati(): lega le tappe ai luoghi. Una tappa è il NOME di un luogo più
@@ -105,9 +110,9 @@ function Passeggiata(opzioni) {
      scollano è il difetto peggiore di tutti, perché nessuno dei due sa di
      essere sbagliato. */
   function suoTesto(t, p) {
-    if (!t.d && !t.i && !t.a) return p;
+    if (!t.d && !t.i && !t.a && !t.poi) return p;
     return { n: p.n, lat: p.lat, lon: p.lon, k: p.k, t: p.t, y: p.y,
-             d: t.d || p.d, i: t.i || p.i, a: t.a || p.a };
+             d: t.d || p.d, i: t.i || p.i, a: t.a || p.a, poi: t.poi || null };
   }
 
   /* vicine(): le passeggiate in ordine di vicinanza, misurata sulla tappa
@@ -192,6 +197,7 @@ function Passeggiata(opzioni) {
                       testo: 'Non ho capito quale passeggiata. Dimmi «passeggiate» e te le elenco.' };
 
     in_corso = pa; gradino = {}; raccontate = {}; annunciate = {};
+    filoFatto = {}; filoQuando = 0; filoDove = null;
     /* REGOLA 3: si parte dalla tappa più vicina a dove sei, non sempre dalla
        prima: chi è già in mezzo al giro non deve tornare al punto di partenza. */
     quale = 0;
@@ -266,6 +272,11 @@ function Passeggiata(opzioni) {
      l'annuncio era di dieci minuti prima, il nome ci vuole — chi cammina
      intanto ha pensato ad altro. */
   function racconta(p) {
+    /* REGOLA d del filo: quello che restava da dire sulla strada non si
+       recupera davanti alla chiesa. E il filo della strada SEGUENTE non
+       parte finché non ti sei rimesso in cammino: si segna qui il punto
+       della tappa, così chi resta a guardarla non se lo sente addosso. */
+    filoQuando = ora(); filoDove = { lat: p.lat, lon: p.lon };
     raccontate[p.n] = true;
     gradino[p.n] = 1;
     var appena = annunciate[p.n] && (ora() - annunciate[p.n]) < APPENA;
@@ -294,6 +305,49 @@ function Passeggiata(opzioni) {
     return { tipo: 'prossima', livello: 'guida', luogo: t, passeggiata: in_corso,
              quale: quale, quante: tappe.length,
              testo: numeroTappa(quale, in_corso) + ': ' + t.n + ', ' + dove(qui, t) + ', ' + quanto(d) + '.' };
+  }
+
+  /* filo(): IL RACCONTO FRA UNA TAPPA E L'ALTRA.
+     Fra due tappe oggi c'era silenzio, e sono i minuti in cui uno cammina e
+     avrebbe più voglia di ascoltare. Lì va quello che le lega: perché si va
+     da questa chiesa a quella, cosa è successo in mezzo.
+     LE REGOLE, e perché:
+     a. SI DICE CAMMINANDO, A PEZZI BREVI. Un pezzo per volta, non più
+        spesso di diciotto secondi, e solo se ti sei spostato: fermo, il
+        racconto è quello della tappa, non il filo.
+     b. NON COPRE MAI UNA FRASE CHE SERVE A MUOVERSI. Esce come «cenno»,
+        il livello che il motore della voce butta quando c'è di meglio da
+        dire: una svolta, un attraversamento, l'emergenza passano sopra.
+     c. SI TACE QUANDO SEI QUASI ARRIVATO. Sessanta metri: l'arrivo alla
+        tappa non si taglia a metà.
+     d. CHI CAMMINA VELOCE SI PERDE DEI PEZZI, E NON LI RECUPERA. Arrivato
+        alla tappa, quello che restava del filo si butta: rimetterlo in
+        coda farebbe sentire il racconto della strada mentre sei davanti
+        alla chiesa. */
+  function filo(qui, adesso) {
+    if (!in_corso) return null;
+    var tappe = in_corso.tappe;
+    if (quale >= tappe.length) return null;
+    var da = tappe[quale];
+    var pezzi = (da && da.poi) || [];
+    if (!pezzi.length) return null;
+    if (!raccontate[da.n]) return null;              // la tappa viene prima del filo
+    var prossima = tappe[quale + 1];
+    if (!prossima) return null;
+    if (dist(qui.lat, qui.lon, prossima.lat, prossima.lon) < FILO_BASTA) return null;   // REGOLA c
+    adesso = adesso || ora();
+    if (adesso - filoQuando < FILO_OGNI) return null;                                   // REGOLA a
+    if (filoDove && dist(qui.lat, qui.lon, filoDove.lat, filoDove.lon) < FILO_PASSI) return null;
+    for (var i = 0; i < pezzi.length; i++) {
+      var chiave = da.n + '#' + i;
+      if (filoFatto[chiave]) continue;
+      filoFatto[chiave] = true;
+      filoQuando = adesso;
+      filoDove = { lat: qui.lat, lon: qui.lon };
+      return { tipo: 'filo', livello: 'cenno', testo: pezzi[i],      // REGOLA b
+               passeggiata: in_corso, quale: quale, quante: tappe.length };
+    }
+    return null;
   }
 
   /* ancora(): REGOLA 4, gli stessi gradini del racconto. */
@@ -398,7 +452,7 @@ function Passeggiata(opzioni) {
 
   return {
     conDati: conDati, vicine: vicine, elenco: elenco, comincia: comincia,
-    passo: passo, avanti: avanti, ancora: ancora, ferma: ferma, dallaVoce: dallaVoce,
+    passo: passo, filo: filo, avanti: avanti, ancora: ancora, ferma: ferma, dallaVoce: dallaVoce,
     quanto: quanto, dove: dove,
     inCorso: function () { return in_corso; },
     tappa: function () { return in_corso ? in_corso.tappe[quale] : null; },

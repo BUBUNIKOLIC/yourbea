@@ -24,7 +24,7 @@
    diverso (`/yourbea/nuova/` contro `/yourbea/`) e per le pagine della
    nuova vince il piu' preciso, cioe' questo.                              */
 
-const VERSIONE = 27;
+const VERSIONE = 28;
 const CASSAFORTE = 'yourbea-nuova-v' + VERSIONE;
 const MIO_PREFISSO = 'yourbea-nuova-v';
 const V = '?v=' + VERSIONE;
@@ -46,6 +46,7 @@ const ESSENZIALI = [
   './parti/emergenza.js' + V,
   './parti/guida.js' + V,
   './parti/passeggiata.js' + V,
+  './parti/musica.js' + V,
   './parti/pulizia.js' + V,
   './parti/dettatura.js' + V,
   './parti/scena.js' + V,
@@ -67,7 +68,13 @@ const ESSENZIALI = [
    da se'. Le frasi fisse invece devono esserci dalla prima apertura: senza,
    a parlare sarebbe il sintetizzatore del telefono, una voce diversa da
    quella delle clip, e si sentirebbero due voci nella stessa frase. */
+/* E i tre tappeti della musica, 1,6 MB: stanno nel contorno e non fra gli
+   essenziali perché l'app senza musica funziona benissimo, e chi naviga a
+   dati non deve pagarseli per forza alla prima apertura. */
 const CONTORNO = [
+  './musica/cammino.m4a' + V,
+  './musica/chiostro.m4a' + V,
+  './musica/notturno.m4a' + V,
   './mappa/images/marker-icon.png',
   './mappa/images/marker-icon-2x.png',
   './mappa/images/marker-shadow.png',
