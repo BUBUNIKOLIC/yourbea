@@ -43,6 +43,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private var motore: AVAudioEngine?
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
   private var ascolto: SFSpeechRecognitionTask?
+  private var quaderno: FileHandle?
+  private var ultimaScritta = Date(timeIntervalSince1970: 0)
   private var vuoleAscoltare = false
   private var ultimaPosizione: CLLocation?
   private var battito: Timer?
@@ -56,6 +58,38 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     preparaAudio()
     preparaGps()
     SFSpeechRecognizer.requestAuthorization { _ in }
+    apriIlQuaderno()
+  }
+
+  /* IL QUADERNO DEL PERCORSO — idea di Vince, 16/10:
+     «tenere un registro del percorso che faccio ed avere un riscontro con
+     quello che ti dirò, per capire cosa non ha funzionato».
+     Finora il diario dell'app viveva solo nel log del Mac, e il log si
+     legge solo col cavo attaccato — cioè mai, mentre si cammina. Adesso
+     ogni riga e ogni posizione finiscono in un file dentro l'app, uno al
+     giorno. Si rilegge dopo, col cavo, e si confronta con quello che la
+     persona racconta: «qui non ha detto niente» diventa una riga con
+     l'ora e le coordinate, non un ricordo.
+     Resta nel telefono: non parte niente verso nessuno. */
+  private func apriIlQuaderno() {
+    let giorno = DateFormatter()
+    giorno.dateFormat = "yyyy-MM-dd"
+    guard let cartella = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+    let f = cartella.appendingPathComponent("traccia-\(giorno.string(from: Date())).txt")
+    if !FileManager.default.fileExists(atPath: f.path) {
+      FileManager.default.createFile(atPath: f.path, contents: nil)
+    }
+    quaderno = try? FileHandle(forWritingTo: f)
+    quaderno?.seekToEndOfFile()
+    scrivi("— acceso —")
+    NSLog("YOURBEA quaderno: %@", f.path)
+  }
+
+  private func scrivi(_ riga: String) {
+    let ora = DateFormatter()
+    ora.dateFormat = "HH:mm:ss"
+    guard let dati = (ora.string(from: Date()) + " " + riga + "\n").data(using: .utf8) else { return }
+    quaderno?.write(dati)
   }
 
   // MARK: la pagina
@@ -134,7 +168,10 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     switch cosa {
     case "ascolta": vuoleAscoltare = true; apriMicrofono()
     case "chiudi": vuoleAscoltare = false; chiudiMicrofono()
-    case "diario": NSLog("YOURBEA %@", (d["testo"] as? String) ?? "")
+    case "diario":
+      let t = (d["testo"] as? String) ?? ""
+      NSLog("YOURBEA %@", t)
+      scrivi(t)
     case "rubrica": cercaInRubrica((d["nome"] as? String) ?? "")
     default: break
     }
@@ -239,6 +276,14 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     guard let p = punti.last else { return }
     ultimaPosizione = p
     mandaPosizione(p)
+    /* la traccia: una riga ogni cinque secondi basta a ricostruire il
+       cammino, e il file resta leggero */
+    if Date().timeIntervalSince(ultimaScritta) > 5 {
+      ultimaScritta = Date()
+      scrivi(String(format: "DOVE %.6f %.6f ±%.0fm %.0f km/h",
+                    p.coordinate.latitude, p.coordinate.longitude,
+                    max(p.horizontalAccuracy, 0), max(p.speed, 0) * 3.6))
+    }
   }
 
   func locationManager(_ m: CLLocationManager, didFailWithError e: Error) {
@@ -318,6 +363,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     let pulito = detto.replacingOccurrences(of: "\\", with: "")
                       .replacingOccurrences(of: "\"", with: "")
     NSLog("YOURBEA detto: %@", pulito)
+    scrivi("DETTO: " + pulito)
     allaPagina("window.urbeaComando && window.urbeaComando(\"\(pulito)\")")
   }
 

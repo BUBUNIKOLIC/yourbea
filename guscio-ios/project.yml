@@ -12,7 +12,10 @@ settings:
     DEVELOPMENT_TEAM: T3524H28MX
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "2.0.0"
-    CURRENT_PROJECT_VERSION: "1"
+    # Il numero di build sale di uno a ogni pacchetto mandato ad Apple.
+    # Su App Store Connect il 13/10 e' gia' salita la build 2 (versione 1.0.0),
+    # e due pacchetti non possono avere lo stesso numero: si riparte da 3.
+    CURRENT_PROJECT_VERSION: "3"
     SWIFT_VERSION: "5.0"
 targets:
   Yourbea:
@@ -26,11 +29,20 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Yourbea
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
-        TARGETED_DEVICE_FAMILY: "1,2"
+        # Solo iPhone. Con l'iPad dentro, Apple pretende che l'app giri in
+        # tutti i versi e a finestra ridotta: Yourbea e' verticale e si usa
+        # camminando col telefono in mano, e in verifica quella pretesa e'
+        # un motivo di rifiuto. Per rimetterci l'iPad: "1,2".
+        TARGETED_DEVICE_FAMILY: "1"
     info:
       path: Yourbea/Info.plist
       properties:
         CFBundleDisplayName: Yourbea
+        # Senza queste due righe l'Info.plist resta a "1.0" e build "1":
+        # il numero scritto qui sopra non ci arriva, e Apple vede la versione
+        # sbagliata dentro il pacchetto.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [audio, location]
@@ -38,5 +50,5 @@ targets:
         NSLocationAlwaysAndWhenInUseUsageDescription: "Serve anche con lo schermo spento, perché l'app ti accompagna mentre cammini col telefono in tasca."
         NSContactsUsageDescription: "Per avvisare chi scegli tu dicendo solo il suo nome: il numero lo prende dalla tua rubrica, così non devi scriverlo."
         NSMicrophoneUsageDescription: "Per capire quando dici «dove sono», «approfondisci» o «portami a»."
-        NSSpeechRecognitionUsageDescription: "Le tue richieste vengono riconosciute per rispondere a voce."
+        NSSpeechRecognitionUsageDescription: "Quello che dici viene trascritto per capire la richiesta: «dove sono», «approfondisci», «portami a via Roma»."
         ITSAppUsesNonExemptEncryption: false

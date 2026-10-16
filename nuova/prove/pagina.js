@@ -126,6 +126,19 @@ prova('la nuova e la vecchia non si svuotano la cassaforte a vicenda', () => {
   const suo = (vecchio.match(/const CACHE = '([^']+)'/) || [])[1];
   if (suo && suo.startsWith(mio)) guasto('la cassaforte della vecchia app (' + suo + ') comincia come la nostra: si buttano a vicenda');
   if (/keys\.filter\(k => k !== CACHE\)/.test(vecchio)) guasto('il sw della radice butta ogni cassaforte che non sia la sua, compresa la nostra');
+  /* dal 15/10 il sw della radice non e' piu' una cassaforte ma un worker che
+     si spegne da solo, per liberare chi aveva installato la vecchia. Nel
+     farlo svuotava TUTTO, nostra compresa: chi aveva la vecchia si ritrovava
+     la nuova senza i suoi 186 file, e senza rete non le restava niente da
+     aprire. Qualunque cosa diventi quel file, se butta cassaforti deve dire
+     da qualche parte che le nostre si risparmiano. */
+  /* i commenti si tolgono prima di guardare: quel file PARLA della nuova
+     app in cima, e una prova che si accontenta della parola passerebbe
+     anche con il codice che butta tutto. */
+  const codice = vecchio.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  if (/caches\.delete/.test(codice) && !/nuova/.test(codice)) {
+    guasto('il sw della radice butta cassaforti e nel codice non risparmia quelle che dicono «nuova»');
+  }
 });
 
 prova('il manifest c\'e\', e dice quello che serve per installarla', () => {

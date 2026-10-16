@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Come si fa il pacchetto da mandare ad Apple (TestFlight e App Store).
+	     Si usa cosi', dopo aver fatto l'archivio:
+	       xcodebuild -exportArchive -archivePath build/Yourbea.xcarchive \
+	         -exportOptionsPlist ExportOptions.plist -exportPath build/export
+	     Esce build/export/Yourbea.ipa: quello e' il file da caricare. -->
+
+	<!-- destinazione: App Store Connect, cioe' TestFlight -->
+	<key>method</key>
+	<string>app-store-connect</string>
+
+	<!-- "export" vuol dire: scrivi il file e fermati. Con "upload" partirebbe
+	     da sola la salita ad Apple, e qui non si carica niente. -->
+	<key>destination</key>
+	<string>export</string>
+
+	<key>teamID</key>
+	<string>T3524H28MX</string>
+
+	<!-- Manda ad Apple i file che servono a leggere i crash -->
+	<key>uploadSymbols</key>
+	<true/>
+
+	<!-- Il numero di versione e di build li decidiamo noi in project.yml:
+	     Xcode non li deve toccare. -->
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+
+	<!-- La firma la sceglie Xcode da solo, col profilo di distribuzione
+	     della squadra T3524H28MX che e' gia' sul Mac. -->
+	<key>signingStyle</key>
+	<string>automatic</string>
+</dict>
+</plist>

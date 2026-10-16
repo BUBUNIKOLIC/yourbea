@@ -16,8 +16,15 @@ self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil((async function () {
     try {
+      /* le sue, non quelle della nuova app. `caches.keys()` elenca TUTTE
+         le cassaforti del sito: buttando senza guardare il nome, un
+         provatore che aveva la vecchia installata si ritrovava la nuova
+         senza i suoi 186 file, e in mezzo a una strada senza rete la nuova
+         non avrebbe avuto piu' niente da aprire. Le sue si chiamano
+         `yourbea-vNNN`, quelle della nuova `yourbea-nuova-vN`. */
       var nomi = await caches.keys();
-      await Promise.all(nomi.map(function (n) { return caches.delete(n); }));
+      var mie = nomi.filter(function (n) { return n.indexOf('nuova') < 0; });
+      await Promise.all(mie.map(function (n) { return caches.delete(n); }));
     } catch (x) {}
     try { await self.registration.unregister(); } catch (x) {}
     try {
