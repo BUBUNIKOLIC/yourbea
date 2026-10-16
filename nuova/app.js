@@ -164,6 +164,10 @@
     apriMappa(s);
     if (!LE) return;
     ioSono.setLatLng([s.lat, s.lon]); alone.setLatLng([s.lat, s.lon]);
+    /* il disegno dei puntini è la cosa più cara che facciamo: si rifà al
+       massimo ogni tre secondi, e intanto il puntino blu si muove lo
+       stesso — quello costa niente. */
+    if (Date.now() - ultimoDisegno < 3000 && segniDi) return;
     if (mappa.vaCentrata(s)) { LE.panTo([s.lat, s.lon]); mappa.centrata(s); }
 
     /* i puntini si rifanno solo se sono cambiati: ridisegnarli a ogni passo
@@ -328,6 +332,41 @@
      viene prima, quali sono rumore, quante per volta — sta in
      parti/lettura.js, con le sue prove. */
   var lettura = Lettura({});
+
+  /* ---------- UNA SOLA APP CHE PARLA ----------
+     La sorella di Vince, provandola in centro: «sentivo tre voci», «e si
+     bloccava». Non erano tre voci: era Yourbea aperta in tre posti —
+     l'icona sulla schermata Home, una scheda del browser, magari la
+     vecchia. Ognuna col suo GPS, la sua voce e i suoi scaricamenti, tutte
+     e tre sullo stesso telefono: ecco anche il blocco.
+     Adesso si parlano fra loro: chi apre per ultimo prende la parola, gli
+     altri si zittiscono e lo dicono invece di sovrapporsi. */
+  var SONO_IO = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 7);
+  var hoLaParola = true;
+  function zittisciti(chi) {
+    if (!hoLaParola) return;
+    hoLaParola = false;
+    try { voce.ferma(); } catch (e) {}
+    diario('ZITTA: Yourbea è aperta anche altrove (' + chi + ')');
+    mostra({ titolo: 'Aperta un\'altra volta', dove: '', gradino: '', attesa: true,
+             testo: 'Yourbea è aperta in un\'altra finestra, e parla quella. Chiudi questa, oppure ricaricala per riprendere la parola.' });
+  }
+  var canale = null;
+  try { canale = new BroadcastChannel('yourbea'); } catch (e) {}
+  if (canale) {
+    canale.onmessage = function (e) {
+      if (!e.data || e.data.chi === SONO_IO) return;
+      if (e.data.cosa === 'sono-qui') zittisciti('altra finestra');
+    };
+    try { canale.postMessage({ cosa: 'sono-qui', chi: SONO_IO }); } catch (e) {}
+  }
+  /* la memoria condivisa arriva anche dove il canale non c'è */
+  try {
+    localStorage.setItem('yourbea2-chi-parla', SONO_IO);
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'yourbea2-chi-parla' && e.newValue && e.newValue !== SONO_IO) zittisciti('altra scheda');
+    });
+  } catch (e) {}
 
   /* ---------- la vecchia Yourbea si butta da sé ----------
      «Fai in modo che chi scarica la nuova butti in automatico la vecchia».
@@ -675,6 +714,7 @@
 
   function dilloSubito(d) {
     if (!d) return;
+    if (!hoLaParola) return;
     laStradaVienePrima(d);
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
     voce.parla(d.testo, { livello: liv, ancheSeUguale: true });
@@ -804,6 +844,7 @@
 
   function dillo(d) {
     if (!d) return;
+    if (!hoLaParola) return;
     ultimaParola = Date.now();
     laStradaVienePrima(d);
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
@@ -930,7 +971,17 @@
       prendiQuadretti(s);
       intorno.servizi(s.lat, s.lon).then(function (v) {
         if (!v) return;
-        v.punti = negozi.unisci(v.punti || [], NOSTRI);
+        /* SOLO QUELLI INTORNO. Dario, provandola a Napoli: «non è al
+           massimo fluida». Una causa certa era qui: i quadretti portano
+           novecento luoghi e la mappa viva centosessanta punti, e si
+           confrontavano tutti con tutti a ogni giro — centoquarantamila
+           conti di distanza al minuto, su un telefono che intanto deve
+           parlare. Dei novecento, camminando, ne contano trenta: quelli a
+           meno di trecento metri. */
+        var vicini300 = NOSTRI.filter(function (x) {
+          return Math.abs(x.lat - s.lat) < 0.0035 && Math.abs(x.lon - s.lon) < 0.0045;
+        });
+        v.punti = negozi.unisci(v.punti || [], vicini300);
         SERVIZI = v;
         /* appena si sa cosa c'è intorno, lo si dice: è la cosa che a chi non
            vede serve più di tutte, e al turista racconta dov'è capitato. */
@@ -1064,6 +1115,13 @@
     if (!el('porta').hidden) {
       if (ha('turismo')) { entra('cultura'); return true; }
       if (ha('utilita')) { entra('servizi'); return true; }
+    }
+    /* «annulla»: ferma la chiamata al 112 nei cinque secondi che ha di
+       conto alla rovescia. Dario: «per poco non ho chiamato il 112». */
+    if (/^(?:annulla|non chiamare|aspetta|no aspetta|ferma tutto)$/.test(t)) {
+      fermaLeMosse();
+      voce.parla('Va bene, non chiamo nessuno.', { livello: voce.EMERGENZA, ancheSeUguale: true });
+      return true;
     }
     if (ha('ferma')) {
       fermaLeMosse(); voce.ferma(); guida.lascia();

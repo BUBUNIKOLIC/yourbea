@@ -105,6 +105,29 @@ prova('quello che abbiamo scritto a mano vince su Wikipedia', () => {
   if (n.perIlRacconto(cultura, nostri).length) guasto('lo ha aggiunto due volte');
 });
 
+prova('la chiesa di quartiere si dice in una riga, non in mezzo minuto', () => {
+  /* Dario, girando all'Arenella: «mi ha raccontato di una chiesa che
+     artisticamente non vale niente». Su Wikipedia c'è dentro tutto, anche
+     la parrocchia del 1960: giusto che ci sia, non che si prenda mezzo
+     minuto di racconto. */
+  const minore = [{ n: 'chiesa di Santa Maria della Provvidenza', t: 'chiesa', y: 1962,
+                    lat: 40.8550, lon: 14.2350,
+                    d: 'La chiesa di Santa Maria della Provvidenza è una chiesa di Napoli, nel quartiere Arenella.' }];
+  const fuori = n.perIlRacconto(minore, []);
+  if (!fuori.length) guasto('non sparisce: si dice che c\'è');
+  if (fuori[0] && !fuori[0].minore) guasto('doveva essere segnata come minore');
+  if (fuori[0] && fuori[0].d.length > 120) guasto('la scheda lunga non si dice: ' + fuori[0].d);
+});
+
+prova('quella che conta si racconta per intero', () => {
+  const grande = [{ n: 'Certosa di San Martino', t: 'certosa', y: 1325,
+                    arch: ['Tino di Camaino'], lat: 40.8440, lon: 14.2410,
+                    d: 'La certosa di San Martino è un complesso monumentale di Napoli, fra i più importanti della città. '.repeat(5) }];
+  const fuori = n.perIlRacconto(grande, []);
+  if (!fuori.length || fuori[0].minore) guasto('questa merita il racconto intero');
+  if (fuori[0].d.length < 200) guasto('e la scheda vera');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei negozi');

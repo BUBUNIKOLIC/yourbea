@@ -109,6 +109,29 @@ function Negozi(opzioni) {
       var intro = x.t || '';
       if (x.y) intro += (intro ? ' del ' : 'Del ') + x.y;
       if (x.arch && x.arch.length) intro += ', di ' + x.arch.join(' e ');
+
+      /* QUANTO MERITA DI ESSERE RACCONTATO. Dario, girando all'Arenella:
+         «mi ha raccontato di una chiesa che artisticamente non vale
+         niente». Su Wikipedia c'è dentro tutto, anche la parrocchia di
+         quartiere del 1960 — ed è giusto che ci sia, ma non che si
+         prenda mezzo minuto di racconto. Si pesa quello che la fonte
+         stessa ci dice: chi l'ha costruita (se Wikidata sa l'architetto,
+         qualcuno se n'è occupato), quanto è antica, e quanto è lunga la
+         voce — che è il modo più onesto di misurare quanto importa a
+         qualcuno. Chi non passa la soglia non sparisce: si dice in una
+         riga, il nome e l'anno, e si va avanti. */
+      var peso = 0;
+      if (x.arch && x.arch.length) peso += 2;
+      if (x.y && x.y < 1800) peso += 1;
+      if (x.d.length > 420) peso += 2;
+      else if (x.d.length > 260) peso += 1;
+
+      if (peso < 2) {
+        fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
+                     d: 'Qui c\'è ' + (intro || x.n) + '.', i: '', a: '',
+                     intro: intro, daWiki: true, minore: true });
+        return;
+      }
       fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
                    d: x.d, i: '', a: '', intro: intro, daWiki: true });
     });

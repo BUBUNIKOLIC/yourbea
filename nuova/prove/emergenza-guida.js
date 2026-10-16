@@ -393,6 +393,16 @@ prova('tre strade, non dieci', () => {
 });
 
 /* ==================== il conto ==================== */
+prova('il 112 non parte di soppiatto: cinque secondi per fermarlo', () => {
+  /* Dario, provandola a Napoli: «per poco non ho chiamato il 112». Il
+     microfono sta aperto tutto il giorno e sente le conversazioni. */
+  const e = Emergenza({ contatto: null });
+  const d = e.chiama112();
+  if (!/annulla/i.test(d.testo)) guasto('non dice come fermarla: ' + d.testo);
+  if (!d.mosse || d.mosse[0].fraMillisecondi < 4000) guasto('troppo poco tempo per fermarla');
+  if (!/posizione/i.test(d.testo)) guasto('e deve dire che la posizione parte da sé');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');

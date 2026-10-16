@@ -40,11 +40,20 @@ function Emergenza(opzioni) {
   }
 
   /* chiama112(): si dice cosa si sta facendo, e che la posizione parte da sé. */
+  /* IL 112 NON PARTE DI SOPPIATTO. Dario, provandola a Napoli: «per poco
+     non ho chiamato il 112». Il microfono sta aperto tutto il giorno e
+     sente le conversazioni: una frase presa male non può far partire una
+     chiamata di emergenza. Ma nemmeno si può chiedere una conferma lunga
+     a chi sta male davvero. Allora si fa come la chiamata d'emergenza del
+     telefono: si annuncia, si conta fino a cinque, e in quei cinque
+     secondi basta dire «annulla» o premere qualsiasi cosa. Chi ha bisogno
+     aspetta cinque secondi; chi non ne ha bisogno li ha per fermarla. */
   function chiama112() {
     return {
-      tipo: 'chiama', numero: '112', livello: 'emergenza', subito: true,
-      testo: 'Chiamo il 112. La tua posizione parte insieme alla chiamata: non devi spiegare dove sei.',
-      mosse: [{ cosa: 'chiama', numero: '112', fraMillisecondi: 1200 }]
+      tipo: 'chiama', numero: '112', livello: 'emergenza', subito: true, annullabile: true,
+      testo: 'Chiamo il 112 fra cinque secondi. Se non vuoi, dì: annulla. ' +
+             'La tua posizione parte insieme alla chiamata: non devi spiegare dove sei.',
+      mosse: [{ cosa: 'chiama', numero: '112', fraMillisecondi: 5000 }]
     };
   }
 
