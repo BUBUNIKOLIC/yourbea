@@ -138,7 +138,25 @@ body[data-testo="enorme"]{--base:26px}
 }
 .barra .tasto.vai{min-height:var(--tasto);font-size:17px}
 
-.cassetto{display:none;gap:10px;flex-wrap:wrap;margin-top:16px}
+/* IL CASSETTO STA SOPRA LA BARRA, NON NELLA PAGINA.
+   Dario, provandola a Napoli: «i tre pallini in basso a destra non riesco ad
+   aprirli: ci clicco sopra e non apre nulla». Si apriva: ma era una sezione
+   nel flusso della pagina, con la barra fissa in fondo sopra di lui — su un
+   telefono il cassetto finiva sotto la barra o sotto il bordo dello schermo,
+   e chi lo apriva non vedeva niente. Adesso e' un pannello fissato sopra la
+   barra: si apre dove si guarda, e se i tasti sono tanti scorre lui. */
+.cassetto{
+  display:none;gap:10px;flex-wrap:wrap;
+  position:fixed;left:0;right:0;z-index:60;
+  bottom:calc(env(safe-area-inset-bottom,0px) + var(--tasto) + 26px);
+  margin:0;padding:14px 16px;
+  max-height:52vh;overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  background:rgba(6,9,13,.97);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-top:1px solid var(--filo);
+  box-shadow:0 -18px 44px rgba(0,0,0,.6);
+}
 .cassetto.aperto{display:flex}
 .cassetto .tasto{flex:1 1 44%}
 .et{font-size:13px;color:var(--spento);letter-spacing:.04em}

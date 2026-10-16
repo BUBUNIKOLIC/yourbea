@@ -663,7 +663,7 @@
         apertura(poi);
         return true;
       }
-      inAttesaDi = { cosa: 'nome', poi: poi, giaChiesto: true };
+      inAttesaDi = { da: Date.now(), cosa: 'nome', poi: poi, giaChiesto: true };
       voce.parla('Non ho capito il nome. Dimmelo di nuovo, da solo, oppure dì: lascia perdere.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
@@ -672,19 +672,19 @@
 
     // sto aspettando il numero, o un sì
     if (inAttesaDi && r && r.cosa === 'numero' && inAttesaDi.cosa === 'numero') {
-      inAttesaDi = { cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
+      inAttesaDi = { da: Date.now(), cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
       voce.parla('Ho sentito: ' + dettatura.leggiCifre(r.numero) + '. È giusto? Dì sì, oppure ripeti il numero.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
     if (inAttesaDi && inAttesaDi.cosa === 'conferma' && r && (r.cosa === 'si' || r.cosa === 'no' || r.cosa === 'numero')) {
       if (r.cosa === 'numero') {
-        inAttesaDi = { cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
+        inAttesaDi = { da: Date.now(), cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
         voce.parla('Allora: ' + dettatura.leggiCifre(r.numero) + '. È giusto?', { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
       if (r.cosa === 'no') {
-        inAttesaDi = { cosa: 'numero', nome: inAttesaDi.nome };
+        inAttesaDi = { da: Date.now(), cosa: 'numero', nome: inAttesaDi.nome };
         voce.parla('Va bene, dimmi di nuovo il numero, una cifra per volta.', { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
@@ -710,14 +710,14 @@
       return true;
     }
     if (r.cosa === 'contatto') {
-      inAttesaDi = { cosa: 'conferma', nome: r.nome, numero: r.numero };
+      inAttesaDi = { da: Date.now(), cosa: 'conferma', nome: r.nome, numero: r.numero };
       voce.parla(r.nome + ', numero: ' + dettatura.leggiCifre(r.numero) + '. È giusto? Dì sì, oppure ripeti il numero.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
     if (r.cosa === 'contatto-senza-numero') {
       if (chiediAllaRubrica(r.nome, 'niente')) return true;
-      inAttesaDi = { cosa: 'numero', nome: r.nome };
+      inAttesaDi = { da: Date.now(), cosa: 'numero', nome: r.nome };
       voce.parla(r.nome + '. Adesso dimmi il suo numero, col prefisso, una cifra per volta.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
@@ -758,7 +758,7 @@
     /* niente numero: si dice perché, e si offre la strada che resta —
        dettarlo. Mai lasciare in sospeso chi ha chiesto aiuto. */
     var chi = (chiesto && chiesto.nome) || nome;
-    inAttesaDi = { cosa: 'numero', nome: maiuscolaNome(chi) };
+    inAttesaDi = { da: Date.now(), cosa: 'numero', nome: maiuscolaNome(chi) };
     voce.parla(guaio === 'niente-permesso'
       ? 'Non posso guardare la tua rubrica: se vuoi, dallo nelle impostazioni. Intanto dimmi il numero di ' + chi + ', una cifra per volta.'
       : 'In rubrica ' + chi + ' non lo trovo. Dimmi il suo numero, una cifra per volta.',
@@ -922,9 +922,72 @@
     try { return clip.per(d); } catch (e) { return null; }
   }
 
+  /* staAspettando(): l'app ha fatto una domanda e aspetta.
+     Dario, provandola a Napoli: «mi chiede il nome, ma non mi dà il tempo di
+     darlo: comincia subito a parlare di quello che c'è intorno a me».
+     Il difetto l'ho fatto io stamattina mettendo la domanda del nome: la
+     domanda parte, e insieme partono la posizione e tutto quello che ne
+     segue — i passaggi, la scena, i cenni — che si mettono in fila dietro e
+     arrivano addosso a chi sta rispondendo.
+     La regola che mancava: QUANDO L'APP CHIEDE UNA COSA, ASPETTA. Niente di
+     ambientale si dice finché non ha una risposta — tranne l'emergenza, che
+     passa sempre. E l'attesa ha una vita: se nessuno risponde entro mezzo
+     minuto l'app non resta muta per sempre, riprende a raccontare. */
+  var ATTESA_VIVE = 30000;
+
+  /* ============================================================
+     CHE COSA VUOI SENTIRE
+     Dario, provandola a Napoli: «Turismo mi dà comunque troppe informazioni:
+     mi dà i ristoranti, mi dà i monumenti, mi dà le vie, mi dice se c'è il
+     semaforo. È troppo. Deve esserci un comando per selezionare io cosa
+     voglio: deve essere facilmente accessibile, che io dico solo monumenti».
+     Ha ragione, e non e' in contrasto con l'altra richiesta — «un non
+     vedente non deve sentirsi solo»: sono due persone diverse con due
+     bisogni diversi, e la differenza la decide chi ascolta, non noi.
+     Si dice a voce («solo monumenti», «dimmi tutto») o col tasto nel
+     cassetto. Quello che serve a camminare — svolte, arrivi, emergenza —
+     non si spegne mai: quello non e' informazione in piu', e' la strada. */
+  var soloMonumenti = false;
+  try { soloMonumenti = localStorage.getItem('yourbea2-solo-monumenti') === 'si'; } catch (e) {}
+
+  var SEMPRE = { svolta: 1, preavviso: 1, prossima: 1, arrivato: 1, fuori: 1, parto: 1,
+                 manca: 1, tappa: 1, finita: 1, lascio: 1, elenco: 1, avvisa: 1,
+                 chiama: 1, 'chiama-contatto': 1, furto: 1, scelte: 1, 'chi-e': 1,
+                 'niente-contatto': 1, 'non-capito': 1, niente: 1, dove: 1, strada: 1 };
+
+  function daDire(d) {
+    if (!soloMonumenti) return true;
+    if (d.livello === 'emergenza' || SEMPRE[d.tipo]) return true;
+    /* un monumento e' un luogo (k da 1 in su), non un servizio: la regola e'
+       la stessa di parti/racconto.js, e non cambia qui */
+    if (d.luogo && (d.luogo.k === undefined || d.luogo.k >= 1)) return true;
+    if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') return true;
+    return false;
+  }
+
+  /* IL RESPIRO: «è troppo frenetico» (Dario). Quello che si dice per
+     raccontare il posto — passaggi, scena, lati, cenni — aspetta qualche
+     secondo dall'ultima volta. Non vale per la strada e per l'emergenza. */
+  var RESPIRO = 8000;
+  var ultimoAmbiente = 0;
+  var AMBIENTE = { passaggio: 1, scena: 1, lati: 1, cenno: 1, superato: 1, incrocio: 1 };
+  function staAspettando() {
+    return !!(inAttesaDi && inAttesaDi.da && Date.now() - inAttesaDi.da < ATTESA_VIVE);
+  }
+
   function dillo(d) {
     if (!d) return;
     if (!hoLaParola) return;
+    if (staAspettando() && d.livello !== 'emergenza') {
+      diario('ZITTO: sto aspettando una risposta (' + inAttesaDi.cosa + ')');
+      return;
+    }
+    if (!daDire(d)) { diario('solo monumenti: salto ' + d.tipo); return; }
+    if (AMBIENTE[d.tipo] && d.livello !== 'emergenza' && Date.now() - ultimoAmbiente < RESPIRO) {
+      diario('RESPIRO: ' + d.tipo + ' aspetta');
+      return;
+    }
+    if (AMBIENTE[d.tipo]) ultimoAmbiente = Date.now();
     ultimaParola = Date.now();
     laStradaVienePrima(d);
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
@@ -992,7 +1055,12 @@
       mostra({ titolo: 'Non so dove sei', testo: dice, attesa: true, dove: '—', gradino: '' });
       /* se intanto la posizione arriva — dal guscio, o perché l'utente ha
          appena dato il permesso — questa frase non si dice più. */
-      voce.parla(dice, { livello: voce.GUIDA, valida: function () { return !posizione.leggi().pronto; } });
+      /* e nemmeno questa si dice sopra una domanda: «valida» la tiene buona
+         finche' l'app sta aspettando una risposta, e la butta se intanto la
+         posizione e' arrivata. Cosi' chi sta rispondendo al nome non si
+         sente interrompere. */
+      voce.parla(dice, { livello: voce.GUIDA,
+                         valida: function () { return !staAspettando() && !posizione.leggi().pronto; } });
       return;
     }
     if (!s.pronto) { stato('cerco la posizione…'); return; }
@@ -1187,7 +1255,16 @@
        chiede — «che c'è scritto», «cosa c'è scritto qui», «leggimi quello
        che è scritto» — e «cartello» la frase più naturale di tutte. */
     leggi: ['leggi', 'scritto', 'cartello', 'targa', 'citofono'],
-    aiuto: ['aiuto', 'comandi', 'che posso dire']
+    aiuto: ['aiuto', 'comandi', 'che posso dire'],
+    /* CHE COSA VUOI SENTIRE. «Deve essere facilmente accessibile, che io
+       dico solo monumenti» (Dario, 16/10). Si riconosce la parola che
+       conta — «solo monumenti», «soltanto i monumenti», «niente negozi» —
+       e la via di ritorno, «dimmi tutto», perche' una strada che si chiude
+       e non si riapre e' una trappola. */
+    solomonumenti: ['solo monument', 'soltanto monument', 'solo i monument',
+                    'soltanto i monument', 'niente negozi', 'solo le cose belle'],
+    dimmitutto: ['dimmi tutto', 'raccontami tutto', 'dimmi di nuovo tutto',
+                 'voglio sentire tutto', 'torna a dirmi tutto']
   };
   function normalizza(t) {
     return String(t || '').toLowerCase()
@@ -1287,6 +1364,13 @@
       if (/^(?:casa|casa mia|a casa)$/.test(meta.trim())) { aCasa(); return true; }
       portamiA(meta); return true;
     }
+    if (ha('solo monument', 'soltanto monument', 'solo i monument',
+            'soltanto i monument', 'niente negozi', 'solo le cose belle')) {
+      cosaSentire(true); return true;
+    }
+    if (ha('dimmi tutto', 'raccontami tutto', 'voglio sentire tutto', 'torna a dirmi tutto')) {
+      cosaSentire(false); return true;
+    }
     if (ha('lascia perdere', 'annulla', 'non importa')) { dilloSubito(guida.lascia()); return true; }
     /* LE PASSEGGIATE. Viene dopo «portami a», perché «portami alla stazione»
        è una cosa e «facciamo una passeggiata» è un'altra, e prima di
@@ -1340,7 +1424,7 @@
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
-      voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Ferma. ' +
+      voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Solo monumenti, oppure dimmi tutto. Ferma. ' +
                  'Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell\'autobus. ' +
                  'Passeggiate, e ti dico i giri a tappe che ci sono qui: poi «comincia la prima». ' +
                  'Musica, per accenderla o spegnerla. ' +
@@ -1586,7 +1670,16 @@
 
   /* chiediIlNome(): una domanda sola, e si può non rispondere. */
   function chiediIlNome(quale) {
-    inAttesaDi = { cosa: 'nome', poi: quale };
+    inAttesaDi = { da: Date.now(), cosa: 'nome', poi: quale };
+    /* e se non risponde? Non si resta fermi su una domanda: dopo mezzo
+       minuto si tira avanti, e il nome si potra' dare quando vuole. */
+    setTimeout(function () {
+      if (inAttesaDi && inAttesaDi.cosa === 'nome') {
+        inAttesaDi = null;
+        diario('NOME: nessuna risposta, vado avanti');
+        apertura(quale);
+      }
+    }, 26000);
     voce.parla('Ciao. Prima di cominciare: come ti chiami? Dimmi solo il tuo nome. ' +
                'Se preferisci non dirmelo, dì: lascia perdere.',
                { livello: voce.GUIDA, ancheSeUguale: true });
@@ -1612,7 +1705,7 @@
       { livello: voce.GUIDA });
     /* REGOLA C di parti/modi.js: se ha chiesto come sta, si sta a sentire.
        Una domanda a cui l'app non reagisce è peggio del silenzio. */
-    if (sal.chiede) inAttesaDi = { cosa: 'come-stai' };
+    if (sal.chiede) inAttesaDi = { da: Date.now(), cosa: 'come-stai' };
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
   }
 
@@ -1684,6 +1777,25 @@
       : 'Musica spenta.', { livello: voce.GUIDA, ancheSeUguale: true });
   }
   el('musica').addEventListener('click', function () { cambiaMusica(); });
+
+  /* cosaSentire(): l'interruttore fra «tutto» e «solo i monumenti». Si dice
+     cosa cambia, non «fatto»: chi non vede non ha una spunta da guardare. */
+  function cosaSentire(solo) {
+    soloMonumenti = !!solo;
+    try { localStorage.setItem('yourbea2-solo-monumenti', soloMonumenti ? 'si' : 'no'); } catch (e) {}
+    scriviTastoCosaSentire();
+    voce.parla(soloMonumenti
+      ? 'Da adesso ti dico solo i monumenti e i luoghi. Negozi, incroci e attraversamenti li lascio stare. Le strade e gli avvisi te li dico sempre. Per tornare a sentire tutto, dimmi: dimmi tutto.'
+      : 'Da adesso ti dico tutto quello che c\'è: luoghi, negozi, incroci e attraversamenti.',
+      { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+  function scriviTastoCosaSentire() {
+    try {
+      el('cosa-sentire').textContent = soloMonumenti ? 'Dico: solo monumenti' : 'Dico: tutto';
+    } catch (e) {}
+  }
+  el('cosa-sentire').addEventListener('click', function () { cosaSentire(!soloMonumenti); });
+  scriviTastoCosaSentire();
   scriviTastoMusica();
 
   el('testo-piu').addEventListener('click', function () {
