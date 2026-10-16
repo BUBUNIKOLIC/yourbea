@@ -303,12 +303,26 @@
     }
     if (!tappeto || tappetoQuale !== d.brano) {
       if (tappeto) { try { tappeto.pause(); } catch (e) {} }
-      try { tappeto = new Audio('musica/' + d.brano + '.m4a' + VER); } catch (e) { return; }
+      try { tappeto = new Audio('musica/' + d.brano + '.m4a' + VER); } catch (e) { diario('MUSICA: non riesco a prepararla'); return; }
       tappeto.loop = true;              // sono cuciti per girare senza stacco
+      /* SE NON SUONA, DEVE RESTARE SCRITTO. Prima l'errore veniva inghiottito
+         in silenzio: dal di fuori la musica che non parte e la musica
+         spenta erano identiche, e nel browser l'audio è negato, quindi la
+         prova vera si può fare solo sul telefono. Adesso lo dice il
+         quaderno della camminata. */
+      tappeto.onerror = function () { diario('MUSICA: il file non si carica (' + tappetoQuale + ')'); };
       tappetoQuale = d.brano;
     }
     tappeto.volume = d.volume;
-    if (tappeto.paused) { var p = tappeto.play(); if (p && p.catch) p.catch(function () {}); }
+    if (tappeto.paused) {
+      var p = tappeto.play();
+      if (p && p.then) {
+        p.then(function () { diario('MUSICA: suona ' + tappetoQuale + ', volume ' + d.volume); })
+         .catch(function (e) { diario('MUSICA: non parte — ' + ((e && e.name) || 'motivo ignoto')); });
+      } else {
+        diario('MUSICA: avviata ' + tappetoQuale);
+      }
+    }
   }
   /* il giro della musica: una volta ogni mezzo secondo, così l'abbassata
      sotto la voce si sente morbida e non a scatti. */
