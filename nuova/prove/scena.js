@@ -176,6 +176,19 @@ prova('gli alberi si dicono da che lato stanno', () => {
   if (!d || !/alberi/i.test(d.testo)) guasto('nove alberi sono una cosa che orienta: ' + (d && d.testo));
 });
 
+prova('il semaforo che SUONA viene prima di tutto', () => {
+  /* per chi non vede è la differenza fra attraversare da solo e aspettare
+     qualcuno: se c'è, è la prima cosa da dire di un attraversamento */
+  const w = mondo();
+  const uno = w.s.attraversamenti(QUI, [{ cosa: 'attraversamento', semaforo: true, suona: true,
+                                          lat: QUI.lat + 0.0002, lon: QUI.lon }]);
+  if (!/acustico/.test(uno)) guasto('non ha detto che suona: ' + uno);
+  const tanti = [];
+  for (let i = 0; i < 3; i++) tanti.push({ cosa: 'attraversamento', semaforo: true, suona: true, lat: QUI.lat + 0.0001 * i, lon: QUI.lon });
+  const piu = w.s.attraversamenti(QUI, tanti);
+  if (!/acustico/.test(piu)) guasto('anche quando sono tanti: ' + piu);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della scena');

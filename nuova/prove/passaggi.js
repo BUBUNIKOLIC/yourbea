@@ -127,6 +127,31 @@ prova('l\'ingresso della metropolitana si dice anche senza nome', () => {
   if (!w.p.vaDetto(metro)) guasto('un vedente lo trova dalla scalinata, chi non vede no');
 });
 
+prova('gli orari: si dice aperto o chiuso solo quando si è sicuri', () => {
+  /* andare fino a una farmacia chiusa è una camminata buttata; ma gli
+     orari di OpenStreetMap sanno essere complicatissimi, e un «è aperto»
+     sbagliato è peggio del silenzio */
+  const w = mondo();
+  const giovediMattina = new Date('2026-10-15T10:30:00').getTime();
+  const seraTardi = new Date('2026-10-15T22:30:00').getTime();
+  if (w.p.apertoAdesso('Mo-Sa 08:00-20:00', giovediMattina) !== true) guasto('alle 10:30 di giovedì è aperta');
+  if (w.p.apertoAdesso('Mo-Sa 08:00-20:00', seraTardi) !== false) guasto('alle 22:30 no');
+  if (w.p.apertoAdesso('Mo-Fr 09:00-13:00,16:00-19:30', giovediMattina) !== true) guasto('due fasce in un giorno');
+  if (w.p.apertoAdesso('24/7', giovediMattina) !== true) guasto('24/7 è sempre aperto');
+  if (w.p.apertoAdesso('Mo-Fr 08:00-20:00; PH off', giovediMattina) !== null) guasto('coi festivi non si indovina: si tace');
+  if (w.p.apertoAdesso('sunrise-sunset', giovediMattina) !== null) guasto('non si sa: si tace');
+  if (w.p.apertoAdesso('', giovediMattina) !== null) guasto('senza orari si tace');
+});
+
+prova('di un negozio con gli orari si dice se è aperto adesso', () => {
+  const w = mondo();
+  const farmacia = Object.assign({ cosa: 'farmacia', servizio: 'farmacia', nome: 'Farmacia Pirani',
+                                   orari: 'Mo-Sa 08:00-20:00' }, vicino(0, 0.00012));
+  const d = w.p.prossimo({ qui: QUI, punti: [farmacia], direzione: 0, direzioneBuona: true,
+                           quando: new Date('2026-10-15T10:30:00').getTime() });
+  if (!d || !/aperta/.test(d.testo)) guasto('doveva dire che è aperta: ' + (d && d.testo));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei passaggi');

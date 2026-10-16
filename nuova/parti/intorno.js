@@ -128,7 +128,7 @@ function Intorno(opzioni) {
     var dla = 0.0011, dlo = 0.0014 / Math.cos(lat * Math.PI / 180);
     var bb = (lon - dlo) + ',' + (lat - dla) + ',' + (lon + dlo) + ',' + (lat + dla);
     return conTempo(prendi('https://api.openstreetmap.org/api/0.6/map?bbox=' + bb)).then(function (xml) {
-      var fuori = { punti: [], aree: [], alberi: [], vie: [] };
+      var fuori = { punti: [], aree: [], alberi: [], vie: [], civici: [] };
       if (!xml || !leggiXML) { memoria.servizi[k] = { quando: ora(), valore: fuori }; return fuori; }
       var doc;
       try { doc = leggiXML(xml); } catch (e) { return fuori; }
@@ -143,10 +143,24 @@ function Intorno(opzioni) {
         if (t.natural === 'tree') { fuori.alberi.push([la, lo]); continue; }
         if (t.highway === 'crossing') {
           var sem = (t.crossing === 'traffic_signals' || t['crossing:signals'] === 'yes');
-          fuori.punti.push({ cosa: 'attraversamento', semaforo: sem,
+          /* IL SEMAFORO ACUSTICO. È la cosa più importante che la mappa
+             sappia di un attraversamento, e la buttavamo via: per chi non
+             vede, un semaforo che suona è la differenza fra attraversare da
+             solo e aspettare qualcuno. */
+          var suona = (t['traffic_signals:sound'] === 'yes' || t['traffic_signals:sound'] === 'walk' ||
+                       t['crossing:signals:sound'] === 'yes' || t.acoustic === 'yes');
+          fuori.punti.push({ cosa: 'attraversamento', semaforo: sem, suona: suona,
             strisce: (t.crossing === 'marked' || t.crossing === 'zebra'),
             tattile: t.tactile_paving === 'yes', lat: la, lon: lo });
           continue;
+        }
+        /* IL NUMERO CIVICO. Camminando, i numeri dicono quanto manca meglio
+           di qualunque distanza: «stai passando il 47» vale più di «fra
+           ottanta metri». Sono nodi come gli altri e non li leggeva
+           nessuno. */
+        if (t['addr:housenumber']) {
+          fuori.civici.push({ n: t['addr:housenumber'], via: t['addr:street'] || '', lat: la, lon: lo });
+          if (!PUNTI[t.amenity] && !PUNTI['shop:' + t.shop]) continue;
         }
         /* LE COSE CHE SI PRENDONO ADDOSSO, e quelle che aiutano.
            Stavano nella mappa da sempre e non le leggeva nessuno: per chi
@@ -204,7 +218,9 @@ function Intorno(opzioni) {
           continue;
         }
         var tipo = PUNTI[t.amenity] || PUNTI['shop:' + t.shop] || PUNTI[t.leisure] || null;
-        if (tipo) fuori.punti.push({ cosa: tipo, servizio: tipo, nome: t.name || '', lat: la, lon: lo });
+        /* gli orari: «la farmacia è aperta» cambia se ci vai o no */
+        if (tipo) fuori.punti.push({ cosa: tipo, servizio: tipo, nome: t.name || '',
+                                     orari: t.opening_hours || '', lat: la, lon: lo });
       }
       var vie = doc.getElementsByTagName('way');
       for (var w = 0; w < vie.length; w++) {
@@ -255,7 +271,8 @@ function Intorno(opzioni) {
       }
       memoria.servizi[k] = { quando: ora(), valore: fuori };
       diario('MAPPA: ' + fuori.punti.length + ' punti, ' + fuori.aree.length + ' aree, ' +
-             fuori.alberi.length + ' alberi, ' + fuori.vie.length + ' strade');
+             fuori.alberi.length + ' alberi, ' + fuori.vie.length + ' strade, ' +
+             fuori.civici.length + ' civici');
       return fuori;
     });
   }

@@ -111,17 +111,69 @@ function Passaggi(opzioni) {
        solo non fa capire che è un bar */
     var tipo = (mig.nome && mig.cosa && mig.nome.toLowerCase().indexOf(mig.cosa.toLowerCase()) < 0)
       ? (' — ' + mig.cosa) : '';
+    /* se la mappa sa gli orari e sono semplici, si dice se è aperto
+       adesso: andare fino a una farmacia chiusa è una camminata buttata.
+       Gli orari di OpenStreetMap sanno essere complicatissimi: se non si
+       capiscono con certezza non si dice niente, mai un «è aperto» a caso. */
+    var aperto = apertoAdesso(mig.orari, s.quando);
+    var stato = aperto === true ? ', aperta' : (aperto === false ? ', chiusa adesso' : '');
     return { tipo: 'passaggio', livello: 'cenno', cosa: mig,
-             testo: 'Stai passando ' + nome + tipo + (parte ? ', ' + parte : '') + '.' };
+             testo: 'Stai passando ' + nome + tipo + stato + (parte ? ', ' + parte : '') + '.' };
   }
 
   function capo(t) { return String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1); }
+
+  /* apertoAdesso(): true, false, o null quando non si capisce.
+     Si leggono solo le forme semplici — «Mo-Fr 08:00-20:00», «Mo-Sa
+     09:00-13:00,16:00-19:30», «24/7». Tutto il resto (festivi, eccezioni,
+     «sunrise-sunset») torna null: meglio tacere che mandare qualcuno
+     davanti a una serranda. */
+  function apertoAdesso(orari, quando) {
+    if (!orari) return null;
+    var o = String(orari).trim();
+    if (/24\/7/.test(o)) return true;
+    if (/PH|SH|sunrise|sunset|week|easter|off/i.test(o)) return null;
+    var d = quando ? new Date(quando) : new Date(ora());
+    var giorni = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    var oggi = giorni[d.getDay()];
+    var adesso = d.getHours() * 60 + d.getMinutes();
+    var pezzi = o.split(';');
+    var visto = false;
+    for (var i = 0; i < pezzi.length; i++) {
+      var m = pezzi[i].trim().match(/^([A-Za-z,\-]+)\s+(.+)$/);
+      if (!m) return null;
+      if (!giorniCompresi(m[1], oggi, giorni)) continue;
+      visto = true;
+      var fasce = m[2].split(',');
+      for (var j = 0; j < fasce.length; j++) {
+        var f = fasce[j].trim().match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+        if (!f) return null;
+        var da = parseInt(f[1], 10) * 60 + parseInt(f[2], 10);
+        var a = parseInt(f[3], 10) * 60 + parseInt(f[4], 10);
+        if (adesso >= da && adesso <= a) return true;
+      }
+    }
+    return visto ? false : null;
+  }
+  function giorniCompresi(spec, oggi, giorni) {
+    var dentro = false;
+    spec.split(',').forEach(function (p) {
+      var r = p.trim().match(/^([A-Za-z]{2})\s*-\s*([A-Za-z]{2})$/);
+      if (r) {
+        var a = giorni.indexOf(capo2(r[1])), b = giorni.indexOf(capo2(r[2])), q = giorni.indexOf(oggi);
+        if (a < 0 || b < 0) return;
+        if (a <= b ? (q >= a && q <= b) : (q >= a || q <= b)) dentro = true;
+      } else if (capo2(p.trim()) === oggi) dentro = true;
+    });
+    return dentro;
+  }
+  function capo2(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1, 2).toLowerCase(); }
 
   /* stradaNuova(): si ricomincia da capo — le stesse cose, in un'altra
      strada o ripassandoci dopo, si possono ridire. */
   function stradaNuova() { detti = {}; }
 
-  return { prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto };
+  return { prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Passaggi;

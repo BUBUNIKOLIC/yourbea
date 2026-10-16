@@ -352,6 +352,25 @@
       }
     }
   }
+  /* IL SEGNO DI VITA. Chi non vede non può dare un'occhiata allo schermo
+     per sapere se l'app sta ancora lavorando: se tace per minuti, non sa
+     se è spenta, se si è persa, o se davvero non c'è niente da dire. Ogni
+     due minuti di silenzio, mentre cammina, dice dove si trova — una frase
+     breve e vera, non un «sono qui» che non serve a niente. Fermo in casa
+     non parla: lì il silenzio non preoccupa nessuno. */
+  var ultimaParola = Date.now();
+  setInterval(function () {
+    if (!acceso || voce.staParlando()) { ultimaParola = Date.now(); return; }
+    if (Date.now() - ultimaParola < 120000) return;
+    var s = posizione.leggi();
+    if (!s.pronto || s.fermo) { ultimaParola = Date.now(); return; }
+    ultimaParola = Date.now();
+    diario('SEGNO DI VITA');
+    dillo({ tipo: 'strada', livello: 'cenno',
+            testo: ultimaStrada ? ('Sei sempre in ' + ultimaStrada + '. Ti sto seguendo.')
+                                : 'Ti sto seguendo: qui intorno non ho niente di segnato.' });
+  }, 20000);
+
   /* il giro della musica: una volta ogni mezzo secondo, così l'abbassata
      sotto la voce si sente morbida e non a scatti. */
   setInterval(function () {
@@ -677,6 +696,7 @@
 
   function dillo(d) {
     if (!d) return;
+    ultimaParola = Date.now();
     laStradaVienePrima(d);
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
     var preso = voce.parla(d.testo, { clip: clipDi(d), livello: liv });
@@ -735,7 +755,8 @@
     /* l'incrocio si guarda a ogni passo: venticinque metri si attraversano
        in dieci secondi, e dirlo dopo non serve a niente */
     var pass = passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
-                                   direzione: s.direzione, direzioneBuona: s.direzioneBuona });
+                                   direzione: s.direzione, direzioneBuona: s.direzioneBuona,
+                                   quando: Date.now() });
     if (pass) dillo(pass);
     if (modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
       var inc = incroci.quale({ qui: { lat: s.lat, lon: s.lon }, vie: SERVIZI.vie,
@@ -999,6 +1020,13 @@
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
+    /* non capito: si risponde solo a chi parlava con noi */
+    if (sembraRivoltoANoi(t)) {
+      voce.parla('Questa non l\'ho capita. Se vuoi, dimmi «comandi» e ti dico cosa so fare.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      diario('NON CAPITO (ma era per noi): ' + t.slice(0, 40));
+      return true;
+    }
     return false;
   }
   function diciDove() {
@@ -1168,6 +1196,30 @@
      via Gioberti» detto mentre diceva la via non faceva niente.)
      L'eco della propria voce non arriva qui, perche' il microfono e' chiuso
      mentre l'app parla; e se arriva, il diario lo scrive. */
+  /* ---------- «UN NON VEDENTE NON DEVE SENTIRSI SOLO» ----------
+     Parole di Vince, 16/10, e sono la regola che tiene insieme tutte le
+     altre. Due silenzi la rompevano:
+
+     1. PARLARE ALL'APP E NON RICEVERE NIENTE. I comandi che non si
+        capiscono venivano ignorati di proposito — il microfono sta aperto
+        tutto il giorno e sente conversazioni intere, e rispondere a tutto
+        sarebbe peggio. Ma se uno si rivolge PROPRIO a lei e lei tace, è
+        come essere lasciati a metà discorso. Allora: se la frase sembra
+        rivolta all'app — la chiama per nome, o è corta e comincia con un
+        verbo — si risponde che non si è capito. Altrimenti, silenzio.
+     2. NON SENTIRLA PIÙ PER MINUTI. Chi non vede non può controllare lo
+        schermo per sapere se funziona ancora. */
+  function sembraRivoltoANoi(t) {
+    if (/\b(?:urbea|yourbea|urbe|erbe|rube)\b/.test(t)) return true;
+    var parole = t.split(' ');
+    if (parole.length > 14) return false;                // un discorso, non una domanda
+    /* PRIMA come comincia, poi quanto è lunga. Al contrario — come l'avevo
+       scritta — «dimmi una cosa a caso che non esiste» veniva buttata per
+       via delle otto parole, senza nemmeno guardare che cominciava con
+       «dimmi»: e uno che chiede qualcosa resta senza risposta. */
+    return /^(?:dimmi|dammi|fammi|portami|leggi|cerca|trova|cosa|dove|quanto|quanti|chi |come|quando|puoi|mi |ti |che )/.test(t);
+  }
+
   window.urbeaComando = function (testo) {
     if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
     comando(testo || '');

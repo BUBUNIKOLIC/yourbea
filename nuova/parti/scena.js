@@ -139,9 +139,18 @@ function Scena(opzioni) {
        se uno di quelli ha il semaforo, e se c'è il percorso tattile. */
     var conSemaforo = a.filter(function (p) { return p.semaforo; }).length;
     var tattili = a.filter(function (p) { return p.tattile; }).length;
+    /* IL SEMAFORO CHE SUONA viene prima di tutto il resto: è la differenza
+       fra attraversare da soli e aspettare qualcuno. */
+    var suonano = a.filter(function (p) { return p.suona; }).length;
     if (a.length === 1) {
-      return 'un attraversamento' + (conSemaforo ? ' col semaforo' : ' senza semaforo') +
+      return 'un attraversamento' +
+             (suonano ? ' col semaforo acustico' : (conSemaforo ? ' col semaforo' : ' senza semaforo')) +
              (tattili ? ', col percorso tattile' : '');
+    }
+    if (suonano) {
+      return 'una serie di attraversamenti, ' +
+             (suonano === a.length ? 'tutti col semaforo acustico' : suonano + ' col semaforo acustico') +
+             (tattili ? ', e il percorso tattile' : '');
     }
     return 'una serie di attraversamenti' +
            (conSemaforo ? (conSemaforo === a.length ? ', tutti col semaforo' : ', ' + conSemaforo + ' col semaforo') : ', nessuno col semaforo') +
