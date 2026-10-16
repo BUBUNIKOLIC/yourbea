@@ -229,6 +229,62 @@
   var ioSonoIo = '';
   try { ioSonoIo = localStorage.getItem('yourbea2-io') || ''; } catch (e) {}
   var dettatura = Dettatura();
+
+  /* ---------- la vecchia Yourbea si butta da sé ----------
+     «Fai in modo che chi scarica la nuova butti in automatico la vecchia».
+     Chi aveva la vecchia si porta dietro il suo service worker — che se
+     resta vivo continua a servire i file di prima — decine di megabyte di
+     casseforti, e le sue chiavi. Prima però si travasa quello che dentro
+     c'è di suo: casa e il numero di chi avvisare. Farli riscrivere a un non
+     vedente perché abbiamo cambiato programma sarebbe una mancanza di
+     rispetto. Le regole stanno in parti/pulizia.js e si provano. */
+  var casaPunto = null;
+  try { casaPunto = JSON.parse(localStorage.getItem('yourbea2-casa-punto') || 'null'); } catch (e) {}
+  (function buttaLaVecchia() {
+    var pul = Pulizia();
+    var vecchie = {};
+    try {
+      vecchie.casa = JSON.parse(localStorage.getItem('urbea-casa') || 'null');
+      vecchie.soccorso = JSON.parse(localStorage.getItem('urbea-soccorso') || 'null');
+      vecchie.testo = localStorage.getItem('urbea-testo') || '';
+    } catch (e) {}
+    var nuove = {};
+    try {
+      nuove.contatto = JSON.parse(localStorage.getItem('yourbea2-contatto') || 'null');
+      nuove.casa = localStorage.getItem('yourbea2-casa') || '';
+      nuove.casaPunto = casaPunto;
+      nuove.testo = localStorage.getItem('yourbea2-testo') || '';
+    } catch (e) {}
+
+    var salvo = pul.travaso(vecchie, nuove);
+    try {
+      if (salvo.contatto) localStorage.setItem('yourbea2-contatto', JSON.stringify(salvo.contatto));
+      if (salvo.casaPunto) { localStorage.setItem('yourbea2-casa-punto', JSON.stringify(salvo.casaPunto)); casaPunto = salvo.casaPunto; }
+      if (salvo.testo) localStorage.setItem('yourbea2-testo', salvo.testo);
+    } catch (e) {}
+    if (salvo.contatto || salvo.casaPunto || salvo.testo) diario('DALLA VECCHIA: travasato quello che c\'era');
+
+    var chiavi = [];
+    try { for (var i = 0; i < localStorage.length; i++) chiavi.push(localStorage.key(i)); } catch (e) {}
+    var via = pul.chiaviDaButtare(chiavi);
+    via.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    if (via.length) diario('DALLA VECCHIA: buttate ' + via.length + ' chiavi');
+
+    if (window.caches && caches.keys) {
+      caches.keys().then(function (nomi) {
+        var fuori = pul.casseforti(nomi);
+        if (fuori.length) diario('DALLA VECCHIA: butto ' + fuori.length + ' casseforti');
+        return Promise.all(fuori.map(function (n2) { return caches.delete(n2); }));
+      }).catch(function () {});
+    }
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (r) {
+          if (pul.spegnereIlWorker(r.scope)) { diario('DALLA VECCHIA: spengo il worker ' + r.scope); r.unregister(); }
+        });
+      }).catch(function () {});
+    }
+  })();
   var inAttesaDi = null;       // { cosa:'numero', nome } | { cosa:'conferma', nome, numero }
   var emergenza = Emergenza({ contatto: contatto, io: ioSonoIo });
   var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
@@ -436,6 +492,20 @@
      Se non sa dove abiti non si inventa niente e non lascia in silenzio:
      lo dice, e apre il posto dove scriverlo. */
   function aCasa() {
+    /* chi veniva dalla vecchia ha casa come PUNTO, non come indirizzo: si
+       va lì diritti, senza cercare niente. */
+    if (!casa && casaPunto) {
+      var s0 = posizione.leggi();
+      if (!s0.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+      var qui0 = { lat: s0.lat, lon: s0.lon };
+      var meta0 = { n: 'casa tua', lat: casaPunto.lat, lon: casaPunto.lon };
+      diario('A CASA: il punto segnato nella vecchia');
+      Promise.all([intorno.strada(qui0.lat, qui0.lon), intorno.percorso(qui0, meta0)]).then(function (r) {
+        PERCORSO = r[1];
+        dilloSubito(guida.vaiA(meta0, qui0, r[0], r[1]));
+      });
+      return;
+    }
     if (!casa) {
       voce.parla('Non so ancora dove abiti. Aprimi il cassetto, «dove abito», e scrivi la via: poi ti ci porto quando vuoi.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
