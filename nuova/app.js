@@ -423,6 +423,43 @@
       }
     }
   }
+  /* STAI PERCORRENDO VIA MARCONI. «Il prossimo incrocio, se continui
+     dritto trovi…» (Vince, 16/10): su un viale lungo, ripetere «sei
+     entrato in via Marconi» è inutile — ci sei già — ma il silenzio è
+     peggio. Ogni minuto e mezzo, camminando sulla stessa strada, si dice
+     dove sei, cosa incroci più avanti e cosa trovi continuando dritto.
+     È la differenza fra essere avvisati ed essere guidati. */
+  var ultimoRiepilogo = 0;
+  function stradaERiepilogo() {
+    var s = posizione.leggi();
+    if (!acceso || !s.pronto || s.fermo || guida.meta()) return;
+    if (!ultimaVia || !s.direzioneBuona) return;
+    if (Date.now() - ultimoRiepilogo < 90000) return;
+    ultimoRiepilogo = Date.now();
+
+    var qui = { lat: s.lat, lon: s.lon };
+    var pezzi = ['Stai percorrendo ' + ultimaVia + '.'];
+    var inc = incroci.ilProssimo({ qui: qui, vie: SERVIZI.vie || [], strada: ultimaVia,
+                                   direzione: s.direzione, direzioneBuona: true });
+    if (inc) pezzi.push('Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.');
+
+    /* cosa trovi continuando dritto: la prima cosa con un nome davanti a
+       te, che non sia quella che hai appena passato */
+    var avanti = null, da = 1e9;
+    (SERVIZI.punti || []).forEach(function (p) {
+      if (!p.nome || !p.servizio) return;
+      var d = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (d < 25 || d > 250 || d >= da) return;
+      var rel = ((posizione.verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
+      if (Math.abs(rel) > 50) return;
+      da = d; avanti = p;
+    });
+    if (avanti) pezzi.push('Se continui dritto trovi ' + avanti.nome + ', ' + scena.passi(da) + '.');
+    if (pezzi.length < 2) return;        // «stai percorrendo» da solo non serve
+    dillo({ tipo: 'strada', livello: 'cenno', testo: pezzi.join(' ') });
+  }
+  setInterval(stradaERiepilogo, 20000);
+
   /* IL SEGNO DI VITA. Chi non vede non può dare un'occhiata allo schermo
      per sapere se l'app sta ancora lavorando: se tace per minuti, non sa
      se è spenta, se si è persa, o se davvero non c'è niente da dire. Ogni
@@ -819,7 +856,7 @@
   }, 300);
 
   /* ---------- il giro: a ogni posizione nuova ---------- */
-  var ultimaStrada = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
+  var ultimaStrada = '', ultimaVia = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
   posizione.quando(function (cosa, s) {
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
@@ -873,14 +910,20 @@
       intorno.strada(s.lat, s.lon).then(function (v) {
         if (!v || !v.via) return;
         var dove = v.via + (v.civico ? ' ' + v.civico : '');
-        if (dove === ultimaStrada) return;
-        var viaPrima = (ultimaStrada || '').split(' ').slice(0, 3).join(' ');
-        var viaOra = v.via;
-        var cambiata = viaPrima && viaOra && ultimaStrada.indexOf(viaOra) < 0;
+        /* SI ANNUNCIA LA STRADA, NON IL CIVICO. «Ero in via Guglielmo
+           Marconi e mi continuava a dire: hai imboccato via Marconi, ma
+           ero già a metà» (Vince, 16/10, in scooter). Il confronto era
+           sull'intera scritta — via PIÙ numero — e in un viale lungo il
+           numero cambia ogni venti metri: ogni volta sembrava una strada
+           nuova. Adesso si guarda solo il nome; il civico si porta dietro
+           per chi lo chiede, ma non fa parlare nessuno. */
+        var viaOra = (v.via || '').trim();
         ultimaStrada = dove;
-        /* entrare in una strada nuova è la notizia; cambiare civico no */
+        if (!viaOra || viaOra.toLowerCase() === (ultimaVia || '').toLowerCase()) return;
+        var prima = ultimaVia;
+        ultimaVia = viaOra;
         dillo({ tipo: 'strada', livello: 'guida',
-                testo: (cambiata ? 'Sei entrato in ' : 'Sei in ') + dove + '.' });
+                testo: (prima ? 'Sei entrato in ' : 'Sei in ') + viaOra + '.' });
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
         passaggi.stradaNuova();
       });

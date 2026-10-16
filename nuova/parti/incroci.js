@@ -77,9 +77,34 @@ function Incroci(opzioni) {
     return 'sulla sinistra';
   }
 
+  /* ilProssimo(): l'incrocio che hai DAVANTI, anche se è lontano.
+     «Direi di comunicare: stai percorrendo via Marconi, il prossimo
+     incrocio, se continui dritto trovi…» (Vince, 16/10). È il pezzo che
+     mancava per sentirsi guidati invece che avvisati: quello di `quale()`
+     dice gli incroci quando ci sei sopra, questo li annuncia prima. */
+  function ilProssimo(s) {
+    var qui = s.qui, vie = s.vie || [];
+    var dove = normalizza(s.strada || '');
+    if (typeof s.direzione !== 'number' || s.direzioneBuona === false) return null;
+    var mig = null, dmin = Infinity;
+    vie.forEach(function (v) {
+      var n = normalizza(v.nome);
+      if (!n || (dove && (dove.indexOf(n) >= 0 || n.indexOf(dove) >= 0))) return;
+      (v.punti || []).forEach(function (p) {
+        var d = dist(qui.lat, qui.lon, p[0], p[1]);
+        if (d > 250 || d >= dmin) return;
+        var g = verso(qui.lat, qui.lon, p[0], p[1]);
+        var rel = ((g - s.direzione + 540) % 360) - 180;
+        if (Math.abs(rel) > 55) return;              // davanti, non di lato
+        dmin = d; mig = { nome: v.nome, metri: Math.round(d) };
+      });
+    });
+    return mig;
+  }
+
   function dimentica() { detti = {}; }
 
-  return { quale: quale, dimentica: dimentica };
+  return { quale: quale, ilProssimo: ilProssimo, dimentica: dimentica };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Incroci;

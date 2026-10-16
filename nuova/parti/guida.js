@@ -127,6 +127,34 @@ function Guida(opzioni) {
     return mig;
   }
 
+  /* leStrade(): i nomi delle vie che si percorreranno, in ordine.
+     «Invece di dirmi, per andare in via dei Corazzieri, quali strade
+     dovevo percorrere… poi mi diceva i numeri civici» (Vince, 16/10,
+     provandola in scooter). Prima di partire uno vuole il disegno del
+     percorso in testa: tre nomi bastano a farselo. Le istruzioni del
+     percorso i nomi ce li hanno già dentro — «svolta a destra su via
+     Ettore Rolli» — e non li stavamo usando. */
+  function leStrade(svolte) {
+    var nomi = [];
+    (svolte || []).forEach(function (sv) {
+      var m = String(sv.testo || '').match(/\b(?:su|in|lungo)\s+((?:via|viale|piazza|piazzale|corso|largo|vicolo|strada|lungotevere|ponte|salita|discesa|borgo|contrada)\b[^,.;]*)/i);
+      if (!m) return;
+      var n2 = m[1].trim().replace(/\s+/g, ' ');
+      if (!nomi.length || nomi[nomi.length - 1].toLowerCase() !== n2.toLowerCase()) nomi.push(n2);
+    });
+    return nomi;
+  }
+
+  function elencoStrade(nomi) {
+    if (!nomi.length) return '';
+    /* tre, non dieci: un elenco lungo non si tiene a mente camminando, e
+       le svolte le ridirà una per una al momento giusto. */
+    var tre = nomi.slice(0, 3);
+    var coda = nomi.length > 3 ? ', e poi ancora' : '';
+    if (tre.length === 1) return tre[0] + coda;
+    return tre.slice(0, -1).join(', ') + ' e ' + tre[tre.length - 1] + coda;
+  }
+
   /* verso(): la meta è fissata. Restituisce la frase d'apertura. */
   function vaiA(m, qui, dove, percorso) {
     meta = m; svolte = []; prossima = 0; ultimoAvviso = 0; preavvisata = -1; fuoriDa = 0;
@@ -137,8 +165,12 @@ function Guida(opzioni) {
       svolte = percorso.svolte;
       prossima = 1;                             // la prima si dice adesso
       diario('GUIDA: ' + svolte.length + ' svolte per ' + m.n);
+      var strade = elencoStrade(leStrade(svolte));
       return { tipo: 'parto', livello: 'guida',
-               testo: dovesei + 'Per arrivare a ' + m.n + ', ' + metri(percorso.metri) + ' a piedi. ' + svolte[0].testo };
+               testo: 'Per arrivare a ' + m.n + ': ' + metri(percorso.metri) + ' a piedi' +
+                      (svolte.length > 1 ? ', ' + (svolte.length - 1) + (svolte.length === 2 ? ' svolta' : ' svolte') : '') + '. ' +
+                      (strade ? 'Si passa per ' + strade + '. ' : '') +
+                      minuscolaPrima(svolte[0].testo) };
     }
     // REGOLA 5: senza percorso, resta la bussola
     diario('GUIDA: senza percorso, uso la bussola');
@@ -249,6 +281,7 @@ function Guida(opzioni) {
     return d || 'fai qualche passo e ti dico da che parte';
   }
   function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
+  function minuscolaPrima(t) { return capo(String(t || '')); }
   function metri(m) {
     if (m < 25) return 'a pochi passi';
     if (m < 1000) return 'a ' + (Math.round(m / 10) * 10) + ' metri';
@@ -271,6 +304,7 @@ function Guida(opzioni) {
   return {
     vaiA: vaiA, passo: passo, lascia: lascia, dalComando: dalComando,
     scegli: scegli, cittaNelTesto: cittaNelTesto, cittaCombacia: cittaCombacia,
+    leStrade: leStrade, elencoStrade: elencoStrade,
     parolePiene: parolePiene,
     meta: function () { return meta; },
     svolteRimaste: function () { return Math.max(0, svolte.length - prossima); }

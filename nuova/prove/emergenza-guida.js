@@ -147,7 +147,11 @@ prova('si parte dicendo dove sei, quanto manca e la prima mossa', () => {
     { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Vincenzo Monti.' }
   ] };
   const d = g.vaiA({ n: 'Via Vincenzo Gioberti', lat: 41.4665, lon: 12.9086 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
-  if (!/Sei in Via Fabio Filzi/.test(d.testo)) guasto('non dice dove sei');
+  /* la frase d'apertura e' cambiata il 16/10: prima diceva dove sei (col
+     civico!), adesso dice il percorso — «quali strade dovevo percorrere»
+     e' la cosa che Vince ha chiesto provandola in strada */
+  if (!/Via Fabio Filzi/.test(d.testo)) guasto('non dice le strade del percorso: ' + d.testo);
+  if (/\d+\/\d+/.test(d.testo)) guasto('il civico di dove sei non serve a partire');
   if (!/250 metri a piedi/.test(d.testo)) guasto('non dice quanto manca a piedi: ' + d.testo);
   if (!/Cammina verso sud-est/.test(d.testo)) guasto('non dice la prima mossa');
 });
@@ -360,6 +364,32 @@ prova('senza bussola si dice comunque che sei arrivato', () => {
   const d = g.passo({ lat: 41.82399, lon: 12.48141 }, 5000, {});
   if (!d || d.tipo !== 'arrivato') guasto('l\'arrivo si dice sempre');
   if (d && /destra|sinistra/.test(d.testo)) guasto('ma non si inventa il lato: ' + d.testo);
+});
+
+/* LE STRADE DEL PERCORSO, DETTE PRIMA DI PARTIRE. «Invece di dirmi, per
+   andare in via dei Corazzieri, quali strade dovevo percorrere… poi mi
+   diceva i numeri civici» (Vince, 16/10, in scooter). Prima di muoversi
+   uno vuole il disegno del percorso in testa: tre nomi bastano. */
+prova('prima di partire si dicono le strade che si faranno', () => {
+  const g = Guida({ dist, verso });
+  const p = { metri: 700, svolte: [
+    { lat: 41.4658, lon: 12.9078, testo: 'Cammina su Via Giovanni Volpato.' },
+    { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Portuense.' },
+    { lat: 41.4668, lon: 12.9090, testo: 'Svolta a sinistra su Via Ettore Rolli.' } ] };
+  const d = g.vaiA({ n: 'Via dei Corazzieri 47', lat: 41.4700, lon: 12.9120 },
+                   { lat: 41.4658, lon: 12.9078, direzione: 45, direzioneBuona: true }, DOVE, p);
+  if (!/Volpato/.test(d.testo) || !/Portuense/.test(d.testo)) guasto('non dice le strade: ' + d.testo);
+  if (!/700 metri/.test(d.testo)) guasto('e quanto è lunga');
+  if (!/svolte/.test(d.testo)) guasto('e quante svolte');
+});
+
+prova('tre strade, non dieci', () => {
+  /* un elenco lungo non si tiene a mente camminando, e le svolte le
+     ridirà una per una al momento giusto */
+  const g = Guida({ dist, verso });
+  const nomi = g.elencoStrade(['Via A', 'Via B', 'Via C', 'Via D', 'Via E']);
+  if ((nomi.match(/Via/g) || []).length > 3) guasto('troppe: ' + nomi);
+  if (!/e poi ancora/.test(nomi)) guasto('deve dire che ce ne sono altre: ' + nomi);
 });
 
 /* ==================== il conto ==================== */
