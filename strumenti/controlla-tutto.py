@@ -165,8 +165,13 @@ def controlla_luoghi():
                 guaio('luogo senza scheda vera (meno di 60 lettere)', dove)
             elif not scheda.rstrip().endswith(('.', '!', '?', '»', '"')):
                 guaio('scheda che finisce a meta\'', dove + ': …' + scheda.rstrip()[-50:])
+        # QUINDICI METRI, NON CINQUANTA. A cinquanta, «Attraversamento di
+        # Via Laurentina» risultava doppio sei volte: ma sono sei
+        # attraversamenti VERI, uno per incrocio lungo la stessa via.
+        # Cancellarli sarebbe stato togliere a chi non vede cinque posti
+        # dove si puo' passare.
         for (n2, la2, lo2) in visti:
-            if n2.lower() == n.lower() and dist(lat, lon, la2, lo2) < 50:
+            if n2.lower() == n.lower() and dist(lat, lon, la2, lo2) < 15:
                 guaio('luogo doppio', dove)
                 break
         visti.append((n, lat, lon))
