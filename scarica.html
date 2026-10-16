@@ -3,153 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Yourbea — installa la guida</title>
-<link rel="icon" href="icons/icon-192.png">
-<meta name="description" content="Yourbea: cammini e la città si racconta. Guida vocale per non vedenti e turisti, 31 città italiane.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<meta name="theme-color" content="#070A0E">
+<title>Yourbea — come si installa</title>
+<!-- Questa pagina offriva Yourbea.apk, il file Android della VECCHIA app:
+     su iPhone quel tocco dà «impossibile scaricare», ed è probabilmente
+     quello che è successo alla sorella di Vince il 16/10. Adesso dice la
+     verità di oggi: non c'è niente da scaricare, si apre il link e si
+     aggiunge alla schermata Home. -->
 <style>
-  :root{
-    --bg:#070A0E; --ink:#E9E8E4; --muted:#8F98A3; --wire:rgba(255,255,255,.08);
-    --neon:#5BE3FF; --oro:#E7C65A; --oro-scuro:#C9A227; --vetro:rgba(22,27,34,.78);
-  }
+  :root{--fondo:#06090D;--oro:#E7C65A;--neon:#5BE3FF;--inchiostro:#EFEEEA;--spento:#98A2AE}
   *{box-sizing:border-box}
-  html,body{margin:0;min-height:100%}
-  body{
-    background:
-      radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.11) 0%, transparent 56%),
-      radial-gradient(900px 600px at 88% 8%, rgba(201,162,39,.08) 0%, transparent 52%),
-      linear-gradient(180deg,#0D1218 0%,#070A0E 100%);
-    background-attachment:fixed;
-    color:var(--ink); font-family:"Source Sans 3",system-ui,sans-serif; line-height:1.55;
-  }
-  main{max-width:640px;margin:0 auto;padding:30px 18px 80px}
-
-  /* l'insegna */
-  .testa{text-align:center;margin-bottom:26px}
-  .insegna{width:min(86vw,440px);height:auto;filter:drop-shadow(0 22px 56px rgba(0,0,0,.6))}
-  .testa p{color:var(--muted);font-size:17px;margin:18px auto 0;max-width:470px}
-  .testa b{color:var(--ink);font-weight:600}
-
-  /* i numeri */
-  .numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 26px}
-  .numeri div{background:var(--vetro);border:1px solid var(--wire);border-radius:16px;
-    padding:14px 8px;text-align:center}
-  .numeri b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:27px;color:var(--oro);line-height:1}
-  .numeri span{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--muted)}
-
-  .carta{position:relative;overflow:hidden;background:var(--vetro);
-    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-    border:1px solid var(--wire);border-radius:24px;padding:24px 22px;margin-bottom:16px;
-    box-shadow:0 0 0 1px rgba(91,227,255,.06) inset, 0 20px 46px rgba(0,0,0,.5)}
-  .carta::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;
-    background:linear-gradient(90deg,transparent,var(--neon),rgba(231,198,90,.65),transparent);opacity:.6}
-  .carta h2{font-family:"Bodoni Moda",Georgia,serif;font-size:27px;margin:4px 0 8px;line-height:1.15}
-  .carta p{margin:0 0 14px;color:#C9CFD6}
-  .tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.17em;
-    text-transform:uppercase;color:var(--neon);border:1px solid rgba(91,227,255,.3);
-    border-radius:999px;padding:4px 11px;margin-bottom:6px}
-  .tag.oro{color:var(--oro);border-color:rgba(231,198,90,.35)}
-
-  .bottone{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:19px;
-    padding:18px;border-radius:16px;margin:4px 0 16px;
-    background:linear-gradient(180deg,#6FD3E6,#3FA7BF);color:#04161B;
-    box-shadow:0 14px 34px rgba(79,175,196,.3)}
-  .bottone.secondo{background:linear-gradient(180deg,rgba(231,198,90,.9),rgba(201,162,39,.9));color:#1A1407;
-    box-shadow:0 14px 34px rgba(201,162,39,.22)}
-
-  ol{margin:0;padding-left:0;list-style:none;counter-reset:p}
-  ol li{counter-increment:p;position:relative;padding:11px 0 11px 46px;border-top:1px solid var(--wire)}
-  ol li:first-child{border-top:none}
-  ol li::before{content:counter(p);position:absolute;left:0;top:10px;width:30px;height:30px;
-    border-radius:50%;display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;
-    font-size:13px;color:var(--neon);border:1px solid rgba(91,227,255,.3);background:rgba(91,227,255,.07)}
-  ol b{color:#fff}
-  .gesto{display:inline-block;background:rgba(255,255,255,.07);border:1px solid var(--wire);
-    border-radius:8px;padding:1px 7px;font-size:15px}
-
-  .cosa{display:grid;gap:12px;margin:4px 0 2px}
-  .cosa div{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
-  .cosa .em{font-size:22px;line-height:1.2}
-  .cosa b{display:block;margin-bottom:2px}
-  .cosa span{color:var(--muted);font-size:15.5px}
-
-  .link{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
-    text-align:center;word-break:break-all;margin-top:-6px}
-  .avviso{font-size:14.5px;color:var(--muted);border-left:3px solid rgba(231,198,90,.45);
-    padding-left:12px;margin:14px 0 0}
-  footer{margin-top:34px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
-    letter-spacing:.1em;color:#6E7682;line-height:2}
+  body{margin:0;background:var(--fondo);color:var(--inchiostro);line-height:1.6;
+       font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-size:17px;
+       padding:calc(env(safe-area-inset-top,0px) + 28px) 20px 60px;max-width:34em;margin:0 auto}
+  h1{font-family:"Bodoni Moda",Georgia,serif;color:var(--oro);letter-spacing:.14em;font-size:28px;margin:0 0 6px}
+  p.sotto{color:var(--spento);margin:0 0 28px}
+  h2{font-size:19px;margin:34px 0 10px;color:var(--neon)}
+  ol{padding-left:22px}
+  li{margin:10px 0}
+  a.vai{display:block;text-align:center;background:var(--neon);color:#04222B;text-decoration:none;
+        font-weight:700;padding:20px;border-radius:16px;margin:26px 0;font-size:19px}
+  .nota{border-left:3px solid rgba(231,198,90,.5);padding:2px 0 2px 14px;color:var(--spento);margin:26px 0}
 </style>
 </head>
 <body>
-<main>
+<h1>YOURBEA</h1>
+<p class="sotto">La bellezza intorno a te. Non c'è niente da scaricare da uno store: si apre un link e si aggiunge alla schermata Home.</p>
 
-  <div class="testa">
-    <img class="insegna" src="icons/avvio.png" alt="Yourbea — la bellezza intorno a te">
-    <p>Cammini, e la città ti si racconta da sola: <b>quello che hai davanti</b>, da che parte e a quanti metri. Senza toccare lo schermo.</p>
-  </div>
+<a class="vai" href="https://bubunikolic.github.io/yourbea/">Apri Yourbea</a>
 
-  <div class="numeri">
-    <div><b>952</b><span>luoghi</span></div>
-    <div><b>31</b><span>città</span></div>
-    <div><b>102</b><span>passeggiate</span></div>
-  </div>
+<h2>Su iPhone</h2>
+<ol>
+  <li>Apri il link qui sopra <b>con Safari</b> (non da dentro un'altra app).</li>
+  <li>Tocca il tasto <b>Condividi</b>, quello col quadrato e la freccia in su.</li>
+  <li>Scorri e tocca <b>Aggiungi a Home</b>, poi <b>Aggiungi</b>.</li>
+  <li>Adesso Yourbea è fra le tue app. Aprila da lì, non da Safari.</li>
+</ol>
 
-  <div class="carta">
-    <span class="tag">Android</span>
-    <h2>Scarica l'app</h2>
-    <p>Due megabyte. Chi ha già la versione vecchia la ritrova aggiornata.</p>
-    <a class="bottone" href="Yourbea.apk" download>⬇ Scarica Yourbea</a>
-    <ol>
-      <li>Tocca il tasto: il telefono scarica <b>Yourbea.apk</b>.</li>
-      <li>Apri il file scaricato. Android chiede il permesso di installare da questa origine: è normale per le app fuori dal Play Store.</li>
-      <li>Tocca <b>Installa</b>, poi <b>Apri</b>.</li>
-      <li>Alla prima apertura dà il permesso alla <b>posizione</b> e al <b>microfono</b>: senza quelli non può parlarti né sentirti.</li>
-    </ol>
-  </div>
+<h2>Su Android</h2>
+<ol>
+  <li>Apri il link con <b>Chrome</b>.</li>
+  <li>Tocca i tre puntini in alto a destra.</li>
+  <li>Tocca <b>Installa app</b> (oppure «Aggiungi a schermata Home»).</li>
+</ol>
 
-  <div class="carta">
-    <span class="tag oro">iPhone · iPad</span>
-    <h2>Mettila sulla Home</h2>
-    <p>Su iPhone non si scarica nessun file: si aggiunge dal browser e diventa un'icona come un'app vera.</p>
-    <a class="bottone secondo" href="https://bubunikolic.github.io/yourbea/">Apri Yourbea in Safari</a>
-    <ol>
-      <li>Apri questo link <b>con Safari</b>. Se lo apri dentro WhatsApp o Instagram il passaggio dopo non compare: tocca <span class="gesto">⋯</span> e scegli <b>Apri in Safari</b>.</li>
-      <li>In basso tocca <b>Condividi</b>, il quadrato con la freccia che esce <span class="gesto">↑</span>.</li>
-      <li>Scorri l'elenco e scegli <b>Aggiungi a schermata Home</b>.</li>
-      <li>In alto a destra tocca <b>Aggiungi</b>: l'icona compare fra le altre app.</li>
-      <li>Aprila <b>da quell'icona</b>, non da Safari, e dai il permesso a <b>posizione</b> e <b>microfono</b>.</li>
-    </ol>
-    <p class="avviso">Se i comandi vocali non rispondono, usa il tasto 🎙 in basso: su alcuni iPhone il riconoscimento della voce nelle app aggiunte alla Home va richiesto a ogni apertura.</p>
-  </div>
+<h2>La prima volta che la apri</h2>
+<ol>
+  <li>Scegli <b>Utilità</b> o <b>Turismo</b>: te lo chiede a voce.</li>
+  <li>Quando il telefono chiede la <b>posizione</b>, rispondi <b>Consenti</b>: senza, l'app non può accompagnarti.</li>
+  <li>Se chiede il <b>microfono</b>, consenti anche quello: serve per parlarle.</li>
+  <li>Alza il volume e, se sei in strada, tieni il telefono in tasca: parla da sola.</li>
+</ol>
 
-  <div class="carta">
-    <span class="tag">Cosa sa fare</span>
-    <h2>Tre cose, bene</h2>
-    <div class="cosa">
-      <div><span class="em">👁</span><div><b>Per chi non vede</b><span>Tutto parlato, comandi a voce, e lo schermo non serve. Dice che cosa passi, da che parte e a quanti metri.</span></div></div>
-      <div><span class="em">🏛</span><div><b>Per chi guarda</b><span>Il dettaglio che fa la differenza — un portale, un balcone, una facciata — e per i grandi monumenti la spiegazione da manuale.</span></div></div>
-      <div><span class="em">🆘</span><div><b>Quando serve aiuto</b><span>Un tasto dice dove sei, via e civico, chiama il 112 o ti porta al commissariato, alla farmacia, a casa.</span></div></div>
-    </div>
-  </div>
+<div class="nota">
+  Se vedi una versione vecchia, chiudi l'app e riaprila: si aggiorna da sé.
+  Se dice «impossibile scaricare», stavamo pubblicando proprio in quel momento:
+  riprova fra un minuto.
+</div>
 
-  <div class="carta spenta">
-    <span class="tag">Oppure</span>
-    <h2>Senza installare niente</h2>
-    <p>Funziona anche solo aprendo il link, su qualsiasi telefono.</p>
-    <a class="bottone secondo" href="https://bubunikolic.github.io/yourbea/">Apri la guida</a>
-    <div class="link">bubunikolic.github.io/yourbea</div>
-  </div>
-
-  <footer>
-    ROMA · FIRENZE · VENEZIA · MILANO · TORINO · GENOVA · BOLOGNA · VERONA · SIENA · PADOVA ·
-    LUCCA · MANTOVA · FERRARA · RAVENNA · URBINO · ASSISI · ORVIETO · MATERA · SIRACUSA · LECCE ·
-    BARI · PALERMO · CATANIA · CAGLIARI · TRIESTE · RIMINI · NAPOLI · PARMA · SPOLETO ·
-    TORRE DEL GRECO · VENAFRO<br>
-    <span style="opacity:.6">e in tutta Italia per farmacie, fermate, pronto soccorso</span>
-  </footer>
-
-</main>
+<h2>Cosa puoi dirle</h2>
+<p>Dove sono · Cosa c'è qui intorno · Portami a, e un indirizzo · Portami a casa ·
+Leggi il cartello · Ancora · Avanti · Ferma · Comandi.</p>
 </body>
 </html>
