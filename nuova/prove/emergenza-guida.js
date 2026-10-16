@@ -163,7 +163,37 @@ prova('LA SVOLTA si dice a venticinque metri, non a cento', () => {
   // a una decina di metri: si dice
   d = g.passo({ lat: 41.46632, lon: 12.90832 }, 2000);
   if (!d || d.tipo !== 'svolta') guasto('a dieci metri dalla svolta non l\'ha detta: ' + JSON.stringify(d));
-  if (!/Svolta a destra/.test(d.testo)) guasto('ha detto la svolta sbagliata');
+  if (!/svolta a destra/i.test(d.testo)) guasto('ha detto la svolta sbagliata');
+  if (!/^Adesso/.test(d.testo)) guasto('quando ci sei sopra si dice «adesso»: ' + d.testo);
+});
+
+/* IL NAVIGATORE. «Penso debba avere quasi la funzione di navigatore
+   camminando» (Vince, 16/10). Un navigatore dice la svolta due volte: una
+   da lontano per prepararti, una quando ci sei. A piedi settanta metri sono
+   venti secondi: il tempo di spostarsi sul lato giusto del marciapiede. */
+prova('la svolta si preannuncia da settanta metri', () => {
+  const g = Guida({ dist, verso });
+  const svolta = { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Vincenzo Monti.' };
+  const p = { metri: 250, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
+  g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
+  const lontano = g.passo({ lat: 41.46580, lon: 12.90780 }, 1000);
+  if (!lontano || lontano.tipo !== 'preavviso') guasto('a una sessantina di metri va preannunciata: ' + JSON.stringify(lontano));
+  if (lontano && !/^Fra \d+ metri/.test(lontano.testo)) guasto('il preavviso dice quanto manca: ' + lontano.testo);
+  const ancora = g.passo({ lat: 41.46582, lon: 12.90782 }, 2000);
+  if (ancora && ancora.tipo === 'preavviso') guasto('lo ha preannunciato due volte');
+});
+
+prova('se ti allontani dal percorso, lo dice', () => {
+  const g = Guida({ dist, verso, fuoriDa: 5000 });
+  const p = { metri: 250, linea: [[41.4658, 12.9078], [41.4663, 12.9083], [41.4670, 12.9090]],
+              svolte: [{ lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra.' }] };
+  g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
+  const fuori = { lat: 41.4658, lon: 12.9100 };     // un paio di isolati di lato
+  const primo = g.passo(fuori, 1000);
+  if (primo && primo.tipo === 'fuori') guasto('non si allarma al primo passo storto');
+  const dopo = g.passo(fuori, 9000);
+  if (!dopo || dopo.tipo !== 'fuori') guasto('dopo un po\' fuori strada va detto: ' + JSON.stringify(dopo));
+  if (dopo && !/percorso/.test(dopo.testo)) guasto('deve dire che sei fuori dal percorso');
 });
 
 prova('L\'ARRIVO si dice una volta sola, e la guida finisce', () => {

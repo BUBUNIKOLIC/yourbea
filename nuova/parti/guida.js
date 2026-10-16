@@ -31,11 +31,17 @@ function Guida(opzioni) {
   var verso = o.verso;                         // (lat,lon,lat,lon) -> gradi
   var diario = o.diario || function () {};
   var VICINO_SVOLTA = o.vicinoSvolta || 25;
+  var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
   var ARRIVATO = o.arrivato || 22;
+  var FUORI = o.fuori || 45;                // quanto ci si può scostare dal tracciato
+  var FUORI_DA = o.fuoriDa || 15000;        // e per quanto, prima di dirlo
 
   var meta = null;                 // { n, lat, lon }
   var svolte = [];
   var prossima = 0;
+  var preavvisata = -1;            // quale svolta è già stata annunciata da lontano
+  var linea = [];                  // il tracciato, per accorgersi se si esce
+  var fuoriDa = 0;                 // da quando si è fuori strada
   var quantoManca = 0;
   var ultimoAvviso = 0;
 
@@ -123,7 +129,8 @@ function Guida(opzioni) {
 
   /* verso(): la meta è fissata. Restituisce la frase d'apertura. */
   function vaiA(m, qui, dove, percorso) {
-    meta = m; svolte = []; prossima = 0; ultimoAvviso = 0;
+    meta = m; svolte = []; prossima = 0; ultimoAvviso = 0; preavvisata = -1; fuoriDa = 0;
+    linea = (percorso && percorso.linea && percorso.linea.length > 1) ? percorso.linea : [];
     quantoManca = dist(qui.lat, qui.lon, m.lat, m.lon);
     var dovesei = dove && dove.via ? ('Sei in ' + dove.via + (dove.civico ? ' ' + dove.civico : '') + '. ') : '';
     if (percorso && percorso.svolte && percorso.svolte.length) {
@@ -145,17 +152,43 @@ function Guida(opzioni) {
     if (!meta) return null;
     var d = dist(qui.lat, qui.lon, meta.lat, meta.lon);
     if (d < ARRIVATO) {
-      var n = meta.n; meta = null; svolte = []; prossima = 0;
+      var n = meta.n; meta = null; svolte = []; prossima = 0; preavvisata = -1; linea = [];
       return { tipo: 'arrivato', livello: 'emergenza', testo: 'Sei arrivato: ' + n + '.' };
     }
     // REGOLA 2: la svolta quando ci sei quasi sopra
     if (svolte.length && prossima < svolte.length) {
       var s = svolte[prossima];
-      if (dist(qui.lat, qui.lon, s.lat, s.lon) < VICINO_SVOLTA) {
+      var quanto = dist(qui.lat, qui.lon, s.lat, s.lon);
+      if (quanto < VICINO_SVOLTA) {
         prossima++;
         ultimoAvviso = adesso;
-        return { tipo: 'svolta', livello: 'guida', testo: s.testo };
+        return { tipo: 'svolta', livello: 'guida', testo: 'Adesso: ' + minuscola(s.testo) };
       }
+      /* IL PREAVVISO. «Penso debba avere quasi la funzione di navigatore
+         camminando» (Vince, 16/10). Un navigatore dice la svolta DUE volte:
+         una da lontano, per prepararti, e una quando ci sei. A piedi i
+         settanta metri sono una ventina di secondi: il tempo di spostarsi
+         sul lato giusto del marciapiede, che per chi non vede è tutto. */
+      if (quanto < PREAVVISO && preavvisata !== prossima) {
+        preavvisata = prossima;
+        ultimoAvviso = adesso;
+        return { tipo: 'preavviso', livello: 'guida',
+                 testo: 'Fra ' + (Math.round(quanto / 10) * 10) + ' metri, ' + minuscola(s.testo) };
+      }
+    }
+    /* FUORI STRADA. Un navigatore se ne accorge e lo dice, invece di
+       continuare a dare svolte che non c'entrano più niente. */
+    if (linea.length > 1) {
+      var scarto = dalTracciato(qui);
+      if (scarto > FUORI) {
+        if (!fuoriDa) fuoriDa = adesso;
+        if (adesso - fuoriDa > FUORI_DA) {
+          fuoriDa = 0;
+          return { tipo: 'fuori', livello: 'guida', metri: Math.round(scarto),
+                   testo: 'Ti sei allontanato dal percorso di ' + Math.round(scarto) +
+                          ' metri. Aspetta che te ne cerco un altro.' };
+        }
+      } else { fuoriDa = 0; }
     }
     // e ogni tanto quanto manca, se ci si è spostati
     if (Math.abs(quantoManca - d) > 25 && adesso - ultimoAvviso > 12000) {
@@ -173,6 +206,20 @@ function Guida(opzioni) {
      spostamento fra due posizioni; e allora si parla rispetto a TE.
      Se non si sa ancora come sei girato non si inventa un punto cardinale:
      si chiede di fare due passi, e dopo si sa. */
+  /* dalTracciato(): quanto sei lontano dalla strada che ti avevo dato. */
+  function dalTracciato(qui) {
+    var d = Infinity;
+    for (var i = 0; i < linea.length; i++) {
+      var q = dist(qui.lat, qui.lon, linea[i][0], linea[i][1]);
+      if (q < d) d = q;
+    }
+    return d;
+  }
+  function minuscola(t) {
+    var s2 = String(t || '');
+    return s2.charAt(0).toLowerCase() + s2.slice(1);
+  }
+
   function direzione(qui, m) {
     var g = verso(qui.lat, qui.lon, m.lat, m.lon);
     if (!qui || typeof qui.direzione !== 'number' || qui.direzioneBuona === false) return null;
@@ -195,7 +242,7 @@ function Guida(opzioni) {
 
   function lascia() {
     if (!meta) return null;
-    meta = null; svolte = []; prossima = 0;
+    meta = null; svolte = []; prossima = 0; preavvisata = -1; linea = [];
     return { tipo: 'lascio', livello: 'guida', testo: 'Va bene, lascio perdere.' };
   }
 

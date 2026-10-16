@@ -793,6 +793,19 @@
       var g = guida.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
                             direzioneBuona: s.direzioneBuona }, Date.now());
       if (g) dilloSubito(g);
+      /* FUORI STRADA: un navigatore non si limita a dirlo, ne cerca un
+         altro. Il percorso si richiede da dove sei adesso, verso la stessa
+         meta: se la rete non risponde resta la bussola, e si sente. */
+      if (g && g.tipo === 'fuori') {
+        var m3 = guida.meta();
+        var qui3 = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
+        diario('FUORI STRADA: rifaccio il percorso');
+        intorno.percorso(qui3, m3).then(function (nuovo) {
+          PERCORSO = nuovo;
+          if (!nuovo) { diario('FUORI STRADA: percorso non arrivato, resta la bussola'); }
+          dilloSubito(guida.vaiA(m3, qui3, { via: ultimaStrada }, nuovo));
+        });
+      }
       return;
     }
     /* SE SI STA FACENDO UNA PASSEGGIATA, PARLA LA PASSEGGIATA. Una tappa per

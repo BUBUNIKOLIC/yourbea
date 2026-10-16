@@ -82,7 +82,24 @@ function Intorno(opzioni) {
     'shop:supermarket': 'supermercato', 'shop:bakery': 'panificio',
     'shop:butcher': 'macelleria', 'shop:newsagent': 'edicola',
     'shop:tobacco': 'tabaccheria', 'shop:pastry': 'pasticceria',
-    'shop:greengrocer': 'frutta e verdura', 'shop:hairdresser': 'parrucchiere'
+    'shop:greengrocer': 'frutta e verdura', 'shop:hairdresser': 'parrucchiere',
+    /* allargata il 16/10, dopo la camminata di Vince: «mi puoi descrivere
+       cosa c'è, se c'è un parco sulla destra, il benzinaio sulla sinistra».
+       Quello che si incontra davvero camminando in un quartiere — e che a
+       chi non vede serve per sapere dov'è arrivato. */
+    fast_food: 'tavola calda', pub: 'pub', doctors: 'ambulatorio',
+    dentist: 'dentista', veterinary: 'veterinario', school: 'scuola',
+    kindergarten: 'asilo', cinema: 'cinema', fountain: 'fontana',
+    bureau_de_change: 'cambio', car_wash: 'autolavaggio', bus_station: 'stazione dei bus',
+    'shop:convenience': 'alimentari', 'shop:doityourself': 'ferramenta',
+    'shop:hardware': 'ferramenta', 'shop:florist': 'fioraio',
+    'shop:optician': 'ottico', 'shop:shoes': 'negozio di scarpe',
+    'shop:clothes': 'negozio di vestiti', 'shop:laundry': 'lavanderia',
+    'shop:mobile_phone': 'negozio di telefonia', 'shop:bicycle': 'negozio di biciclette',
+    'shop:books': 'libreria', 'shop:toys': 'negozio di giocattoli',
+    'shop:electronics': 'negozio di elettronica', 'shop:furniture': 'negozio di mobili',
+    'shop:car_repair': 'officina', 'shop:beauty': 'centro estetico',
+    'shop:wine': 'enoteca', 'shop:deli': 'gastronomia', 'shop:pet': 'negozio di animali'
   };
   var AREE = o.aree || {
     'leisure:park': 'parco', 'leisure:garden': 'giardino',
@@ -90,7 +107,16 @@ function Intorno(opzioni) {
     'amenity:hospital': 'ospedale', 'amenity:townhall': 'municipio',
     'amenity:marketplace': 'mercato', 'tourism:museum': 'museo',
     'historic:monument': 'monumento', 'place:square': 'piazza',
-    'office:government': 'ufficio pubblico', 'railway:station': 'stazione'
+    'office:government': 'ufficio pubblico', 'railway:station': 'stazione',
+    'leisure:playground': 'parco giochi', 'leisure:pitch': 'campo sportivo',
+    'leisure:sports_centre': 'centro sportivo', 'leisure:stadium': 'stadio',
+    'amenity:university': 'università', 'amenity:parking': 'parcheggio',
+    'amenity:theatre': 'teatro', 'amenity:library': 'biblioteca',
+    'amenity:police': 'commissariato', 'amenity:fire_station': 'caserma dei pompieri',
+    'tourism:attraction': 'luogo da vedere', 'tourism:gallery': 'galleria d\'arte',
+    'historic:ruins': 'rovine', 'historic:archaeological_site': 'area archeologica',
+    'historic:castle': 'castello', 'historic:church': 'chiesa',
+    'place:neighbourhood': 'quartiere'
   };
   var SENZA_NOME_VA_BENE = { parco: 1, piazza: 1, chiesa: 1, stazione: 1, mercato: 1, monumento: 1, museo: 1 };
 
