@@ -290,6 +290,11 @@ function Intorno(opzioni) {
       leg.maneuvers.forEach(function (m, k) {
         var pt = pts[m.begin_shape_index || 0]; if (!pt) return;
         var testo = String(m.verbal_pre_transition_instruction || m.instruction || '').replace(/\s+poi\s+.*$/i, '');
+        /* VIA I PUNTI CARDINALI. Valhalla apre sempre con «Cammina verso
+           sud-est su corso della Repubblica»: a chi cammina, e soprattutto a
+           chi non vede, il sud-est non dice niente. Resta «Cammina su corso
+           della Repubblica», che è l'unica parte che si può eseguire. */
+        testo = testo.replace(/\s+verso\s+(?:nord|sud|est|ovest)(?:[- ](?:est|ovest))?/gi, '');
         if (!testo) return;
         var metri = Math.round((m.length || 0) * 1000);
         if (m.type === 4 || m.type === 5 || m.type === 6) return;      // l'arrivo lo dice l'app

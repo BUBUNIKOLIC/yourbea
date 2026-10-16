@@ -117,7 +117,10 @@ function Racconto(opzioni) {
                rel: o.rel, metri: Math.round(o.m),
                direzioneBuona: situazione.direzioneBuona !== false,
                cardinale: situazione.cardinale || null,
-               testo: versoTesto(o) + ', ' + metri(o.m) + ', ' + p.n + '.' };
+               /* senza sapere come sei girato, «sulla destra» sarebbe una
+                  bugia e «a nord» non dice niente: restano i metri */
+               testo: (situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
+                      metri(o.m) + ', ' + p.n + '.' };
     }
     return null;
   }

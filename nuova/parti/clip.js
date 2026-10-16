@@ -13,7 +13,6 @@
 
    I NOMI, come sono stati incisi (verificati sui file, 15/10):
      dir-sulla-destra      «sulla destra»
-     card-a-nord           «a nord»        (quando non si sa come sei girato)
      m-80                  «a 80 metri»    (di dieci in dieci, fino a 1000)
      m-passi               «a pochi passi» (sotto i 25 metri)
      poi-NN-nome           il nome del luogo
@@ -32,8 +31,13 @@
 
 function Clip() {
 
+  /* NIENTE PUNTI CARDINALI. «Ma io non so nord sud est dove sono» (Vince,
+     16/10, camminando): il nord non ce l'ha in testa nessuno per strada, e
+     a chi non vede non serve a niente. Se non si sa come sei girato non si
+     dice da che parte: si dicono i metri, che sono veri lo stesso. Le clip
+     card-a-nord restano incise ma non le chiama più nessuno. */
   function direzione(rel, buona, cardinale) {
-    if (!buona) return cardinale ? 'card-' + cardinale.replace(/\s+/g, '-') : null;
+    if (!buona) return null;
     var p;
     var r = rel;
     if (Math.abs(r) <= 20) p = 'dritto-davanti';

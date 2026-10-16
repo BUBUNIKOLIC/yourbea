@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=32">
-<link rel="stylesheet" href="stile.css?v=32">
+<link rel="stylesheet" href="mappa/leaflet.css?v=33">
+<link rel="stylesheet" href="stile.css?v=33">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -109,22 +109,22 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/voce.js?v=32"></script>
-<script src="parti/racconto.js?v=32"></script>
-<script src="parti/clip.js?v=32"></script>
-<script src="parti/posizione.js?v=32"></script>
-<script src="parti/intorno.js?v=32"></script>
-<script src="parti/emergenza.js?v=32"></script>
-<script src="parti/pulizia.js?v=32"></script>
-<script src="parti/dettatura.js?v=32"></script>
-<script src="parti/guida.js?v=32"></script>
-<script src="parti/passeggiata.js?v=32"></script>
-<script src="parti/musica.js?v=32"></script>
-<script src="mappa/leaflet.js?v=32"></script>
-<script src="parti/incroci.js?v=32"></script>
-<script src="parti/scena.js?v=32"></script>
-<script src="parti/mappa.js?v=32"></script>
-<script src="app.js?v=32"></script>
+<script src="parti/voce.js?v=33"></script>
+<script src="parti/racconto.js?v=33"></script>
+<script src="parti/clip.js?v=33"></script>
+<script src="parti/posizione.js?v=33"></script>
+<script src="parti/intorno.js?v=33"></script>
+<script src="parti/emergenza.js?v=33"></script>
+<script src="parti/pulizia.js?v=33"></script>
+<script src="parti/dettatura.js?v=33"></script>
+<script src="parti/guida.js?v=33"></script>
+<script src="parti/passeggiata.js?v=33"></script>
+<script src="parti/musica.js?v=33"></script>
+<script src="mappa/leaflet.js?v=33"></script>
+<script src="parti/incroci.js?v=33"></script>
+<script src="parti/scena.js?v=33"></script>
+<script src="parti/mappa.js?v=33"></script>
+<script src="app.js?v=33"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -155,7 +155,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=32", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=33", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

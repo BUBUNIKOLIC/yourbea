@@ -63,10 +63,11 @@ prova('le direzioni e i metri che l\'app può chiedere esistono tutti', () => {
     if (!c) { guasto('nessuna clip per la direzione ' + r); continue; }
     if (!esiste(c)) guasto('manca la clip di direzione ' + c + ' (per ' + r + ' gradi)');
   }
-  // i punti cardinali, per quando non si sa come sei girato
-  ['a nord', 'a nord-est', 'a est', 'a sud-est', 'a sud', 'a sud-ovest', 'a ovest', 'a nord-ovest'].forEach((p) => {
-    const c = clip.direzione(0, false, p);
-    if (!esiste(c)) guasto('manca ' + c);
+  /* e quando NON si sa come sei girato non si chiede nessuna clip di
+     direzione: «ma io non so nord sud est dove sono» (Vince, 16/10). Le
+     clip card-a-nord restano incise, ma non le chiama più nessuno. */
+  ['a nord', 'a sud-ovest', null].forEach((p) => {
+    if (clip.direzione(0, false, p)) guasto('ha chiesto un punto cardinale: ' + clip.direzione(0, false, p));
   });
   // i metri, di dieci in dieci
   for (let m = 5; m < 1000; m += 7) {
