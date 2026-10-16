@@ -22,6 +22,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Per leggere ad alta voce quello che hai davanti: cartelli delle strade, numeri dell'autobus, citofoni, menu ed etichette. La fotocamera si accende solo quando dici «leggi», la fotografia resta nel telefono e non viene salvata.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Per avvisare chi scegli tu dicendo solo il suo nome: il numero lo prende dalla tua rubrica, così non devi scriverlo.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

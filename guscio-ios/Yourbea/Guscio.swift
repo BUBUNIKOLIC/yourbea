@@ -12,14 +12,22 @@
        deve cercare sullo schermo.
     3. L'AUDIO IN SOTTOFONDO. Le clip di Alice continuano con lo schermo
        spento e in cuffia.
+    4. LEGGERE QUELLO CHE LA FOTOCAMERA HA DAVANTI. Cartelli, numeri
+       dell'autobus, citofoni, menu: il riconoscimento del testo sta dentro
+       iOS (Vision), quindi è gratis, funziona senza rete e nessuna
+       fotografia esce dal telefono.
 
-    Il guscio apre quattro porte alla pagina, e niente altro:
+    Il guscio apre queste porte alla pagina, e niente altro:
        window.urbeaHaPosizione    c'è il GPS nativo
        window.urbeaPosizione()    il guscio la chiama a ogni passo
        window.urbeaAscolta()      apri il microfono, una frase
        window.urbeaChiudiAscolto()
        window.urbeaComando()      il guscio la chiama con la frase capita
        window.urbeaDiario()       la pagina scrive, il guscio stampa nel log
+       window.urbeaRubrica()      cerca un nome fra i contatti
+       window.urbeaSaLeggere      la fotocamera c'è: si può chiedere di leggere
+       window.urbeaLeggi()        uno scatto, e il testo che c'è dentro
+       window.urbeaLetto()        il guscio la chiama con le righe lette
 
     Nessuna regola dell'app sta qui dentro: se una frase va detta o no lo
     decide la pagina. Così il guscio si installa una volta e le correzioni
@@ -32,10 +40,12 @@ import CoreLocation
 import AVFoundation
 import Speech
 import Contacts
+import Vision
 
 let INDIRIZZO = "https://bubunikolic.github.io/yourbea/nuova/"
 
-final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHandler, CLLocationManagerDelegate {
+final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHandler, CLLocationManagerDelegate,
+                     AVCapturePhotoCaptureDelegate {
 
   private var pagina: WKWebView!
   private let gps = CLLocationManager()
@@ -137,6 +147,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaChiudiAscolto = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'chiudi' }); };
   window.urbeaDiario = function (t) { webkit.messageHandlers.guscio.postMessage({ cosa: 'diario', testo: String(t) }); };
   window.urbeaRubrica = function (nome) { webkit.messageHandlers.guscio.postMessage({ cosa: 'rubrica', nome: String(nome) }); };
+  window.urbeaSaLeggere = true;
+  window.urbeaLeggi = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'leggi' }); };
   """
 
   /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
@@ -173,6 +185,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       NSLog("YOURBEA %@", t)
       scrivi(t)
     case "rubrica": cercaInRubrica((d["nome"] as? String) ?? "")
+    case "leggi": leggiQuelloCheVedo()
     default: break
     }
   }
@@ -288,6 +301,198 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
 
   func locationManager(_ m: CLLocationManager, didFailWithError e: Error) {
     NSLog("YOURBEA gps: %@", e.localizedDescription)
+  }
+
+  // MARK: leggere quello che la fotocamera ha davanti
+
+  /* LEGGERE I CARTELLI — 16/10/2026.
+     Vince ha chiesto se servivano degli occhiali con la fotocamera. Per
+     LEGGERE no: la fotocamera ce l'ha il telefono, e il riconoscimento del
+     testo sta DENTRO iOS — Vision. Gratis, senza rete, senza chiavi di
+     nessuno e senza che una fotografia di un citofono esca dal telefono.
+     (Descrivere una SCENA è un'altra cosa e verrà dopo: quella vuole un
+     modello che guarda l'immagine, e un server che tenga la chiave.)
+
+     Qui si fa solo il mestiere del guscio: UNO scatto, il testo con la
+     posizione di ogni riga, e si consegna alla pagina. Cosa dire di quelle
+     righe — quale viene prima, quali sono rumore, quante dirne per volta —
+     lo decide `nuova/parti/lettura.js`, dove è provato senza telefono.
+
+     Nessuna anteprima sullo schermo: chi non vede non la guarderebbe, e chi
+     vede punta il telefono come punta un dito. */
+
+  private var macchina: AVCaptureSession?
+  private var scatto: AVCapturePhotoOutput?
+  private let codaFoto = DispatchQueue(label: "yourbea.fotocamera")
+  private var staLeggendo = false
+  private var chiestoAlle = Date()
+
+  private func leggiQuelloCheVedo() {
+    /* due scatti insieme non servono a niente e si rubano la fotocamera */
+    if staLeggendo { NSLog("YOURBEA lettura: ne sto gia facendo una"); return }
+    staLeggendo = true
+    chiestoAlle = Date()
+    scrivi("LEGGO: chiesto")
+
+    let permesso = AVCaptureDevice.authorizationStatus(for: .video)
+    if permesso == .notDetermined {
+      /* il permesso si chiede QUANDO serve, non all'apertura: chiesto subito
+         sembra una pretesa e la gente dice no. */
+      AVCaptureDevice.requestAccess(for: .video) { [weak self] concesso in
+        guard let self = self else { return }
+        if concesso { self.codaFoto.async { self.preparaEScatta() } }
+        else { self.rispondiLettura([], "niente-permesso") }
+      }
+      return
+    }
+    guard permesso == .authorized else { rispondiLettura([], "niente-permesso"); return }
+    codaFoto.async { self.preparaEScatta() }
+  }
+
+  private func preparaEScatta() {
+    if macchina == nil {
+      let s = AVCaptureSession()
+      /* NON si fa riconfigurare la sessione audio dalla fotocamera: lo fa
+         da sé, e si porterebbe dietro la voce e le clip — l'app resterebbe
+         muta per il tempo dello scatto, cioè proprio mentre deve leggere. */
+      s.automaticallyConfiguresApplicationAudioSession = false
+      s.beginConfiguration()
+      s.sessionPreset = .photo
+      guard let occhio = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+            let ingresso = try? AVCaptureDeviceInput(device: occhio),
+            s.canAddInput(ingresso) else {
+        s.commitConfiguration()
+        rispondiLettura([], "niente-fotocamera"); return
+      }
+      s.addInput(ingresso)
+      let fuori = AVCapturePhotoOutput()
+      guard s.canAddOutput(fuori) else {
+        s.commitConfiguration()
+        rispondiLettura([], "niente-fotocamera"); return
+      }
+      s.addOutput(fuori)
+      s.commitConfiguration()
+      /* messa a fuoco continua e al centro: il telefono lo si punta, e
+         quello che si vuole leggere sta in mezzo. */
+      if (try? occhio.lockForConfiguration()) != nil {
+        if occhio.isFocusPointOfInterestSupported { occhio.focusPointOfInterest = CGPoint(x: 0.5, y: 0.5) }
+        if occhio.isFocusModeSupported(.continuousAutoFocus) { occhio.focusMode = .continuousAutoFocus }
+        if occhio.isExposurePointOfInterestSupported { occhio.exposurePointOfInterest = CGPoint(x: 0.5, y: 0.5) }
+        if occhio.isExposureModeSupported(.continuousAutoExposure) { occhio.exposureMode = .continuousAutoExposure }
+        occhio.unlockForConfiguration()
+      }
+      macchina = s; scatto = fuori
+    }
+    guard let s = macchina, let fuori = scatto else { rispondiLettura([], "niente-fotocamera"); return }
+    if !s.isRunning { s.startRunning() }
+
+    /* MEZZO SECONDO PRIMA DI SCATTARE. Appena accesa, la fotocamera è
+       sfocata e scura: lo scatto immediato dava una foto da cui Vision non
+       tira su niente, e la persona sentiva «non riesco a leggere niente»
+       con il cartello sotto il naso. */
+    codaFoto.asyncAfter(deadline: .now() + 0.55) { [weak self] in
+      guard let self = self, self.staLeggendo else { return }
+      /* il JPEG, non l'HEIF: è quello che si riapre dappertutto senza
+         sorprese, e la foto non la salva nessuno — vive un secondo. */
+      let impostazioni = fuori.availablePhotoCodecTypes.contains(.jpeg)
+        ? AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
+        : AVCapturePhotoSettings()
+      /* al buio, senza luce non c'è niente da leggere, e chi non vede non
+         può accorgersi che è buio: decide il telefono. */
+      if fuori.supportedFlashModes.contains(.auto) { impostazioni.flashMode = .auto }
+      fuori.capturePhoto(with: impostazioni, delegate: self)
+    }
+  }
+
+  func photoOutput(_ uscita: AVCapturePhotoOutput, didFinishProcessingPhoto foto: AVCapturePhoto,
+                   error: Error?) {
+    codaFoto.async { [weak self] in
+      guard let s = self?.macchina, s.isRunning else { return }
+      /* la fotocamera si spegne appena ha scattato: resta accesa solo il
+         tempo di una lettura — la spia verde, la batteria, e il rispetto. */
+      s.stopRunning()
+    }
+    if let e = error {
+      NSLog("YOURBEA scatto: %@", e.localizedDescription)
+      rispondiLettura([], "non-riesco"); return
+    }
+    guard let dati = foto.fileDataRepresentation(),
+          let immagine = UIImage(data: dati), let cg = immagine.cgImage else {
+      rispondiLettura([], "non-riesco"); return
+    }
+    riconosci(cg, verso: versoCG(immagine.imageOrientation))
+  }
+
+  /* riconosci(): Vision, in italiano e in inglese — i cartelli di casa e i
+     menu dei posti per turisti. `usesLanguageCorrection` è quello che fa la
+     differenza fra «CORAZZIERI» e «C0RAZZlERl». */
+  private func riconosci(_ cg: CGImage, verso: CGImagePropertyOrientation) {
+    let richiesta = VNRecognizeTextRequest()
+    richiesta.recognitionLevel = .accurate
+    richiesta.recognitionLanguages = ["it-IT", "en-US"]
+    richiesta.usesLanguageCorrection = true
+    let lettore = VNImageRequestHandler(cgImage: cg, orientation: verso, options: [:])
+    do { try lettore.perform([richiesta]) }
+    catch {
+      NSLog("YOURBEA vision: %@", error.localizedDescription)
+      rispondiLettura([], "non-riesco"); return
+    }
+    let viste = (richiesta.results ?? [])
+    var righe: [[String: Any]] = []
+    for vista in viste {
+      guard let testo = vista.topCandidates(1).first?.string, !testo.isEmpty else { continue }
+      /* il riquadro di Vision è in frazioni dell'immagine con lo zero in
+         BASSO a sinistra; la pagina ragiona con lo zero in ALTO, come si
+         legge. Si gira qui, una volta sola. */
+      let b = vista.boundingBox
+      func tre(_ v: CGFloat) -> Double { return (v * 1000).rounded() / 1000 }
+      righe.append(["t": testo, "x": tre(b.origin.x), "y": tre(1 - b.origin.y - b.height),
+                    "w": tre(b.width), "h": tre(b.height)])
+    }
+    rispondiLettura(righe, nil)
+  }
+
+  private func versoCG(_ v: UIImage.Orientation) -> CGImagePropertyOrientation {
+    switch v {
+    case .up: return .up
+    case .down: return .down
+    case .left: return .left
+    case .right: return .right
+    case .upMirrored: return .upMirrored
+    case .downMirrored: return .downMirrored
+    case .leftMirrored: return .leftMirrored
+    case .rightMirrored: return .rightMirrored
+    @unknown default: return .up
+    }
+  }
+
+  /* rispondiLettura(): il testo torna alla pagina, e QUELLO CHE HA LETTO E
+     QUANTO CI HA MESSO restano scritti nel quaderno della camminata. Senza,
+     «non legge» e «legge una cosa sbagliata» sarebbero la stessa riga, e si
+     cercherebbe il difetto a indovinare. */
+  private func rispondiLettura(_ righe: [[String: Any]], _ guaio: String?) {
+    let quanto = Int(Date().timeIntervalSince(chiestoAlle) * 1000)
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.staLeggendo = false
+      var json = "[]"
+      if let d = try? JSONSerialization.data(withJSONObject: righe, options: []),
+         let t = String(data: d, encoding: .utf8) { json = t }
+      /* U+2028 e U+2029 stanno dentro un JSON e NON dentro il codice
+         JavaScript: una riga di cartello con quel carattere romperebbe la
+         chiamata, e la lettura finirebbe in silenzio. */
+      json = json.replacingOccurrences(of: "\u{2028}", with: " ")
+                 .replacingOccurrences(of: "\u{2029}", with: " ")
+      let testi = righe.compactMap { $0["t"] as? String }
+      if let g = guaio {
+        self.scrivi("LETTO niente in \(quanto) ms — guaio: \(g)")
+      } else {
+        self.scrivi("LETTO \(righe.count) righe in \(quanto) ms: " + testi.joined(separator: " | "))
+      }
+      NSLog("YOURBEA letto: %d righe in %d ms", righe.count, quanto)
+      let g = guaio == nil ? "null" : "\"\(guaio!)\""
+      self.allaPagina("window.urbeaLetto && window.urbeaLetto(\(json), \(quanto), \(g))")
+    }
   }
 
   // MARK: l'audio e il microfono

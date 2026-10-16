@@ -15,7 +15,7 @@ settings:
     # Il numero di build sale di uno a ogni pacchetto mandato ad Apple.
     # Su App Store Connect il 13/10 e' gia' salita la build 2 (versione 1.0.0),
     # e due pacchetti non possono avere lo stesso numero: si riparte da 3.
-    CURRENT_PROJECT_VERSION: "3"
+    CURRENT_PROJECT_VERSION: "4"
     SWIFT_VERSION: "5.0"
 targets:
   Yourbea:
@@ -49,6 +49,10 @@ targets:
         NSLocationWhenInUseUsageDescription: "Yourbea ti dice dove sei e cosa hai intorno: senza la posizione non può farlo."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Serve anche con lo schermo spento, perché l'app ti accompagna mentre cammini col telefono in tasca."
         NSContactsUsageDescription: "Per avvisare chi scegli tu dicendo solo il suo nome: il numero lo prende dalla tua rubrica, così non devi scriverlo."
+        # Il permesso si chiede solo quando si dice «leggi», e la frase deve
+        # dire la cosa vera: Apple rifiuta le spiegazioni generiche, e una
+        # frase generica non convince nemmeno la persona a dire sì.
+        NSCameraUsageDescription: "Per leggere ad alta voce quello che hai davanti: cartelli delle strade, numeri dell'autobus, citofoni, menu ed etichette. La fotocamera si accende solo quando dici «leggi», la fotografia resta nel telefono e non viene salvata."
         NSMicrophoneUsageDescription: "Per capire quando dici «dove sono», «approfondisci» o «portami a»."
         NSSpeechRecognitionUsageDescription: "Quello che dici viene trascritto per capire la richiesta: «dove sono», «approfondisci», «portami a via Roma»."
         ITSAppUsesNonExemptEncryption: false
