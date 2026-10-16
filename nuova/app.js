@@ -324,6 +324,11 @@
   try { casa = localStorage.getItem('yourbea2-casa') || ''; } catch (e) {}
   var ioSonoIo = '';
   try { ioSonoIo = localStorage.getItem('yourbea2-io') || ''; } catch (e) {}
+  /* chi ha detto «lascia perdere» non se lo sente richiedere mai più:
+     sta in una chiave sua, perché nel posto del nome diventerebbe la voce
+     che dice «Ciao meno». */
+  var nienteNome = false;
+  try { nienteNome = localStorage.getItem('yourbea2-niente-nome') === 'si'; } catch (e) {}
   var dettatura = Dettatura();
 
   /* LEGGERE QUELLO CHE LA FOTOCAMERA HA DAVANTI. Lo scatto e il
@@ -425,6 +430,11 @@
   })();
   var inAttesaDi = null;       // { cosa:'numero', nome } | { cosa:'conferma', nome, numero }
   var emergenza = Emergenza({ contatto: contatto, io: ioSonoIo });
+  /* COME si dicono le cose: parti/modi.js (9 prove). Cambia la parolina
+     davanti ai cenni, alle scene e ai passaggi — mai ai fatti, mai alle
+     frasi che servono a girare. «Più parole, un linguaggio più articolato,
+     potrebbe fare più compagnia» (Vince, 16/10). */
+  var modi = Modi({ nome: ioSonoIo });
   var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       diario: diario });
@@ -595,6 +605,71 @@
   function dalDettato(t) {
     var r = dettatura.capisci(t);
 
+    /* STO ASPETTANDO IL NOME (prima volta che si apre).
+       Tre modi di rispondere, e tutti e tre vanno bene:
+       - «Vince», secco: una o due parole e nient'altro;
+       - «mi chiamo Vince»: lo capisce già parti/dettatura.js, e passa dal
+         ramo r.cosa === 'io' qui sotto;
+       - «lascia perdere»: si va avanti senza nome, e non si richiede più.
+       Se invece arriva un comando vero — «portami a casa», «dove sono» —
+       vince il comando: chi chiede una cosa non vuole rispondere a una
+       domanda. L'emergenza non passa nemmeno da qui: è più in alto. */
+    /* HO CHIESTO COME STA, E HA RISPOSTO. Due parole e si va al lavoro:
+       non è una conversazione. Se invece di rispondere chiede una cosa,
+       vince la cosa — l'attesa cade e il comando passa. */
+    if (inAttesaDi && inAttesaDi.cosa === 'come-stai') {
+      var tono = null;
+      if (/\b(bene|benissimo|tutto bene|ottimamente|alla grande|tutto ok|tutto a posto)\b/.test(t)) tono = 'bene';
+      else if (/\b(male|malissimo|non bene|un disastro|sto male)\b/.test(t)) tono = 'male';
+      else if (/\b(insomma|cosi cosi|così così|potrebbe andare meglio|non c'e male|non c'è male)\b/.test(t)) tono = 'insomma';
+      inAttesaDi = null;
+      if (tono) {
+        voce.parla(modi.comeSta(tono), { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      /* non era una risposta: era un comando. Si prosegue senza dire niente. */
+    }
+    if (inAttesaDi && inAttesaDi.cosa === 'nome' && (!r || r.cosa === 'io')) {
+      var poi = inAttesaDi.poi;
+      if (/^(?:lascia perdere|niente|non importa|preferisco no|non voglio|no)$/.test(t)) {
+        inAttesaDi = null;
+        nienteNome = true;
+        try { localStorage.setItem('yourbea2-niente-nome', 'si'); } catch (e) {}
+        ioSonoIo = '';
+        voce.parla('Va bene, niente nome. Se cambi idea dimmi: io sono, e il tuo nome.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        apertura(poi);
+        return true;
+      }
+      var secco = (r && r.cosa === 'io') ? r.nome : null;
+      if (!secco) {
+        var m = String(t || '').trim().match(/^([a-zà-ÿ]{2,})(?:\s+([a-zà-ÿ]{2,}))?$/i);
+        if (m) secco = maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
+      }
+      if (secco) {
+        inAttesaDi = null;
+        ioSonoIo = secco;
+        try { localStorage.setItem('yourbea2-io', ioSonoIo); } catch (e) {}
+        emergenza.chiSono(ioSonoIo);
+        modi.conNome(ioSonoIo);
+        voce.parla('Piacere, ' + ioSonoIo + '.', { livello: voce.GUIDA, ancheSeUguale: true });
+        apertura(poi);
+        return true;
+      }
+      /* non ho capito: si richiede una volta, e poi si va avanti comunque —
+         nessuno resta chiuso fuori dall'app per un nome */
+      if (inAttesaDi.giaChiesto) {
+        inAttesaDi = null;
+        apertura(poi);
+        return true;
+      }
+      inAttesaDi = { cosa: 'nome', poi: poi, giaChiesto: true };
+      voce.parla('Non ho capito il nome. Dimmelo di nuovo, da solo, oppure dì: lascia perdere.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (inAttesaDi && inAttesaDi.cosa === 'nome') inAttesaDi = null;   // è arrivato un comando: vince lui
+
     // sto aspettando il numero, o un sì
     if (inAttesaDi && r && r.cosa === 'numero' && inAttesaDi.cosa === 'numero') {
       inAttesaDi = { cosa: 'conferma', nome: inAttesaDi.nome, numero: r.numero };
@@ -630,6 +705,7 @@
       ioSonoIo = r.nome;
       try { localStorage.setItem('yourbea2-io', ioSonoIo); } catch (e) {}
       emergenza.chiSono(ioSonoIo);
+      modi.conNome(ioSonoIo);
       voce.parla('Ciao ' + ioSonoIo + '. Nel messaggio d\'aiuto dirò che sei tu.', { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
@@ -852,8 +928,13 @@
     ultimaParola = Date.now();
     laStradaVienePrima(d);
     var liv = d.livello === 'guida' ? voce.GUIDA : (d.livello === 'emergenza' ? voce.EMERGENZA : voce.CENNO);
-    var preso = voce.parla(d.testo, { clip: clipDi(d), livello: liv });
-    if (!preso) { diario('non detta: ' + String(d.testo).slice(0, 40)); return; }
+    /* LE PAROLE INTORNO. Solo cenni, scene e passaggi: modi.veste() lascia
+       perdere da sé tutto il resto. I fatti e il loro ordine non cambiano,
+       quindi le clip incise restano allineate — e la clip, se c'è, la dice
+       per intero lei: l'attacco va solo sul testo della voce di sistema. */
+    var detto = modi.veste(d.tipo, d.testo);
+    var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo });
+    if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
        ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha
        perso il filo di dove si trova — e chi non vede non può recuperarlo
@@ -1479,11 +1560,44 @@
        chiedere: o glielo si dice, o non esiste. E si chiama per nome, se
        ce l'ha detto — cambia tutto fra un apparecchio e qualcuno che ti
        accompagna. */
-    var ciao = ioSonoIo ? ('Ciao ' + ioSonoIo + '. ') : 'Ciao. ';
-    voce.parla(quale === 'cultura'
-      ? ciao + 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
-      : ciao + 'Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c\'è intorno? O ti cerco un negozio?',
+    /* IL NOME SI CHIEDE, NON SI ASPETTA. Il nome c'era già — serve al
+       messaggio d'aiuto — ma si poteva darlo solo dicendo «io sono Vince»,
+       e nessuno indovina una frase che non gli è stata detta. Così non lo
+       aveva nessuno, e la voce diceva «Ciao.» a tutti. Lo si chiede la
+       prima volta e basta: dalla seconda non si chiede più niente. */
+    if (!ioSonoIo && !nienteNome) { chiediIlNome(quale); return; }
+    apertura(quale);
+  }
+
+  /* chiediIlNome(): una domanda sola, e si può non rispondere. */
+  function chiediIlNome(quale) {
+    inAttesaDi = { cosa: 'nome', poi: quale };
+    voce.parla('Ciao. Prima di cominciare: come ti chiami? Dimmi solo il tuo nome. ' +
+               'Se preferisci non dirmelo, dì: lascia perdere.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+    mostra({ titolo: 'Come ti chiami?', testo: 'Dillo a voce, oppure dì «lascia perdere».', dove: '—', gradino: '' });
+  }
+
+  function apertura(quale) {
+    /* IL SALUTO È VARIO, IL RESTO NO. «Solo devi creare un eloquio più
+       vario» (Vince, 16/10): cambia il modo di salutare — l'ora del giorno,
+       il nome, il «come stai» — e non cambia una parola di quello che l'app
+       dice dopo, che è l'elenco di cosa può fare. Chi riapre dopo meno di
+       sei ore non è appena arrivato: si dice «bentornato». */
+    var tornato = false;
+    try {
+      var prima = Number(localStorage.getItem('yourbea2-ultima-apertura') || 0);
+      tornato = prima > 0 && (Date.now() - prima) < 6 * 3600 * 1000;
+      localStorage.setItem('yourbea2-ultima-apertura', String(Date.now()));
+    } catch (e) {}
+    var sal = modi.saluto({ tornato: tornato });
+    voce.parla(sal.testo + ' ' + (quale === 'cultura'
+      ? 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
+      : 'Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c\'è intorno? O ti cerco un negozio?'),
       { livello: voce.GUIDA });
+    /* REGOLA C di parti/modi.js: se ha chiesto come sta, si sta a sentire.
+       Una domanda a cui l'app non reagisce è peggio del silenzio. */
+    if (sal.chiede) inAttesaDi = { cosa: 'come-stai' };
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
   }
 
@@ -1493,7 +1607,13 @@
     acceso = !acceso;
     this.textContent = acceso ? 'Ferma' : 'Avvia';
     if (acceso) { posizione.comincia(); apriAscolto(); }
-    else { voce.ferma(); chiudiAscolto(); ascoltoVoluto = false; }
+    else {
+      voce.ferma(); chiudiAscolto(); ascoltoVoluto = false;
+      /* CHI NON VEDE SPEGNE L'APP E RESTA IN STRADA. Un «a dopo» dice che
+         si è fermata lei, su richiesta, e non che è caduta: senza una
+         parola, il silenzio dopo un tasto è indistinguibile da un guasto. */
+      voce.parla(modi.congedo(), { livello: voce.GUIDA, ancheSeUguale: true });
+    }
     diario(acceso ? 'ACCESO' : 'SPENTO');
   });
   el('parla').addEventListener('click', function () {

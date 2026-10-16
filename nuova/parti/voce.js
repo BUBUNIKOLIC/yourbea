@@ -156,7 +156,7 @@ function MotoreVoce(opzioni) {
     scorda();
     parlando = true;
     livelloInCorso = f.livello;
-    ultimoTesto = normalizza(f.testo);
+    ultimoTesto = normalizza(f.uguale || f.testo);
     ultimoQuando = ora();
     microfono.chiudi();
     diario('PARLA (' + f.livello + '): ' + String(f.testo).slice(0, 60));
@@ -237,16 +237,23 @@ function MotoreVoce(opzioni) {
     var clip = p.clip || null;
     var ancheSeUguale = !!p.ancheSeUguale;
     var valida = typeof p.valida === 'function' ? p.valida : null;
+    /* COSA SI CONFRONTA, PER LA REGOLA 5. Da quando parti/modi.js cambia la
+       parolina davanti ai cenni — «Senti, sulla destra…», «Ecco, sulla
+       destra…» — la stessa frase arriva qui scritta in due modi, e il
+       confronto sul testo intero non la riconoscerebbe più: tornerebbe il
+       difetto di via Marconi, ripetuta perché il paragone includeva un
+       pezzo che cambiava. Chi veste una frase passa qui quella nuda. */
+    var daConfrontare = p.uguale || testo;
 
     if (!testo) return false;
 
     // REGOLA 5: la stessa frase non due volte
-    if (!ancheSeUguale && normalizza(testo) === ultimoTesto && ora() - ultimoQuando < DOPPIONE) {
+    if (!ancheSeUguale && normalizza(daConfrontare) === ultimoTesto && ora() - ultimoQuando < DOPPIONE) {
       diario('GIÀ DETTA: ' + String(testo).slice(0, 40));
       return false;
     }
 
-    if (!parlando) { avvia({ testo: testo, clip: clip, livello: livello }); return true; }
+    if (!parlando) { avvia({ testo: testo, clip: clip, livello: livello, uguale: daConfrontare }); return true; }
 
     // REGOLA 4: più importante interrompe; pari o meno importante aspetta;
     // solo un cenno, che è ripetibile, si butta se non c'è posto
@@ -254,14 +261,14 @@ function MotoreVoce(opzioni) {
       var interrotta = null;
       if (livelloInCorso >= GUIDA && ultimoTesto) interrotta = null;  // le guide non si riprendono
       zittisci();
-      avvia({ testo: testo, clip: clip, livello: livello });
+      avvia({ testo: testo, clip: clip, livello: livello, uguale: daConfrontare });
       return true;
     }
     for (var i = 0; i < coda.length; i++) {
-      if (normalizza(coda[i].testo) === normalizza(testo)) { diario('GIÀ IN CODA'); return true; }
+      if (normalizza(coda[i].uguale || coda[i].testo) === normalizza(daConfrontare)) { diario('GIÀ IN CODA'); return true; }
     }
     if (livello === CENNO && coda.length >= CODA_MAX) { diario('CODA PIENA, cenno buttato'); return false; }
-    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida });
+    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida, uguale: daConfrontare });
     coda.sort(function (a, b) { return b.livello - a.livello; });
     if (coda.length > CODA_MAX) coda.length = CODA_MAX;
     diario('IN CODA (' + livello + '): ' + String(testo).slice(0, 40));

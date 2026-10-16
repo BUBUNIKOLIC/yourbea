@@ -312,6 +312,23 @@ prova('una frase corta resta col suo tetto di nove secondi', () => {
 });
 
 /* ==================== il conto ==================== */
+prova('la stessa frase, vestita in due modi, non si dice due volte', () => {
+  const m = Mondo();
+  const nuda = 'Sulla destra, a 30 metri, la farmacia.';
+  const uno = m.motore.parla('Senti, sulla destra, a 30 metri, la farmacia.', { uguale: nuda });
+  m.passano(500);
+  const due = m.motore.parla('Ecco, sulla destra, a 30 metri, la farmacia.', { uguale: nuda });
+  if (!uno) guasto('la prima non è stata presa');
+  if (due) guasto('ha ridetto la stessa cosa cambiando solo l\'attacco');
+});
+
+prova('senza «uguale» si confronta il testo, come sempre', () => {
+  const m = Mondo();
+  if (!m.motore.parla('Sei in via Rossi.')) guasto('la prima non è stata presa');
+  m.passano(500);
+  if (m.motore.parla('Sei in via Rossi.')) guasto('ha ridetto la stessa frase');
+});
+
 (async () => {
   for (const p of prove) {
     errori = [];
@@ -319,7 +336,13 @@ prova('una frase corta resta col suo tetto di nove secondi', () => {
     if (errori.length) { console.log('NO  ' + p.nome); errori.forEach((e) => console.log('      ' + e)); fatti.push(false); }
     else { console.log('SI  ' + p.nome); fatti.push(true); }
   }
-  const passate = fatti.filter(Boolean).length;
+  
+/* LA FRASE VESTITA RESTA UN DOPPIONE. Da quando parti/modi.js cambia la
+   parolina davanti, la stessa frase arriva scritta in due modi: se il
+   confronto guardasse il testo intero tornerebbe il difetto di via Marconi,
+   ripetuta perché nel paragone c'era un pezzo che cambiava. */
+
+const passate = fatti.filter(Boolean).length;
   console.log('');
   console.log(passate + '/' + fatti.length + ' prove del motore nuovo');
   process.exit(passate === fatti.length ? 0 : 1);
