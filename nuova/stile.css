@@ -1,154 +1,329 @@
-/* YOURBEA — la veste, rifatta il 15/10/2026
-   Pensata prima per chi non vede: niente da cercare, caratteri grandi,
-   contrasto alto, due tasti grandi in basso sempre nello stesso posto.
-   E per chi vede: scura, pulita, hi-tech, come piace a Vince.
+/* YOURBEA — la veste, rifatta il 16/10/2026
+   ============================================================
+   Due persone guardano questo schermo: chi non vede, che lo tocca senza
+   guardarlo, e chi gli sta accanto. Quindi niente e' decorazione pura.
 
-   Le misure non sono gusto: 17px di base perché si legge camminando, i tasti
-   64px perché si premono senza guardare, il riquadro del parlato grande
-   perché è la cosa che conta. */
+   LE MISURE NON SONO GUSTO:
+   - 17px di base perche' si legge camminando, e si puo' alzare a 21 e 26
+     dal cassetto («testo piu' grande»);
+   - i tasti sono alti 72 punti e larghi quanto lo schermo quando contano:
+     si premono col pollice, senza guardare, magari sotto la pioggia. Vince
+     il 16/10: «i pulsanti piu' grandi»;
+   - il riquadro del parlato e' la cosa piu' grande della pagina, perche' e'
+     quello che l'app sta dicendo;
+   - contrasto alto su fondo scuro: fuori, col sole, il grigio su grigio
+     sparisce.
+
+   E NIENTE DI QUESTO CAMBIA L'ORDINE DI LETTURA: il lettore di schermo
+   segue la pagina, non il foglio di stile. */
 
 :root{
-  --fondo:#070A0E;
-  --fondo2:#0D1218;
-  --carta:rgba(22,27,34,.78);
-  --filo:rgba(255,255,255,.10);
-  --inchiostro:#E9E8E4;
-  --spento:#8F98A3;
+  --fondo:#06090D;
+  --fondo2:#0C1118;
+  --carta:rgba(20,26,34,.82);
+  --carta2:rgba(28,35,45,.9);
+  --filo:rgba(255,255,255,.12);
+  --filo2:rgba(255,255,255,.22);
+  --inchiostro:#EFEEEA;
+  --spento:#98A2AE;
   --neon:#5BE3FF;
   --oro:#E7C65A;
   --rosso:#E0513F;
   --verde:#4FD38A;
-  --tondo:18px;
+  --tondo:20px;
   --base:17px;
+  --tasto:72px;
+  /* la costa italiana vera, 87 punti, dai dati pubblici: sta in un posto solo */
+  --italia:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 831 1000'%3E%3Cpath d='M621.0 846.5L595.5 921.5L606.1 951.0L591.2 1000.0L537.1 964.1L501.1 953.8L402.3 905.4L412.2 856.5L495.0 865.2L567.3 854.8L621.0 846.5ZM174.2 562.7L216.7 630.3L206.7 756.3L174.5 750.3L145.6 782.1L118.8 756.9L116.0 641.9L99.8 587.4L138.8 592.2L174.2 562.7ZM398.4 33.1L499.6 57.7L492.0 104.7L508.9 145.2L452.6 131.4L395.0 165.2L398.9 212.5L390.3 239.6L413.5 288.1L479.9 336.1L515.5 414.9L594.3 491.7L649.7 491.1L667.0 512.1L647.1 531.1L710.5 565.6L762.5 594.4L823.3 644.1L830.6 661.9L817.4 696.0L778.1 651.5L716.5 635.8L686.7 697.4L737.9 732.8L729.5 782.5L699.9 788.1L662.1 869.9L632.6 877.2L632.9 848.1L647.3 797.0L662.7 776.6L635.1 721.4L613.4 673.3L584.1 661.5L563.1 620.4L517.6 603.0L487.0 564.7L434.6 558.6L379.3 515.5L314.5 453.5L266.4 398.6L244.3 304.5L209.1 293.4L151.5 261.9L118.9 274.8L77.9 319.0L48.5 326.0L56.6 284.6L18.2 272.6L0.0 198.8L24.5 169.8L3.7 134.0L6.6 107.1L37.1 127.5L71.2 123.0L110.9 90.7L123.2 105.8L156.9 102.8L172.3 64.3L224.7 76.3L255.9 60.2L261.5 21.1L304.4 34.7L312.6 16.6L382.6 0.0L398.4 33.1Z' fill='none' stroke='rgb(91,227,255)' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{
   background:
-    radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.10) 0%, transparent 56%),
-    radial-gradient(900px 600px at 88% 8%, rgba(231,198,90,.07) 0%, transparent 52%),
-    linear-gradient(180deg,var(--fondo2) 0%, var(--fondo) 100%);
+    radial-gradient(1200px 760px at 50% -14%, rgba(91,227,255,.13) 0%, transparent 58%),
+    radial-gradient(900px 620px at 92% 6%, rgba(231,198,90,.09) 0%, transparent 54%),
+    linear-gradient(180deg,var(--fondo2) 0%, var(--fondo) 62%);
   background-attachment:fixed;
   color:var(--inchiostro);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   font-size:var(--base);
   line-height:1.5;
-  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 110px);
+  -webkit-font-smoothing:antialiased;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 128px);
 }
 body[data-testo="grande"]{--base:21px}
 body[data-testo="enorme"]{--base:26px}
 
+/* chi naviga col tasto o col controllo interruttori deve VEDERE dov'è */
+:focus-visible{outline:3px solid var(--neon);outline-offset:3px;border-radius:12px}
+
 /* ---------- l'insegna ---------- */
-.testa{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.marchio{font-family:"Bodoni Moda",Georgia,serif;font-size:22px;letter-spacing:.14em;color:var(--oro)}
-.stato{font-size:12px;color:var(--spento);text-align:right;max-width:58%}
+.testa{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.marchio{
+  font-family:"Bodoni Moda",Georgia,serif;font-size:21px;letter-spacing:.2em;
+  color:var(--oro);text-shadow:0 0 26px rgba(231,198,90,.25)
+}
+.stato{
+  font-size:12px;color:var(--spento);text-align:right;max-width:58%;
+  background:rgba(255,255,255,.04);border:1px solid var(--filo);
+  padding:7px 12px;border-radius:999px
+}
 .stato b{color:var(--verde);font-weight:600}
 .stato.male b{color:var(--rosso)}
 
 /* ---------- il riquadro del parlato: la cosa più importante ---------- */
 .dice{
-  background:var(--carta);border:1px solid var(--filo);border-radius:var(--tondo);
-  padding:20px 20px 18px;min-height:168px;
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-  box-shadow:0 18px 44px rgba(0,0,0,.45);
+  position:relative;
+  background:linear-gradient(180deg, var(--carta2), var(--carta));
+  border:1px solid var(--filo);border-radius:var(--tondo);
+  padding:22px 20px 20px;min-height:184px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden;
+}
+/* un filo d'oro in cima: si vede che è il riquadro che parla */
+.dice::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg, transparent, var(--oro), transparent);opacity:.7
 }
 .dice .dove{
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--oro);font-weight:600
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);font-weight:600
 }
-.dice .cosa{font-family:"Bodoni Moda",Georgia,serif;font-size:calc(var(--base) * 1.7);line-height:1.2;margin:8px 0 10px}
+.dice .cosa{
+  font-family:"Bodoni Moda",Georgia,serif;
+  font-size:calc(var(--base) * 1.85);line-height:1.15;margin:10px 0 12px;
+  letter-spacing:.01em
+}
 .dice .corpo{color:var(--inchiostro);font-size:var(--base)}
 .dice .corpo.attesa{color:var(--spento);font-style:italic}
-.dice .gradino{margin-top:12px;font-size:13px;color:var(--spento)}
-
-/* ---------- la mappa, solo per chi guarda ---------- */
-#mappa{width:100%;height:46vh;min-height:220px;margin-top:14px;border:1px solid var(--filo);
-  border-radius:var(--tondo);overflow:hidden;background:#0E1013}
-body[data-modo="utilita"] #mappa{display:none}
-
-/* ---------- i tasti in basso, sempre nello stesso posto ---------- */
-.barra{
-  position:fixed;left:0;right:0;bottom:0;z-index:30;
-  display:flex;gap:10px;align-items:center;justify-content:center;
-  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
-  background:linear-gradient(180deg, rgba(7,10,14,0) 0%, rgba(7,10,14,.92) 38%, var(--fondo) 100%);
+.dice .gradino{
+  margin-top:16px;font-size:13.5px;color:var(--spento);
+  border-top:1px solid var(--filo);padding-top:12px
 }
+.dice .gradino:empty{display:none}
+
+/* ---------- i tasti ---------- */
 .tasto{
-  border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);
-  border-radius:16px;padding:16px 18px;font-size:var(--base);font-weight:600;
-  min-height:64px;min-width:64px;cursor:pointer;
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--filo2);color:var(--inchiostro);
+  border-radius:16px;padding:16px 18px;font-size:16px;font-weight:600;
+  min-height:60px;cursor:pointer;
+  transition:transform .08s ease, background .15s ease;
 }
-.tasto:active{transform:translateY(1px)}
+.tasto:active{transform:translateY(1px);background:rgba(255,255,255,.1)}
 .tasto.vai{background:var(--oro);border-color:var(--oro);color:#241C08;flex:1 1 auto}
-.tasto.tondo{width:64px;height:64px;padding:0;font-size:24px;display:grid;place-items:center;border-radius:50%}
-.tasto.sos{background:linear-gradient(180deg,var(--rosso),#B81F10);border-color:#B81F10;color:#fff}
+.tasto.tondo{
+  width:var(--tasto);height:var(--tasto);padding:0;font-size:27px;
+  display:grid;place-items:center;border-radius:50%
+}
+.tasto.sos{
+  background:radial-gradient(120% 120% at 50% 0%, #F0624E, #B81F10);
+  border-color:#8E1A0D;color:#fff;
+  box-shadow:0 10px 26px rgba(224,81,63,.35)
+}
 .tasto.ascolta{background:var(--neon);border-color:var(--neon);color:#04222B}
+/* i due tasti grossi: alti come il pollice, larghi quanto si può */
+.tasto.grande{
+  flex:1 1 240px;min-height:var(--tasto);
+  font-size:calc(var(--base) * 1.12);font-weight:700;border-radius:18px
+}
 
-/* ---------- il cassetto ---------- */
-.cassetto{display:none;gap:10px;flex-wrap:wrap;margin-top:14px}
+.barra{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  display:flex;gap:12px;align-items:center;
+  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:linear-gradient(180deg, rgba(6,9,13,0), rgba(6,9,13,.92) 38%);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+}
+.barra .tasto.vai{min-height:var(--tasto);font-size:17px}
+
+.cassetto{display:none;gap:10px;flex-wrap:wrap;margin-top:16px}
 .cassetto.aperto{display:flex}
 .cassetto .tasto{flex:1 1 44%}
+.et{font-size:13px;color:var(--spento);letter-spacing:.04em}
 
-/* ---------- la porta d'ingresso ---------- */
-/* [hidden] da solo non basta: display:flex qui sotto lo batte, e la porta
-   restava sopra tutto anche dopo aver scelto — l'app parlava sotto a uno
-   schermo che non cambiava mai. Trovato il 15/10 guardando la pagina. */
+/* ---------- la porta: due scelte, e basta ---------- */
 #porta[hidden]{display:none}
-#porta{position:fixed;inset:0;z-index:4000;background:var(--fondo);
+#porta{
+  position:fixed;inset:0;z-index:4000;
+  background:
+    radial-gradient(900px 600px at 50% -10%, rgba(231,198,90,.14), transparent 60%),
+    radial-gradient(800px 560px at 50% 110%, rgba(91,227,255,.12), transparent 60%),
+    var(--fondo);
   display:flex;flex-direction:column;justify-content:center;gap:14px;
-  padding:calc(env(safe-area-inset-top,0px) + 24px) 18px calc(env(safe-area-inset-bottom,0px) + 24px)}
-#porta h1{font-family:"Bodoni Moda",Georgia,serif;font-size:30px;letter-spacing:.1em;color:var(--oro);margin:0 0 2px}
-#porta p.sotto{color:var(--spento);margin:0 0 18px;font-size:15px}
-.scelta{
-  display:block;width:100%;text-align:left;border:2px solid var(--filo);
-  background:var(--carta);color:var(--inchiostro);border-radius:20px;
-  padding:22px;font-size:var(--base);cursor:pointer;min-height:112px
+  padding:calc(env(safe-area-inset-top,0px) + 26px) 20px calc(env(safe-area-inset-bottom,0px) + 26px);
+  overflow:auto;
 }
-.scelta b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:26px;margin-bottom:6px}
-.scelta.utilita{border-color:rgba(91,227,255,.45)}
+#porta h1{
+  font-family:"Bodoni Moda",Georgia,serif;font-size:34px;letter-spacing:.22em;
+  color:var(--oro);margin:0 0 4px;text-shadow:0 0 36px rgba(231,198,90,.3)
+}
+#porta p.sotto{color:var(--spento);margin:0 0 10px;font-size:15.5px;max-width:34em}
+.scelta{
+  position:relative;text-align:left;width:100%;
+  background:linear-gradient(180deg, rgba(28,35,45,.92), rgba(18,23,30,.92));
+  border:1px solid var(--filo);border-radius:22px;
+  padding:22px 20px 20px 24px;color:var(--inchiostro);cursor:pointer;
+  box-shadow:0 18px 44px rgba(0,0,0,.45);
+  transition:transform .09s ease, border-color .15s ease;
+}
+.scelta:active{transform:translateY(1px)}
+/* la striscia di colore sul fianco: si capisce al volo quale è quale */
+.scelta::before{
+  content:"";position:absolute;left:0;top:14px;bottom:14px;width:5px;border-radius:0 5px 5px 0
+}
+.scelta b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:29px;margin-bottom:8px}
+.scelta span{color:#BCC4CE;font-size:15.5px;display:block}
+.scelta.utilita{border-color:rgba(91,227,255,.4)}
+.scelta.utilita::before{background:var(--neon);box-shadow:0 0 22px rgba(91,227,255,.5)}
 .scelta.utilita b{color:var(--neon)}
-.scelta.turismo{border-color:rgba(231,198,90,.45)}
+.scelta.turismo{border-color:rgba(231,198,90,.4)}
+.scelta.turismo::before{background:var(--oro);box-shadow:0 0 22px rgba(231,198,90,.45)}
 .scelta.turismo b{color:var(--oro)}
-.scelta span{color:var(--spento);font-size:15px}
 
-/* ---------- quello che l'app non dice, lo legge il lettore di schermo ---------- */
+/* quello che il lettore di schermo legge e nessuno vede */
 .muto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 @media (prefers-reduced-motion:no-preference){
-  .dice{transition:box-shadow .3s ease}
+  .dice{animation:entra .28s ease both}
+  @keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 }
 
 /* ---------- la mappa ----------
-   Non è la protagonista: sta sotto il riquadro del parlato, alta meno di
-   mezzo schermo, e sparisce finché non c'è una posizione da mostrare.
-   Serve a chi accompagna chi non vede, e al turista che vuole vedere dov'è
-   la cosa che l'app gli sta raccontando. */
+   Non è la protagonista: sta sotto il riquadro del parlato e sparisce
+   finché non c'è una posizione. Serve a chi accompagna chi non vede, e al
+   turista che vuole vedere dov'è la cosa che l'app gli racconta. */
 #mappa{
-  height:44vh;min-height:280px;max-height:520px;margin:16px 0 0;
+  width:100%;height:46vh;min-height:240px;max-height:520px;margin-top:16px;
   border:1px solid var(--filo);border-radius:var(--tondo);overflow:hidden;
-  background:#0B0F14;
-  box-shadow:0 0 0 1px rgba(91,227,255,.10), 0 18px 44px rgba(0,0,0,.5);
+  background:#0A0E13;
+  box-shadow:0 0 0 1px rgba(91,227,255,.1), 0 20px 48px rgba(0,0,0,.5);
 }
 #mappa.vuota{display:none}
-/* le tessere arrivano chiare e stonano col nero: si scuriscono un po' */
-#mappa .leaflet-tile{filter:brightness(.72) saturate(.82) contrast(1.04)}
+body[data-modo="utilita"] #mappa{display:none}
+/* le tessere arrivano bianche e in mezzo al nero accecano. Si rovesciano:
+   invert + hue-rotate rimette i colori al posto giusto e dà una mappa
+   scura vera, coi nomi chiari sul fondo — e di notte non si abbaglia
+   nessuno. */
+#mappa .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.85)}
 #mappa .leaflet-control-zoom a{
   background:#161B22;color:var(--inchiostro);border-color:var(--filo);
-  width:38px;height:38px;line-height:38px;font-size:20px
+  width:40px;height:40px;line-height:40px;font-size:21px
 }
 #mappa .leaflet-control-zoom a:hover{background:#1F252E}
 #mappa .leaflet-control-attribution{
-  background:rgba(11,15,20,.72);color:var(--spento);font-size:10px
+  background:rgba(10,14,19,.75);color:var(--spento);font-size:10px
 }
 #mappa .leaflet-control-attribution a{color:#9FB6C4}
 
-/* ---------- il tasto di casa ----------
-   Solo in Utilità, e grande: si preme senza guardare, col pollice, magari
-   sotto la pioggia. In Turismo sparisce, perché lì non si torna: si gira. */
-#casa-riga{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+/* ---------- i due tasti grandi ----------
+   Casa solo in Utilità (in Turismo non si torna: si gira). Avvisare c'è in
+   tutte e due, perché un guaio capita anche mentre si guarda una chiesa. */
+#casa-riga{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 0}
 #casa-riga[hidden]{display:none}
 #vai-a-casa{display:none}
 body[data-modo="utilita"] #vai-a-casa{display:block}
-.tasto.avvisa{border-color:rgba(224,81,63,.45);color:#F3B5AC}
+.tasto.avvisa{border-color:rgba(224,81,63,.5);color:#F6C3BB;background:rgba(224,81,63,.1)}
 #riga-casa[hidden]{display:none}
-.tasto.grande{flex:1 1 220px;min-height:64px;font-size:calc(var(--base) * 1.1);font-weight:600}
+
+/* ============================================================
+   LA VESTE DI TURISMO — «perché lì i turisti vedono»
+   ============================================================
+   Vince, il 16/10: in Utilità a premere è un non vedente e lo schermo non
+   serve, quindi resta spoglio e grandissimo. In Turismo invece lo schermo
+   lo guardano, e deve essere bello: «qualcosa cyber, hi-tech e
+   architettura». Da lì il disegno: la carta da progetto (la griglia fine),
+   le squadre agli angoli come su un disegno tecnico, i dati in carattere da
+   macchina e il nome del monumento in Bodoni, che è un carattere
+   d'architettura. Niente di tutto questo cambia una parola di quello che
+   l'app dice: è solo la veste di chi guarda. */
+
+body[data-modo="turismo"]{
+  background:
+    /* la griglia della carta da progetto */
+    repeating-linear-gradient(0deg, rgba(91,227,255,.045) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(91,227,255,.045) 0 1px, transparent 1px 44px),
+    radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.16) 0%, transparent 60%),
+    radial-gradient(900px 620px at 88% 10%, rgba(231,198,90,.10) 0%, transparent 56%),
+    linear-gradient(180deg,#0A1017 0%, var(--fondo) 64%);
+  background-attachment:fixed;
+}
+
+/* il riquadro del parlato diventa una tavola: squadre agli angoli */
+body[data-modo="turismo"] .dice{
+  background:linear-gradient(180deg, rgba(16,24,33,.92), rgba(10,15,21,.92));
+  border-color:rgba(91,227,255,.22);
+  box-shadow:0 0 0 1px rgba(91,227,255,.06), 0 24px 60px rgba(0,0,0,.55),
+             inset 0 1px 0 rgba(255,255,255,.05);
+  padding:26px 22px 22px;
+}
+body[data-modo="turismo"] .dice::before{
+  content:"";position:absolute;left:14px;top:14px;width:26px;height:26px;
+  border-left:2px solid var(--neon);border-top:2px solid var(--neon);
+  opacity:.75;background:none;height:26px
+}
+body[data-modo="turismo"] .dice::after{
+  content:"";position:absolute;right:14px;bottom:14px;width:26px;height:26px;
+  border-right:2px solid var(--oro);border-bottom:2px solid var(--oro);opacity:.7
+}
+/* la riga tecnica: dove sei, in carattere da macchina, come una quota */
+body[data-modo="turismo"] .dice .dove{
+  color:var(--neon);letter-spacing:.24em;font-size:11.5px;
+  padding-left:18px;position:relative
+}
+body[data-modo="turismo"] .dice .dove::before{
+  content:"";position:absolute;left:0;top:50%;width:10px;height:1px;background:var(--neon);opacity:.8
+}
+body[data-modo="turismo"] .dice .dove:empty{display:none}
+/* il nome del monumento: grande, in Bodoni, con la riga d'oro sotto */
+body[data-modo="turismo"] .dice .cosa{
+  font-size:calc(var(--base) * 2.05);margin:14px 0 14px;padding-bottom:14px;
+  border-bottom:1px solid rgba(231,198,90,.3);
+}
+body[data-modo="turismo"] .dice .corpo{color:#DCE3EA;line-height:1.62}
+body[data-modo="turismo"] .dice .gradino{
+  border-top:1px dashed rgba(91,227,255,.25);color:#8FB6C6;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;letter-spacing:.03em
+}
+
+/* la mappa, incorniciata come un visore */
+body[data-modo="turismo"] #mappa{
+  border-color:rgba(91,227,255,.3);
+  box-shadow:0 0 0 1px rgba(91,227,255,.14), 0 0 40px rgba(91,227,255,.1), 0 22px 54px rgba(0,0,0,.55)
+}
+body[data-modo="turismo"] .marchio{color:var(--neon);text-shadow:0 0 28px rgba(91,227,255,.35)}
+body[data-modo="turismo"] .stato{border-color:rgba(91,227,255,.22)}
+body[data-modo="turismo"] .barra{
+  background:linear-gradient(180deg, rgba(6,9,13,0), rgba(5,10,15,.94) 38%);
+  border-top:1px solid rgba(91,227,255,.12)
+}
+
+
+/* ---------- l'Italia sotto ----------
+   «qualcosa come sfondo leggero, di architettonico… o l'Italia sotto».
+   E' la costa vera, presa dai dati pubblici (Natural Earth via
+   world.geo.json) e ridotta a 87 punti: una sagoma disegnata a mano si
+   vedrebbe che e' sbagliata, e a un italiano non si fa. Sta in basso a
+   destra, quasi trasparente, e non copre mai una parola: il riquadro del
+   parlato ha il suo fondo e ci passa sopra. Solo in Turismo — in Utilita'
+   lo schermo non serve a nessuno. */
+body[data-modo="turismo"]::after{
+  content:"";position:fixed;z-index:-1;pointer-events:none;
+  right:-6vw;top:7vh;width:74vw;height:62vh;
+  background-image:var(--italia);
+  background-repeat:no-repeat;background-position:top right;background-size:contain;
+  opacity:.14;
+  filter:drop-shadow(0 0 18px rgba(91,227,255,.35));
+}
+@media (min-width:700px){ body[data-modo="turismo"]::after{ width:44vw; right:2vw } }
+
+/* e sulla porta, dove c'è spazio vuoto e si vede bene */
+#porta::after{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  right:-4vw;top:3vh;width:72vw;height:66vh;
+  background-image:var(--italia);
+  background-repeat:no-repeat;background-position:top right;background-size:contain;
+  opacity:.11;
+}
+#porta > *{position:relative;z-index:1}

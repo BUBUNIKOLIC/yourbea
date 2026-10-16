@@ -81,12 +81,31 @@ function Scena(opzioni) {
         if (d < dm) dm = d;
         if (d > dM) dM = d;
       });
-      /* si è dentro quando il contorno ci gira intorno: il punto più vicino
-         è addosso e il più lontano è dall'altra parte */
-      if (dm < 45 && dM > 25 && (!dentro || dM < dentro.largo)) {
+      /* DENTRO VUOL DIRE DENTRO. Prima bastava essere vicini al contorno, e
+         camminando in strada l'app diceva «Sei in Chiesa di Santa Lucia»
+         mentre la chiesa era lì accanto, chiusa. Adesso si guarda se il
+         punto cade davvero dentro il poligono. */
+      if (!dentroIlContorno(qui, a.punti)) return;
+      if (!dentro || dM < dentro.largo) {
         dentro = { cosa: a.cosa, nome: a.nome, largo: Math.round(dM) };
       }
     });
+    return dentro;
+  }
+
+  /* dentroIlContorno(): il raggio che esce dal punto taglia il contorno un
+     numero dispari di volte solo se il punto è dentro. È il modo più
+     vecchio e più solido che ci sia, e non serve altro. */
+  function dentroIlContorno(qui, punti) {
+    if (!punti || punti.length < 3) return false;
+    var dentro = false;
+    for (var i = 0, j = punti.length - 1; i < punti.length; j = i++) {
+      var yi = punti[i][0], xi = punti[i][1];
+      var yj = punti[j][0], xj = punti[j][1];
+      var taglia = ((xi > qui.lon) !== (xj > qui.lon)) &&
+                   (qui.lat < (yj - yi) * (qui.lon - xi) / ((xj - xi) || 1e-12) + yi);
+      if (taglia) dentro = !dentro;
+    }
     return dentro;
   }
 

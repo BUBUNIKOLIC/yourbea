@@ -71,6 +71,18 @@ prova('dice che forma ha il posto e quanto è largo', () => {
   if (d && !/pass/.test(d.testo)) guasto('quanto è larga, in passi: ' + d.testo);
 });
 
+prova('una chiesa lì accanto non è il posto dove sei', () => {
+  /* 16/10, provando in Utilità: «Sei in Chiesa di Santa Lucia, larga una
+     ottantina di passi» — e la chiesa era dall'altra parte della strada */
+  const w = mondo();
+  const chiesa = { cosa: 'chiesa', nome: 'Chiesa di Santa Lucia', punti: [
+    [QUI.lat + 0.0004, QUI.lon + 0.0002], [QUI.lat + 0.0004, QUI.lon + 0.0008],
+    [QUI.lat + 0.0009, QUI.lon + 0.0008], [QUI.lat + 0.0009, QUI.lon + 0.0002]] };
+  if (w.s.laForma(QUI, [chiesa])) guasto('ha detto che sei dentro una chiesa che hai accanto');
+  const dentro = { lat: QUI.lat + 0.00065, lon: QUI.lon + 0.0005 };
+  if (!w.s.laForma(dentro, [chiesa])) guasto('standoci dentro invece va detto');
+});
+
 prova('dice da che parte rispetto a te, non i gradi', () => {
   const w = mondo();
   const d = w.s.descrivi({ qui: QUI, direzione: 0, direzioneBuona: true, strada: 'Via Mazzini',
