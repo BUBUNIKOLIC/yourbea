@@ -113,6 +113,30 @@ prova('una tappa inventata o che non è un luogo da raccontare si butta', () => 
   if (/non esiste/.test(giro)) guasto('un nome senza scheda non è una tappa: ' + giro);
 });
 
+prova('una passeggiata a tema porta il suo testo, e butta le clip del luogo', () => {
+  /* In «Caravaggio a Roma» la tappa è San Luigi dei Francesi, ma quello che
+     si va a vedere sono le tele della cappella Contarelli, non la facciata.
+     E le clip incise dicono la scheda del luogo: tenerle farebbe sentire la
+     facciata mentre sullo schermo c'è scritto il quadro. */
+  const pa = Passeggiata({ dist, verso });
+  pa.conDati([{ id: 'tema', n: 'Il tema', citta: 'Parma', metri: 300, p: [],
+                t: [{ n: 'Duomo di Parma', la: 44.80309, lo: 10.33024,
+                      d: 'Qui sopra c\'è la cupola del Correggio: si guarda in alto, non in faccia.' },
+                    { n: 'Battistero di Parma', la: 44.80252, lo: 10.33039 }] }],
+             LUOGHI.map((p) => Object.assign({ c: 'poi-99' }, p)));
+  const d = pa.comincia('tema', AL_DUOMO);
+  const t = pa.passo(AL_DUOMO);
+  if (!t) return guasto('la prima tappa si racconta');
+  if (!/cupola del Correggio/.test(t.testo)) guasto('il testo della passeggiata vince: ' + t.testo);
+  if (/consacrata nel 1106/.test(t.testo)) guasto('e la scheda del luogo non si sente: ' + t.testo);
+  if (t.luogo.c) guasto('le clip del luogo direbbero un\'altra cosa: vanno buttate');
+  /* la tappa senza testo suo resta quella di sempre, clip comprese */
+  pa.avanti(AL_DUOMO);
+  const b = pa.passo({ lat: BATTISTERO.lat, lon: BATTISTERO.lon, direzione: 0, direzioneBuona: true });
+  if (b && !/marmo rosa/.test(b.testo)) guasto('il Battistero tiene la sua scheda: ' + (b && b.testo));
+  if (b && b.luogo.c !== 'poi-99') guasto('e le sue clip');
+});
+
 prova('si dice sempre in che città è', () => {
   /* nella vecchia app i percorsi di Torre del Greco finivano in cima solo
      perché erano i primi dell'archivio, e «Il centro sepolto» non dice dove */

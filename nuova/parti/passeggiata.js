@@ -86,12 +86,28 @@ function Passeggiata(opzioni) {
         });
         if (!mig || dm > 150) return;               // non si ritrova: si butta
         if (!(mig.k >= 1)) return;                  // REGOLA 9: non è un luogo
-        tappe.push(mig);
+        tappe.push(suoTesto(t, mig));
       });
       return { id: pa.id, n: pa.n, tema: pa.tema, citta: pa.citta || '',
                metri: pa.metri || 0, linea: pa.p || [], tappe: tappe };
     }).filter(function (pa) { return pa.tappe.length >= 2; });
     return tutte.length;
+  }
+
+  /* suoTesto(): UNA PASSEGGIATA A TEMA PARLA DEL SUO TEMA. In «Caravaggio a
+     Roma» la tappa è San Luigi dei Francesi, ma quello che si va a vedere
+     non è la facciata di Giacomo della Porta: sono le tre tele della
+     cappella Contarelli. Allora la tappa può portarsi il suo testo, e quello
+     vince sulla scheda del luogo.
+     E QUANDO IL TESTO CAMBIA, LE CLIP SI BUTTANO: le clip incise dicono la
+     scheda del luogo, parola per parola. Tenerle farebbe sentire la facciata
+     mentre sullo schermo c'è scritto il quadro — il testo e l'audio che si
+     scollano è il difetto peggiore di tutti, perché nessuno dei due sa di
+     essere sbagliato. */
+  function suoTesto(t, p) {
+    if (!t.d && !t.i && !t.a) return p;
+    return { n: p.n, lat: p.lat, lon: p.lon, k: p.k, t: p.t, y: p.y,
+             d: t.d || p.d, i: t.i || p.i, a: t.a || p.a };
   }
 
   /* vicine(): le passeggiate in ordine di vicinanza, misurata sulla tappa
