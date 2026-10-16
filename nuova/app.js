@@ -841,6 +841,7 @@
        Chi parla non ripete una formula: si riconosce la parola che conta. */
     intorno: ['intorno', 'descriv', 'cosa c e', 'che c e', 'elenco', 'cosa vedi'],
     civico: ['civic', 'che numero', 'numero sono', 'numero siamo'],
+    negozi: ['negozi', 'un negozio', 'negozio', 'che negozi', 'botteghe'],
     turismo: ['turismo', 'turista'],
     utilita: ['utilita', 'servizi'],
     aiuto: ['aiuto', 'comandi', 'che posso dire']
@@ -958,6 +959,7 @@
     if (ha('ancora')) { dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo })); return true; }
     if (ha('avanti')) { dillo(racconto.salta()); return true; }
     if (ha('dove')) { diciDove(); return true; }
+    if (ha('negozi')) { diciINegozi(); return true; }
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (ha('aiuto')) {
@@ -991,6 +993,34 @@
     else p = 'indietro a sinistra';
     return p + ', a ' + (Math.round(o.m / 10) * 10) + ' metri';
   }
+  /* diciINegozi(): «ti cerco un negozio?» è una delle tre cose che l'app
+     offre aprendosi, quindi deve saperlo fare: qui si dicono quelli veri,
+     presi dalla mappa, con da che parte stanno e quanti passi mancano. */
+  function diciINegozi() {
+    var s = posizione.leggi();
+    if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    var qui = { lat: s.lat, lon: s.lon };
+    var roba = (SERVIZI.punti || []).filter(function (p) {
+      return p.servizio && p.cosa !== 'attraversamento' && p.cosa !== 'fermata' &&
+             posizione.dist(qui.lat, qui.lon, p.lat, p.lon) < 220;
+    });
+    if (!roba.length) {
+      voce.parla('Qui intorno non trovo negozi segnati sulla mappa. Se ne cerchi uno in particolare dimmelo: per esempio, portami alla farmacia.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    roba.sort(function (x, y) {
+      return posizione.dist(qui.lat, qui.lon, x.lat, x.lon) - posizione.dist(qui.lat, qui.lon, y.lat, y.lon);
+    });
+    var frasi = roba.slice(0, 4).map(function (p) {
+      var m = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
+      var o = { p: p, m: m, rel: ((posizione.verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180 };
+      return (p.nome || p.cosa) + ', ' + (s.direzioneBuona ? versoParole(o) : scena.passi(m));
+    });
+    dillo({ tipo: 'elenco', livello: 'guida',
+            testo: 'Qui vicino: ' + frasi.join('. ') + '. Dimmi «portami» e il nome, e ti ci porto.' });
+  }
+
   /* diciIlCivico(): «i numeri civici» — chiesto a voce il 16/10. */
   function diciIlCivico() {
     var s = posizione.leggi();
@@ -1077,10 +1107,19 @@
     diario('ENTRATO in ' + (quale === 'cultura' ? 'Turismo' : 'Utilità'));
     posizione.comincia();
     apriAscolto();
+    /* L'APERTURA È UNA DOMANDA, NON UN ELENCO DI FUNZIONI.
+       Parole di Vince, 16/10: «per i non vedenti, secondo me, una voce che
+       dice: ciao Vincenzo, cosa vuoi che facciamo? Devi andare da qualche
+       parte? Ti illustro in modalità libera cosa c'è intorno? Ti cerco un
+       negozio?… è come personalizzare, fa compagnia».
+       Chi non vede non ha una schermata da guardare per sapere cosa può
+       chiedere: o glielo si dice, o non esiste. E si chiama per nome, se
+       ce l'ha detto — cambia tutto fra un apparecchio e qualcuno che ti
+       accompagna. */
+    var ciao = ioSonoIo ? ('Ciao ' + ioSonoIo + '. ') : 'Ciao. ';
     voce.parla(quale === 'cultura'
-      ? 'Turismo. Ti racconto quello che hai intorno. Camminando ti dico cosa passi; se ti fermi dieci secondi te lo racconto. ' +
-        'E se vuoi fare un giro, dimmi «passeggiate».'
-      : 'Utilità. Ti dico la strada, i numeri civici, i negozi e gli attraversamenti, e i luoghi importanti. Dimmi «ancora» per saperne di più.',
+      ? ciao + 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
+      : ciao + 'Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c\'è intorno? O ti cerco un negozio?',
       { livello: voce.GUIDA });
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
   }
