@@ -37,10 +37,15 @@
   window.YB = { diario: function () { return DIARIO.join('\n'); } };
 
   /* ---------- la voce ---------- */
+  /* la pronuncia: gli accenti scritti, che la voce rispetta. Sta qui,
+     all'ultimo momento, perché il testo che si vede sullo schermo resti
+     scritto come si scrive. */
+  var pronuncia = Pronuncia();
   var sintesi = {
     parla: function (t) {
       try {
         if (!window.speechSynthesis) return;
+        t = pronuncia.sistema(t);
         window.speechSynthesis.cancel();
         var u = new SpeechSynthesisUtterance(t);
         u.lang = 'it-IT'; u.rate = 0.98;
@@ -304,7 +309,7 @@
      richiesta partiva: camminando, in mezzo, c'era il silenzio. Qui si
      prova spesso; a non ripetersi ci pensa parti/scena.js, che la stessa
      scena non la dice due volte. */
-  setInterval(function () { if (acceso && modo === 'servizi') raccontaScena(); }, 20000);
+  setInterval(function () { if (acceso && modo === 'servizi' && !guida.meta()) raccontaScena(); }, 20000);
 
   var clip = Clip();
 
@@ -835,11 +840,18 @@
     disegnaMappa(s, lista);
     /* l'incrocio si guarda a ogni passo: venticinque metri si attraversano
        in dieci secondi, e dirlo dopo non serve a niente */
-    var pass = passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
+    /* MENTRE TI PORTA DA QUALCHE PARTE, SOLO LA STRADA. «Poi però ho detto
+       di portarmi a casa e mi diceva le strade e gli incroci» (Vince,
+       16/10, provandola in scooter). Quando c'è una meta, i nomi degli
+       incroci e i negozi che passi diventano rumore sopra le svolte: le
+       svolte li dicono già, i nomi delle strade. Qui si tace tutto il
+       resto, e parla solo la guida. */
+    var inViaggio = !!guida.meta();
+    var pass = inViaggio ? null : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
                                    direzione: s.direzione, direzioneBuona: s.direzioneBuona,
                                    quando: Date.now() });
     if (pass) dillo(pass);
-    if (modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
+    if (!inViaggio && modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
       var inc = incroci.quale({ qui: { lat: s.lat, lon: s.lon }, vie: SERVIZI.vie,
                                 strada: ultimaStrada, direzione: s.direzione,
                                 direzioneBuona: s.direzioneBuona });
