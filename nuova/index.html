@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=19">
-<link rel="stylesheet" href="stile.css?v=19">
+<link rel="stylesheet" href="mappa/leaflet.css?v=20">
+<link rel="stylesheet" href="stile.css?v=20">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -23,13 +23,13 @@
 <section id="porta" aria-label="Come vuoi usare Yourbea">
   <h1>YOURBEA</h1>
   <p class="sotto">La bellezza intorno a te. Scegli come vuoi che ti accompagni.</p>
-  <button class="scelta utilita" id="scelta-utilita">
-    <b>Utilità</b>
-    <span>Numeri civici, farmacie, negozi, semafori e attraversamenti. E ti porto dove devi andare. Tutto parlato: lo schermo non serve.</span>
-  </button>
   <button class="scelta turismo" id="scelta-turismo">
     <b>Turismo</b>
     <span>Ti racconta quello che hai intorno: palazzi, chiese, dettagli di strada. Con la mappa e le schede.</span>
+  </button>
+  <button class="scelta utilita" id="scelta-utilita">
+    <b>Utilità</b>
+    <span>Numeri civici, farmacie, negozi, semafori e attraversamenti. E ti porto dove devi andare. Tutto parlato: lo schermo non serve.</span>
   </button>
   <p class="sotto" style="margin-top:14px">Puoi anche dirlo: «utilità» oppure «turismo».</p>
 </section>
@@ -99,19 +99,19 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto">⋯</button>
 </nav>
 
-<script src="parti/voce.js?v=19"></script>
-<script src="parti/racconto.js?v=19"></script>
-<script src="parti/clip.js?v=19"></script>
-<script src="parti/posizione.js?v=19"></script>
-<script src="parti/intorno.js?v=19"></script>
-<script src="parti/emergenza.js?v=19"></script>
-<script src="parti/dettatura.js?v=19"></script>
-<script src="parti/guida.js?v=19"></script>
-<script src="parti/passeggiata.js?v=19"></script>
-<script src="mappa/leaflet.js?v=19"></script>
-<script src="parti/scena.js?v=19"></script>
-<script src="parti/mappa.js?v=19"></script>
-<script src="app.js?v=19"></script>
+<script src="parti/voce.js?v=20"></script>
+<script src="parti/racconto.js?v=20"></script>
+<script src="parti/clip.js?v=20"></script>
+<script src="parti/posizione.js?v=20"></script>
+<script src="parti/intorno.js?v=20"></script>
+<script src="parti/emergenza.js?v=20"></script>
+<script src="parti/dettatura.js?v=20"></script>
+<script src="parti/guida.js?v=20"></script>
+<script src="parti/passeggiata.js?v=20"></script>
+<script src="mappa/leaflet.js?v=20"></script>
+<script src="parti/scena.js?v=20"></script>
+<script src="parti/mappa.js?v=20"></script>
+<script src="app.js?v=20"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -142,7 +142,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=19", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=20", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si
