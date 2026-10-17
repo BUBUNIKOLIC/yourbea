@@ -59,8 +59,24 @@ function MotoreVoce(opzioni) {
      Adesso il tetto è la stima della durata più metà, e non scende mai
      sotto i nove secondi né sale oltre il minuto e mezzo. */
   function tetto(testo, quanteClip) {
-    var stima = quanteClip ? (quanteClip * 9000) : (1200 + String(testo || '').length * 55);
-    return Math.max(TEMPO_FRASE, Math.min(90000, Math.round(stima * 1.5)));
+    /* SI PRENDE LA STIMA PIU' LUNGA DELLE DUE, NON QUELLA DELLE CLIP.
+       Il quaderno del 17/10, stazione Termini, ore 16:16:
+           16:15:54  PARLA: «Da manuale: fu il tempio piu' grande di Roma…»
+           16:16:07  TETTO: la frase non si e' chiusa, vado avanti
+           16:16:07  PARLA: «La basilica di Santa Francesca Romana…»
+       Tredici secondi su una scheda che ne dura quaranta. Il conto era
+       «nove secondi per clip, per una e mezzo»: un approfondimento ha UNA
+       clip sola (c + '-ancora') e faceva 13,5 secondi — ma quella clip e'
+       la registrazione dell'intero approfondimento, lunga quanto il testo.
+       Nove secondi vanno bene per le clip-pezzo di un cenno («sulla
+       destra» + «a 80 metri» + il nome), non per una che racconta.
+       Il testo e' la misura giusta in tutti e due i casi, perche' la clip
+       dice le stesse parole; la stima delle clip resta come minimo per i
+       cenni, dove il testo e' corto ma i pezzi sono tanti. */
+    var daTesto = 1200 + String(testo || '').length * 55;
+    var daClip = quanteClip ? (quanteClip * 9000) : 0;
+    var stima = Math.max(daTesto, daClip);
+    return Math.max(TEMPO_FRASE, Math.min(150000, Math.round(stima * 1.5)));
   }
   var DOPPIONE = o.doppione || 8000;        // la stessa frase non si ridice entro questo
   var CODA_MAX = o.codaMax || 4;

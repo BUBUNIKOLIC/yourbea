@@ -386,6 +386,39 @@ prova('se la voce non dice mai di aver finito, la rete scatta e prima la spegne'
   if (!m.zittita) guasto('ha proseguito senza spegnere la voce rimasta accesa');
 });
 
+/* IL TETTO DI TREDICI SECONDI — il quaderno del 17/10, stazione Termini.
+   «Mentre spiegava la Basilica di Massenzio ne iniziava un'altra sopra, e
+   non si capiva nulla» (Vince). La prova di prima — «una scheda lunga non
+   viene tagliata dopo nove secondi» — passava perche' la frase andava senza
+   clip. Con UNA clip il tetto tornava a 13,5 secondi, e una scheda da
+   quaranta veniva data per finita a un terzo.                            */
+prova('UNA SCHEDA LUNGA CON UNA SOLA CLIP non si da per finita a tredici secondi', () => {
+  const m = Mondo(); m.clipEsistenti = new Set(['x-ancora']);
+  const lunga = 'Da manuale: fu il tempio piu grande di Roma. ' + 'Centodieci metri di navata. '.repeat(20);
+  m.motore.parla(lunga, { clip: ['x-ancora'], livello: m.motore.GUIDA });
+  m.motore.parla('La basilica di Santa Francesca Romana.', { livello: m.motore.GUIDA });
+  m.passano(14000);                       // il vecchio tetto scattava a 13,5
+  if (m.dette.some(x => /Santa Francesca/.test(x))) guasto('a quattordici secondi ha gia cominciato la seconda');
+  m.passano(16000);                       // trenta: la clip sta ancora raccontando
+  if (m.dette.some(x => /Santa Francesca/.test(x))) guasto('a trenta secondi ha gia cominciato la seconda');
+  const c = m.vive.find(v => v.id === 'x-ancora');
+  if (c) c.finisci();                     // la clip arriva in fondo davvero
+  m.passano(1000);
+  if (!m.dette.some(x => /Santa Francesca/.test(x))) guasto('finita la clip, la seconda non e partita');
+});
+
+prova('i cenni a pezzi tengono il loro tetto: tante clip corte', () => {
+  const m = Mondo();
+  // cinque pezzi incisi su una frase corta: la stima del testo sarebbe
+  // troppo bassa, quella delle clip e giusta
+  const t = tetto => tetto;
+  m.clipEsistenti = new Set(['a','b','c','d','e']);
+  m.motore.parla('Sulla destra, a 80 metri, Palazzo Chigi.', { clip: ['a','b','c','d','e'], livello: m.motore.CENNO });
+  m.motore.parla('Un altra cosa.', { livello: m.motore.CENNO });
+  m.passano(12000);     // 1200+40*55 = 3400 *1.5 = 5100: col solo testo sarebbe gia scattato
+  if (m.dette.length > 1) guasto('ha buttato via le clip a meta: ' + m.dette[1]);
+});
+
 (async () => {
   for (const p of prove) {
     errori = [];
