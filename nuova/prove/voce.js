@@ -74,11 +74,25 @@ function Mondo() {
   m.motore = MotoreVoce({
     Audio: ClipFinta,
     sintesi: {
-      parla(t) {
+      /* COME FA LA VOCE VERA: prende una funzione da chiamare quando ha
+         finito, e la chiama quando finisce — non quando pensiamo noi.
+         m.finisciLaVoce() e' la voce che arriva in fondo alla frase. */
+      parla(t, quandoFinisce) {
         m.sistema.push(t); m.dette.push('[sistema] ' + t);
         if (m.suonando > 0) guasto('VOCE DI SISTEMA SOPRA UNA CLIP: ' + t.slice(0, 30));
+        m.staParlando = true;
+        m.finisciLaVoce = () => {
+          if (!m.staParlando) return;
+          m.staParlando = false;
+          if (quandoFinisce) quandoFinisce();
+        };
       },
-      taci() {}
+      taci() {
+        /* annullare fa arrivare «onend» alla frase vecchia, come nel
+           browser: il motore deve accorgersi da se' che non e' piu' la sua */
+        m.zittita = (m.zittita || 0) + 1;
+        if (m.staParlando) { const f = m.finisciLaVoce; m.staParlando = false; if (f) f(); }
+      }
     },
     ora: () => m.adesso,
     fraPoco: (f, ms) => { const id = { quando: m.adesso + (ms || 0), f }; m.tempi.push(id); return id; },
@@ -327,6 +341,49 @@ prova('senza «uguale» si confronta il testo, come sempre', () => {
   if (!m.motore.parla('Sei in via Rossi.')) guasto('la prima non è stata presa');
   m.passano(500);
   if (m.motore.parla('Sei in via Rossi.')) guasto('ha ridetto la stessa frase');
+});
+
+/* ============================================================
+   IL DIFETTO DELLA BASILICA DI MASSENZIO — 17/10/2026
+   «Mentre spiegava la Basilica di Massenzio ne iniziava un'altra sopra, e
+   non si capiva nulla» (Vince). Il motore non sapeva quando la voce di
+   sistema aveva finito: lo indovinava dalla lunghezza, 55 millesimi per
+   lettera. Su una scheda da settecento lettere la stima dava quaranta
+   secondi e la voce ce ne metteva quarantatre.                            */
+
+prova('LA SCHEDA LUNGA: la frase dopo aspetta che la voce abbia finito DAVVERO', () => {
+  const m = Mondo();
+  const lunga = 'La Basilica di Massenzio. ' + 'Fu iniziata dall\'imperatore Massenzio. '.repeat(18);
+  m.motore.parla(lunga, { livello: m.motore.GUIDA });
+  m.motore.parla('Sulla destra, a 30 metri, la farmacia.', { livello: m.motore.CENNO });
+  // passa piu' tempo della vecchia stima (1200 + lettere*55)
+  m.passano(1200 + lunga.length * 55 + 5000);
+  if (m.sistema.length > 1) guasto('ha cominciato la seconda mentre diceva la prima: ' + m.sistema[1].slice(0, 40));
+  // adesso la voce arriva in fondo davvero
+  m.finisciLaVoce();
+  m.passano(1000);
+  if (m.sistema.length !== 2) guasto('finita la prima, la seconda non e\' partita');
+});
+
+prova("LA SECONDA VOCE SOTTO LE CLIP: cominciando con le clip si spegne quella di prima", () => {
+  const m = Mondo(); m.clipEsistenti = new Set(['uno']);
+  m.motore.parla('Una scheda lunga che la voce di sistema sta ancora leggendo.', { livello: m.motore.GUIDA });
+  if (!m.staParlando) guasto('la voce di sistema non e\' partita');
+  // arriva qualcosa di piu' importante, con la clip incisa
+  m.motore.parla('Adesso: gira a destra.', { clip: ['uno'], livello: m.motore.EMERGENZA });
+  if (m.staParlando) guasto('la voce di sistema continua sotto la clip: due voci insieme');
+});
+
+prova('se la voce non dice mai di aver finito, la rete scatta e prima la spegne', () => {
+  const m = Mondo();
+  const t = 'Una frase che la voce comincia e non finisce mai.';
+  m.motore.parla(t, { livello: m.motore.GUIDA });
+  m.motore.parla('La frase dopo.', { livello: m.motore.GUIDA });
+  m.passano(1200 + t.length * 55 + 500);          // scaduta la stima, non la rete
+  if (m.sistema.length > 1) guasto('e\' ripartito sulla stima, non sulla fine vera');
+  m.passano((1200 + t.length * 55) * 2);          // oltre la rete
+  if (m.sistema.length !== 2) guasto('la rete non ha fatto proseguire: il motore resta occupato per sempre');
+  if (!m.zittita) guasto('ha proseguito senza spegnere la voce rimasta accesa');
 });
 
 (async () => {

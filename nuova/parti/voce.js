@@ -144,9 +144,26 @@ function MotoreVoce(opzioni) {
     dettaDaSistema = mio;
     if (!sintesi) { finito(mio); return; }
     diario('VOCE DI SISTEMA: ' + String(testo).slice(0, 40));
-    try { sintesi.parla(testo); } catch (e) {}
-    // non sappiamo quando finisce: si stima dalla lunghezza, con un tetto
-    fra(function () { finito(mio); }, 1200 + String(testo).length * 55);
+    /* SI ASPETTA CHE ABBIA FINITO DAVVERO, non che sia passato il tempo che
+       pensavamo. La stima resta, ma solo come rete: su certi telefoni
+       «onend» non arriva mai, e senza rete il motore resterebbe occupato per
+       sempre. La rete e' larga — due volte e mezzo la stima — perche' farla
+       scattare su una frase ancora in corso e' esattamente il difetto che
+       stiamo chiudendo. */
+    var chiuso = false;
+    function hoFinito() {
+      if (chiuso || mio !== turno) return;
+      chiuso = true;
+      finito(mio);
+    }
+    try { sintesi.parla(testo, hoFinito); } catch (e) { hoFinito(); return; }
+    var stima = 1200 + String(testo).length * 55;
+    fra(function () {
+      if (chiuso || mio !== turno) return;
+      diario('LA VOCE NON HA DETTO DI AVER FINITO: vado avanti');
+      if (sintesi) try { sintesi.taci(); } catch (e) {}   // prima si spegne, poi si prosegue
+      hoFinito();
+    }, Math.min(150000, Math.round(stima * 2.5)));
   }
 
   /* avvia(): fa parlare una frase. Qui dentro non si decide niente: le
@@ -154,6 +171,18 @@ function MotoreVoce(opzioni) {
   function avvia(f) {
     var mio = ++turno;           // il turno nuovo: le cose vecchie tacciono
     scorda();
+    /* E LE COSE VECCHIE TACCIONO DAVVERO. «Il turno nuovo» fermava i tempi
+       ma non il suono: se la frase di prima era uscita dalla voce di
+       sistema e questa qui ha le clip incise, la voce vecchia continuava
+       sotto le clip nuove — due voci insieme, ed e' quello che Vince ha
+       sentito sulla Basilica di Massenzio il 17/10. Qui si spegne tutto
+       quello che sta ancora suonando, qualunque strada abbia preso. */
+    if (inCorso) {
+      try { inCorso.pause(); } catch (e) {}
+      try { inCorso.onended = null; inCorso.onerror = null; } catch (e) {}
+      inCorso = null;
+    }
+    if (sintesi) try { sintesi.taci(); } catch (e) {}
     parlando = true;
     livelloInCorso = f.livello;
     ultimoTesto = normalizza(f.uguale || f.testo);

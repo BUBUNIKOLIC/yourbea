@@ -42,9 +42,19 @@
      scritto come si scrive. */
   var pronuncia = Pronuncia();
   var sintesi = {
-    parla: function (t) {
+    /* parla(testo, quandoFinisce): il secondo pezzo e' la cosa importante.
+       Prima il motore NON sapeva quando la voce di sistema aveva finito: la
+       indovinava dalla lunghezza, 55 millesimi per lettera, e allo scadere
+       faceva partire la frase dopo. Vince, 17/10: «mentre spiegava la
+       Basilica di Massenzio ne iniziava un'altra sopra, e non si capiva
+       nulla». La scheda e' lunga settecento lettere: la stima da' quaranta
+       secondi, la voce ce ne mette quarantatre. Negli ultimi tre parte
+       l'altra — e se quella usa le clip incise, la prima continua sotto,
+       perche' una clip non spegne la voce di sistema.
+       L'utterance sa quando ha finito: basta chiederglielo. */
+    parla: function (t, quandoFinisce) {
       try {
-        if (!window.speechSynthesis) return;
+        if (!window.speechSynthesis) { if (quandoFinisce) quandoFinisce(); return; }
         t = pronuncia.sistema(t);
         window.speechSynthesis.cancel();
         var u = new SpeechSynthesisUtterance(t);
@@ -53,8 +63,12 @@
         // la stessa voce delle clip, se c'è: due voci diverse si sentono
         for (var i = 0; i < voci.length; i++) if (/alice/i.test(voci[i].name || '')) { u.voice = voci[i]; break; }
         if (!u.voice && voci.length) u.voice = voci[0];
+        /* onend arriva anche quando la frase viene annullata da un'altra
+           che comincia: chi riceve la chiamata controlla il turno, e di
+           quella vecchia non fa niente. */
+        if (quandoFinisce) { u.onend = quandoFinisce; u.onerror = quandoFinisce; }
         window.speechSynthesis.speak(u);
-      } catch (e) {}
+      } catch (e) { if (quandoFinisce) quandoFinisce(); }
     },
     taci: function () { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
   };
