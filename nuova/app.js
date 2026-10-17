@@ -81,6 +81,11 @@
 
   /* ---------- il racconto, la posizione, le fonti ---------- */
   var racconto = Racconto({});
+  /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
+     sia descritta la realtà circostante: di fronte, davanti a te hai il
+     golfo, Raito, i Due Fratelli… sennò numeri civici» (Vince, 18/10). */
+  var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+                              verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
   var posizione = Posizione({
     geo: navigator.geolocation || null,
     /* si legge OGNI VOLTA, non una volta sola: il guscio dell'iPhone inietta
@@ -310,8 +315,15 @@
        «aspetta, questa e' utilita'; turismo informazioni artistiche,
        architettoniche e storiche». */
     if (modo !== 'servizi') return;
+    /* I NUMERI CIVICI MAI. «Poi mi diceva i numeri civici» (Vince, 16/10)
+       e di nuovo il 18/10, piu' secco: «numeri civici mai». Qui passavo
+       `ultimaStrada`, che e' via PIU' numero — e la scena apriva con «Sei
+       in Via Osvaldo Costabile 18», poi 6, poi 22, poi 57: quattro volte
+       la stessa via in cento secondi, che e' poi il «dice sempre le stesse
+       cose». Il numero resta in `ultimaStrada` per chi lo CHIEDE («che
+       numero siamo»), e non esce mai da solo. */
     var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
-                             direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
+                             direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI });
     if (d) { dillo(d); return; }
     /* se non dice niente deve restare scritto PERCHÉ: «all'andata non c'era
        una descrizione della realtà» (Vince, 16/10) e dal di fuori una
@@ -493,34 +505,96 @@
      dove sei, cosa incroci più avanti e cosa trovi continuando dritto.
      È la differenza fra essere avvisati ed essere guidati. */
   var ultimoRiepilogo = 0;
+  var ultimoGiro = '';        // di che cosa ho parlato l'ultima volta
+  /* ============================================================
+     IL GIRO DI PAROLE — ogni minuto e mezzo, e mai la stessa cosa
+     «Dice sempre le stesse cose: stai percorrendo questa strada, incrocio,
+     numeri civici… non e' una compagnia per il non vedente» (Vince, 18/10,
+     tornando da Vietri). E poi la frase che fa da modello: «di fronte,
+     davanti a te hai il golfo, Raito».
+
+     Prima qui usciva sempre la stessa formula — strada, prossimo incrocio,
+     cosa trovi dritto — ogni novanta secondi, con dentro anche il numero
+     civico. Tre famiglie di frasi che dicono tutte DOVE SEI, a uno che lo
+     sa gia' perche' ci sta camminando.
+
+     Adesso si gira: a ogni turno si dice UNA cosa, la prima della lista che
+     ha qualcosa da dire e che non e' quella di prima. In ordine di quanto
+     tiene compagnia:
+       1. COSA HAI DAVANTI, per nome. E' la frase di Vince.
+       2. L'INCROCIO che arriva, che serve a camminare.
+       3. LA STRADA, e solo se non l'ho gia' detta da poco.
+     I numeri civici non ci sono piu' in nessuna delle tre: si dicono solo
+     a chi li chiede.                                                      */
   function stradaERiepilogo() {
     var s = posizione.leggi();
     if (!acceso || !s.pronto || s.fermo || guida.meta()) return;
     if (!ultimaVia || !s.direzioneBuona) return;
     if (Date.now() - ultimoRiepilogo < 90000) return;
-    ultimoRiepilogo = Date.now();
 
     var qui = { lat: s.lat, lon: s.lon };
-    var pezzi = ['Stai percorrendo ' + ultimaVia + '.'];
-    var inc = incroci.ilProssimo({ qui: qui, vie: SERVIZI.vie || [], strada: ultimaVia,
-                                   direzione: s.direzione, direzioneBuona: true });
-    if (inc) pezzi.push('Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.');
+    var fatte = [];
 
-    /* cosa trovi continuando dritto: la prima cosa con un nome davanti a
-       te, che non sia quella che hai appena passato */
+    /* 0. IL PAESAGGIO, e viene prima di tutto. Il golfo, i paesi sulla
+       costa, gli scogli davanti: è quello che chi vede ha alzando gli
+       occhi, e chi non vede ha solo se glielo si racconta. Le sue regole
+       stanno in parti/paesaggio.js: lontano, senza passi, due cose per
+       volta, e lo stesso golfo non si ridice ogni minuto. */
+    var pae = paesaggio.intorno({ qui: qui, direzione: s.direzione,
+                                  direzioneBuona: s.direzioneBuona,
+                                  luoghi: LUOGHI });
+    if (pae) fatte.push({ che: 'paesaggio', testo: pae.testo });
+
+    /* 1. QUELLO CHE HAI DAVANTI. Si guarda prima fra i luoghi che hanno una
+       storia — e' quello che tiene compagnia — e solo se non ce n'e'
+       nessuno si ripiega sui servizi. Il cono e' stretto, quaranta gradi:
+       «davanti a te» dev'essere davvero davanti. */
     var avanti = null, da = 1e9;
+    function guarda(p, lat, lon, nome, vale) {
+      var d = posizione.dist(qui.lat, qui.lon, lat, lon);
+      if (d < 30 || d > 400) return;
+      var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
+      if (Math.abs(rel) > 40) return;
+      var peso = d / (vale ? 3 : 1);          // un luogo con una storia vale tre volte
+      if (peso >= da) return;
+      da = peso; avanti = { nome: nome, metri: d };
+    }
+    vicini().forEach(function (x) {
+      if (!x.p.n || !racconto.daRaccontare(x.p)) return;
+      guarda(x.p, x.p.lat, x.p.lon, x.p.n, true);
+    });
     (SERVIZI.punti || []).forEach(function (p) {
       if (!p.nome || !p.servizio) return;
-      var d = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
-      if (d < 25 || d > 250 || d >= da) return;
-      var rel = ((posizione.verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
-      if (Math.abs(rel) > 50) return;
-      da = d; avanti = p;
+      guarda(p, p.lat, p.lon, p.nome, false);
     });
-    if (avanti) pezzi.push('Se continui dritto trovi ' + avanti.nome + ', ' + scena.passi(da) + '.');
-    if (pezzi.length < 2) return;        // «stai percorrendo» da solo non serve
-    dillo({ tipo: 'strada', livello: 'cenno', testo: pezzi.join(' ') });
+    if (avanti) fatte.push({ che: 'avanti',
+      testo: 'Davanti a te hai ' + avanti.nome + ', ' + scena.passi(avanti.metri) + '.' });
+
+    /* 2. L'INCROCIO CHE ARRIVA */
+    var inc = incroci.ilProssimo({ qui: qui, vie: SERVIZI.vie || [], strada: ultimaVia,
+                                   direzione: s.direzione, direzioneBuona: true });
+    if (inc) fatte.push({ che: 'incrocio',
+      testo: 'Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.' });
+
+    /* 3. LA STRADA, se non l'ho gia' detta da poco */
+    if (Date.now() - (stradeDette[ultimaVia.toLowerCase()] || 0) > 240000) {
+      fatte.push({ che: 'strada', testo: 'Stai percorrendo ' + ultimaVia + '.' });
+    }
+
+    if (!fatte.length) return;
+    /* la prima che non e' quella di prima; se c'e' solo quella, si aspetta
+       il giro dopo invece di ripeterla */
+    var scelta = null;
+    for (var i = 0; i < fatte.length; i++) {
+      if (fatte[i].che !== ultimoGiro) { scelta = fatte[i]; break; }
+    }
+    if (!scelta) { diario('GIRO: ho solo «' + fatte[0].che + '», gia detto: taccio'); return; }
+    ultimoGiro = scelta.che;
+    ultimoRiepilogo = Date.now();
+    if (scelta.che === 'strada') stradeDette[ultimaVia.toLowerCase()] = Date.now();
+    dillo({ tipo: 'strada', livello: 'cenno', testo: scelta.testo });
   }
+
   setInterval(stradaERiepilogo, 20000);
 
   /* IL SEGNO DI VITA. Chi non vede non può dare un'occhiata allo schermo
@@ -538,7 +612,7 @@
     ultimaParola = Date.now();
     diario('SEGNO DI VITA');
     dillo({ tipo: 'strada', livello: 'cenno',
-            testo: ultimaStrada ? ('Sei sempre in ' + ultimaStrada + '. Ti sto seguendo.')
+            testo: ultimaVia ? ('Sei sempre in ' + ultimaVia + '. Ti sto seguendo.')
                                 : 'Ti sto seguendo: qui intorno non ho niente di segnato.' });
   }, 20000);
 
@@ -1019,7 +1093,7 @@
        cenni, e solo se nel frattempo non è arrivato niente di più
        importante: se l'app sta già dicendo una svolta, questa si butta. */
     if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') {
-      var viaOra = ultimaStrada;
+      var viaOra = ultimaVia;        // il nome, non il numero
       if (viaOra) {
         voce.parla('Adesso sei in ' + viaOra + '.', {
           livello: voce.CENNO, ancheSeUguale: true,
@@ -1060,6 +1134,7 @@
 
   /* ---------- il giro: a ogni posizione nuova ---------- */
   var ultimaStrada = '', ultimaVia = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
+  var stradeDette = {};        // quale via, e quando l'ho annunciata
   posizione.quando(function (cosa, s) {
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
@@ -1098,7 +1173,7 @@
     if (pass) dillo(pass);
     if (!inViaggio && modo === 'servizi' && SERVIZI.vie && SERVIZI.vie.length) {
       var inc = incroci.quale({ qui: { lat: s.lat, lon: s.lon }, vie: SERVIZI.vie,
-                                strada: ultimaStrada, direzione: s.direzione,
+                                strada: ultimaVia, direzione: s.direzione,
                                 direzioneBuona: s.direzioneBuona });
       if (inc) dillo(inc);
     }
@@ -1143,8 +1218,25 @@
         var viaOra = (v.via || '').trim();
         ultimaStrada = dove;
         if (!viaOra || viaOra.toLowerCase() === (ultimaVia || '').toLowerCase()) return;
+        /* UNA STRADA GIA' ANNUNCIATA NON SI RIANNUNCIA SUBITO.
+           Dal quaderno del 18/10, a Vietri: «Sei entrato in Via Osvaldo
+           Costabile» alle 29:44 e di nuovo alle 30:09; Via Giuseppe
+           Pellegrino alle 31:42 e alle 33:19. Non aveva girato: il punto
+           sulla mappa balla fra due vie vicine, e ogni ballo sembrava una
+           strada nuova. Chi cammina lo sente come «dice sempre le stesse
+           cose». Una via detta da meno di tre minuti si registra ma si
+           tace. */
+        var ADESSO = Date.now();
+        var quandoDetta = stradeDette[viaOra.toLowerCase()] || 0;
         var prima = ultimaVia;
         ultimaVia = viaOra;
+        stradeDette[viaOra.toLowerCase()] = ADESSO;
+        if (ADESSO - quandoDetta < 180000) {
+          diario('STRADA: ' + viaOra + ' gia detta da ' + Math.round((ADESSO - quandoDetta) / 1000) + 's, taccio');
+          scena.dimentica();
+          passaggi.stradaNuova();
+          return;
+        }
         dillo({ tipo: 'strada', livello: 'guida',
                 testo: (prima ? 'Sei entrato in ' : 'Sei in ') + viaOra + '.' });
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
