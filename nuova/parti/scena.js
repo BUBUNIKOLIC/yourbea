@@ -239,7 +239,16 @@ function Scena(opzioni) {
   }
 
   function unA(c) { return (femmina(c) ? 'una ' : 'un ') + c; }
-  function femmina(c) { return /a$/.test(String(c)); }
+  /* MASCHILE O FEMMINILE. Prima bastava la «a» finale, e usciva «il
+     stazione Vietri sul Mare» (provando a Vietri, 18/10). In italiano
+     finiscono in -e tutte e due i generi: le desinenze che decidono sono
+     poche e si contano. */
+  function femmina(c) {
+    var t = String(c || '').toLowerCase();
+    if (/(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t)) return true;
+    if (/a$/.test(t)) return true;
+    return false;
+  }
   function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 
   function dimentica() { ultima = ''; ultimaQuando = 0; }

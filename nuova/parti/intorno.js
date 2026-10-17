@@ -75,7 +75,16 @@ function Intorno(opzioni) {
            lo dicono osm_key «highway» o il tipo «street». Se non lo è, la
            via resta vuota — e chi chiama non dice niente. Meglio tacere
            che dire il nome di un bar al posto della strada. */
-        var eUnaStrada = p && (p.osm_key === 'highway' || p.type === 'street');
+        /* «highway» NON VUOL DIRE STRADA. In OpenStreetMap sono highway
+           anche le fermate dell'autobus, gli attraversamenti e i lampioni:
+           a Vietri l'app ha detto «sei in Fermata circolare» perche' la
+           cosa piu' vicina era una fermata, osm_key highway. Si tengono
+           solo i valori che sono davvero una via da percorrere. */
+        var NON_SONO_STRADE = { bus_stop: 1, crossing: 1, traffic_signals: 1,
+                                street_lamp: 1, stop: 1, give_way: 1, turning_circle: 1,
+                                elevator: 1, platform: 1, milestone: 1, speed_camera: 1 };
+        var eUnaStrada = p && ((p.osm_key === 'highway' && !NON_SONO_STRADE[p.osm_value]) ||
+                               p.type === 'street');
         var v = p ? {
           via: p.street || (eUnaStrada ? (p.name || '') : ''),
           civico: p.housenumber || '',

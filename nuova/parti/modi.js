@@ -73,6 +73,12 @@ function Modi(opzioni) {
        Mare») perche' erano fatti per stare dietro a qualcosa, e da soli
        sullo schermo sembravano un pezzo caduto li' per caso. */
     if (!a) return testo.charAt(0).toUpperCase() + testo.slice(1);
+    /* LE SIGLE RESTANO SIGLE. Abbassando la prima lettera usciva «Dunque,
+       pUB dietro di te» (Vietri, 18/10): se la prima parola e' tutta
+       maiuscola — PUB, ATM, BNL — non si tocca. */
+    var primaParola = testo.split(/[\s,.;:]/)[0] || '';
+    if (primaParola.length > 1 && primaParola === primaParola.toUpperCase() &&
+        /[A-ZÀ-Ý]/.test(primaParola)) return a + testo;
     return a + testo.charAt(0).toLowerCase() + testo.slice(1);
   }
 

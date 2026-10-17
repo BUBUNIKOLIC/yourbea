@@ -71,6 +71,15 @@ prova('la strada: via, civico e città', async () => {
 /* IL BUCO DEL 16/10, chiuso. «Se faccio un viale mi dice sempre che lo sto
    imboccando?» No — tranne qui: in mezzo al viale la cosa più vicina era un
    bar senza indirizzo, e il nome del bar passava per nome della strada. */
+/* «SEI IN FERMATA CIRCOLARE» — provando a Vietri il 18/10. In OSM sono
+   highway anche le fermate dell'autobus, e passavano per vie.            */
+prova('UNA FERMATA DELL\'AUTOBUS NON È UNA STRADA', async () => {
+  const { i } = mondo({ 'photon.komoot.io/reverse': { features: [{ properties: {
+    name: 'Fermata circolare', osm_key: 'highway', osm_value: 'bus_stop', city: 'Vietri sul Mare' } }] } });
+  const s = await i.strada(40.673, 14.727);
+  if (s && s.via) guasto('ha preso una fermata per una strada: ' + s.via);
+});
+
 prova('IL NOME DI UN NEGOZIO NON È UNA STRADA', async () => {
   const { i } = mondo({ 'photon.komoot.io/reverse': { features: [{ properties: {
     name: 'Bar Roma', osm_key: 'amenity', osm_value: 'bar', city: 'Roma' } }] } });

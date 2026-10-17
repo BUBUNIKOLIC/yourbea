@@ -282,6 +282,25 @@ prova('il nome da solo non dice niente: si dice anche cos\'è', () => {
   if (/farmacia Farmacia/i.test(d.testo)) guasto('ha raddoppiato la parola: ' + d.testo);
 });
 
+/* «IL STAZIONE» — provando a Vietri il 18/10 nel banco del browser.
+   L'articolo si decideva dalla «a» finale, e in italiano finiscono in -e
+   tutti e due i generi.                                                   */
+prova('l\'articolo giusto davanti al tipo', () => {
+  const w = mondo();
+  const casi = [
+    [{ lat: QUI.lat, lon: QUI.lon + 0.00035, nome: 'Vietri sul Mare-Amalfi', cosa: 'stazione' }, /la stazione/],
+    [{ lat: QUI.lat, lon: QUI.lon + 0.00035, nome: 'Da Mario', cosa: 'ristorante' }, /il ristorante/],
+    [{ lat: QUI.lat, lon: QUI.lon + 0.00035, nome: 'Pirani', cosa: 'farmacia' }, /la farmacia/],
+    [{ lat: QUI.lat, lon: QUI.lon + 0.00035, nome: 'Centrale', cosa: 'fermata' }, /la fermata/]
+  ];
+  casi.forEach(([p2, atteso]) => {
+    const w2 = mondo();
+    const d = w2.s.aiLati({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [p2] });
+    if (!d) { guasto('non ha detto niente per ' + p2.cosa); return; }
+    if (!atteso.test(d.testo)) guasto('articolo sbagliato: ' + d.testo);
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della scena');

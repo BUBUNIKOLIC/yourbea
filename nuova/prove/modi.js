@@ -194,6 +194,18 @@ prova('LE INDICAZIONI RESTANO IDENTICHE — parola per parola', () => {
   });
 });
 
+/* «pUB» — provando a Vietri il 18/10. Abbassando la prima lettera le sigle
+   si storpiavano.                                                         */
+prova('le sigle restano sigle', () => {
+  const m = Modi({ caso: conCaso([0.9, 0.0]) });
+  const v = m.veste('cenno', 'PUB dietro di te, a una quarantina di passi.');
+  if (/pUB/.test(v)) guasto('ha storpiato la sigla: ' + v);
+  if (!/PUB/.test(v)) guasto('ha perso la sigla: ' + v);
+  const m2 = Modi({ caso: conCaso([0.9, 0.0]) });
+  const w = m2.veste('cenno', 'Sulla destra, il bar.');
+  if (!/, sulla destra/.test(w) && !/^Sulla destra/.test(w)) guasto('le parole normali si abbassano ancora: ' + w);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei modi di dire');
