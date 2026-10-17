@@ -36,7 +36,23 @@ TIPI = """wd:Q16970 wd:Q23413 wd:Q33506 wd:Q41176 wd:Q3947 wd:Q2080521 wd:Q81197
           wd:Q163687 wd:Q120560 wd:Q160742 wd:Q3329412 wd:Q2087181 wd:Q1970365
           wd:Q3867560 wd:Q17431399 wd:Q16735822 wd:Q12104174 wd:Q97662266
           wd:Q2398990 wd:Q92755865 wd:Q124830213 wd:Q124830411 wd:Q94701721
-          wd:Q56242215 wd:Q1129743 wd:Q1370598 wd:Q2977"""
+          wd:Q56242215 wd:Q1129743 wd:Q1370598 wd:Q2977
+          wd:Q23442 wd:Q1134686 wd:Q93352 wd:Q8502 wd:Q54050 wd:Q4022
+          wd:Q1322134 wd:Q40080 wd:Q473972 wd:Q6063204 wd:Q133056 wd:Q44782
+          wd:Q23397 wd:Q39816 wd:Q747074 wd:Q3950 wd:Q697295 wd:Q1293150
+          wd:Q55488 wd:Q55678 wd:Q1088552 wd:Q97588309 wd:Q740437"""
+# IL PAESAGGIO, dal 18/10. Vince, tornando da Vietri: «il non vedente vuole
+# che sia descritta la realta' circostante — di fronte, davanti a te hai il
+# golfo, Raito, i Due Fratelli». Nei dati non c'era niente di tutto questo:
+# chiedevamo chiese, palazzi e musei, e intorno a Vietri uscivano 110 luoghi
+# tutti edifici. Chiesto a Wikidata cosa c'e' davvero sulla costiera:
+#   «I Due Fratelli» e' un'ISOLA (Q23442), «Raito» una FRAZIONE (Q1134686),
+#   la «Costiera amalfitana» una COSTA (Q93352).
+# Aggiunte anche montagna, collina, fiume, baia, spiaggia, lago, valle,
+# area protetta, parco regionale, passo, porto, comune, villa, santuario,
+# torre costiera e le stazioni: sono i punti fermi del paesaggio, quelli che
+# uno vedrebbe alzando gli occhi — ed e' esattamente quello che a chi non
+# vede nessuno racconta.
 # LA LISTA ERA TROPPO CORTA, E SI VEDEVA SOLO CONTANDO.
 # Pisa, 16/10: 143 luoghi trovati e dentro non c'erano la Torre, il Duomo, il
 # Battistero e il Camposanto. Chiesto a Wikidata cosa c'e' davvero in quel
