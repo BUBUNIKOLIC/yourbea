@@ -88,6 +88,14 @@ prova('le tre frasi vere, vestite, si leggono bene', () => {
   });
 });
 
+prova('senza attacco la frase prende la maiuscola, ma solo se la vesto io', () => {
+  const m = Modi({ caso: conCaso([0.1]) });   // sotto la soglia: nessun attacco
+  const c = m.veste('cenno', 'sulla sinistra, a 140 metri, Vietri sul Mare.');
+  if (!/^Sulla sinistra/.test(c)) guasto('il cenno doveva prendere la maiuscola: ' + c);
+  const i = 'adesso: gira a destra.';
+  if (m.veste('svolta', i) !== i) guasto('una indicazione non si tocca nemmeno nella maiuscola: ' + m.veste('svolta', i));
+});
+
 prova('niente da vestire: non scoppia', () => {
   const m = Modi({ caso: conCaso([0.9]) });
   [null, undefined, '', 0].forEach((v) => { m.veste('cenno', v); m.colNome(v); });

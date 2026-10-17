@@ -1135,6 +1135,7 @@
   /* ---------- il giro: a ogni posizione nuova ---------- */
   var ultimaStrada = '', ultimaVia = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
   var stradeDette = {};        // quale via, e quando l'ho annunciata
+  var ultimoAnnuncioStrada = 0;   // quando ho annunciato una strada, qualunque
   posizione.quando(function (cosa, s) {
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
@@ -1227,6 +1228,20 @@
            cose». Una via detta da meno di tre minuti si registra ma si
            tace. */
         var ADESSO = Date.now();
+        /* E NON PIU' DI UNA STRADA PER VOLTA. Provando a Vietri nel
+           browser: «Sei entrato in Via Roma» alle 20:08, «Strada Statale
+           Amalfitana» alle 20:16, «Via Osvaldo Costabile» alle 20:40 —
+           tre strade in mezzo minuto, senza aver girato. Il riposo per
+           NOME non basta: il punto balla fra vie DIVERSE, e ogni ballo
+           era un annuncio nuovo. Fra un annuncio di strada e il prossimo
+           passano almeno venticinque secondi, chiunque sia la via: se nel
+           frattempo si e' girato davvero, lo si dice un attimo dopo. */
+        if (ADESSO - ultimoAnnuncioStrada < 25000) {
+          diario('STRADA: ' + viaOra + ' troppo presto dopo l altra, taccio');
+          ultimaVia = viaOra;
+          stradeDette[viaOra.toLowerCase()] = ADESSO;
+          return;
+        }
         var quandoDetta = stradeDette[viaOra.toLowerCase()] || 0;
         var prima = ultimaVia;
         ultimaVia = viaOra;
@@ -1237,6 +1252,7 @@
           passaggi.stradaNuova();
           return;
         }
+        ultimoAnnuncioStrada = ADESSO;
         dillo({ tipo: 'strada', livello: 'guida',
                 testo: (prima ? 'Sei entrato in ' : 'Sei in ') + viaOra + '.' });
         scena.dimentica();          // strada nuova, scena nuova: si può ridire
@@ -1621,7 +1637,7 @@
     if (s.pronto) {
       scena.dimenticaTutto();
       var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
-                               direzioneBuona: s.direzioneBuona, strada: ultimaStrada, mappa: SERVIZI });
+                               direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI });
       if (d) pezzi.push(d.testo);
     }
     var lista = vicini().filter(function (o) { return o.p.k; }).slice(0, 3);

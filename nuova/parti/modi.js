@@ -66,8 +66,13 @@ function Modi(opzioni) {
      una parolina davanti e si abbassa la maiuscola che resta in mezzo. */
   function veste(tipo, testo) {
     if (!testo || typeof testo !== 'string') return testo;
+    if (!ATTACCHI[tipo]) return testo;        // REGOLA 5: non si tocca
     var a = attacco(tipo);
-    if (!a) return testo;
+    /* senza attacco la frase resta com'e', ma con la maiuscola: i cenni
+       nascono gia' minuscoli («sulla sinistra, a 140 metri, Vietri sul
+       Mare») perche' erano fatti per stare dietro a qualcosa, e da soli
+       sullo schermo sembravano un pezzo caduto li' per caso. */
+    if (!a) return testo.charAt(0).toUpperCase() + testo.slice(1);
     return a + testo.charAt(0).toLowerCase() + testo.slice(1);
   }
 
