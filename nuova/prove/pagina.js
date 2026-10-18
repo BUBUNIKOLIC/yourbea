@@ -209,6 +209,19 @@ prova('le fonti di fuori non finiscono in cassaforte', () => {
   if (!/mode === 'navigate'/.test(sw)) guasto('la pagina deve andare prima in rete, o le correzioni non arrivano mai');
 });
 
+/* LE DUE VOCI DELLA SORELLA DI VINCE — Android, quindi TalkBack.
+   Il riquadro .muto e' aria-live: il lettore di schermo legge ad alta voce
+   tutto quello che ci finisce. Scrivendoci la stessa frase che la nostra
+   voce sta dicendo, ogni cosa si sentiva due volte.                      */
+prova('la frase che la voce dice NON finisce nel riquadro del lettore di schermo', () => {
+  const righe = app.split('\n').filter((r) => /alLettore\(/.test(r) && !/function alLettore/.test(r));
+  if (!righe.length) guasto('nessuno scrive al lettore: controllare il nome');
+  righe.forEach((r) => {
+    if (/alLettore\([^)]*\)/.test(r) && !/,\s*true\s*\)/.test(r))
+      guasto('scrive al lettore senza dire che la voce lo sta gia dicendo: ' + r.trim().slice(0, 70));
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pagina');

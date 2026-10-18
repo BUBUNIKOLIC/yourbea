@@ -128,7 +128,25 @@
     el('stato').innerHTML = t;
     el('stato').className = 'stato' + (male ? ' male' : '');
   }
-  function alLettore(t) { try { el('muto').textContent = t; } catch (e) {} }
+  /* IL RIQUADRO PER IL LETTORE DI SCHERMO, e perché quasi sempre deve
+     restare vuoto.
+     «Mia sorella ha sentito tre voci», e lei ha ANDROID — quindi TalkBack,
+     che è il lettore di schermo di Android come VoiceOver lo è di iPhone.
+     Chi non vede lo tiene acceso sempre: è il modo in cui usa il telefono.
+     Questo riquadro è aria-live, cioè il lettore di schermo legge ad alta
+     voce tutto quello che ci finisce dentro. E noi ci scrivevamo LA STESSA
+     FRASE che la nostra voce stava dicendo: ogni cosa detta due volte, la
+     nostra voce e il lettore sopra. Il commento nella pagina diceva già la
+     regola giusta — «qui va quello che l'app NON dice» — ma il codice
+     faceva il contrario.
+     Adesso ci va solo quando la voce non c'è: telefono senza sintesi, o
+     audio negato. Allora il lettore di schermo è l'unica uscita e serve. */
+  function alLettore(t, laVoceLoDice) {
+    try {
+      if (laVoceLoDice && window.speechSynthesis) { el('muto').textContent = ''; return; }
+      el('muto').textContent = t;
+    } catch (e) {}
+  }
 
   /* ---------- quello che c'è intorno, pronto per il racconto ---------- */
   var SERVIZI = { punti: [], aree: [], alberi: [] };
@@ -917,7 +935,7 @@
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
     voce.parla(d.testo, { livello: liv, ancheSeUguale: true });
     mostra({ titolo: titoloDi(d), testo: d.testo, gradino: '' });
-    alLettore(d.testo);
+    alLettore(d.testo, true);        // la voce la sta gia dicendo
     esegui(d.mosse);
   }
   function titoloDi(d) {
@@ -1154,7 +1172,7 @@
     } else {
       mostra({ titolo: titoloDi(d), testo: d.testo, dove: '', gradino: '' });
     }
-    alLettore(d.testo);
+    alLettore(d.testo, true);        // la voce la sta gia dicendo
   }
   function gradinoScritto(d) {
     if (d.tipo === 'aCosaServe') return 'Dimmi «ancora» se vuoi che te lo racconti.';
