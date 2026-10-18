@@ -182,7 +182,13 @@ prova('la svolta si preannuncia da settanta metri', () => {
   g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
   const lontano = g.passo({ lat: 41.46580, lon: 12.90780 }, 1000);
   if (!lontano || lontano.tipo !== 'preavviso') guasto('a una sessantina di metri va preannunciata: ' + JSON.stringify(lontano));
-  if (lontano && !/^Fra \d+ metri/.test(lontano.testo)) guasto('il preavviso dice quanto manca: ' + lontano.testo);
+  /* LE PAROLE DI VINCE, 20/10: «mancano 50 metri all'incrocio, poi puoi
+     svoltare a destra». Quanto manca in metri E in passi, e cosa farai
+     dopo — non un ordine da eseguire fra venti secondi. */
+  if (lontano && !/^Mancano \d+ metri/.test(lontano.testo)) guasto('il preavviso dice quanto manca: ' + lontano.testo);
+  if (lontano && !/passi/.test(lontano.testo)) guasto('e lo dice anche in passi: ' + lontano.testo);
+  if (lontano && !/Poi puoi svoltare a destra/.test(lontano.testo)) guasto('e cosa farai dopo: ' + lontano.testo);
+  if (lontano && /\.\./.test(lontano.testo)) guasto('due punti di fila: ' + lontano.testo);
   const ancora = g.passo({ lat: 41.46582, lon: 12.90782 }, 2000);
   if (ancora && ancora.tipo === 'preavviso') guasto('lo ha preannunciato due volte');
 });
@@ -401,6 +407,47 @@ prova('il 112 non parte di soppiatto: cinque secondi per fermarlo', () => {
   if (!/annulla/i.test(d.testo)) guasto('non dice come fermarla: ' + d.testo);
   if (!d.mosse || d.mosse[0].fraMillisecondi < 4000) guasto('troppo poco tempo per fermarla');
   if (!/posizione/i.test(d.testo)) guasto('e deve dire che la posizione parte da sé');
+});
+
+/* ============================================================
+   IL FILO — «continua così per 200 passi»
+   «In pratica non guida nessuno: ti dice solo in che strada sei e qualche
+   volta qual è l'incrocio» (Vince, 20/10, dopo «portami a casa»).
+   Un navigatore per chi vede tace fra una svolta e l'altra. Chi non vede,
+   nel silenzio, non sa se sta ancora andando bene.                       */
+prova('IL FILO: non resta zitto piu di venti secondi mentre ti accompagna', () => {
+  const g = Guida({ dist, verso });
+  const svolta = { lat: 41.4700, lon: 12.9120, testo: 'Svolta a destra su Via Rossi.' };
+  const p = { metri: 400, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
+  g.vaiA({ n: 'casa tua', lat: 41.4710, lon: 12.9130 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
+  /* fermi nello stesso punto: niente svolte, niente fuori strada, niente
+     da dire — ed e' proprio li' che prima calava il silenzio */
+  const zitto = g.passo({ lat: 41.46580, lon: 12.90780 }, 5000);
+  const filo = g.passo({ lat: 41.46580, lon: 12.90780 }, 40000);
+  if (!filo) { guasto('dopo venti secondi deve dire qualcosa'); return; }
+  if (!/Continua così per/.test(filo.testo)) guasto('non e il filo: ' + filo.testo);
+  if (!/passi/.test(filo.testo)) guasto('in passi, che si camminano: ' + filo.testo);
+  if (!/metri/.test(filo.testo)) guasto('e in metri, che si controllano: ' + filo.testo);
+  if (filo.livello !== 'cenno') guasto('il filo non taglia niente: e un cenno');
+  console.log('      → ' + filo.testo);
+});
+
+prova('IL FILO dice anche cosa farai dopo', () => {
+  const g = Guida({ dist, verso });
+  const svolta = { lat: 41.4700, lon: 12.9120, testo: 'Svolta a sinistra su Via Verdi.' };
+  const p = { metri: 400, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
+  g.vaiA({ n: 'casa tua', lat: 41.4710, lon: 12.9130 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
+  const filo = g.passo({ lat: 41.46580, lon: 12.90780 }, 40000);
+  if (!/Poi puoi svoltare a sinistra/.test(filo.testo)) guasto('manca il poi: ' + filo.testo);
+});
+
+prova('IL FILO non parla sopra una svolta', () => {
+  const g = Guida({ dist, verso });
+  const svolta = { lat: 41.46585, lon: 12.90785, testo: 'Svolta a destra su Via Rossi.' };
+  const p = { metri: 100, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
+  g.vaiA({ n: 'casa tua', lat: 41.4660, lon: 12.9080 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
+  const d = g.passo({ lat: 41.46584, lon: 12.90784 }, 40000);
+  if (d && d.tipo === 'filo') guasto('con una svolta addosso deve dire la svolta, non il filo');
 });
 
 const passate = fatti.filter(Boolean).length;

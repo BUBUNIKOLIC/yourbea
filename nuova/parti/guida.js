@@ -33,6 +33,7 @@ function Guida(opzioni) {
   var VICINO_SVOLTA = o.vicinoSvolta || 25;
   var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
   var ARRIVATO = o.arrivato || 22;
+  var FILO = o.filo || 20000;        // non si tace mai piu' di venti secondi
   var FUORI = o.fuori || 45;                // quanto ci si può scostare dal tracciato
   var FUORI_DA = o.fuoriDa || 15000;        // e per quanto, prima di dirlo
 
@@ -179,6 +180,28 @@ function Guida(opzioni) {
                     capo(versoDove(qui, m)) + '. Non ho la strada passo passo: ti dico da che parte mano a mano.' };
   }
 
+  /* passi(): la stessa misura in passi, come in parti/scena.js. Un passo
+     e' settantacinque centimetri. */
+  function passi(m) {
+    var p = Math.round(m / 0.75 / 10) * 10;
+    return p <= 10 ? 'pochi passi' : (p + ' passi');
+  }
+
+  /* puoi(): «gira a destra in via Rossi» diventa «puoi svoltare a destra in
+     via Rossi». E' la differenza fra un ordine e un avviso: nel preavviso
+     non devi fare niente adesso, devi solo saperlo. Parole di Vince:
+     «poi puoi svoltare a destra». */
+  function puoi(testo) {
+    var t = minuscola(String(testo || ''));
+    t = t.replace(/^gira a /, 'puoi svoltare a ')
+         .replace(/^svolta a /, 'puoi svoltare a ')
+         .replace(/^continua /, 'puoi continuare ')
+         .replace(/^prendi /, 'puoi prendere ')
+         .replace(/^cammina /, 'puoi camminare ');
+    t = t.replace(/[.\s]+$/, '');          // il punto lo mette chi compone la frase
+    return /^puoi /.test(t) ? t : ('puoi ' + t);
+  }
+
   /* passo(): si chiama a ogni posizione nuova mentre si va verso la meta. */
   function passo(qui, adesso, s) {
     if (!meta) return null;
@@ -219,8 +242,14 @@ function Guida(opzioni) {
       if (quanto < PREAVVISO && preavvisata !== prossima) {
         preavvisata = prossima;
         ultimoAvviso = adesso;
+        /* LE PAROLE SUE, 20/10: «mancano 50 metri all'incrocio, poi puoi
+           svoltare a destra». Due cose in una frase: quanto manca, e cosa
+           farai dopo. «Fra 70 metri gira a destra» e' un ordine da
+           eseguire adesso che pero' si eseguira' fra venti secondi; cosi'
+           invece uno sa che deve solo continuare, e cosa lo aspetta. */
         return { tipo: 'preavviso', livello: 'guida',
-                 testo: 'Fra ' + (Math.round(quanto / 10) * 10) + ' metri, ' + minuscola(s.testo) };
+                 testo: 'Mancano ' + (Math.round(quanto / 10) * 10) + ' metri, ' +
+                        passi(quanto) + '. Poi ' + puoi(s.testo) + '.' };
       }
     }
     /* FUORI STRADA. Un navigatore se ne accorge e lo dice, invece di
@@ -237,10 +266,32 @@ function Guida(opzioni) {
         }
       } else { fuoriDa = 0; }
     }
-    // e ogni tanto quanto manca, se ci si è spostati
-    if (Math.abs(quantoManca - d) > 25 && adesso - ultimoAvviso > 12000) {
-      quantoManca = d; ultimoAvviso = adesso;
-      return { tipo: 'manca', livello: 'guida', testo: capo(versoDove(qui, meta)) + ', ' + metri(d) + '.' };
+    /* ============================================================
+       IL FILO: «CONTINUA COSÌ PER 200 PASSI»
+       «In pratica non guida nessuno: ti dice solo in che strada sei e
+       qualche volta qual è l'incrocio» (Vince, 20/10, dopo «portami a
+       casa»). E poi la frase che spiega tutto: «lungo una strada avrei
+       bisogno d'indicazioni tipo continua così per 200 passi, oppure 50
+       metri; poi puoi svoltare a destra».
+       Un navigatore per chi vede TACE fra una svolta e l'altra, perché chi
+       guida guarda la strada e sa di essere sulla strada giusta. Chi non
+       vede non lo sa: ogni secondo di silenzio è un dubbio, e dopo venti
+       secondi di dubbio uno si ferma. Il filo non dà un ordine nuovo: dice
+       che quello di prima vale ancora, e per quanto.
+       In passi E in metri, perché i passi si camminano e i metri si
+       controllano. */
+    if (adesso - ultimoAvviso > FILO) {
+      ultimoAvviso = adesso;
+      quantoManca = d;
+      var manca = d;
+      var poi = '';
+      if (svolte.length && prossima < svolte.length) {
+        manca = dist(qui.lat, qui.lon, svolte[prossima].lat, svolte[prossima].lon);
+        poi = ' Poi ' + puoi(svolte[prossima].testo) + '.';
+      }
+      return { tipo: 'filo', livello: 'cenno',
+               testo: 'Continua così per ' + passi(manca) + ', ' +
+                      (Math.round(manca / 10) * 10) + ' metri.' + poi };
     }
     return null;
   }

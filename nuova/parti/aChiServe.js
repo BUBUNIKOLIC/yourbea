@@ -111,7 +111,27 @@ function AChiServe() {
     return CHE_ORIENTANO[String(p.t || '').toLowerCase()] || 1;
   }
 
-  return { serve: serve, quantoConta: quantoConta, REGOLA: REGOLA };
+  /* ============================================================
+     QUELLO CHE NON SERVE A CHI NON GUIDA
+     «Poi per i non vedenti dà indicazioni di autofficine, pompe di
+     benzina, che per un non vedente sono un ossimoro» (Vince, 20/10).
+     Ha ragione, ed e' la stessa regola di prima vista da un altro lato:
+     Utilita' e' quello che serve a chi si muove A PIEDI. Un distributore
+     non e' un punto di riferimento per chi cammina, e' un posto dove uno
+     in macchina si ferma. Restano fuori, in Utilita' come in Turismo.
+     NON e' una regola sulla cecita': non servono nemmeno al turista a
+     piedi. Tornano utili solo se uno li CHIEDE. */
+  var ROBA_DA_MACCHINA = {
+    distributore: 1, 'pompa di benzina': 1, benzinaio: 1, officina: 1,
+    autofficina: 1, autolavaggio: 1, gommista: 1, carrozzeria: 1,
+    concessionario: 1, autonoleggio: 1, 'noleggio auto': 1, autoscuola: 1,
+    'ricambi auto': 1, 'stazione di servizio': 1, 'autostrada': 1,
+    'area di servizio': 1, 'casello': 1
+  };
+  function daMacchina(cosa) { return !!ROBA_DA_MACCHINA[String(cosa || '').toLowerCase()]; }
+
+  return { serve: serve, quantoConta: quantoConta, daMacchina: daMacchina,
+           REGOLA: REGOLA };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AChiServe;

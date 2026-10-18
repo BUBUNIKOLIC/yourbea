@@ -956,10 +956,37 @@
   /* aCasa(): il tasto e la voce finiscono tutti e due qui.
      Se non sa dove abiti non si inventa niente e non lascia in silenzio:
      lo dice, e apre il posto dove scriverlo. */
+  /* segnaCasaQui(): «e quando sono arrivato a casa mi diceva torna
+     indietro di 400 metri» (Vince, 20/10). Quattrocento metri non sono un
+     errore del GPS: sono l'errore di chi cerca l'indirizzo. Photon, di una
+     via col numero civico, spesso restituisce il CENTRO DELLA VIA — e in
+     una via lunga il centro sta a quattrocento metri dal tuo portone.
+     Per chi non vede non c'e' modo di accorgersene e correggere: arriva, e
+     l'app gli dice di tornare indietro.
+     La soluzione non e' un geocodificatore migliore: e' stare sulla porta
+     di casa e dire «casa è qui». Un punto preso dove sei vale piu' di
+     qualunque indirizzo, e da quel momento l'arrivo e' esatto. */
+  function segnaCasaQui() {
+    var s2 = posizione.leggi();
+    if (!s2.pronto) {
+      voce.parla('Prima devo sapere dove sei. Aspetta che trovo la posizione, poi dimmelo di nuovo.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    casaPunto = { lat: s2.lat, lon: s2.lon };
+    try { localStorage.setItem('yourbea2-casa-punto', JSON.stringify(casaPunto)); } catch (e) {}
+    diario('CASA segnata qui: ' + s2.lat.toFixed(5) + ',' + s2.lon.toFixed(5) + ' ±' + Math.round(s2.prec || 0) + 'm');
+    var preciso = (s2.prec || 999) <= 25;
+    voce.parla(preciso
+      ? 'Fatto: casa tua è questo punto. Da adesso «portami a casa» ti porta esattamente qui.'
+      : 'Ho segnato casa qui, ma il telefono non è sicuro della posizione: se puoi, dimmelo di nuovo quando sei fuori dal portone.',
+      { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+
   function aCasa() {
-    /* chi veniva dalla vecchia ha casa come PUNTO, non come indirizzo: si
-       va lì diritti, senza cercare niente. */
-    if (!casa && casaPunto) {
+    /* IL PUNTO BATTE L'INDIRIZZO, sempre: l'ha segnato lui stando li', e
+       non c'e' geocodificatore che possa fare meglio. */
+    if (casaPunto) {
       var s0 = posizione.leggi();
       if (!s0.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
       var qui0 = { lat: s0.lat, lon: s0.lon, direzione: s0.direzione, direzioneBuona: s0.direzioneBuona };
@@ -1556,6 +1583,11 @@
     if (ha('leggi')) { leggiIlCartello(); return true; }
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
+    /* PRIMA di «portami a casa», se no «casa» da sola lo prenderebbe */
+    if (ha('casa e qui', 'casa è qui', 'questa e casa mia', 'questa è casa mia',
+            'segna casa qui', 'sono a casa', 'siamo a casa', 'casa mia e qui')) {
+      segnaCasaQui(); return true;
+    }
     if (ha('portami a casa', 'torniamo a casa', 'riportami a casa', 'andiamo a casa', 'voglio tornare a casa')) { aCasa(); return true; }
     var meta = guida.dalComando(t);
     if (meta) {

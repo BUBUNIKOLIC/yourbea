@@ -59,6 +59,11 @@ function Passaggi(opzioni) {
      o quello che gli fa scegliere da che parte passare. Un avviso non
      aspetta il suo turno e non si spegne col filtro «solo monumenti»: chi
      chiede meno chiacchiere non sta chiedendo meno sicurezza. */
+  var DA_MACCHINA = { distributore: 1, 'pompa di benzina': 1, benzinaio: 1,
+    officina: 1, autofficina: 1, autolavaggio: 1, gommista: 1, carrozzeria: 1,
+    concessionario: 1, autonoleggio: 1, 'noleggio auto': 1, autoscuola: 1,
+    'ricambi auto': 1, 'stazione di servizio': 1 };
+
   var AVVISI = { paletto: 1, scalini: 1, 'scivolo del marciapiede': 1,
                  ascensore: 1, attraversamento: 1, 'scala mobile': 1,
                  cordolo: 1, dissuasore: 1 };
@@ -80,6 +85,13 @@ function Passaggi(opzioni) {
   function vaDetto(p) {
     if (!p || !p.servizio) return false;
     if (p.cosa === 'attraversamento') return false;      // li dice la scena, riassunti
+    /* NIENTE ROBA DA MACCHINA. «Dà indicazioni di autofficine, pompe di
+       benzina, che per un non vedente sono un ossimoro» (Vince, 20/10).
+       Non servono nemmeno al turista a piedi: un distributore non e' un
+       punto di riferimento per chi cammina. Se uno lo chiede, si trova
+       lo stesso — questo filtro vale solo per quello che l'app dice da
+       sola. */
+    if (DA_MACCHINA[String(p.cosa || '').toLowerCase()]) return false;
     return !!p.nome || !!UTILI_DA_SOLE[p.cosa];          // REGOLA 2
   }
 

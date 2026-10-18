@@ -175,6 +175,24 @@ prova('un bar non e un avviso', () => {
   if (d && d.avviso) guasto('un bar marcato come avviso: ' + d.testo);
 });
 
+/* «Dà indicazioni di autofficine, pompe di benzina, che per un non vedente
+   sono un ossimoro» (Vince, 20/10). Non servono nemmeno al turista a piedi:
+   un distributore non e' un punto di riferimento per chi cammina.        */
+prova('la roba da macchina non si annuncia a chi cammina', () => {
+  ['distributore', 'benzinaio', 'officina', 'autolavaggio', 'gommista', 'carrozzeria'].forEach((cosa) => {
+    const w = mondo();
+    const d = w.p.prossimo({ qui: QUI, direzione: 0, direzioneBuona: true,
+                             punti: [Object.assign({ cosa: cosa, servizio: cosa, nome: 'Da Gino' }, vicino(0, 0.00012))] });
+    if (d) guasto('ha annunciato ' + cosa + ': ' + d.testo);
+  });
+});
+
+prova('ma una farmacia si annuncia eccome', () => {
+  const w = mondo();
+  if (!w.p.prossimo({ qui: QUI, punti: [FARMACIA], direzione: 0, direzioneBuona: true }))
+    guasto('la farmacia serve: non deve sparire col filtro');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei passaggi');
