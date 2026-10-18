@@ -1050,7 +1050,17 @@
     cercatore.then(function (candidati) {
       var scelto = guida.scegli(candidati, parole, qui, tipo ? '' : pulita);
       if (!scelto) {
-        voce.parla("Questo indirizzo non l'ho trovato.", { livello: voce.GUIDA, ancheSeUguale: true });
+        /* E QUANDO NON LO TROVA, SI DICE LA VIA D'USCITA.
+           Provato il 20/10 con l'indirizzo vero di Vince: Photon, a «Via
+           dei Corazzieri 47 Latina», risponde «Via dei Marrucini 47» —
+           un'altra strada a due chilometri. Adesso quella risposta la
+           buttiamo, ed e' giusto; ma «non l'ho trovato» da solo lascia a
+           piedi chi non vede. La via d'uscita c'e' e non la sa nessuno:
+           mettersi sulla porta e dire «casa è qui». */
+        voce.parla(eCasa
+          ? 'Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.'
+          : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
+          { livello: voce.GUIDA, ancheSeUguale: true });
         return;
       }
       /* il nome che arriva dal cercatore spesso contiene gia' la citta'

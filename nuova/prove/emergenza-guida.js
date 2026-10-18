@@ -450,6 +450,56 @@ prova('IL FILO non parla sopra una svolta', () => {
   if (d && d.tipo === 'filo') guasto('con una svolta addosso deve dire la svolta, non il filo');
 });
 
+/* ============================================================
+   I DUE CASI VERI DEL 20/10 — chiesti a Photon con l'indirizzo di Vince
+     «Via dei Corazzieri 47 Latina» → Via dei MARRUCINI 47, due chilometri
+     «Via dei Corazzieri Latina»   → tre Via dei Corazzieri a ROMA
+   Tutti e due passavano il controllo, perche' bastava che UNA parola piena
+   comparisse: e «latina» e' una parola piena.                            */
+prova('LA VIA SBAGLIATA NELLA CITTA GIUSTA si butta', () => {
+  const g = Guida({ dist, verso });
+  const candidati = [{ nome: 'Via dei Marrucini, Latina', citta: 'Latina',
+                       lat: 41.45932, lon: 12.92574 }];
+  const scelto = g.scegli(candidati, ['latina'], { lat: 41.4676, lon: 12.9036 },
+                          'via dei corazzieri 47 latina');
+  if (scelto) guasto('ha preso una via che non si chiama cosi: ' + scelto.nome);
+});
+
+prova('LA VIA GIUSTA NELLA CITTA SBAGLIATA si butta', () => {
+  const g = Guida({ dist, verso });
+  const candidati = [
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82586, lon: 12.48608 },
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82301, lon: 12.48121 }
+  ];
+  const scelto = g.scegli(candidati, ['latina'], { lat: 41.4676, lon: 12.9036 },
+                          'via dei corazzieri latina');
+  if (scelto) guasto('lo ha mandato a Roma: ' + scelto.nome);
+});
+
+prova('e quella giusta si prende', () => {
+  const g = Guida({ dist, verso });
+  const candidati = [
+    { nome: 'Via dei Marrucini, Latina', citta: 'Latina', lat: 41.45932, lon: 12.92574 },
+    { nome: 'Via dei Corazzieri, Latina', citta: 'Latina', lat: 41.4701, lon: 12.9050 },
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82586, lon: 12.48608 }
+  ];
+  const scelto = g.scegli(candidati, ['latina'], { lat: 41.4676, lon: 12.9036 },
+                          'via dei corazzieri 47 latina');
+  if (!scelto) { guasto('quella giusta c era'); return; }
+  if (!/Corazzieri/.test(scelto.nome) || scelto.citta !== 'Latina')
+    guasto('ha scelto male: ' + JSON.stringify(scelto));
+});
+
+prova('senza citta detta, fra due vie con lo stesso nome si prende la piu vicina', () => {
+  const g = Guida({ dist, verso });
+  const candidati = [
+    { nome: 'Via Roma', citta: 'Milano', lat: 45.46, lon: 9.19 },
+    { nome: 'Via Roma', citta: 'Latina', lat: 41.4680, lon: 12.9040 }
+  ];
+  const scelto = g.scegli(candidati, [], { lat: 41.4676, lon: 12.9036 }, 'via roma');
+  if (!scelto || scelto.citta !== 'Latina') guasto('doveva prendere quella sotto casa: ' + JSON.stringify(scelto));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');

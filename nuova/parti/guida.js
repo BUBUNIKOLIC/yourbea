@@ -99,27 +99,73 @@ function Guida(opzioni) {
      che non si è trovato, invece di incamminarsi. */
   function scegli(candidati, parole, qui, testo) {
     if (!candidati || !candidati.length) return null;
+
+    /* ============================================================
+       IL NOME DELLA VIA DEVE COMBACIARE, NON UNA PAROLA QUALSIASI
+       Provato il 20/10 col suo indirizzo vero, chiedendolo a Photon:
+         «Via dei Corazzieri 47 Latina» → Via dei MARRUCINI 47, a due
+             chilometri: il cercatore ha preso il numero civico e ha
+             buttato via il nome della strada;
+         «Via dei Corazzieri Latina»   → tre Via dei Corazzieri a ROMA.
+       Il controllo che c'era passava tutti e due. Chiedeva che UNA delle
+       parole piene comparisse da qualche parte nel candidato — e «latina»
+       e' una parola piena, quindi «Via dei Marrucini, Latina» passava.
+       Una via sbagliata nella citta' giusta e' sbagliata uguale: a chi non
+       vede fai fare due chilometri a vuoto.
+       Adesso: la parola che distingue la STRADA deve stare nel NOME del
+       candidato, e la citta' si guarda a parte. */
+    var dellaCitta = {};
+    (parole || []).forEach(function (w) { dellaCitta[normalizza(w)] = 1; });
+
     if (testo) {
       var piene = parolePiene(testo);
-      if (piene.length) {
+      var dellaVia = piene.filter(function (w) { return !dellaCitta[w]; });
+      if (dellaVia.length) {
         var pertinenti = candidati.filter(function (c) {
-          var suo = normalizza([c.nome, c.citta, c.frazione].filter(Boolean).join(' '));
-          return piene.some(function (w) { return suo.indexOf(w) >= 0; });
+          /* SOLO il nome, non la citta': se no «Latina» fa passare
+             qualunque via di Latina */
+          var suo = normalizza(c.nome || '');
+          return dellaVia.some(function (w) { return suo.indexOf(w) >= 0; });
         });
-        if (pertinenti.length) candidati = pertinenti;
-        else return null;
+        if (!pertinenti.length) {
+          diario('SCELTA: nessun candidato ha «' + dellaVia.join(' ') + '» nel nome');
+          return null;
+        }
+        candidati = pertinenti;
       }
     }
+
+    /* LA CITTA' SBAGLIATA SI BUTTA, non si mette in fondo. Se uno ha detto
+       «Latina», tre Via dei Corazzieri a Roma non sono «meno buone»: sono
+       un'altra cosa. Se pero' nessun candidato e' nella citta' chiesta, si
+       restituisce niente — meglio «non l'ho trovato» che portarlo a Roma. */
     if (parole.length) {
-      var ordine = [
+      /* LA SCALA, che c'era e che avevo buttato via rifacendo questa
+         funzione: prima il comune esatto, poi la frazione o il nome, poi
+         la provincia. Senza, fra tre «Via Vincenzo Gioberti» tutte in
+         provincia di Latina sceglieva la piu' vicina a chi cerca — e cioe'
+         Aprilia invece di Latina. La prova vecchia l'ha preso al volo.
+         La novita' e' solo che chi non sta in NESSUNO di quei gradini
+         adesso si butta, invece di finire in fondo alla lista: tre Via dei
+         Corazzieri a Roma, per chi ha detto «Latina», non sono una
+         scelta peggiore — sono un'altra cosa. */
+      var gradini = [
         function (c) { return cittaCombacia(c.citta, parole); },
         function (c) { return cittaCombacia(c.frazione, parole) || cittaCombacia(c.nome, parole); },
         function (c) { return parole.some(function (p) { return normalizza([c.provincia, c.regione].join(' ')).indexOf(p) >= 0; }); }
       ];
-      for (var g = 0; g < ordine.length; g++) {
-        for (var i = 0; i < candidati.length; i++) if (ordine[g](candidati[i])) return candidati[i];
+      var trovati = null;
+      for (var g = 0; g < gradini.length && !trovati; g++) {
+        var q = candidati.filter(gradini[g]);
+        if (q.length) trovati = q;
       }
+      if (!trovati) {
+        diario('SCELTA: nessun candidato in «' + parole.join(' ') + '»');
+        return null;
+      }
+      candidati = trovati;
     }
+
     var mig = candidati[0], dm = Infinity;
     candidati.forEach(function (c) {
       var d = dist(qui.lat, qui.lon, c.lat, c.lon);
@@ -127,6 +173,7 @@ function Guida(opzioni) {
     });
     return mig;
   }
+
 
   /* leStrade(): i nomi delle vie che si percorreranno, in ordine.
      «Invece di dirmi, per andare in via dei Corazzieri, quali strade
