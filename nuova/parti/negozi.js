@@ -92,10 +92,42 @@ function Negozi(opzioni) {
      Quello che abbiamo scritto a mano vince sempre: le nostre schede sono
      fatte per essere ascoltate camminando, quelle di Wikipedia sono fatte
      per essere lette. Si aggiunge solo quello che non abbiamo. */
+  /* nomeCompleto(): «lo stadio Domenico Francioni», «la chiesa di San
+     Marco», «Monte Finestra». Il tipo davanti al nome, se il nome non lo
+     dice gia'. */
+  function nomeCompleto(x) {
+    var t = String(x.t || '').toLowerCase().trim();
+    var n = String(x.n || '');
+    if (!t) return n;
+    if (n.toLowerCase().indexOf(t.slice(0, 4)) === 0) return n;
+    if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
+    /* un nome di una parola sola E' gia' il tipo: «Municipio», «Duomo»,
+       «Colosseo». «Il palazzo comunale Municipio» non lo direbbe nessuno. */
+    if (n.indexOf(' ') < 0) {
+      var f0 = /(zione|sione|gione|ione|tà|tù|trice|ice)$/i.test(n) || /a$/i.test(n);
+      return (f0 ? 'la ' : (/^(S[bcdfgilmnpqrtv]|Z|Ps|Gn|X|Y)/.test(n) ? 'lo ' : 'il ')) + n;
+    }
+    var f = /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t) || /a$/.test(t);
+    var art = f ? 'la ' : (/^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ');
+    return art + t + ' ' + n;
+  }
+
   function perIlRacconto(cultura, nostri) {
     var fuori = [];
     (cultura || []).forEach(function (x) {
-      if (!x.n || !x.d) return;                 // senza scheda non c'è niente da dire
+      /* SENZA SCHEDA NON VUOL DIRE SENZA VALORE, e per mezza Italia era
+         la differenza fra avere l'app e non averla.
+         Qui si buttava via tutto quello che Wikipedia non racconta: 8.122
+         luoghi su 19.113, e dentro ci sono gli stadi, i municipi, le
+         stazioni, i mercati — cioe' esattamente quello che in Utilita'
+         serve per orientarsi. «Un non vedente in modalita' utilita' vuole
+         sapere cosa c'e': davanti hai il municipio, lo stadio» (Vince,
+         19/10): se il municipio non ha una voce su Wikipedia, con la
+         regola vecchia non esisteva.
+         Adesso resta, con quello che sappiamo — il nome e che cosa e' —
+         e si segna `senzaScheda`, cosi' chi racconta (Turismo) lo lascia
+         stare e chi orienta (Utilita') lo usa. */
+      if (!x.n) return;
       var suo = normalizza(x.n);
       var gia = (nostri || []).some(function (p) {
         if (dist(p.lat, p.lon, x.lat, x.lon) < 60) return true;
@@ -109,6 +141,10 @@ function Negozi(opzioni) {
       var intro = x.t || '';
       if (x.y) intro += (intro ? ' del ' : 'Del ') + x.y;
       if (x.arch && x.arch.length) intro += ', di ' + x.arch.join(' e ');
+      /* e il NOME, che nella riga corta e' la cosa che serve: «Qui c'è lo
+         stadio Domenico Francioni», non «Qui c'è stadio». Se il nome dice
+         gia' che cosa e' — «Stadio Francioni» — non si raddoppia. */
+      var comeSiChiama = nomeCompleto(x);
 
       /* QUANTO MERITA DI ESSERE RACCONTATO. Dario, girando all'Arenella:
          «mi ha raccontato di una chiesa che artisticamente non vale
@@ -121,15 +157,17 @@ function Negozi(opzioni) {
          qualcuno. Chi non passa la soglia non sparisce: si dice in una
          riga, il nome e l'anno, e si va avanti. */
       var peso = 0;
+      if (!x.d) peso = 0;
       if (x.arch && x.arch.length) peso += 2;
       if (x.y && x.y < 1800) peso += 1;
-      if (x.d.length > 420) peso += 2;
-      else if (x.d.length > 260) peso += 1;
+      if (x.d && x.d.length > 420) peso += 2;
+      else if (x.d && x.d.length > 260) peso += 1;
 
-      if (peso < 2) {
+      if (!x.d || peso < 2) {
         fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
-                     d: 'Qui c\'è ' + (intro || x.n) + '.', i: '', a: '',
-                     intro: intro, daWiki: true, minore: true });
+                     d: 'Qui c\'è ' + (comeSiChiama || intro || x.n) + '.', i: '', a: '',
+                     intro: intro, daWiki: true, minore: true,
+                     senzaScheda: !x.d });
         return;
       }
       fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,

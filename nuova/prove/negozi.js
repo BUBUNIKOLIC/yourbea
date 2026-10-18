@@ -90,9 +90,26 @@ prova('i monumenti di Wikipedia diventano luoghi da raccontare', () => {
   }
 });
 
-prova('senza scheda non si prende: non c\'è niente da dire', () => {
-  const nuovi = n.perIlRacconto([{ n: 'chiesa senza voce', t: 'chiesa', lat: 43.77, lon: 11.25 }], []);
-  if (nuovi.length) guasto('un nome da solo non è un racconto');
+/* LA REGOLA E' CAMBIATA IL 20/10, e di proposito.
+   Prima: «senza scheda non si prende, non c'è niente da dire». Ma cosi' si
+   buttavano 8.122 luoghi su 19.113 — e dentro c'erano gli stadi, i
+   municipi, le stazioni, cioe' esattamente quello che in Utilita' serve
+   per orientarsi: «un non vedente in modalita' utilita' vuole sapere cosa
+   c'è: davanti hai il municipio, lo stadio» (Vince, 19/10).
+   Adesso restano, con quello che sappiamo — il nome e che cosa sono — e
+   sono marcati, cosi' Turismo li lascia stare e Utilita' li usa. */
+prova('senza scheda RESTA, ma marcato e in una riga sola', () => {
+  const nuovi = n.perIlRacconto([{ n: 'Domenico Francioni', t: 'stadio', lat: 43.77, lon: 11.25 }], []);
+  if (!nuovi.length) { guasto('uno stadio senza voce su Wikipedia serve lo stesso'); return; }
+  const x = nuovi[0];
+  if (!x.senzaScheda) guasto('deve essere marcato, se no Turismo lo racconta');
+  if (!x.minore) guasto('deve stare in una riga sola');
+  if (!/Qui c'è lo stadio Domenico Francioni\./.test(x.d)) guasto('dice male cos\'è: ' + x.d);
+});
+
+prova('un nome di una parola sola non si raddoppia col tipo', () => {
+  const nuovi = n.perIlRacconto([{ n: 'Municipio', t: 'palazzo comunale', lat: 43.77, lon: 11.25 }], []);
+  if (!/Qui c'è il Municipio\./.test(nuovi[0].d)) guasto('«il palazzo comunale Municipio» non lo direbbe nessuno: ' + nuovi[0].d);
 });
 
 prova('quello che abbiamo scritto a mano vince su Wikipedia', () => {

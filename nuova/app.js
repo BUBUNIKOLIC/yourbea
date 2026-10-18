@@ -611,7 +611,7 @@
       da = peso; avanti = { nome: nome, metri: d };
     }
     vicini().forEach(function (x) {
-      if (!x.p.n || !racconto.daRaccontare(x.p)) return;
+      if (!x.p.n || !racconto.daRaccontare(x.p, modo)) return;
       var quanto = aChiServe.quantoConta(x.p, modo);
       guarda(x.p.lat, x.p.lon, racconto.conArticolo(x.p), quanto);
     });

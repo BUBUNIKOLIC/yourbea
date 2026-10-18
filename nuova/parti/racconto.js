@@ -83,7 +83,7 @@ function Racconto(opzioni) {
 
     // 1. SE SONO FERMO DAVANTI A QUALCOSA: si scende di gradino
     if (fermo) {
-      var vicino = (inCorso && daRaccontare(inCorso)) ? inCorso : primoBuono(intorno);
+      var vicino = (inCorso && daRaccontare(inCorso, modo)) ? inCorso : primoBuono(intorno, modo);
       if (vicino) {
         /* UTILITA' NON E' TURISMO, E FIN QUI NON SI VEDEVA.
            «Non c'è differenza tra modalità utilità e modalità turismo»
@@ -205,12 +205,18 @@ function Racconto(opzioni) {
     return /^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ';
   }
 
-  function daRaccontare(p) {
-    return p.k >= 1;
+  function daRaccontare(p, modo) {
+    if (!p || !(p.k >= 1)) return false;
+    /* in TURISMO un luogo senza scheda non si racconta: «Qui c'è lo
+       stadio» a chi e' uscito per vedere l'arte e' rumore. In UTILITA'
+       invece e' proprio quello che serve — «davanti hai il municipio, lo
+       stadio» — e infatti ci resta. */
+    if (modo === 'cultura' && p.senzaScheda) return false;
+    return true;
   }
-  function primoBuono(intorno) {
+  function primoBuono(intorno, modo) {
     for (var i = 0; i < intorno.length; i++) {
-      if (daRaccontare(intorno[i].p)) return intorno[i].p;
+      if (daRaccontare(intorno[i].p, modo)) return intorno[i].p;
     }
     return null;
   }
