@@ -80,6 +80,10 @@
                           cartellaClip: '../voce/clip/it/' });
 
   /* ---------- il racconto, la posizione, le fonti ---------- */
+  /* LA REGOLA, in un posto solo: parti/aChiServe.js (10 prove). «Non
+     m'interessa ciò che è dentro, voglio ci sia la regola» (Vince, 19/10).
+     Chi vuole dire qualcosa passa di lì. */
+  var aChiServe = AChiServe();
   var racconto = Racconto({});
   /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
      sia descritta la realtà circostante: di fronte, davanti a te hai il
@@ -561,12 +565,6 @@
        uno userebbe per dire «ci vediamo davanti a». E le fermate, che a chi
        deve muoversi servono piu' di tutto. In TURISMO vengono prima quelli
        che hanno una storia scritta. */
-    var CHE_ORIENTANO = { stadio: 4, municipio: 4, 'palazzo comunale': 4, ospedale: 4,
-      'stazione ferroviaria': 4, stazione: 4, 'fermata ferroviaria': 3, porto: 3,
-      'università': 3, scuola: 2, mercato: 3, teatro: 2, museo: 2, 'parco cittadino': 3,
-      piazza: 3, 'giardino pubblico': 3, zoo: 3, biblioteca: 2, cimitero: 2,
-      castello: 3, torre: 2, chiesa: 2, basilica: 3, caserma: 2, tribunale: 3,
-      'comune italiano': 4, frazione: 3, 'area protetta': 3 };
     var perUtilita = (modo === 'servizi');
     function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
@@ -579,9 +577,7 @@
     }
     vicini().forEach(function (x) {
       if (!x.p.n || !racconto.daRaccontare(x.p)) return;
-      var quanto = perUtilita
-        ? (CHE_ORIENTANO[String(x.p.t || '').toLowerCase()] || 1)
-        : ((x.p.d && x.p.d.length > 200) ? 4 : (x.p.d ? 2 : 1));
+      var quanto = aChiServe.quantoConta(x.p, modo);
       guarda(x.p.lat, x.p.lon, racconto.conArticolo(x.p), quanto);
     });
     (SERVIZI.punti || []).forEach(function (p) {
@@ -1110,6 +1106,14 @@
     if (!hoLaParola) return;
     if (staAspettando() && d.livello !== 'emergenza') {
       diario('ZITTO: sto aspettando una risposta (' + inAttesaDi.cosa + ')');
+      return;
+    }
+    /* LA REGOLA: a chi serve questa cosa, e regge il movimento?
+       Una cosa CHIESTA non si filtra mai: il confine serve a non riempire
+       di roba chi non l'ha chiesta, non a negargliela se la chiede. */
+    if (!aChiServe.serve(d.avviso ? 'avviso' : d.tipo, modo,
+                         { aPiedi: posizione.leggi().aPiedi !== false, chiesto: !!d.chiesto })) {
+      diario('REGOLA: ' + d.tipo + ' non va in ' + modo + (posizione.leggi().aPiedi === false ? ' (non a piedi)' : ''));
       return;
     }
     if (!daDire(d)) { diario('solo monumenti: salto ' + d.tipo); return; }
