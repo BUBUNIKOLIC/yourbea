@@ -142,6 +142,12 @@
   };
   window.conVoiceOver = function () { return voiceOver; };
 
+  /* la pagina (index.html) ha bisogno di far dire una frase: il tasto
+     «come si mette sulla Home» su iPhone, che spiega i due tocchi. */
+  window.YBdillo = function (t) {
+    voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true });
+  };
+
   /* ---------- lo schermo ---------- */
   function mostra(cosa) {
     /* la riga di sopra vuota resta VUOTA: col trattino al posto suo, sullo

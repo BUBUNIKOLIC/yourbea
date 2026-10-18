@@ -191,15 +191,38 @@ function Racconto(opzioni) {
      Vitale». Il tipo davanti al nome, perche' il nome da solo non dice a
      che cosa serve — ed e' proprio quello che in Utilita' serve sapere. */
   function conArticolo(p) {
-    var t = String(p.t || '').toLowerCase();
+    var t = String(p.t || '').toLowerCase().trim();
     var n = String(p.n || '');
     if (!t) return n;
-    if (n.toLowerCase().indexOf(t) === 0) return (femminile(t) ? 'la ' : loIl(t)) + n;
+    /* SI USA LA PRIMA PAROLA DEL TIPO, non il tipo intero. Dal quaderno di
+       Vince, 20/10: «Qui c'è la chiesa cattolica chiesa di San Marco
+       evangelista». Il tipo era «chiesa cattolica» e il nome cominciava
+       con «chiesa»: confrontando il tipo INTERO non combaciava, e ci
+       infilavamo tutto davanti. E anche quando serve, davanti si mette
+       solo la prima parola: «la cattedrale Santa Maria Assunta», non «la
+       cattedrale cattolica Santa Maria Assunta». */
+    var capo = t.split(' ')[0];
+    if (n.toLowerCase().indexOf(capo) === 0) return n;
     if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
-    return (femminile(t) ? 'la ' : loIl(t)) + t + ' ' + n;
+    /* un nome di una parola sola E' gia' il tipo: «Municipio», «Colosseo»,
+       «Duomo». «Il palazzo comunale Municipio» non lo direbbe nessuno. */
+    if (n.indexOf(' ') < 0) {
+      return (femminile(n) ? 'la ' : loIl(n)) + n;
+    }
+    /* «la chiesa DI San Luigi dei Francesi», non «la chiesa San Luigi»:
+       davanti a un santo o a un nome proprio ci vuole il «di». */
+    var di = /^(San |Sant'|Santa |Santo |Santi |SS\.|Ss\.)/i.test(n) ? 'di ' : '';
+    return (femminile(capo) ? 'la ' : loIl(capo)) + capo + ' ' + di + n;
   }
+
+  /* In italiano la -e finale non dice il genere: «il ponte» ma «la
+     cattedrale». Le parole che ci servono sono poche e si contano. */
+  var FEMMINE_IN_E = { cattedrale: 1, torre: 1, pieve: 1, corte: 1, croce: 1,
+                       valle: 1, fonte: 1, sede: 1, arte: 1, chiese: 1, parte: 1 };
   function femminile(t) {
-    return /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t) || /a$/.test(t);
+    var w = String(t || '').toLowerCase();
+    if (FEMMINE_IN_E[w]) return true;
+    return /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
   }
   function loIl(t) {
     return /^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ';
