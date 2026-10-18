@@ -55,6 +55,7 @@ function Posizione(opzioni) {
   var ascoltatori = [];
   var orologioRipiego = null;
   var vigilanza = null;
+  var buttate = 0;            // letture impossibili scartate di fila
 
   function dist(a, b, c, d) {
     var R = 6371000, P = Math.PI / 180;
@@ -96,6 +97,32 @@ function Posizione(opzioni) {
   /* arriva(): il cuore. Una posizione nuova, da qualunque porta venga. */
   function arriva(lat, lon, prec) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
+    /* ============================================================
+       LE LETTURE IMPOSSIBILI SI BUTTANO
+       «Migliora il posizionamento» (Vince, 20/10). Fra i palazzi il GPS
+       ogni tanto spara una lettura di trenta metri fuori, e poi torna: e'
+       quella che faceva ballare il punto fra due vie, e da li' «sei
+       entrato in via Roma», «sei entrato in Strada Statale», «sei entrato
+       in via Costabile» in mezzo minuto.
+       Una lettura si butta quando dice che in un secondo hai fatto piu' di
+       quindici metri — cioe' cinquanta chilometri all'ora a piedi — E la
+       sua precisione e' peggiore di quella di prima. Se invece e' precisa,
+       si crede: magari ti sei davvero spostato (o sei in macchina, e lo
+       dice la velocita'). Due di fila si credono comunque: se il mondo e'
+       cambiato davvero, non si resta ancorati al passato. */
+    var adessoE = ora();
+    if (stato.pronto && stato.ultimoPunto && !stato.saltato) {
+      var salto = dist(stato.lat, stato.lon, lat, lon);
+      var dt = Math.max(0.3, (adessoE - (stato.ultimoQuando || adessoE)) / 1000);
+      var troppoVeloce = (salto / dt) > 15;
+      var piuSgangherata = (prec || 0) > (stato.prec || 0) + 10;
+      if (troppoVeloce && piuSgangherata && buttate < 2) {
+        buttate++;
+        diario('LETTURA BUTTATA: ' + Math.round(salto) + ' m in ' + dt.toFixed(1) + ' s, ±' + Math.round(prec || 0) + ' m');
+        return;
+      }
+      buttate = 0;
+    }
     if (orologioRipiego) { annulla(orologioRipiego); orologioRipiego = null; }
     var prima = stato.ultimoPunto;
     stato.lat = lat; stato.lon = lon; stato.prec = prec;
@@ -195,7 +222,11 @@ function Posizione(opzioni) {
         arriva(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
       }, function (err) {
         problema(err && err.code === 1 ? 'negata' : 'assente');
-      }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+      /* maximumAge ZERO, non cinque secondi. Il browser, potendo, dava una
+         posizione presa fino a cinque secondi prima: camminando sono sette
+         metri di ritardo costante, e per chi non vede sette metri sono il
+         marciapiede di fronte. */
+      }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
     } catch (e) { problema('assente'); }
   }
 

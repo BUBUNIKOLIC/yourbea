@@ -1191,9 +1191,27 @@
       return;
     }
     if (!daDire(d)) { diario('solo monumenti: salto ' + d.tipo); return; }
-    if (AMBIENTE[d.tipo] && !d.avviso && d.livello !== 'emergenza' && Date.now() - ultimoAmbiente < RESPIRO) {
-      diario('RESPIRO: ' + d.tipo + ' aspetta');
-      return;
+    /* IL RESPIRO SI MISURA SUL PARLATO, non sulle decisioni.
+       Provando il Turismo a piazza Navona (20/10): il respiro scattava
+       regolarmente — il quaderno è pieno di «RESPIRO: cenno aspetta» — e
+       nonostante questo uscivano «Fontana dei Quattro Fiumi», «Palazzo
+       Giustiniani» e «Basilica di Sant'Agostino» in sette secondi. Perché
+       il respiro distanziava il momento in cui una frase veniva ACCETTATA,
+       e quelle accettate si mettevano in coda dietro a una frase lunga,
+       per poi uscire tutte attaccate quando quella finiva.
+       Chi ascolta non sente le decisioni, sente le voci. Quindi: una cosa
+       ambientale non si mette MAI in coda dietro a qualcos'altro. O c'è
+       posto adesso, o si lascia perdere — tanto camminando se ne
+       presenta un'altra fra poco. */
+    if (AMBIENTE[d.tipo] && !d.avviso && d.livello !== 'emergenza') {
+      if (Date.now() - ultimoAmbiente < RESPIRO) {
+        diario('RESPIRO: ' + d.tipo + ' aspetta');
+        return;
+      }
+      if (voce.staParlando()) {
+        diario('RESPIRO: sta già parlando, lascio perdere ' + d.tipo);
+        return;
+      }
     }
     if (AMBIENTE[d.tipo]) ultimoAmbiente = Date.now();
     ultimaParola = Date.now();
