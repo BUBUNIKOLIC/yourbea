@@ -67,6 +67,11 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     apriLaPagina()
     preparaAudio()
     preparaGps()
+    /* VoiceOver e il testo grande: si ascolta da subito, e si manda alla
+       pagina appena ha finito di caricare (sotto, in didFinish). Scritte
+       il 19/10 e rimaste SCOLLEGATE fino al 20: le funzioni c'erano e non
+       le chiamava nessuno. Codice morto che sembra una funzione fatta. */
+    ascoltaAccessibilita()
     SFSpeechRecognizer.requestAuthorization { _ in }
     apriIlQuaderno()
   }
@@ -157,6 +162,12 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      passano al telefono, che apre Telefono o Messaggi col testo già
      scritto. L'invio lo preme la persona: nessuna app su iOS può mandare un
      SMS di nascosto, e prometterlo sarebbe una bugia pericolosa. */
+  /* appena la pagina e' in piedi le si dice com'e' messo il telefono:
+     VoiceOver acceso o spento, e quanto e' grande il testo di sistema. */
+  func webView(_ w: WKWebView, didFinish navigation: WKNavigation!) {
+    mandaAccessibilita()
+  }
+
   func webView(_ w: WKWebView, decidePolicyFor azione: WKNavigationAction,
                decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
     let fuori = ["tel", "sms", "mailto", "facetime", "maps", "whatsapp"]
@@ -188,6 +199,42 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     case "leggi": leggiQuelloCheVedo()
     default: break
     }
+  }
+
+  /* ============================================================
+     VOICEOVER E IL TESTO GRANDE
+     VoiceOver e' il lettore di schermo dentro ogni iPhone: un non vedente
+     lo tiene acceso sempre, perche' e' il modo in cui usa il telefono.
+     Saperlo cambia tre cose, e fin qui l'app non se lo chiedeva.
+
+     1. E' IL MODO ONESTO DI SAPERLO SENZA CHIEDERLO. Nessuno deve
+        dichiarare di essere cieco per usare un'app.
+     2. GLI STAVAMO PARLANDO SOPRA. La pagina scrive il testo in un
+        riquadro aria-live, e VoiceOver lo legge ad alta voce MENTRE la
+        nostra voce sta dicendo la stessa frase: due voci sovrapposte. E'
+        quasi certamente quello che la sorella di Vince descriveva come
+        «sentivo tre voci».
+     3. IL PREZZO. «Gratis se c'e' VoiceOver» (Vince, 16/10).
+
+     Si manda alla pagina all'avvio e ogni volta che cambia: VoiceOver si
+     accende e si spegne col triplo clic, anche a meta' strada.           */
+  private func mandaAccessibilita() {
+    let vo = UIAccessibility.isVoiceOverRunning
+    let grande = UIApplication.shared.preferredContentSizeCategory.isAccessibilityCategory
+    let taglia = UIApplication.shared.preferredContentSizeCategory.rawValue
+    allaPagina(String(format:
+      "window.urbeaAccessibilita && window.urbeaAccessibilita(%@,%@,'%@')",
+      vo ? "true" : "false", grande ? "true" : "false",
+      taglia.replacingOccurrences(of: "'", with: "")))
+    scrivi("accessibilita: VoiceOver \(vo ? "acceso" : "spento"), testo \(taglia)")
+  }
+
+  private func ascoltaAccessibilita() {
+    let c = NotificationCenter.default
+    c.addObserver(forName: UIAccessibility.voiceOverStatusDidChangeNotification,
+                  object: nil, queue: .main) { [weak self] _ in self?.mandaAccessibilita() }
+    c.addObserver(forName: UIContentSizeCategory.didChangeNotification,
+                  object: nil, queue: .main) { [weak self] _ in self?.mandaAccessibilita() }
   }
 
   private func allaPagina(_ js: String) {
