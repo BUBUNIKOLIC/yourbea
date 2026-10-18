@@ -53,6 +53,17 @@ function Passaggi(opzioni) {
                            scegliere la strada: valgono anche senza nome */
                         paletto: 1, scalini: 1, 'scivolo del marciapiede': 1, ascensore: 1 };
 
+  /* GLI AVVISI. «Importanti sono gli avvisi» (Vince, 19/10, prima di
+     andare a Napoli). Scalini, paletti, scivoli, ascensori e
+     attraversamenti non sono descrizione: sono quello su cui uno inciampa,
+     o quello che gli fa scegliere da che parte passare. Un avviso non
+     aspetta il suo turno e non si spegne col filtro «solo monumenti»: chi
+     chiede meno chiacchiere non sta chiedendo meno sicurezza. */
+  var AVVISI = { paletto: 1, scalini: 1, 'scivolo del marciapiede': 1,
+                 ascensore: 1, attraversamento: 1, 'scala mobile': 1,
+                 cordolo: 1, dissuasore: 1 };
+  function eUnAvviso(cosa) { return !!AVVISI[cosa]; }
+
   function chiave(p) {
     return (p.nome || p.cosa || '?') + '@' + Math.round((p.lat || 0) * 100000) + ',' + Math.round((p.lon || 0) * 100000);
   }
@@ -105,6 +116,7 @@ function Passaggi(opzioni) {
       if (mig.linee) nome += ', ' + (String(mig.linee).indexOf(';') >= 0 ? 'linee ' : 'linea ') +
                               String(mig.linee).replace(/;/g, ', ');
       return { tipo: 'passaggio', livello: 'guida', cosa: mig,
+               avviso: eUnAvviso(mig.cosa),
                testo: nome + (parte ? ', ' + parte : '') + '.' };
     }
     /* se il nome non dice che cosa è, si aggiunge il tipo: «Da Mario» da
@@ -117,7 +129,8 @@ function Passaggi(opzioni) {
        capiscono con certezza non si dice niente, mai un «è aperto» a caso. */
     var aperto = apertoAdesso(mig.orari, s.quando);
     var stato = aperto === true ? ', aperta' : (aperto === false ? ', chiusa adesso' : '');
-    return { tipo: 'passaggio', livello: 'cenno', cosa: mig,
+    return { tipo: 'passaggio', livello: eUnAvviso(mig.cosa) ? 'guida' : 'cenno', cosa: mig,
+             avviso: eUnAvviso(mig.cosa),
              testo: 'Stai passando ' + nome + tipo + stato + (parte ? ', ' + parte : '') + '.' };
   }
 
@@ -173,7 +186,7 @@ function Passaggi(opzioni) {
      strada o ripassandoci dopo, si possono ridire. */
   function stradaNuova() { detti = {}; }
 
-  return { prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
+  return { eUnAvviso: eUnAvviso, prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Passaggi;

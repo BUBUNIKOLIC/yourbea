@@ -1045,6 +1045,10 @@
 
   function daDire(d) {
     if (!soloMonumenti) return true;
+    /* GLI AVVISI NON SI SPENGONO MAI. «Importanti sono gli avvisi» (Vince,
+       19/10). Chi dice «solo monumenti» chiede meno chiacchiere, non meno
+       sicurezza: scalini, paletti e attraversamenti passano comunque. */
+    if (d.avviso) return true;
     if (d.livello === 'emergenza' || SEMPRE[d.tipo]) return true;
     /* un monumento e' un luogo (k da 1 in su), non un servizio: la regola e'
        la stessa di parti/racconto.js, e non cambia qui */
@@ -1071,7 +1075,7 @@
       return;
     }
     if (!daDire(d)) { diario('solo monumenti: salto ' + d.tipo); return; }
-    if (AMBIENTE[d.tipo] && d.livello !== 'emergenza' && Date.now() - ultimoAmbiente < RESPIRO) {
+    if (AMBIENTE[d.tipo] && !d.avviso && d.livello !== 'emergenza' && Date.now() - ultimoAmbiente < RESPIRO) {
       diario('RESPIRO: ' + d.tipo + ' aspetta');
       return;
     }

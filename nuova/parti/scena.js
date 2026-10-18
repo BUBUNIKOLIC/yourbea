@@ -210,7 +210,8 @@ function Scena(opzioni) {
 
     var att = attraversamenti(qui, mappa.punti);
     /* il senso, non le parole: cambia il numero ma la notizia è la stessa */
-    if (att && fresco('attraversamenti', att.replace(/\d+/g, 'n'))) pezzi.push(att);
+    var conAvviso = false;
+    if (att && fresco('attraversamenti', att.replace(/\d+/g, 'n'))) { pezzi.push(att); conAvviso = true; }
 
     /* REGOLA 3: tre cose. I servizi entrano solo se c'è ancora posto. */
     var quanti = Math.max(0, 4 - pezzi.length);
@@ -235,7 +236,11 @@ function Scena(opzioni) {
        il suo turno, e se non c'è posto si butta: fra un minuto ce n'è
        un'altra. Quello che FERMA uno per strada (svolte, attraversamenti
        dentro una guida, emergenza) viaggia su altri livelli. */
-    return { tipo: 'scena', livello: 'cenno', testo: testo };
+    /* se dentro ci sono gli attraversamenti è un AVVISO: non aspetta il
+       respiro e non si spegne col filtro «solo monumenti». «Importanti
+       sono gli avvisi» (Vince, 19/10). */
+    return { tipo: 'scena', livello: conAvviso ? 'guida' : 'cenno',
+             avviso: conAvviso, testo: testo };
   }
 
   function unA(c) { return (femmina(c) ? 'una ' : 'un ') + c; }

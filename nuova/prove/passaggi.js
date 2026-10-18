@@ -152,6 +152,29 @@ prova('di un negozio con gli orari si dice se è aperto adesso', () => {
   if (!d || !/aperta/.test(d.testo)) guasto('doveva dire che è aperta: ' + (d && d.testo));
 });
 
+/* GLI AVVISI — «importanti sono gli avvisi» (Vince, 19/10).
+   Scalini, paletti e scivoli non sono descrizione: sono quello su cui uno
+   inciampa. Devono uscire marcati, perche' l'app non li faccia aspettare
+   e non li spenga quando chi ascolta ha chiesto «solo monumenti».       */
+prova('scalini e paletti escono marcati come AVVISO, e a livello di guida', () => {
+  const casi = ['scalini', 'paletto', 'scivolo del marciapiede', 'ascensore'];
+  casi.forEach((cosa) => {
+    const w = mondo();
+    const d = w.p.prossimo({ qui: QUI, direzione: 0, direzioneBuona: true,
+                             punti: [Object.assign({ cosa: cosa, servizio: cosa }, vicino(0, 0.00012))] });
+    if (!d) { guasto('non ha detto niente per ' + cosa); return; }
+    if (!d.avviso) guasto(cosa + ' non e marcato come avviso');
+    if (d.livello !== 'guida') guasto(cosa + ' deve aspettare il suo turno, non essere buttato');
+  });
+});
+
+prova('un bar non e un avviso', () => {
+  const w = mondo();
+  const d = w.p.prossimo({ qui: QUI, direzione: 0, direzioneBuona: true,
+                           punti: [Object.assign({ cosa: 'bar', servizio: 'bar', nome: 'Da Mario' }, vicino(0, 0.00012))] });
+  if (d && d.avviso) guasto('un bar marcato come avviso: ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei passaggi');
