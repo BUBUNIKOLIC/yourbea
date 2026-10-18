@@ -85,6 +85,30 @@ function Racconto(opzioni) {
     if (fermo) {
       var vicino = (inCorso && daRaccontare(inCorso)) ? inCorso : primoBuono(intorno);
       if (vicino) {
+        /* UTILITA' NON E' TURISMO, E FIN QUI NON SI VEDEVA.
+           «Non c'è differenza tra modalità utilità e modalità turismo»
+           (Vince, 19/10, provando a Fuorigrotta e a Torre del Greco). Il
+           quaderno gli dà ragione: fermandosi, in UTILITA', l'app leggeva
+           «Il palazzetto dello sport Mario Argento era un'opera…», «La
+           piscina Felice Scandone è un complesso infrastrutturale…», «Lo
+           zoo di Napoli, situato nel quartiere Fuorigrotta…». Sono schede
+           da Turismo, dette a chi sta cercando di muoversi.
+           Parole sue: «un non vedente in modalità utilità vuole sapere
+           cosa c'è — davanti hai il municipio, lo stadio — oltre le
+           fermate dell'autobus; invece il turismo vuole sapere le cose
+           artistiche, storiche e architettoniche».
+           Quindi: in UTILITA' si dice COS'E' e basta, e la storia resta lì
+           per chi la chiede («ancora»). In TURISMO si racconta. */
+        if (modo === 'servizi') {
+          var quandoFermo = fermiDetti[vicino.n] || 0;
+          if (ora() - quandoFermo > 180000) {
+            fermiDetti[vicino.n] = ora();
+            inCorso = vicino;
+            return { tipo: 'aCosaServe', luogo: vicino, livello: 'guida',
+                     testo: 'Qui c\'è ' + conArticolo(vicino) + '.' };
+          }
+          return null;
+        }
         var g = gradino[vicino.n] || 0;
         if (g < quantiGradini(vicino)) {
           gradino[vicino.n] = g + 1;
@@ -159,6 +183,28 @@ function Racconto(opzioni) {
      La regola è una sola e non cambia con la modalità: il racconto è dei
      luoghi. I servizi in Utilità si dicono, ma per la loro strada — la via,
      i civici, le farmacie — non diventano mai racconti. */
+  /* quello che si e' gia' detto stando fermi: in Utilita' non si ripete
+     «qui c'e' lo stadio» ogni dieci secondi */
+  var fermiDetti = {};
+
+  /* conArticolo(): «lo stadio Diego Armando Maradona», «la chiesa di San
+     Vitale». Il tipo davanti al nome, perche' il nome da solo non dice a
+     che cosa serve — ed e' proprio quello che in Utilita' serve sapere. */
+  function conArticolo(p) {
+    var t = String(p.t || '').toLowerCase();
+    var n = String(p.n || '');
+    if (!t) return n;
+    if (n.toLowerCase().indexOf(t) === 0) return (femminile(t) ? 'la ' : loIl(t)) + n;
+    if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
+    return (femminile(t) ? 'la ' : loIl(t)) + t + ' ' + n;
+  }
+  function femminile(t) {
+    return /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t) || /a$/.test(t);
+  }
+  function loIl(t) {
+    return /^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ';
+  }
+
   function daRaccontare(p) {
     return p.k >= 1;
   }
@@ -238,6 +284,7 @@ function Racconto(opzioni) {
 
   return {
     prossimo: prossimo, ancora: ancora, approfondisci: approfondisci, salta: salta,
+    conArticolo: conArticolo,
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
     gradinoDi: function (p) { return gradino[p.n] || 0; },

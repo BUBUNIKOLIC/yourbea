@@ -124,14 +124,27 @@ function Paesaggio(opzioni) {
     var qui = s.qui;
     if (!qui || s.direzioneBuona === false) return null;          // REGOLA 3
     if (typeof s.direzione !== 'number') return null;
-    if (ora() - ultimaVolta < FRA_UNA_E_L_ALTRA) return null;     // REGOLA 5
+    /* e si parla piu' spesso, perche' andando forte il panorama cambia
+       per davvero: a piedi un quarto d'ora, in macchina quattro minuti. */
+    var aspetta = (s.aPiedi === false) ? Math.round(FRA_UNA_E_L_ALTRA / 4) : FRA_UNA_E_L_ALTRA;
+    if (ora() - ultimaVolta < aspetta) return null;               // REGOLA 5
 
+    /* REGOLA 7: QUANTO LONTANO SI GUARDA DIPENDE DA COME TI MUOVI.
+       «In autostrada a sinistra c'era il Vesuvio, a destra il golfo con le
+       isole: erano lontani, ma c'era un panorama che un non vedente magari
+       può apprezzare» (Vince, 19/10). E subito dopo, la cosa che conta:
+       «non è il particolare, è la regola generale».
+       La regola: a piedi si guarda vicino, perché il mondo arriva piano e
+       quello che conta è a portata di passi; in macchina si guarda lontano,
+       perché il vicino sfila via prima di poterlo dire e quello che resta
+       fermo all'orizzonte è il paesaggio. Quattro volte piu' lontano. */
+    var quantoSiVede = (s.aPiedi === false) ? 4 : 1;
     var avanti = null, lato = null;
     (s.luoghi || []).forEach(function (p) {
       if (!p || !p.n || !eDelPaesaggio(p)) return;
       if (ora() - (detti[p.n] || 0) < RIPOSO) return;             // REGOLA 5
-      var m = dist(qui.lat, qui.lon, p.lat, p.lon);
-      if (m > QUANTO_LONTANO[p.t]) return;                        // REGOLA 1
+        var m = dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (m > QUANTO_LONTANO[p.t] * quantoSiVede) return;         // REGOLA 1
       var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       var pt = { p: p, m: m, rel: rel, peso: peso(p, m) };
       if (Math.abs(rel) <= 45) {

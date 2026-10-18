@@ -142,6 +142,39 @@ prova('niente intorno: niente da dire, e non scoppia', () => {
   if (w.p.intorno({})) guasto('ha parlato senza niente');
 });
 
+/* REGOLA 7 — «non è il particolare, è la regola generale» (Vince, 19/10).
+   Quello che si guarda dipende da come ti muovi: a piedi vicino, in
+   macchina lontano, perche' il vicino sfila via e il lontano resta.      */
+prova('REGOLA 7 — in macchina si guarda quattro volte piu lontano', () => {
+  /* una montagna a dodici chilometri: fuori dai cinque del raggio a piedi,
+     dentro i venti di chi va in macchina */
+  const lontano = { n: 'Monte Finestra', t: 'montagna', lat: 40.7600, lon: 14.6300, d: 'v'.repeat(400) };
+  const w = mondo();
+  if (w.p.intorno({ qui: VIETRI, direzione: 325, direzioneBuona: true, luoghi: [lontano] }))
+    guasto('a piedi non si annuncia una montagna a venti chilometri');
+  const w2 = mondo();
+  const d = w2.p.intorno({ qui: VIETRI, direzione: 325, direzioneBuona: true,
+                           aPiedi: false, luoghi: [lontano] });
+  if (!d) guasto('in macchina il panorama lontano va detto');
+  else console.log('      → ' + d.testo);
+});
+
+prova('REGOLA 7 — e si parla piu spesso, perche il panorama cambia', () => {
+  const w = mondo();
+  const uno = w.p.intorno({ qui: VIETRI, direzione: 210, direzioneBuona: true,
+                            aPiedi: false, luoghi: [FRATELLI, RAITO] });
+  if (!uno) { guasto('la prima non e uscita'); return; }
+  w.passano(300000);                      // cinque minuti
+  const nuovi = [{ n: 'Costa di Amalfi', t: 'costa', lat: 40.650, lon: 14.700, d: 'c'.repeat(300) }];
+  if (!w.p.intorno({ qui: VIETRI, direzione: 250, direzioneBuona: true, aPiedi: false, luoghi: nuovi }))
+    guasto('in macchina dopo cinque minuti si puo ridire');
+  const w2 = mondo();
+  w2.p.intorno({ qui: VIETRI, direzione: 210, direzioneBuona: true, luoghi: [FRATELLI, RAITO] });
+  w2.passano(300000);
+  if (w2.p.intorno({ qui: VIETRI, direzione: 250, direzioneBuona: true, luoghi: nuovi }))
+    guasto('a piedi dopo cinque minuti e troppo presto');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del paesaggio');

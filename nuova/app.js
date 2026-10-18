@@ -315,6 +315,7 @@
        «aspetta, questa e' utilita'; turismo informazioni artistiche,
        architettoniche e storiche». */
     if (modo !== 'servizi') return;
+    if (s.aPiedi === false) return;      // la scena si misura in passi: vale se cammini
     /* I NUMERI CIVICI MAI. «Poi mi diceva i numeri civici» (Vince, 16/10)
        e di nuovo il 18/10, piu' secco: «numeri civici mai». Qui passavo
        `ultimaStrada`, che e' via PIU' numero — e la scena apriva con «Sei
@@ -506,6 +507,8 @@
      È la differenza fra essere avvisati ed essere guidati. */
   var ultimoRiepilogo = 0;
   var ultimoGiro = '';        // di che cosa ho parlato l'ultima volta
+  var ultimoCivico = 0;       // «qualche numero civico», non a raffica
+  function aPiediOra() { return posizione.leggi().aPiedi !== false; }
   /* ============================================================
      IL GIRO DI PAROLE — ogni minuto e mezzo, e mai la stessa cosa
      «Dice sempre le stesse cose: stai percorrendo questa strada, incrocio,
@@ -542,6 +545,7 @@
        volta, e lo stesso golfo non si ridice ogni minuto. */
     var pae = paesaggio.intorno({ qui: qui, direzione: s.direzione,
                                   direzioneBuona: s.direzioneBuona,
+                                  aPiedi: s.aPiedi,
                                   luoghi: LUOGHI });
     if (pae) fatte.push({ che: 'paesaggio', testo: pae.testo });
 
@@ -550,31 +554,64 @@
        nessuno si ripiega sui servizi. Il cono e' stretto, quaranta gradi:
        «davanti a te» dev'essere davvero davanti. */
     var avanti = null, da = 1e9;
-    function guarda(p, lat, lon, nome, vale) {
+    /* CHE COSA CONTA, E PER CHI. «La differenza la farà la qualità delle
+       informazioni e la suddivisione di esse in funzione dell'utente»
+       (Vince, 19/10). In UTILITA' vengono prima i punti che ORIENTANO — il
+       municipio, lo stadio, l'ospedale, la stazione, il mercato: quelli che
+       uno userebbe per dire «ci vediamo davanti a». E le fermate, che a chi
+       deve muoversi servono piu' di tutto. In TURISMO vengono prima quelli
+       che hanno una storia scritta. */
+    var CHE_ORIENTANO = { stadio: 4, municipio: 4, 'palazzo comunale': 4, ospedale: 4,
+      'stazione ferroviaria': 4, stazione: 4, 'fermata ferroviaria': 3, porto: 3,
+      'università': 3, scuola: 2, mercato: 3, teatro: 2, museo: 2, 'parco cittadino': 3,
+      piazza: 3, 'giardino pubblico': 3, zoo: 3, biblioteca: 2, cimitero: 2,
+      castello: 3, torre: 2, chiesa: 2, basilica: 3, caserma: 2, tribunale: 3,
+      'comune italiano': 4, frazione: 3, 'area protetta': 3 };
+    var perUtilita = (modo === 'servizi');
+    function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
       if (d < 30 || d > 400) return;
       var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
       if (Math.abs(rel) > 40) return;
-      var peso = d / (vale ? 3 : 1);          // un luogo con una storia vale tre volte
+      var peso = d / Math.max(1, quanto);
       if (peso >= da) return;
       da = peso; avanti = { nome: nome, metri: d };
     }
     vicini().forEach(function (x) {
       if (!x.p.n || !racconto.daRaccontare(x.p)) return;
-      guarda(x.p, x.p.lat, x.p.lon, x.p.n, true);
+      var quanto = perUtilita
+        ? (CHE_ORIENTANO[String(x.p.t || '').toLowerCase()] || 1)
+        : ((x.p.d && x.p.d.length > 200) ? 4 : (x.p.d ? 2 : 1));
+      guarda(x.p.lat, x.p.lon, racconto.conArticolo(x.p), quanto);
     });
     (SERVIZI.punti || []).forEach(function (p) {
       if (!p.nome || !p.servizio) return;
-      guarda(p, p.lat, p.lon, p.nome, false);
+      var quanto = perUtilita && /fermata|stazione|metropolitana/.test(p.servizio || '') ? 3 : 1;
+      guarda(p.lat, p.lon, p.nome, quanto);
     });
     if (avanti) fatte.push({ che: 'avanti',
       testo: 'Davanti a te hai ' + avanti.nome + ', ' + scena.passi(avanti.metri) + '.' });
 
-    /* 2. L'INCROCIO CHE ARRIVA */
-    var inc = incroci.ilProssimo({ qui: qui, vie: SERVIZI.vie || [], strada: ultimaVia,
+    /* 2. L'INCROCIO CHE ARRIVA — ma solo a piedi: in macchina un incrocio
+       pedonale e' gia' passato quando lo dici. */
+    var inc = !aPiediOra() ? null : incroci.ilProssimo({ qui: qui, vie: SERVIZI.vie || [], strada: ultimaVia,
                                    direzione: s.direzione, direzioneBuona: true });
     if (inc) fatte.push({ che: 'incrocio',
       testo: 'Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.' });
+
+    /* 2-bis. QUALCHE NUMERO CIVICO. Il 18/10 era «numeri civici mai»,
+       perche' li diceva a raffica: «sei in Via Osvaldo Costabile 18», poi
+       6, poi 22, poi 57 in cento secondi. Il 19/10, piu' preciso:
+       «qualche numero civico». Il guaio non era il numero, era la raffica.
+       Qui dentro il civico e' UNO dei turni, quindi non puo' uscire due
+       volte di fila per costruzione, e in piu' ha il suo riposo: uno ogni
+       quattro minuti, e solo in Utilita', dove serve a dire a che punto
+       della via sei. */
+    if (perUtilita && aPiediOra() && ultimaStrada && ultimaStrada !== ultimaVia &&
+        Date.now() - ultimoCivico > 240000) {
+      var numero = ultimaStrada.slice(ultimaVia.length).trim();
+      if (numero) fatte.push({ che: 'civico', testo: 'Siamo al numero ' + numero + '.' });
+    }
 
     /* 3. LA STRADA, se non l'ho gia' detta da poco */
     if (Date.now() - (stradeDette[ultimaVia.toLowerCase()] || 0) > 240000) {
@@ -592,6 +629,7 @@
     ultimoGiro = scelta.che;
     ultimoRiepilogo = Date.now();
     if (scelta.che === 'strada') stradeDette[ultimaVia.toLowerCase()] = Date.now();
+    if (scelta.che === 'civico') ultimoCivico = Date.now();
     dillo({ tipo: 'strada', livello: 'cenno', testo: scelta.testo });
   }
 
@@ -1115,7 +1153,10 @@
     alLettore(d.testo);
   }
   function gradinoScritto(d) {
-    if (d.tipo === 'cenno') return 'Fermati dieci secondi e te lo racconto. Oppure dimmi «ancora».';
+    if (d.tipo === 'aCosaServe') return 'Dimmi «ancora» se vuoi che te lo racconti.';
+    if (d.tipo === 'cenno') return modo === 'servizi'
+      ? 'Dimmi «ancora» se vuoi sapere cos\u2019\u00e8.'
+      : 'Fermati dieci secondi e te lo racconto. Oppure dimmi «ancora».';
     if (d.tipo === 'scheda') return 'Dimmi «ancora» per sapere cosa guardare.';
     if (d.tipo === 'cosa-vedere') return 'Dimmi «ancora» per l\'approfondimento.';
     if (d.tipo === 'approfondimento') return 'Di questo ti ho detto tutto.';
@@ -1171,7 +1212,16 @@
        incroci e i negozi che passi diventano rumore sopra le svolte: le
        svolte li dicono già, i nomi delle strade. Qui si tace tutto il
        resto, e parla solo la guida. */
-    var inViaggio = !!guida.meta();
+    /* LA REGOLA GENERALE: QUELLO CHE SI DICE DIPENDE DA COME TI MUOVI.
+       «Eravamo in autostrada e dava gli incroci» (Vince, 19/10). A ottanta
+       all'ora gli attraversamenti, i paletti, gli scivoli del marciapiede e
+       i nomi degli incroci non sono informazione: sono rumore, e per di
+       piu' arrivano quando sei gia' un chilometro piu' avanti. Tutto
+       quello che si misura in passi vale solo se i passi li stai facendo.
+       Quello che resta, e che anzi conta di piu', e' il paesaggio: «a
+       sinistra il Vesuvio, a destra il golfo con le isole». */
+    var aPiedi = s.aPiedi !== false;
+    var inViaggio = !!guida.meta() || !aPiedi;
     var pass = inViaggio ? null : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
                                    direzione: s.direzione, direzioneBuona: s.direzioneBuona,
                                    quando: Date.now() });

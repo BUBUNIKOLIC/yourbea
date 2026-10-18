@@ -47,6 +47,7 @@ function Posizione(opzioni) {
 
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
+    velocita: null, ultimoQuando: 0,
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
@@ -76,6 +77,12 @@ function Posizione(opzioni) {
   function leggi() {
     return {
       pronto: stato.pronto, lat: stato.lat, lon: stato.lon, prec: stato.prec,
+      velocita: stato.velocita,
+      /* a piedi si va fino a otto o nove chilometri all'ora correndo; sopra
+         i dodici si e' su qualcosa con le ruote. Senza misura si suppone
+         di si': meglio parlare a chi e' in macchina che tacere a chi
+         cammina. */
+      aPiedi: stato.velocita === null || stato.velocita < 3.4,
       direzione: stato.direzione, direzioneBuona: direzioneBuona(),
       fermo: stato.fermo, fermoDa: stato.fermo ? ora() - stato.fermoDa : 0,
       comeVa: stato.comeVa
@@ -96,6 +103,23 @@ function Posizione(opzioni) {
 
     if (prima) {
       var passo = dist(prima.lat, prima.lon, lat, lon);
+      /* QUANTO VAI FORTE. «Eravamo in autostrada e dava gli incroci»
+         (Vince, 19/10, tornando da Napoli). A ottanta all'ora gli
+         attraversamenti, i paletti e i nomi degli incroci non sono
+         informazione: sono rumore, e per di piu' arrivano quando sei gia'
+         un chilometro piu' avanti. L'app deve sapere se sei a piedi, e
+         finora non se lo chiedeva.
+         Si misura a media mobile: una posizione sola puo' saltare di
+         trenta metri per un rimbalzo del GPS, e darebbe quaranta
+         all'ora a uno fermo al semaforo. */
+      var quando = ora();
+      var passatoDa = quando - (stato.ultimoQuando || quando);
+      if (passatoDa > 300 && passatoDa < 30000) {
+        var adesso = passo / (passatoDa / 1000);              // metri al secondo
+        stato.velocita = stato.velocita === null ? adesso
+                                                 : (stato.velocita * 0.7 + adesso * 0.3);
+      }
+      stato.ultimoQuando = quando;
       // REGOLA 4: la direzione si crede solo se ci si è mossi davvero
       if (passo > PASSO_BUONO) {
         stato.direzione = verso(prima.lat, prima.lon, lat, lon);

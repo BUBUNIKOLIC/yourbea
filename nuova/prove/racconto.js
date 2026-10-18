@@ -222,6 +222,58 @@ prova('senza bussola non si dice mai «dietro»', () => {
 });
 
 /* ==================== il conto ==================== */
+/* ============================================================
+   UTILITA' NON E' TURISMO — 19/10/2026
+   «Non c'è differenza tra modalità utilità e modalità turismo… un non
+   vedente in modalità utilità vuole sapere cosa c'è: davanti hai il
+   municipio, lo stadio, oltre le fermate dell'autobus. Invece il turismo
+   vuole sapere le cose artistiche, storiche e architettoniche» (Vince,
+   provando a Fuorigrotta e a Torre del Greco).
+   Il quaderno: fermandosi in UTILITA' l'app leggeva la scheda storica del
+   PalArgento, della piscina Scandone e dello zoo.                        */
+
+const STADIO = { n: 'Diego Armando Maradona', t: 'stadio', k: 2, lat: 40.8280, lon: 14.1930,
+                 d: 'Lo stadio fu costruito nel 1959 su progetto di Carlo Cocchia e '.repeat(4),
+                 i: 'la copertura ellittica', a: 'Fu ampliato per i Mondiali del 1990. '.repeat(3) };
+
+prova('IN UTILITA, da fermi, si dice COS E e non la storia', () => {
+  const w = mondo();
+  const qui = { lat: STADIO.lat + 0.0001, lon: STADIO.lon };
+  const intorno = [{ p: STADIO, m: 12, rel: 0 }];
+  w.r.prossimo({ qui, intorno, modo: 'servizi', direzioneBuona: true });   // primo giro: si muove
+  w.passano(20000);
+  const d = w.r.prossimo({ qui, intorno, modo: 'servizi', direzioneBuona: true });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (d.tipo === 'scheda' || /costruito nel 1959/.test(d.testo))
+    guasto('in Utilita ha letto la scheda storica: ' + d.testo.slice(0, 60));
+  if (!/stadio/.test(d.testo)) guasto('non dice che cosa e: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
+prova('IN TURISMO, da fermi, la storia si racconta', () => {
+  const w = mondo();
+  const qui = { lat: STADIO.lat + 0.0001, lon: STADIO.lon };
+  const intorno = [{ p: STADIO, m: 12, rel: 0 }];
+  w.r.prossimo({ qui, intorno, modo: 'cultura', direzioneBuona: true });
+  w.passano(20000);
+  const d = w.r.prossimo({ qui, intorno, modo: 'cultura', direzioneBuona: true });
+  if (!d) { guasto('non ha detto niente'); return; }
+  if (!/costruito nel 1959/.test(d.testo)) guasto('in Turismo deve raccontare: ' + (d.testo || '').slice(0, 60));
+});
+
+prova('IN UTILITA non si ripete «qui c e lo stadio» ogni dieci secondi', () => {
+  const w = mondo();
+  const qui = { lat: STADIO.lat + 0.0001, lon: STADIO.lon };
+  const intorno = [{ p: STADIO, m: 12, rel: 0 }];
+  w.r.prossimo({ qui, intorno, modo: 'servizi', direzioneBuona: true });
+  w.passano(20000);
+  const uno = w.r.prossimo({ qui, intorno, modo: 'servizi', direzioneBuona: true });
+  if (!uno) { guasto('la prima non e uscita'); return; }
+  w.passano(20000);
+  const due = w.r.prossimo({ qui, intorno, modo: 'servizi', direzioneBuona: true });
+  if (due && /stadio/.test(due.testo || '')) guasto('lo ha ridetto dopo venti secondi: ' + due.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');
