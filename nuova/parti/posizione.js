@@ -47,7 +47,7 @@ function Posizione(opzioni) {
 
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
-    velocita: null, ultimoQuando: 0,
+    velocita: null, ultimoQuando: 0, saltato: false,
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
@@ -78,6 +78,7 @@ function Posizione(opzioni) {
     return {
       pronto: stato.pronto, lat: stato.lat, lon: stato.lon, prec: stato.prec,
       velocita: stato.velocita,
+      saltato: !!stato.saltato,
       /* a piedi si va fino a otto o nove chilometri all'ora correndo; sopra
          i dodici si e' su qualcosa con le ruote. Senza misura si suppone
          di si': meglio parlare a chi e' in macchina che tacere a chi
@@ -114,6 +115,19 @@ function Posizione(opzioni) {
          all'ora a uno fermo al semaforo. */
       var quando = ora();
       var passatoDa = quando - (stato.ultimoQuando || quando);
+      /* IL SALTO: «ho preso la metro e non si è accorto» (Vince, 20/10).
+         Sottoterra il GPS non c'e': non arriva niente, e quando si
+         riaffaccia uno e' tre chilometri piu' in la'. Per l'app, che
+         guarda solo l'ultima posizione, e' come se avesse camminato — e
+         continua a dare la strada di prima, che non c'entra piu' niente.
+         Un salto si riconosce da due cose insieme: tanto tempo senza
+         sentire niente, e tanta distanza. Chi riceve questa posizione lo
+         deve sapere, per rifare la strada invece di proseguire. */
+      stato.saltato = (passatoDa > 45000 && passo > 300);
+      if (stato.saltato) {
+        stato.velocita = null;           // la vecchia non vale piu'
+        diario('SALTO: ' + Math.round(passo) + ' m dopo ' + Math.round(passatoDa / 1000) + ' s senza posizione');
+      }
       if (passatoDa > 300 && passatoDa < 30000) {
         var adesso = passo / (passatoDa / 1000);              // metri al secondo
         stato.velocita = stato.velocita === null ? adesso

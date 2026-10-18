@@ -338,6 +338,7 @@
        architettoniche e storiche». */
     if (modo !== 'servizi') return;
     if (s.aPiedi === false) return;      // la scena si misura in passi: vale se cammini
+    if (s.prec > 50) return;             // e vale solo se sappiamo dove siamo
     /* I NUMERI CIVICI MAI. «Poi mi diceva i numeri civici» (Vince, 16/10)
        e di nuovo il 18/10, piu' secco: «numeri civici mai». Qui passavo
        `ultimaStrada`, che e' via PIU' numero — e la scena apriva con «Sei
@@ -1258,6 +1259,7 @@
   var ultimaStrada = '', ultimaVia = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
   var stradeDette = {};        // quale via, e quando l'ho annunciata
   var ultimoAnnuncioStrada = 0;   // quando ho annunciato una strada, qualunque
+  var ultimoAvvisoPrecisione = 0;
   posizione.quando(function (cosa, s) {
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
@@ -1276,6 +1278,50 @@
       return;
     }
     if (!s.pronto) { stato('cerco la posizione…'); return; }
+
+    /* IL SALTO — la metro, il treno, l'autobus sotto un cavalcavia.
+       «Ho preso la metro e non si è accorto» (Vince, 20/10): sottoterra il
+       GPS sparisce, e quando torna uno e' tre chilometri piu' in la'.
+       L'app proseguiva con la strada di prima. Adesso se ne accorge, lo
+       dice, e se stava accompagnando qualcuno rifa il percorso da dove si
+       trova davvero — che e' l'unica cosa utile da fare. */
+    if (s.saltato) {
+      var quantoLa = ultimaStradaDove
+        ? posizione.dist(ultimaStradaDove.lat, ultimaStradaDove.lon, s.lat, s.lon) : 0;
+      diario('SALTO: ripartenza da capo');
+      ultimaVia = ''; ultimaStrada = ''; stradeDette = {};
+      scena.dimenticaTutto(); passaggi.stradaNuova(); paesaggio.dimentica();
+      if (guida.meta()) {
+        var m5 = guida.meta();
+        var qui5 = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
+        voce.parla('Ti sei spostato di ' + (Math.round(quantoLa / 100) / 10) +
+                   ' chilometri. Rifaccio la strada da qui.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        intorno.percorso(qui5, m5).then(function (nuovo) {
+          PERCORSO = nuovo;
+          dilloSubito(guida.vaiA(m5, qui5, { via: '' }, nuovo));
+        });
+      } else {
+        voce.parla('Ti sei spostato. Guardo dove siamo adesso.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      }
+    }
+
+    /* LA POSIZIONE IMPRECISA, detta invece che nascosta.
+       «La posizione non era precisa» (Vince, 20/10), e nel quaderno del
+       17/10, a Termini: precisione ±1414 metri, e l'app diceva lo stesso
+       «a 230 metri, la basilica». Per chi vede e' una stranezza; per chi
+       non vede e' un'istruzione sbagliata data con sicurezza, e si fida.
+       Sopra i cinquanta metri d'errore tutto quello che si misura in passi
+       diventa finzione: si tace, e si dice perche'. */
+    var preciso = !(s.prec > 50);
+    if (!preciso && Date.now() - ultimoAvvisoPrecisione > 120000) {
+      ultimoAvvisoPrecisione = Date.now();
+      diario('PRECISIONE: ±' + Math.round(s.prec) + ' m, taccio le distanze');
+      voce.parla('Il telefono non è sicuro di dove siamo: posso sbagliare di ' +
+                 (Math.round(s.prec / 10) * 10) + ' metri. Ti dico solo le cose grandi finché non migliora.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+    }
     stato('posizione attiva · <b>' + Math.round(s.prec || 0) + ' m</b>' + (s.fermo ? ' · fermo' : ''));
     if (!acceso) return;
 
@@ -1298,7 +1344,9 @@
        Quello che resta, e che anzi conta di piu', e' il paesaggio: «a
        sinistra il Vesuvio, a destra il golfo con le isole». */
     var aPiedi = s.aPiedi !== false;
-    var inViaggio = !!guida.meta() || !aPiedi;
+    /* senza precisione, le cose che si misurano in passi tacciono: e' la
+       stessa regola del movimento, per un altro motivo */
+    var inViaggio = !!guida.meta() || !aPiedi || !preciso;
     var pass = inViaggio ? null : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
                                    direzione: s.direzione, direzioneBuona: s.direzioneBuona,
                                    quando: Date.now() });

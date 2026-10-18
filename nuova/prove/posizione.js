@@ -143,6 +143,32 @@ prova('la distanza e la direzione: numeri giusti', () => {
 });
 
 /* ==================== il conto ==================== */
+/* IL SALTO — «ho preso la metro e non si è accorto» (Vince, 20/10).
+   Sottoterra il GPS non c'e': quando torna, uno e' chilometri piu' in la'
+   e per l'app e' come se avesse camminato.                               */
+prova('IL SALTO: tanto tempo senza posizione e tanta distanza', () => {
+  const m = mondo();
+  m.p.comincia();
+  m.gps(41.9000, 12.4900, 8);
+  m.passano(2000);
+  m.gps(41.9002, 12.4902, 8);
+  if (m.p.leggi().saltato) guasto('due passi non sono un salto');
+  m.passano(600000);                       // dieci minuti di metro
+  m.gps(41.9300, 12.5200, 20);          // quattro chilometri piu' in la'
+  if (!m.p.leggi().saltato) guasto('quattro chilometri dopo dieci minuti sono un salto');
+  m.passano(3000);
+  m.gps(41.9301, 12.5201, 12);
+  if (m.p.leggi().saltato) guasto('il salto vale per quella posizione, non per sempre');
+});
+
+prova('camminare a lungo NON e un salto', () => {
+  const m = mondo();
+  m.p.comincia();
+  m.gps(41.9000, 12.4900, 8);
+  for (let i = 1; i <= 20; i++) { m.passano(20000); m.gps(41.9000 + i * 0.0002, 12.4900, 8); }
+  if (m.p.leggi().saltato) guasto('ha scambiato una camminata per un salto');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');
