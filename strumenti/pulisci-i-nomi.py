@@ -44,7 +44,7 @@ DATI = os.path.join(QUI, 'nuova', 'dati')
 SCRIVI = '--scrivi' in sys.argv
 VICINO = 15            # metri: sotto, lo stesso nome e' la stessa cosa
 
-conti = {'spazi': 0, 'html': 0, 'accenti rotti': 0, 'buttati': 0, 'doppioni': 0}
+conti = {'spazi': 0, 'html': 0, 'accenti rotti': 0, 'buttati': 0, 'doppioni': 0, 'nomi in inglese': 0}
 esempi = {k: [] for k in conti}
 
 
@@ -59,6 +59,50 @@ def dist(a1, o1, a2, o2):
     a = (math.sin((a2 - a1) * r / 2) ** 2 +
          math.cos(a1 * r) * math.cos(a2 * r) * math.sin((o2 - o1) * r / 2) ** 2)
     return 2 * 6371000 * math.asin(math.sqrt(a))
+
+
+# ============================================================
+# I NOMI IN INGLESE, 20/10. Sul telefono di Vince, a trecento metri da
+# casa: «Fountain», tre volte. Sono 998 luoghi su 20.841, e la voce
+# italiana li legge in inglese — per chi non vede e' un rumore che non
+# vuol dire niente.
+# Quasi tutti sono fontane: in Wikidata hanno l'etichetta inglese e basta.
+# E fra queste ci sono i NASONI di Roma, che per chi cammina sono acqua da
+# bere: dirlo in italiano non e' questione di eleganza, e' la differenza
+# fra sapere e non sapere che li' si beve.
+# Il pezzo fra parentesi, quando c'e', e' quasi sempre il nome vero.
+PARENTESI = re.compile(r'^Fountain\s*\((.+)\)\s*$', re.I)
+INGLESI = {
+    'fountain': 'fontana', 'church': 'chiesa', 'tower': 'torre',
+    'bridge': 'ponte', 'museum': 'museo', 'castle': 'castello',
+    'monument': 'monumento', 'statue': 'statua', 'chapel': 'cappella',
+    'cathedral': 'cattedrale', 'gate': 'porta', 'theatre': 'teatro',
+    'theater': 'teatro', 'library': 'biblioteca', 'cemetery': 'cimitero',
+    'market': 'mercato', 'square': 'piazza', 'palace': 'palazzo',
+    'drinking water': 'acqua potabile', 'miracle water': 'acqua miracolosa'
+}
+
+
+def initaliano(n):
+    """Il nome in italiano, o None se va bene com'e'."""
+    if not isinstance(n, str):
+        return None
+    t = n.strip()
+    m = PARENTESI.match(t)
+    if m:
+        dentro = m.group(1).strip().strip('"\'')
+        # «Fountain (Nasone)» e' un nasone; «Fountain (Fontana della Pigna)»
+        # e' la Fontana della Pigna. Il nome vero e' quello fra parentesi.
+        basso = dentro.lower()
+        if basso in INGLESI:
+            return INGLESI[basso]
+        if re.match(r'^(fontan|nasone|fonte|acqua)', basso):
+            return dentro
+        return dentro
+    basso = t.lower()
+    if basso in INGLESI:
+        return INGLESI[basso]
+    return None
 
 
 def pulisci(t):
@@ -108,6 +152,12 @@ def una_cartella(cartella):
         for x in d:
             if not isinstance(x, dict):
                 continue
+            if isinstance(x.get('n'), str):
+                it = initaliano(x['n'])
+                if it and it != x['n']:
+                    nota('nomi in inglese', x['n'][:40], it[:40])
+                    x['n'] = it
+                    cambiato = True
             for campo in ('n', 't', 'd', 'a', 'i', 'y'):
                 if campo in x:
                     v, tocco = pulisci(x[campo])
