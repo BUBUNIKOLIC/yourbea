@@ -658,6 +658,28 @@ prova('una passeggiata vera si fa da capo a fondo', () => {
   if (pa.inCorso()) guasto('e alla fine non resta in corso');
 });
 
+/* COME CI SI ARRIVA — controllati tutti i salti dei 137 giri chiedendo a
+   Valhalla la strada vera: uno solo non si cammina, San Michele in Isola a
+   Venezia (1.462 m in linea, 4.454 a piedi: e' l'isola del cimitero).    */
+prova('una tappa che non si cammina dice come arrivarci', () => {
+  const adesso = 1000000;
+  const pa = Passeggiata({ dist, verso, ora: () => adesso });
+  const giro = [{ id: 'venezia-codussi', tema: 'arte', citta: 'Venezia',
+    n: 'Codussi', metri: 1500, t: [
+      { n: 'Ca Vendramin Calergi', la: 45.4425, lo: 12.3290 },
+      { n: 'Chiesa di San Michele in Isola', la: 45.4458, lo: 12.3470,
+        come: 'Ci si arriva in vaporetto, dalle Fondamente Nove.' }
+    ] }];
+  const luoghi = giro[0].t.map((t) => ({ n: t.n, lat: t.la, lon: t.lo, k: 1, d: 'Una scheda.' }));
+  pa.conDati(giro, luoghi);
+  pa.comincia('venezia-codussi', { lat: 45.4425, lon: 12.3290, direzione: 0, direzioneBuona: true });
+  const d = pa.avanti({ lat: 45.4425, lon: 12.3290, direzione: 0, direzioneBuona: true });
+  if (!d) { guasto('la seconda tappa non e arrivata'); return; }
+  if (!/vaporetto/.test(d.testo)) guasto('non dice come arrivarci: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove delle passeggiate');

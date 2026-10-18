@@ -110,9 +110,13 @@ function Passeggiata(opzioni) {
      scollano è il difetto peggiore di tutti, perché nessuno dei due sa di
      essere sbagliato. */
   function suoTesto(t, p) {
-    if (!t.d && !t.i && !t.a && !t.poi) return p;
+    /* «come» dice come ci si arriva quando non ci si arriva a piedi — a
+       Venezia, San Michele in Isola. Si perdeva qui: la tappa veniva
+       ricostruita dal luogo e questo campo non passava. */
+    if (!t.d && !t.i && !t.a && !t.poi && !t.come) return p;
     return { n: p.n, lat: p.lat, lon: p.lon, k: p.k, t: p.t, y: p.y,
-             d: t.d || p.d, i: t.i || p.i, a: t.a || p.a, poi: t.poi || null };
+             d: t.d || p.d, i: t.i || p.i, a: t.a || p.a, poi: t.poi || null,
+             come: t.come || '' };
   }
 
   /* vicine(): le passeggiate in ordine di vicinanza, misurata sulla tappa
@@ -302,9 +306,24 @@ function Passeggiata(opzioni) {
     var d = dist(qui.lat, qui.lon, t.lat, t.lon);
     if (d <= ARRIVATO && !raccontate[t.n]) return racconta(t);   // ci sei già: si racconta
     annunciate[t.n] = ora();
+    /* COME CI SI ARRIVA, quando non ci si arriva a piedi.
+       Controllati tutti i salti dei 137 giri chiedendo a Valhalla la strada
+       vera (strumenti/controlla-i-salti.py): su 54 salti sopra i 700 metri,
+       35 si camminano normalmente — fra due monumenti in centro 800 metri
+       sono niente — 18 sono lunghi, e UNO non si cammina affatto: a
+       Venezia, da Ca' Vendramin Calergi alla chiesa di San Michele in
+       Isola, 1.462 metri in linea d'aria e 4.454 a piedi, perche' San
+       Michele e' l'isola del cimitero e ci si va in vaporetto.
+       Togliere quella tappa dal giro di Codussi vorrebbe dire togliere
+       proprio la sua chiesa. Si tiene, e si dice come arrivarci — che e'
+       quello che farebbe una persona che ti accompagna. */
+    var come = t.come ? ' ' + t.come : '';
+    /* e se e' lontana, lo si dice prima: due chilometri a piedi non sono
+       una sorpresa da scoprire camminando */
+    var lontana = (!t.come && d > 1200) ? ' È lontana: mettiti comodo.' : '';
     return { tipo: 'prossima', livello: 'guida', luogo: t, passeggiata: in_corso,
              quale: quale, quante: tappe.length,
-             testo: numeroTappa(quale, in_corso) + ': ' + t.n + ', ' + dove(qui, t) + ', ' + quanto(d) + '.' };
+             testo: numeroTappa(quale, in_corso) + ': ' + t.n + ', ' + dove(qui, t) + ', ' + quanto(d) + '.' + come + lontana };
   }
 
   /* filo(): IL RACCONTO FRA UNA TAPPA E L'ALTRA.
