@@ -112,6 +112,36 @@
   // la porta che il guscio dell'iPhone chiama
   window.urbeaPosizione = function (lat, lon, prec) { posizione.dalGuscio(lat, lon, prec); };
 
+  /* ============================================================
+     COM'E' MESSO IL TELEFONO: VOICEOVER E IL TESTO GRANDE
+     Il guscio lo sa e adesso lo dice (Guscio.swift, mandaAccessibilita).
+     Verificato sul telefono di Vince il 20/10:
+       «accessibilita: VoiceOver spento, testo UICTContentSizeCategoryXL».
+     Serve a due cose, e nessuna delle due si puo' chiedere a parole:
+     1. IL TESTO. Se uno ha messo il testo grande nelle impostazioni del
+        telefono, lo vuole grande dappertutto — non deve venire qui a
+        premere «Testo più grande» per la terza volta nella sua vita. Si
+        parte come l'ha messo lui; se poi lo cambia nell'app, la sua scelta
+        vince e non la si tocca piu'.
+     2. VOICEOVER. Chi lo tiene acceso non vede: e' il modo onesto di
+        saperlo senza chiederglielo, e vale per il prezzo (Turismo gratis
+        con VoiceOver) e per non parlargli sopra. */
+  var voiceOver = false;
+  window.urbeaAccessibilita = function (vo, testoGrande, taglia) {
+    voiceOver = !!vo;
+    document.body.dataset.voiceover = voiceOver ? 'si' : 'no';
+    diario('ACCESSIBILITA: VoiceOver ' + (voiceOver ? 'acceso' : 'spento') + ', testo ' + (taglia || '?'));
+    var scelto = null;
+    try { scelto = localStorage.getItem('yourbea2-testo'); } catch (e) {}
+    if (scelto) return;                     // la sua scelta vince
+    var t = String(taglia || '');
+    var grande = testoGrande || /XXL|XXXL|Accessibility/i.test(t);
+    var medio = /\bXL\b/.test(t) || /_XL$/.test(t);
+    if (grande) document.body.dataset.testo = 'enorme';
+    else if (medio) document.body.dataset.testo = 'grande';
+  };
+  window.conVoiceOver = function () { return voiceOver; };
+
   /* ---------- lo schermo ---------- */
   function mostra(cosa) {
     /* la riga di sopra vuota resta VUOTA: col trattino al posto suo, sullo
