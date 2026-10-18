@@ -584,6 +584,23 @@
        deve muoversi servono piu' di tutto. In TURISMO vengono prima quelli
        che hanno una storia scritta. */
     var perUtilita = (modo === 'servizi');
+
+    /* 0-bis. I NUMERI CIVICI, saliti di posto tre volte in tre giorni.
+       18/10: «numeri civici mai», perche' li diceva a raffica — «sei in Via
+       Osvaldo Costabile 18», poi 6, poi 22, poi 57 in cento secondi.
+       19/10: «qualche numero civico». 20/10, dopo «portami a casa»:
+       «aumenta la frequenza dei numeri civici».
+       Non e' un cambio d'idea: camminando, i numeri sono il contachilometri
+       di chi non vede — dicono a che punto della via sei, e nient'altro lo
+       dice. Il guaio era la raffica, non il numero. Qui il civico sta nel
+       giro, quindi non puo' uscire due volte di fila per costruzione; e
+       adesso e' fra i primi, e aspetta un minuto invece di quattro. */
+    if (perUtilita && aPiediOra() && ultimaStrada && ultimaStrada !== ultimaVia &&
+        Date.now() - ultimoCivico > 60000) {
+      var numero = ultimaStrada.slice(ultimaVia.length).trim();
+      if (numero) fatte.push({ che: 'civico', testo: 'Siamo al numero ' + numero + '.' });
+    }
+
     function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
       if (d < 30 || d > 400) return;
@@ -612,20 +629,6 @@
                                    direzione: s.direzione, direzioneBuona: true });
     if (inc) fatte.push({ che: 'incrocio',
       testo: 'Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.' });
-
-    /* 2-bis. QUALCHE NUMERO CIVICO. Il 18/10 era «numeri civici mai»,
-       perche' li diceva a raffica: «sei in Via Osvaldo Costabile 18», poi
-       6, poi 22, poi 57 in cento secondi. Il 19/10, piu' preciso:
-       «qualche numero civico». Il guaio non era il numero, era la raffica.
-       Qui dentro il civico e' UNO dei turni, quindi non puo' uscire due
-       volte di fila per costruzione, e in piu' ha il suo riposo: uno ogni
-       quattro minuti, e solo in Utilita', dove serve a dire a che punto
-       della via sei. */
-    if (perUtilita && aPiediOra() && ultimaStrada && ultimaStrada !== ultimaVia &&
-        Date.now() - ultimoCivico > 240000) {
-      var numero = ultimaStrada.slice(ultimaVia.length).trim();
-      if (numero) fatte.push({ che: 'civico', testo: 'Siamo al numero ' + numero + '.' });
-    }
 
     /* 3. LA STRADA, se non l'ho gia' detta da poco */
     if (Date.now() - (stradeDette[ultimaVia.toLowerCase()] || 0) > 240000) {
