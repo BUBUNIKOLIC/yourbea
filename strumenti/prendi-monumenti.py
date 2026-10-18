@@ -40,7 +40,14 @@ TIPI = """wd:Q16970 wd:Q23413 wd:Q33506 wd:Q41176 wd:Q3947 wd:Q2080521 wd:Q81197
           wd:Q23442 wd:Q1134686 wd:Q93352 wd:Q8502 wd:Q54050 wd:Q4022
           wd:Q1322134 wd:Q40080 wd:Q473972 wd:Q6063204 wd:Q133056 wd:Q44782
           wd:Q23397 wd:Q39816 wd:Q747074 wd:Q3950 wd:Q697295 wd:Q1293150
-          wd:Q55488 wd:Q55678 wd:Q1088552 wd:Q97588309 wd:Q740437"""
+          wd:Q55488 wd:Q55678 wd:Q1088552 wd:Q97588309 wd:Q740437
+          wd:Q8072"""
+# Q8072 VULCANO, aggiunto il 19/10. Vince, tornando da Napoli in autostrada:
+# «a sinistra c'era il Vesuvio, a destra il golfo con le isole; erano
+# lontani ma c'era un panorama che un non vedente magari puo' apprezzare».
+# Il Vesuvio non c'era: in Wikidata e' un VULCANO, e noi prendevamo
+# «montagna». Nel golfo ce ne sono otto, fra Vesuvio, Epomeo, Solfatara e i
+# crateri flegrei.
 # IL PAESAGGIO, dal 18/10. Vince, tornando da Vietri: «il non vedente vuole
 # che sia descritta la realta' circostante — di fronte, davanti a te hai il
 # golfo, Raito, i Due Fratelli». Nei dati non c'era niente di tutto questo:
