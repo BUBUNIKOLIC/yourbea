@@ -41,7 +41,21 @@ TIPI = """wd:Q16970 wd:Q23413 wd:Q33506 wd:Q41176 wd:Q3947 wd:Q2080521 wd:Q81197
           wd:Q1322134 wd:Q40080 wd:Q473972 wd:Q6063204 wd:Q133056 wd:Q44782
           wd:Q23397 wd:Q39816 wd:Q747074 wd:Q3950 wd:Q697295 wd:Q1293150
           wd:Q55488 wd:Q55678 wd:Q1088552 wd:Q97588309 wd:Q740437
-          wd:Q8072"""
+          wd:Q8072 wd:Q15661340 wd:Q178561 wd:Q486972 wd:Q918230 wd:Q852190
+          wd:Q187223 wd:Q46831 wd:Q12783 wd:Q1107656 wd:Q179049 wd:Q3936950
+          wd:Q614316 wd:Q1662089 wd:Q1509716 wd:Q1434544 wd:Q123705
+          wd:Q27916659 wd:Q1154710"""
+# LA STORIA DOVE NON C'E' L'ARTE, dal 20/10. Vince, guardando le zone magre:
+# «li possiamo sostituire con la storia della città e luoghi più legati
+# alla storia che all'arte». A Sabaudia ci sono 8 luoghi perche' la citta'
+# e' del 1934; ad Anzio perche' nel '44 e' stata rasa. Ma la storia c'e'
+# eccome, e Wikidata la tiene in classi che non chiedevamo:
+#   Q178561 BATTAGLIA (lo sbarco di Anzio), Q15661340 CITTA' ANTICA (Norba),
+#   Q486972 INSEDIAMENTO UMANO (i borghi della bonifica), Q918230 VILLA
+#   ROMANA (Torre Astura), Q852190 RELITTO NAVALE, Q187223 LAGUNA (il lago
+#   di Fogliano), Q46831 CATENA MONTUOSA (i Monti Lepini), i giardini
+#   (Ninfa), le riserve, i musei privati e d'industria, le collegiate, le
+#   commende (Valvisciolo) e gli impianti sportivi, che orientano.
 # Q8072 VULCANO, aggiunto il 19/10. Vince, tornando da Napoli in autostrada:
 # «a sinistra c'era il Vesuvio, a destra il golfo con le isole; erano
 # lontani ma c'era un panorama che un non vedente magari puo' apprezzare».
