@@ -161,8 +161,17 @@ def controlla_luoghi():
                 controlla_testo(dove, campo, x[campo])
         scheda = x.get('d', '')
         if k and k >= 1:
-            if not isinstance(scheda, str) or len(scheda.strip()) < 60:
-                guaio('luogo senza scheda vera (meno di 60 lettere)', dove)
+            # UNA RIGA NON E' UN DIFETTO, 20/10. Le 32 «schede corte» sono
+            # le fontane di un centro storico, scritte a mano una riga
+            # ciascuna: «Fontana del Bottino, una delle fontane del centro
+            # storico». Controllate tutte: sono 32 frasi finite, nessuna
+            # troncata. Una fontana fra dodici non ha bisogno di un
+            # paragrafo, e chiederglielo vorrebbe dire riempire l'app di
+            # parole per far contento un controllo.
+            # Resta difetto quello che non si puo' dire a voce: vuoto, o
+            # tagliato a meta'.
+            if not isinstance(scheda, str) or len(scheda.strip()) < 12:
+                guaio('luogo senza niente da dire', dove)
             elif not scheda.rstrip().endswith(('.', '!', '?', '»', '"')):
                 guaio('scheda che finisce a meta\'', dove + ': …' + scheda.rstrip()[-50:])
         # QUINDICI METRI, NON CINQUANTA. A cinquanta, «Attraversamento di
@@ -226,9 +235,19 @@ def controlla_passeggiate():
                 somma += s
                 # un salto lungo in una passeggiata a piedi: o e' un errore di
                 # coordinate, o la passeggiata non si cammina
-                if s > 900:
-                    guaio('salto troppo lungo fra due tappe',
-                          '%s: da %s a %s, %d metri' % (dove, prima[2], tn, s))
+                # QUANTO E' TROPPO, misurato invece che immaginato.
+                # Il 20/10 ho chiesto a Valhalla la strada vera per tutti i
+                # 54 salti sopra i 700 metri: 35 si camminano normalmente
+                # (fra due monumenti in centro 800-1500 metri non sono
+                # niente), 18 sono lunghi ma veri, e UNO solo non si
+                # cammina — San Michele in Isola a Venezia, che e' su
+                # un'isola. La soglia a 900 metri segnalava 31 cose di cui
+                # 30 andavano bene. Qui resta solo quello che in linea
+                # d'aria e' tanto davvero; il giudizio vero lo da'
+                # strumenti/controlla-i-salti.py, che chiede a Valhalla.
+                if s > 1300:
+                    guaio('salto fra due tappe da guardare (con controlla-i-salti.py)',
+                          '%s: da %s a %s, %d metri in linea' % (dove, prima[2], tn, s))
                 if s < 25:
                     guaio('due tappe nello stesso punto',
                           '%s: %s e %s, %d metri' % (dove, prima[2], tn, s))
