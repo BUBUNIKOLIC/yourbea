@@ -1063,6 +1063,21 @@
           { livello: voce.GUIDA, ancheSeUguale: true });
         return;
       }
+      /* SI DICE CHE E' APPROSSIMATO, invece di far finta di niente.
+         «Via dei Corazzieri 47, Roma»: il civico 47 in OpenStreetMap non
+         c'e' — verificato con Photon e con Nominatim — e la via arriva a
+         tre pezzi distanti mezzo chilometro. Adesso puntiamo al mezzo, ma
+         l'errore resta: tacerlo vuol dire far camminare uno che non vede
+         fino a un punto sbagliato e poi dirgli di tornare indietro. Lo si
+         dice prima, e si dice come risolverlo per sempre. */
+      if (scelto.aPezzi && scelto.incerto > 120) {
+        var comeRisolvere = eCasa
+          ? ' Quando ci sei, fermati sulla porta e dimmi «casa è qui»: me lo segno esatto e non succede più.'
+          : '';
+        voce.parla('Attento: di questa via la mappa non ha i numeri civici, quindi ti porto a metà strada. Posso sbagliare di ' +
+                   (Math.round(scelto.incerto / 10) * 10) + ' metri.' + comeRisolvere,
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      }
       /* il nome che arriva dal cercatore spesso contiene gia' la citta'
          («Via Vincenzo Gioberti, Latina»): aggiungerla di nuovo faceva dire
          «Latina, Latina» */

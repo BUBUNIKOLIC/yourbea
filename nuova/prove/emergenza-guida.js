@@ -500,6 +500,38 @@ prova('senza citta detta, fra due vie con lo stesso nome si prende la piu vicina
   if (!scelto || scelto.citta !== 'Latina') guasto('doveva prendere quella sotto casa: ' + JSON.stringify(scelto));
 });
 
+/* I 400 METRI DI CASA — «quando sono arrivato a casa mi diceva torna
+   indietro di 400 metri» (Vince, 20/10). Chiesto a Photon il suo indirizzo
+   vero: tre pezzi della stessa via, 513 metri fra loro, e il civico 47 non
+   c'e' ne' su Photon ne' su Nominatim. Prendendo il piu' vicino a chi
+   cerca si finiva sempre all'imbocco.                                     */
+prova('UNA VIA A PEZZI: si prende il mezzo, e si dice di quanto si puo sbagliare', () => {
+  const g = Guida({ dist, verso });
+  const c = [
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82586, lon: 12.48608 },
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82301, lon: 12.48121 },
+    { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82514, lon: 12.48595 }
+  ];
+  const s = g.scegli(c, g.cittaNelTesto('via dei corazzieri 47 roma'),
+                     { lat: 41.89, lon: 12.48 }, 'via dei corazzieri 47 roma');
+  if (!s) { guasto('la via c era'); return; }
+  if (!s.aPezzi) guasto('deve dire che la via e arrivata a pezzi');
+  if (!s.incerto || s.incerto < 100) guasto('deve dire di quanto puo sbagliare: ' + s.incerto);
+  /* il mezzo e piu vicino a TUTTI i pezzi di quanto lo sia l imbocco */
+  const allImbocco = Math.max(...c.map((x) => dist(c[0].lat, c[0].lon, x.lat, x.lon)));
+  if (!(s.incerto < allImbocco)) guasto('il mezzo deve sbagliare meno dell imbocco');
+});
+
+prova('due vie DIVERSE non si mediano: sarebbe un punto in mezzo al niente', () => {
+  const g = Guida({ dist, verso });
+  const c = [
+    { nome: 'Via Roma', citta: 'Latina', lat: 41.4680, lon: 12.9040 },
+    { nome: 'Via Milano', citta: 'Latina', lat: 41.4700, lon: 12.9100 }
+  ];
+  const s = g.scegli(c, [], { lat: 41.4676, lon: 12.9036 }, '');
+  if (s && s.aPezzi) guasto('ha mediato due vie diverse: ' + JSON.stringify(s));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');

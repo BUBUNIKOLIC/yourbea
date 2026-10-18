@@ -166,6 +166,56 @@ function Guida(opzioni) {
       candidati = trovati;
     }
 
+    /* ============================================================
+       UNA VIA LUNGA ARRIVA A PEZZI: SI PRENDE IL MEZZO, NON L'IMBOCCO
+       Provato il 20/10 con l'indirizzo vero di Vince, «Via dei Corazzieri
+       47, Roma»: Photon risponde con TRE pezzi della stessa via, distanti
+       513 metri fra loro, e il numero civico lo ignora del tutto —
+       verificato anche con Nominatim: il 47 in OpenStreetMap non c'e'.
+       Noi prendevamo il piu' vicino a chi cerca, cioe' l'imbocco: e
+       arrivando all'imbocco l'app diceva «sei arrivato» mentre casa sua
+       stava quattrocento metri piu' avanti. Parole sue, il 20/10: «quando
+       sono arrivato a casa mi diceva torna indietro di 400 metri».
+       Se i candidati sono pezzi della STESSA via, si prende il punto di
+       mezzo: l'errore peggiore si dimezza, e soprattutto non e' piu'
+       sistematicamente dalla parte sbagliata. E si segna `aPezzi`, perche'
+       chi chiama lo possa DIRE invece di far finta di niente. */
+    /* STESSA VIA vuol dire: stesso nome, STESSA CITTA', e vicine fra loro.
+       Senza le ultime due, «Via Roma» di Milano e «Via Roma» di Latina
+       hanno lo stesso nome e il punto di mezzo cade in Toscana, a
+       duecentosettanta chilometri da tutte e due. L'ha preso la prova
+       vecchia, e aveva ragione lei. Due chilometri e' la lunghezza di una
+       via lunga: oltre, sono due vie diverse che si chiamano uguale. */
+    /* e dev'essere una VIA. Due farmacie che si chiamano tutte e due
+       «Farmacia», a settecento metri, sono due farmacie: mediarle vuol dire
+       mandare uno in mezzo alla strada fra le due. Una via la si riconosce
+       da come comincia. */
+    var PAROLE_DI_STRADA = /^(via|viale|piazza|piazzale|corso|largo|vicolo|strada|lungo|circonvallazione|salita|discesa|borgo|contrada|traversa)\b/i;
+    var stessaVia = candidati.length > 1 &&
+      PAROLE_DI_STRADA.test(String(candidati[0].nome || '').trim()) &&
+      candidati.every(function (c) {
+      return normalizza(c.nome || '') === normalizza(candidati[0].nome || '') &&
+             normalizza(c.citta || '') === normalizza(candidati[0].citta || '') &&
+             dist(candidati[0].lat, candidati[0].lon, c.lat, c.lon) < 2000;
+    });
+    if (stessaVia) {
+      var la = 0, lo = 0;
+      candidati.forEach(function (c) { la += c.lat; lo += c.lon; });
+      var mezzo = { nome: candidati[0].nome, citta: candidati[0].citta,
+                    frazione: candidati[0].frazione, provincia: candidati[0].provincia,
+                    regione: candidati[0].regione,
+                    lat: la / candidati.length, lon: lo / candidati.length,
+                    aPezzi: candidati.length };
+      var piuLontano = 0;
+      candidati.forEach(function (c) {
+        var q = dist(mezzo.lat, mezzo.lon, c.lat, c.lon);
+        if (q > piuLontano) piuLontano = q;
+      });
+      mezzo.incerto = Math.round(piuLontano);
+      diario('SCELTA: ' + candidati.length + ' pezzi della stessa via, prendo il mezzo (±' + mezzo.incerto + ' m)');
+      return mezzo;
+    }
+
     var mig = candidati[0], dm = Infinity;
     candidati.forEach(function (c) {
       var d = dist(qui.lat, qui.lon, c.lat, c.lon);
