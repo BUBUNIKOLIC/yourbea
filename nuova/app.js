@@ -142,6 +142,87 @@
   };
   window.conVoiceOver = function () { return voiceOver; };
 
+  /* ============================================================
+     L'ABBONAMENTO
+     «Ora abbonamento settimanale per i turisti», «App Store iPhone»
+     (Vince, 21/10). Il pagamento lo fa Apple dentro il guscio
+     (guscio-ios/Yourbea/Acquisti.swift); qui si sa soltanto com'è messo, e
+     lo si può dire e chiedere a voce.
+     TRE COSE CHE NON SI TOCCANO:
+     - Utilità è gratis per sempre: è la modalità di chi non vede.
+     - Con VoiceOver acceso anche Turismo è gratis, senza chiedere niente a
+       nessuno e senza farsi dimostrare niente.
+     - Dove non si può pagare non si chiude: sul web il negozio non c'è, e
+       mettere un muro davanti a una porta che non si apre è peggio che
+       lasciarla aperta. */
+  var abbonamento = { attivo: false, scadenza: null, prezzo: null };
+  window.urbeaAbbonamento = function (attivo, scadenza, prezzo) {
+    abbonamento = { attivo: !!attivo, scadenza: scadenza || null, prezzo: prezzo || null };
+    diario('ABBONAMENTO: ' + (abbonamento.attivo ? 'attivo' : 'no') +
+           (abbonamento.prezzo ? ', ' + abbonamento.prezzo : ''));
+  };
+  window.urbeaEsitoAcquisto = function (frase) {
+    voce.parla(String(frase || ''), { livello: voce.GUIDA, ancheSeUguale: true });
+  };
+
+  /* QUANDO IL PASS FINISCE, LO DICE. Una volta sola.
+     «Si deve rinnovare o no?» — no, e per una ragione sola: un turista sta
+     in città tre o quattro giorni, e un abbonamento che si rinnova lo
+     addebiterebbe proprio quando l'app è diventata inutile. Quello non è
+     un cliente, è un rimborso con una stella attaccata.
+     Ma il silenzio non va bene lo stesso: se il pass finisce e l'app
+     smette di raccontare senza spiegare, uno pensa che si sia rotta. Lo
+     dice una volta, e decide lui. È il rinnovo onesto.
+     Si segna la scadenza di cui si è già parlato, così non lo ripete a
+     ogni avvio: ogni pass ha la sua data, e vale come firma. */
+  var scadenzaDetta = 0;
+  try { scadenzaDetta = Number(localStorage.getItem('yourbea2-pass-detto') || 0); } catch (e) {}
+  setInterval(function () {
+    if (!acceso || !abbonamento.scadenza) return;
+    if (abbonamento.attivo) return;
+    if (abbonamento.scadenza > Date.now()) return;
+    if (scadenzaDetta === abbonamento.scadenza) return;
+    scadenzaDetta = abbonamento.scadenza;
+    try { localStorage.setItem('yourbea2-pass-detto', String(scadenzaDetta)); } catch (e) {}
+    diario('PASS finito: lo dico una volta');
+    voce.parla('Il pass di sette giorni è finito. Se vuoi continuare a sentire i racconti, dimmi «compra» e ne prendo un altro. Per il resto — le strade, i negozi, «portami a» — l\'app resta come prima, e non si paga.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+  }, 60000);
+
+  /* turismoPagato(): chi ha diritto al racconto. */
+  function turismoPagato() {
+    if (voiceOver) return true;                 // chi non vede non paga
+    if (!window.urbeaSaComprare) return true;   // qui non si può comprare: non si chiude
+    return abbonamento.attivo;
+  }
+
+  function diciAbbonamento() {
+    if (voiceOver) {
+      voce.parla('Con VoiceOver acceso Turismo è gratis: non c\'è niente da pagare.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    if (!window.urbeaSaComprare) {
+      voce.parla('Da qui non si può ancora comprare: l\'abbonamento si prende dall\'app dell\'iPhone.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    if (abbonamento.attivo) {
+      var q = '';
+      if (abbonamento.scadenza) {
+        var g = Math.max(0, Math.round((abbonamento.scadenza - Date.now()) / 86400000));
+        q = g <= 1 ? ' Finisce domani.' : (' Finisce fra ' + g + ' giorni.');
+      }
+      voce.parla('Turismo è aperto.' + q + ' Quando finisce, se vuoi, ne prendi un altro.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    voce.parla('Turismo si apre con un pass di sette giorni' +
+               (abbonamento.prezzo ? ', ' + abbonamento.prezzo : '') +
+               '. Non si rinnova da solo. Dimmi «compra» per prenderlo, oppure «ripristina» se l\'hai già pagato.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+
   /* la pagina (index.html) ha bisogno di far dire una frase: il tasto
      «come si mette sulla Home» su iPhone, che spiega i due tocchi. */
   window.YBdillo = function (t) {
@@ -668,7 +749,7 @@
       testo: 'Il prossimo incrocio è ' + inc.nome + ', ' + scena.passi(inc.metri) + '.' });
 
     /* 3. LA STRADA, se non l'ho gia' detta da poco */
-    if (Date.now() - (stradeDette[ultimaVia.toLowerCase()] || 0) > 240000) {
+    if (Date.now() - (stradeDette[senzaAccenti(ultimaVia)] || 0) > 240000) {
       fatte.push({ che: 'strada', testo: 'Stai percorrendo ' + ultimaVia + '.' });
     }
 
@@ -682,7 +763,7 @@
     if (!scelta) { diario('GIRO: ho solo «' + fatte[0].che + '», gia detto: taccio'); return; }
     ultimoGiro = scelta.che;
     ultimoRiepilogo = Date.now();
-    if (scelta.che === 'strada') stradeDette[ultimaVia.toLowerCase()] = Date.now();
+    if (scelta.che === 'strada') stradeDette[senzaAccenti(ultimaVia)] = Date.now();
     if (scelta.che === 'civico') ultimoCivico = Date.now();
     dillo({ tipo: 'strada', livello: 'cenno', testo: scelta.testo });
   }
@@ -1312,6 +1393,20 @@
   /* ---------- il giro: a ogni posizione nuova ---------- */
   var ultimaStrada = '', ultimaVia = '', ultimaStradaQuando = 0, ultimaStradaDove = null;
   var stradeDette = {};        // quale via, e quando l'ho annunciata
+  var viaInProva = '';         // vista una volta: aspetto che si confermi
+
+  /* uguali(): «Via Álvaro del Portillo» e «Via Alvaro del Portillo» sono la
+     STESSA VIA. Dal quaderno del 20/10: dette tutte e due, a ottanta
+     secondi di distanza, perché il confronto guardava le lettere com'erano
+     scritte e l'accento le rendeva diverse. Il cercatore scrive lo stesso
+     nome in due modi a seconda del pezzo di strada. */
+  function senzaAccenti(t) {
+    return String(t || '').toLowerCase()
+      .replace(/[àáâä]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôö]/g, 'o').replace(/[ùúûü]/g, 'u').replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  function uguali(a, b) { return senzaAccenti(a) === senzaAccenti(b); }
   var ultimoAnnuncioStrada = 0;   // quando ho annunciato una strada, qualunque
   var ultimoAvvisoPrecisione = 0;
   posizione.quando(function (cosa, s) {
@@ -1451,7 +1546,28 @@
            per chi lo chiede, ma non fa parlare nessuno. */
         var viaOra = (v.via || '').trim();
         ultimaStrada = dove;
-        if (!viaOra || viaOra.toLowerCase() === (ultimaVia || '').toLowerCase()) return;
+        if (!viaOra || uguali(viaOra, ultimaVia)) { viaInProva = ''; return; }
+
+        /* ============================================================
+           UNA VIA SI ANNUNCIA SOLO SE LA VEDO DUE VOLTE DI FILA
+           «L'errore che fa è quando passi un incrocio: dice "stai
+           imboccando questa strada" ma invece stiamo percorrendo la
+           stessa strada» (Vince, 20/10, dopo un giro in macchina).
+           La diagnosi è sua ed è giusta: attraversando un incrocio, il
+           punto sulla mappa per un attimo cade sulla via TRASVERSALE —
+           il cercatore risponde con quella — e subito dopo torna sulla
+           nostra. Una sbandata di due secondi diventava un annuncio.
+           Il riposo di venticinque secondi non basta, perché la via
+           trasversale è un nome nuovo e passa.
+           La conferma invece la coglie: una via nuova si segna e si tace;
+           se alla risposta dopo c'è ancora, allora ci siamo entrati
+           davvero e lo si dice. Se è sparita, era l'incrocio. */
+        if (viaInProva !== viaOra.toLowerCase()) {
+          viaInProva = viaOra.toLowerCase();
+          diario('STRADA: «' + viaOra + '» vista una volta, aspetto conferma');
+          return;
+        }
+        viaInProva = '';
         /* UNA STRADA GIA' ANNUNCIATA NON SI RIANNUNCIA SUBITO.
            Dal quaderno del 18/10, a Vietri: «Sei entrato in Via Osvaldo
            Costabile» alle 29:44 e di nuovo alle 30:09; Via Giuseppe
@@ -1469,16 +1585,24 @@
            era un annuncio nuovo. Fra un annuncio di strada e il prossimo
            passano almeno venticinque secondi, chiunque sia la via: se nel
            frattempo si e' girato davvero, lo si dice un attimo dopo. */
-        if (ADESSO - ultimoAnnuncioStrada < 25000) {
+        /* IN MACCHINA LE STRADE SI DICONO DI RADO. Dal quaderno del
+           20/10: sul Grande Raccordo Anulare, a cinquanta all'ora, ha
+           annunciato venticinque vie una dietro l'altra — «sei entrato in
+           Via Bruno de Finetti», «Strada provinciale 95/b»... A quella
+           velocità una via dura trenta secondi e non e' informazione: e'
+           un elenco. A piedi venticinque secondi vanno bene, in macchina
+           ce ne vogliono due minuti. */
+        var quantoAspettare = aPiediOra() ? 25000 : 120000;
+        if (ADESSO - ultimoAnnuncioStrada < quantoAspettare) {
           diario('STRADA: ' + viaOra + ' troppo presto dopo l altra, taccio');
           ultimaVia = viaOra;
-          stradeDette[viaOra.toLowerCase()] = ADESSO;
+          stradeDette[senzaAccenti(viaOra)] = ADESSO;
           return;
         }
-        var quandoDetta = stradeDette[viaOra.toLowerCase()] || 0;
+        var quandoDetta = stradeDette[senzaAccenti(viaOra)] || 0;
         var prima = ultimaVia;
         ultimaVia = viaOra;
-        stradeDette[viaOra.toLowerCase()] = ADESSO;
+        stradeDette[senzaAccenti(viaOra)] = ADESSO;
         if (ADESSO - quandoDetta < 180000) {
           diario('STRADA: ' + viaOra + ' gia detta da ' + Math.round((ADESSO - quandoDetta) / 1000) + 's, taccio');
           scena.dimentica();
@@ -1714,6 +1838,20 @@
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
     /* PRIMA di «portami a casa», se no «casa» da sola lo prenderebbe */
+    /* l'abbonamento, a voce: chi non vede non cerca un tasto */
+    if (ha('abbonamento', 'quanto costa', 'devo pagare', 'quanto manca all abbonamento')) {
+      diciAbbonamento(); return true;
+    }
+    if (ha('compra', 'comprare', 'prendi l abbonamento', 'voglio abbonarmi')) {
+      if (window.urbeaCompra) { window.urbeaCompra(); }
+      else { diciAbbonamento(); }
+      return true;
+    }
+    if (ha('ripristina', 'ho gia pagato', 'ho già pagato', 'ripristina acquisti')) {
+      if (window.urbeaRipristina) { window.urbeaRipristina(); }
+      else { diciAbbonamento(); }
+      return true;
+    }
     if (ha('casa e qui', 'casa è qui', 'questa e casa mia', 'questa è casa mia',
             'segna casa qui', 'sono a casa', 'siamo a casa', 'casa mia e qui')) {
       segnaCasaQui(); return true;
