@@ -49,8 +49,36 @@ function Racconto(opzioni) {
   var gradino = {};          // nome -> quanti gradini ho già detto
   var inCorso = null;        // il luogo di cui sto raccontando
 
+  /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
+     «Non basta leggere la pagina Wikipedia: serve un'audiodescrizione
+     orientativa» — ed era vero. Fermandosi davanti alla Basilica di
+     Massenzio si sentiva «fu fatta costruire da Massenzio agli inizi del
+     IV secolo»: a chi non vede non dice niente di quello che ha davanti.
+     Adesso il primo gradino e' COM'E' FATTA — quanto e' grande, di che e'
+     fatta, che forma ha — e la storia e' il gradino dopo, per chi dice
+     «ancora». Senza quei dati non cambia niente: resta la storia subito.
+     LA DIREZIONE NON SI RIPETE: il cenno l'ha appena detta («sulla
+     destra, a ottanta metri»), e ridirla dieci secondi dopo e' il
+     «troppo frenetico» di Dario. */
+  var fatteCosi = {};
+  function comeEFatta(p) {
+    if (!o.descrizione || !p || !p.n) return '';
+    if (Object.prototype.hasOwnProperty.call(fatteCosi, p.n)) return fatteCosi[p.n];
+    var ha = p.h || p.l || (p.mat && p.mat.length) || (p.frm && p.frm.length);
+    if (!ha) { fatteCosi[p.n] = ''; return ''; }
+    /* si chiama UNA VOLTA SOLA per posto: la descrizione gira le parole da
+       se', e chiamarla due volte (una per contare i gradini, una per
+       dirla) la farebbe girare a vuoto. */
+    var f = o.descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
+                                  altezza: p.h, larghezza: p.l,
+                                  materiali: p.mat, forme: p.frm });
+    fatteCosi[p.n] = (f && f.testo) || '';
+    return fatteCosi[p.n];
+  }
+
   function quantiGradini(p) {
     var n = 1;               // la scheda
+    if (comeEFatta(p)) n++;  // com'è fatta, e viene prima
     if (p.i) n++;            // cosa vedere
     if (p.a) n++;            // l'approfondimento
     return n;
@@ -293,7 +321,13 @@ function Racconto(opzioni) {
     if (g >= quantiGradini(inCorso)) return { tipo: 'finito', luogo: inCorso, livello: 'guida',
                                               testo: 'Di questo ti ho detto tutto.' };
     gradino[inCorso.n] = g + 1;
-    if (g === 0) return { tipo: 'scheda', luogo: inCorso, testo: inCorso.d, livello: 'guida' };
+    var fatta = comeEFatta(inCorso);
+    if (fatta) {
+      if (g === 0) return { tipo: 'scheda-orientativa', luogo: inCorso, testo: fatta, livello: 'guida' };
+      g = g - 1;             // da qui in poi i gradini sono quelli di sempre
+    }
+    if (g === 0 && inCorso.d) return { tipo: 'scheda', luogo: inCorso, testo: inCorso.d, livello: 'guida' };
+    if (g === 0) return { tipo: 'finito', luogo: inCorso, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
     if (g === 1 && inCorso.i) return { tipo: 'cosa-vedere', luogo: inCorso, testo: 'Cosa vedere: ' + inCorso.i, livello: 'guida' };
     if (inCorso.a) return { tipo: 'approfondimento', luogo: inCorso, testo: inCorso.a, livello: 'guida' };
     return { tipo: 'finito', luogo: inCorso, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
@@ -328,7 +362,7 @@ function Racconto(opzioni) {
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
     gradinoDi: function (p) { return gradino[p.n] || 0; },
-    dimentica: function () { detti = {}; gradino = {}; inCorso = null; }
+    dimentica: function () { detti = {}; gradino = {}; fatteCosi = {}; inCorso = null; }
   };
 }
 

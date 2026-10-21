@@ -136,6 +136,49 @@ prova('due monumenti uguali non si raccontano con le stesse parole', () => {
   }
 });
 
+/* ---------- LE MISURE A TERRA ----------
+   L'altezza, per chi non vede, e' la meno utile delle tre: trentacinque
+   metri in su non si camminano. La larghezza si'. Dal wikitesto della
+   Basilica di Massenzio: altezza 35 m, larghezza 65 m, lunghezza 100 m —
+   e «larga ottantacinque passi» dice quanto ci metti a costeggiarla. */
+prova('la larghezza si dice in passi: e la misura che si cammina', () => {
+  const f = d().frase({ n: 'Basilica di Massenzio', t: 'basilica', dove: 'davanti',
+                        metri: 30, altezza: 35, larghezza: 65 });
+  if (!f) { guasto('niente frase'); return; }
+  if (!/larg/.test(f.testo)) guasto('non dice quanto e larga: ' + f.testo);
+  if (/65\s*metri/.test(f.testo)) guasto('dice i metri invece dei passi: ' + f.testo);
+  console.log('      → ' + f.testo);
+});
+
+prova('senza larghezza non se ne inventa una', () => {
+  const f = d().frase({ n: 'Chiesa A', t: 'chiesa', dove: 'destra', metri: 20, altezza: 12 });
+  if (f && /larg/.test(f.testo)) guasto('si e inventato la larghezza: ' + f.testo);
+});
+
+prova('una larghezza assurda non si dice', () => {
+  const f = d().frase({ n: 'Chiesa B', t: 'chiesa', dove: 'destra', metri: 20, larghezza: 0.4 });
+  if (f && /larg/.test(f.testo)) guasto('quaranta centimetri di larghezza: ' + f.testo);
+});
+
+prova('«la Torre del Mangia ha una torre» non si dice', () => {
+  const casi = [
+    { n: 'Torre del Mangia', t: 'torre', forme: ['torre'] },
+    { n: 'Cupola del Brunelleschi', t: 'cupola', forme: ['cupola'] },
+    { n: 'Campanile di Giotto', t: 'campanile', forme: ['campanile', 'colonne'] }
+  ];
+  casi.forEach((c) => {
+    const f = d().frase(Object.assign({ dove: 'destra', metri: 20 }, c));
+    if (!f) { guasto('niente frase per ' + c.n); return; }
+    const primaParola = c.n.split(' ')[0].toLowerCase();
+    const dopoIlNome = f.testo.slice(f.testo.indexOf(c.n) + c.n.length);
+    if (new RegExp('\\b' + primaParola, 'i').test(dopoIlNome)) {
+      guasto('ripete quello che il nome dice gia: ' + f.testo);
+    }
+  });
+  console.log('      → ' + d().frase({ n: 'Campanile di Giotto', t: 'campanile',
+                                       dove: 'destra', metri: 20, forme: ['campanile', 'colonne'] }).testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della descrizione orientativa');

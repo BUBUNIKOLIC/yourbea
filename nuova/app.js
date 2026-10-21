@@ -84,7 +84,17 @@
      m'interessa ciò che è dentro, voglio ci sia la regola» (Vince, 19/10).
      Chi vuole dire qualcosa passa di lì. */
   var aChiServe = AChiServe();
-  var racconto = Racconto({});
+  /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
+     parti/descrizione.js (15 prove). La scheda che si sentiva fermandosi
+     era l'incipit di Wikipedia — «fu fatta costruire da Massenzio agli
+     inizi del IV secolo» — e a chi non vede non dice niente di quello che
+     ha davanti. Adesso il primo gradino e' com'e' fatta: quanto e'
+     grande, di che e' fatta, che forma ha. La storia e' il gradino dopo.
+     L'articolo lo mette racconto.conArticolo, che ha gia' pagato tutte le
+     trappole: si passa quello invece di riscriverlo. Qui `racconto` non
+     esiste ancora, ma la funzione viene CHIAMATA dopo, quando c'e'. */
+  var descrizione = Descrizione({ conArticolo: function (p) { return racconto.conArticolo(p); } });
+  var racconto = Racconto({ descrizione: descrizione });
   /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
      sia descritta la realtà circostante: di fronte, davanti a te hai il
      golfo, Raito, i Due Fratelli… sennò numeri civici» (Vince, 18/10). */

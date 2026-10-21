@@ -303,6 +303,61 @@ prova('e quello che gia aveva l articolo non ne prende un altro', () => {
   if (/^(il|la|lo)\s+(Il|La|Lo)\s/i.test(d)) guasto('due articoli: ' + d);
 });
 
+/* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
+   Il cenno dice gia' da che parte e quanto manca: «sulla destra, a 80
+   metri, la Basilica di Massenzio». Fermandosi dieci secondi, quello che
+   serve NON e' la voce di Wikipedia — «fu fatta costruire da Massenzio
+   agli inizi del IV secolo» — ma cos'hai davanti: quanto e' grande, di
+   che e' fatta, che forma ha. La storia viene dopo, dicendo «ancora».
+   I gradini diventano: 0 com'e' fatta, 1 la storia, 2 cosa vedere... */
+prova('la scheda dice com e FATTA, e la storia passa ad «ancora»', () => {
+  const Descrizione = require('../parti/descrizione.js');
+  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const p = { n: 'Basilica di Massenzio', t: 'basilica', k: 3, lat: 41.8925, lon: 12.4889,
+              h: 35, l: 65, mat: ['marmo'], frm: ['abside', 'colonne'],
+              d: 'Fu fatta costruire da Massenzio agli inizi del IV secolo.' };
+  const qui = { lat: 41.8923, lon: 12.4889 };
+  // il cenno, camminando
+  const cenno = r.prossimo({ qui: qui, intorno: [{ p: p, m: 22 }], modo: 'cultura', direzioneBuona: true });
+  if (!cenno || cenno.tipo !== 'cenno') { guasto('niente cenno: ' + JSON.stringify(cenno)); return; }
+  // fermandosi: la prima cosa che si sente
+  const uno = r.ancora();
+  if (!uno) { guasto('niente scheda'); return; }
+  if (/IV secolo/.test(uno.testo)) guasto('la prima cosa e ancora la storia: ' + uno.testo);
+  if (!/marmo|palazzo di|larga/.test(uno.testo)) guasto('non dice com e fatta: ' + uno.testo);
+  console.log('      → ' + uno.testo);
+  // «ancora»: adesso la storia
+  const due = r.ancora();
+  if (!due || !/IV secolo/.test(due.testo)) guasto('«ancora» non da la storia: ' + JSON.stringify(due && due.testo));
+  console.log('      → ' + (due && due.testo));
+});
+
+prova('senza dati su com e fatta, tutto resta come prima', () => {
+  const Descrizione = require('../parti/descrizione.js');
+  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const p = { n: 'Chiesa di San Luigi dei Francesi', t: 'chiesa', k: 3, lat: 41.8991, lon: 12.4745,
+              d: 'La chiesa fu costruita fra il 1518 e il 1589.' };
+  r.prossimo({ qui: { lat: 41.8989, lon: 12.4745 }, intorno: [{ p: p, m: 22 }], modo: 'cultura', direzioneBuona: true });
+  const uno = r.ancora();
+  if (!uno || !/1518/.test(uno.testo)) guasto('senza dati doveva dire la storia subito: ' + JSON.stringify(uno && uno.testo));
+});
+
+prova('e «ti ho detto tutto» arriva alla fine, non prima', () => {
+  const Descrizione = require('../parti/descrizione.js');
+  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const p = { n: 'Torre A', t: 'torre', k: 3, lat: 41.9, lon: 12.5, h: 40, mat: ['pietra'],
+              d: 'Fu eretta nel Trecento.' };
+  r.prossimo({ qui: { lat: 41.8998, lon: 12.5 }, intorno: [{ p: p, m: 22 }], modo: 'cultura', direzioneBuona: true });
+  const detti = [];
+  for (let i = 0; i < 5; i++) { const x = r.ancora(); if (!x) break; detti.push(x.tipo); }
+  /* «ti ho detto tutto» si ripete a chi richiede, ed e' giusto cosi':
+     quello che conta e' che venga DOPO tutti e due i gradini veri. */
+  if (detti[0] !== 'scheda-orientativa') guasto('non comincia da com e fatta: ' + detti.join(','));
+  if (detti[1] !== 'scheda') guasto('la storia non e il secondo gradino: ' + detti.join(','));
+  if (detti.indexOf('finito') < 2) guasto('finisce troppo presto: ' + detti.join(','));
+  console.log('      → i gradini: ' + detti.join(' → '));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');

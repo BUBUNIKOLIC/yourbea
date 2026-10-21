@@ -81,6 +81,16 @@ function Descrizione(opzioni) {
     return 'alta come un palazzo di ' + p + ' piani';
   }
 
+  /* LARGA QUANTO? REGOLA 2 applicata alla misura piu' utile di tutte.
+     L'altezza non si cammina; la larghezza si': «larga ottantacinque
+     passi» dice quanto ci metti a costeggiarla, ed e' il dato che un
+     bastone non ti puo' dare. Sotto i cinque metri non si dice: una
+     facciata stretta e' normale, e il numero diventa rumore. */
+  function larga(metri) {
+    if (!metri || metri < 5) return '';
+    return 'larga ' + passi(metri);
+  }
+
   function materiale(lista) {
     if (!lista || !lista.length) return '';
     var visti = [];
@@ -98,11 +108,17 @@ function Descrizione(opzioni) {
     return 'di ' + visti.join(' e ');
   }
 
-  function forma(lista) {
+  /* forma(gia): «la Torre del Mangia. Ha una torre» non si dice, e
+     nemmeno «la Cupola del Brunelleschi. Ha una cupola». Quello che il
+     nome dice gia' non si ripete come se fosse una scoperta: si salta, e
+     si dice il pezzo DOPO — le colonne, il rosone, la scalinata. */
+  function forma(lista, gia) {
     if (!lista || !lista.length) return '';
+    var detto = String(gia || '').toLowerCase();
     var visti = [];
     for (var i = 0; i < lista.length && visti.length < 2; i++) {
       var k = String(lista[i] || '').toLowerCase().replace(/[^a-zà-ÿ]/g, '');
+      if (k && detto.indexOf(k) >= 0) continue;
       var f = FORME[k];
       if (f && visti.indexOf(f) < 0) visti.push(f);
     }
@@ -148,7 +164,7 @@ function Descrizione(opzioni) {
     var mat = materiale(x.materiali);
 
     // 5. che forma ha
-    var fo = forma(x.forme);
+    var fo = forma(x.forme, (x.n || '') + ' ' + (x.t || ''));
     /* due monumenti di fila non si raccontano uguali: cambia l'attacco
        della seconda frase, non quello che dice. */
     var attacchi = ['Ha ', 'Si riconosce da ', 'Davanti ha '];
@@ -171,6 +187,8 @@ function Descrizione(opzioni) {
 
     var seconda = [];
     if (alt) seconda.push(alt);
+    var lar = larga(x.larghezza);
+    if (lar) seconda.push(lar);
     if (mat) seconda.push(mat);
     var testo = pezzi.join('');
     if (seconda.length) testo += ': ' + seconda.join(', ');
@@ -186,7 +204,7 @@ function Descrizione(opzioni) {
     };
   }
 
-  return { frase: frase, inPiani: inPiani, passi: passi,
+  return { frase: frase, inPiani: inPiani, passi: passi, larga: larga,
            materiale: materiale, forma: forma };
 }
 

@@ -120,6 +120,37 @@ prova('PRECISI: non cambia niente di quello che c era prima', () => {
   });
 });
 
+/* ---------- COM'E' FATTA SERVE ANCHE A CHI NON FA TURISMO ----------
+   «La differenza la fara' la qualita' delle informazioni e la
+   suddivisione di esse in funzione dell'utente» (Vince).
+   La scheda di Wikipedia — «fu fatta costruire nel IV secolo» — e' roba
+   da Turismo. Ma «alta come un palazzo di dodici piani, larga
+   ottantacinque passi, di marmo» NON e' storia dell'arte: e' cos'hai
+   davanti, ed e' la cosa che in Utilita' un bastone non ti puo' dare. */
+prova('la descrizione di com e fatta vale in TUTT E DUE i modi', () => {
+  const a = AChiServe();
+  if (!a.serve('scheda-orientativa', 'servizi', { aPiedi: true, preciso: true })) {
+    guasto('in Utilita non passa: e proprio li che serve');
+  }
+  if (!a.serve('scheda-orientativa', 'cultura', { aPiedi: true, preciso: true })) {
+    guasto('in Turismo non passa');
+  }
+  /* la storia invece resta dov'era */
+  if (a.serve('scheda', 'servizi', { aPiedi: true, preciso: true })) {
+    guasto('la scheda di Wikipedia e tornata in Utilita');
+  }
+});
+
+prova('ma non in macchina, e non quando non sappiamo dove sei', () => {
+  const a = AChiServe();
+  if (a.serve('scheda-orientativa', 'cultura', { aPiedi: false, preciso: true })) {
+    guasto('in macchina descrive i materiali dei palazzi');
+  }
+  if (a.serve('scheda-orientativa', 'cultura', { aPiedi: true, preciso: false })) {
+    guasto('con 600 metri di errore descrive un palazzo che forse non e quello');
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della regola');

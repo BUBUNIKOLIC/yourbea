@@ -80,6 +80,13 @@ function AChiServe() {
     'incrocio':          [ true,    true,    false,       false ],
     'cenno':             [ true,    true,    false,       false ],
     'superato':          [ true,    true,    false,       false ],
+    /* COM'E' FATTA NON E' STORIA DELL'ARTE. «Alta come un palazzo di
+       dodici piani, larga ottantacinque passi, di marmo» e' cos'hai
+       davanti: in Utilita' e' la cosa che un bastone non ti puo' dare, e
+       quindi passa in tutt'e due i modi. Ma non in macchina (i materiali
+       dei palazzi che sfrecciano sono rumore) e non quando non sappiamo
+       dove sei: descrivere il palazzo sbagliato e' peggio che tacere. */
+    'scheda-orientativa': [ true,    true,    false,       false ],
     'scheda':            [ false,   true,    true,        true  ],
     'cosa-vedere':       [ false,   true,    true,        true  ],
     'approfondimento':   [ false,   true,    true,        true  ],
