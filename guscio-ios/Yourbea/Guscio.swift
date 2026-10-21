@@ -721,6 +721,25 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     /* e quando cambia l'uscita — cuffie infilate o sfilate, bluetooth che
        si scollega — la sessione va riconfermata, se no la voce finisce
        in un altoparlante che non c'e' piu'. */
+    /* ============================================================
+       SE LA RADIO PARLA, YOURBEA TACE
+       «No, se la radio parla l'app sta in silenzio» (Vince, 21/10, dopo
+       aver scoperto che alle 08:10 aveva aperto Radio 24 ed e' li' che
+       l'app si e' addormentata).
+       Scelta sua, e si rispetta: non ci si mette sopra. Ma NON tacere
+       morendo — e' quello che succedeva. L'app resta viva, continua a
+       seguire la strada, e appena la radio finisce riprende a parlare.
+       La pagina lo sa, cosi' puo' anche dirlo se qualcuno chiede perche'
+       e' muta. */
+    c.addObserver(forName: AVAudioSession.silenceSecondaryAudioHintNotification,
+                  object: s, queue: .main) { [weak self] n in
+      guard let self = self else { return }
+      let grezzo = (n.userInfo?[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt) ?? 0
+      let devoTacere = (grezzo == AVAudioSession.SilenceSecondaryAudioHintType.begin.rawValue)
+      self.scrivi("altra app con l'audio: " + (devoTacere ? "taccio" : "posso riparlare"))
+      self.allaPagina("window.YBaltraRadio && window.YBaltraRadio(\(devoTacere ? "true" : "false"))")
+    }
+
     c.addObserver(forName: AVAudioSession.routeChangeNotification,
                   object: s, queue: .main) { [weak self] _ in
       try? AVAudioSession.sharedInstance().setActive(true)
