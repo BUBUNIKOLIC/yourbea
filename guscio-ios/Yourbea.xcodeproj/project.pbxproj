@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4E260ABA10A732E1E2A5F589 /* Guscio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D7E0835E8C14F816483A5A /* Guscio.swift */; };
 		618FCC0B6FDB09070C88146A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C0EDA4C49721840BEB908BA /* Assets.xcassets */; };
+		A8AF2824AD4F47DA057081D0 /* Acquisti.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6684F6EB5F05CB2AFB0A38C6 /* Acquisti.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +17,7 @@
 		1C0EDA4C49721840BEB908BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		30D7E0835E8C14F816483A5A /* Guscio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guscio.swift; sourceTree = "<group>"; };
 		3D2630A11200A9DBF79C2B7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6684F6EB5F05CB2AFB0A38C6 /* Acquisti.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Acquisti.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -30,6 +32,7 @@
 		B1A8C380F9D4B8362DCDF03F /* Yourbea */ = {
 			isa = PBXGroup;
 			children = (
+				6684F6EB5F05CB2AFB0A38C6 /* Acquisti.swift */,
 				1C0EDA4C49721840BEB908BA /* Assets.xcassets */,
 				30D7E0835E8C14F816483A5A /* Guscio.swift */,
 				3D2630A11200A9DBF79C2B7A /* Info.plist */,
@@ -116,6 +119,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A8AF2824AD4F47DA057081D0 /* Acquisti.swift in Sources */,
 				4E260ABA10A732E1E2A5F589 /* Guscio.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -54,6 +54,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
   private var ascolto: SFSpeechRecognitionTask?
   private var quaderno: FileHandle?
+  private let acquisti = Acquisti()
   private var ultimaScritta = Date(timeIntervalSince1970: 0)
   private var vuoleAscoltare = false
   private var ultimaPosizione: CLLocation?
@@ -72,6 +73,13 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
        il 19/10 e rimaste SCOLLEGATE fino al 20: le funzioni c'erano e non
        le chiamava nessuno. Codice morto che sembra una funzione fatta. */
     ascoltaAccessibilita()
+    ascoltaLaProssimita()
+    /* il negozio si apre in sottofondo: se non risponde, l'app resta
+       intera e semplicemente non offre niente */
+    acquisti.quandoCambia = { [weak self] attivo, scadenza, prezzo in
+      self?.mandaAbbonamento(attivo, scadenza, prezzo)
+    }
+    Task { @MainActor in await self.acquisti.comincia() }
     SFSpeechRecognizer.requestAuthorization { _ in }
     apriIlQuaderno()
   }
@@ -154,6 +162,9 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaRubrica = function (nome) { webkit.messageHandlers.guscio.postMessage({ cosa: 'rubrica', nome: String(nome) }); };
   window.urbeaSaLeggere = true;
   window.urbeaLeggi = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'leggi' }); };
+  window.urbeaSaComprare = true;
+  window.urbeaCompra = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'compra' }); };
+  window.urbeaRipristina = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'ripristina' }); };
   """
 
   /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
@@ -166,6 +177,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      VoiceOver acceso o spento, e quanto e' grande il testo di sistema. */
   func webView(_ w: WKWebView, didFinish navigation: WKNavigation!) {
     mandaAccessibilita()
+    mandaAbbonamento(acquisti.attivo, acquisti.scadenza, acquisti.prezzo())
   }
 
   func webView(_ w: WKWebView, decidePolicyFor azione: WKNavigationAction,
@@ -197,6 +209,19 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       scrivi(t)
     case "rubrica": cercaInRubrica((d["nome"] as? String) ?? "")
     case "leggi": leggiQuelloCheVedo()
+    /* GLI ACQUISTI. Il pagamento lo mostra Apple, non noi: la pagina chiede
+       e il telefono apre la sua schermata. Quello che torna indietro e' una
+       frase da dire a voce, perche' chi non vede non legge un codice. */
+    case "compra":
+      Task { @MainActor in
+        let come = await self.acquisti.compra()
+        self.allaPagina("window.urbeaEsitoAcquisto && window.urbeaEsitoAcquisto(" + Schermo.inJS(come) + ")")
+      }
+    case "ripristina":
+      Task { @MainActor in
+        let come = await self.acquisti.ripristina()
+        self.allaPagina("window.urbeaEsitoAcquisto && window.urbeaEsitoAcquisto(" + Schermo.inJS(come) + ")")
+      }
     default: break
     }
   }
@@ -218,6 +243,68 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
 
      Si manda alla pagina all'avvio e ogni volta che cambia: VoiceOver si
      accende e si spegne col triplo clic, anche a meta' strada.           */
+  /* inJS(): una frase italiana dentro una chiamata JavaScript. Senza
+     virgolettarla per bene, un apostrofo — e in italiano ce n'e' uno ogni
+     due parole — spezza il codice e il messaggio non arriva. */
+  static func inJS(_ t: String) -> String {
+    let d = (try? JSONSerialization.data(withJSONObject: [t])) ?? Data()
+    let s = String(data: d, encoding: .utf8) ?? "[\"\"]"
+    return String(s.dropFirst().dropLast())
+  }
+
+  /* ABBONAMENTO: si dice alla pagina com'e' messo, appena si sa e ogni
+     volta che cambia (un rinnovo, una disdetta, un rimborso). */
+  private func mandaAbbonamento(_ attivo: Bool, _ scadenza: Date?, _ prezzo: String?) {
+    var fino = "null"
+    if let s = scadenza { fino = String(Int(s.timeIntervalSince1970 * 1000)) }
+    let p = prezzo.map { Schermo.inJS($0) } ?? "null"
+    allaPagina("window.urbeaAbbonamento && window.urbeaAbbonamento(\(attivo ? "true" : "false"), \(fino), \(p))")
+    scrivi("abbonamento: " + (attivo ? "attivo" : "no") + (prezzo != nil ? ", prezzo \(prezzo!)" : ", prodotto non trovato"))
+  }
+
+  /* ============================================================
+     PARLARE SENZA PREMERE NIENTE
+     «Devo premere il tasto per parlare: per un non vedente non va bene.
+     Dovrebbe essere sufficiente portarlo vicino alla bocca» (Vince,
+     21/10). Ha ragione, e la soluzione ce l'ha il telefono da sempre: il
+     sensore di prossimita', quello che spegne lo schermo quando porti il
+     telefono all'orecchio per rispondere.
+     Avvicinandolo alla faccia il microfono si apre da solo; allontanandolo
+     si chiude e la frase parte. E' il gesto che si fa gia' per parlare al
+     telefono, quindi non c'e' niente da imparare — e soprattutto non c'e'
+     niente da TROVARE con un dito su un vetro liscio.
+     Il microfono continuo resta: questo e' il modo di dire «adesso parlo
+     io» quando intorno c'e' rumore e l'ascolto continuo non basta. */
+  private var vicinoAllaFaccia = false
+
+  private func ascoltaLaProssimita() {
+    let d = UIDevice.current
+    d.isProximityMonitoringEnabled = true
+    guard d.isProximityMonitoringEnabled else {
+      scrivi("prossimita: questo telefono non ce l'ha")
+      return
+    }
+    NotificationCenter.default.addObserver(
+      forName: UIDevice.proximityStateDidChangeNotification,
+      object: d, queue: .main) { [weak self] _ in
+        guard let self = self else { return }
+        let vicino = UIDevice.current.proximityState
+        if vicino == self.vicinoAllaFaccia { return }
+        self.vicinoAllaFaccia = vicino
+        self.scrivi("prossimita: " + (vicino ? "vicino, apro il microfono" : "lontano, chiudo"))
+        if vicino {
+          /* si zittisce: se sta parlando, uno che avvicina il telefono
+             vuole interromperla, non sovrapporsi */
+          self.allaPagina("window.YBzitta && window.YBzitta()")
+          self.vuoleAscoltare = true
+          self.apriMicrofono()
+        } else {
+          self.vuoleAscoltare = false
+          self.chiudiMicrofono()
+        }
+      }
+  }
+
   private func mandaAccessibilita() {
     let vo = UIAccessibility.isVoiceOverRunning
     let grande = UIApplication.shared.preferredContentSizeCategory.isAccessibilityCategory
