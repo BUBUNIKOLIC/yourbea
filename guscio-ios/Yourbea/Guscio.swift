@@ -689,6 +689,43 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     try? s.setCategory(.playAndRecord, mode: .spokenAudio,
                        options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP])
     try? s.setActive(true)
+
+    /* ============================================================
+       SE QUALCUNO CI TOGLIE L'AUDIO, LO RIPRENDIAMO
+       «Qualche volta pare sia uscita e ho dovuto riattivarla» (Vince,
+       21/10): un'ora di silenzio nel quaderno, e poi un avvio nuovo.
+       L'app usava 21 MB, quindi iOS non l'ha chiusa per fare spazio: l'ha
+       SOSPESA. E una cosa che la fa sospendere c'è: basta una telefonata,
+       una sveglia o un'altra app che prende l'altoparlante, e la sessione
+       audio si disattiva. Da quel momento l'app, ferma in tasca, non fa
+       piu' rumore e non riceve posizioni nuove — per iOS non sta facendo
+       niente, e la mette a dormire.
+       Qui si sta in ascolto delle interruzioni e, appena finiscono, si
+       riaccende tutto. Per chi non vede e' la differenza fra un'app che
+       lo accompagna e una che smette senza dirlo. */
+    let c = NotificationCenter.default
+    c.addObserver(forName: AVAudioSession.interruptionNotification,
+                  object: s, queue: .main) { [weak self] n in
+      guard let self = self,
+            let info = n.userInfo,
+            let grezzo = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let tipo = AVAudioSession.InterruptionType(rawValue: grezzo) else { return }
+      if tipo == .began {
+        self.scrivi("audio interrotto (telefonata, sveglia o altra app)")
+        return
+      }
+      self.scrivi("audio: interruzione finita, riprendo")
+      try? AVAudioSession.sharedInstance().setActive(true)
+      if self.vuoleAscoltare { self.apriMicrofono() }
+    }
+    /* e quando cambia l'uscita — cuffie infilate o sfilate, bluetooth che
+       si scollega — la sessione va riconfermata, se no la voce finisce
+       in un altoparlante che non c'e' piu'. */
+    c.addObserver(forName: AVAudioSession.routeChangeNotification,
+                  object: s, queue: .main) { [weak self] _ in
+      try? AVAudioSession.sharedInstance().setActive(true)
+      self?.scrivi("audio: cambiata l'uscita, sessione riconfermata")
+    }
   }
 
   private func apriMicrofono() {
