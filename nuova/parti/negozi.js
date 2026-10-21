@@ -95,21 +95,34 @@ function Negozi(opzioni) {
   /* nomeCompleto(): «lo stadio Domenico Francioni», «la chiesa di San
      Marco», «Monte Finestra». Il tipo davanti al nome, se il nome non lo
      dice gia'. */
+  /* articolo(): «il», «lo», «la», «l'». In un posto solo, perche' qui ce
+     n'erano due copie leggermente diverse e una sbagliava le vocali. */
+  function articolo(parola) {
+    var w = String(parola || '').toLowerCase();
+    if (!w) return '';
+    if (/^[aeiouàèéìòóù]/.test(w)) return "l'";
+    if (/(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w)) return 'la ';
+    return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(w) ? 'lo ' : 'il ';
+  }
+
   function nomeCompleto(x) {
     var t = String(x.t || '').toLowerCase().trim();
     var n = String(x.n || '');
     if (!t) return n;
-    if (n.toLowerCase().indexOf(t.slice(0, 4)) === 0) return n;
+    /* IL NOME COMINCIA GIA' COL SUO TIPO: «stazione di Roma San Pietro»,
+       «Palazzo Reale». Il tipo davanti non si rimette, ma L'ARTICOLO SI':
+       senza, usciva «Qui c'è stazione di Roma San Pietro». E' lo stesso
+       difetto gia' corretto in racconto.conArticolo — qui era un'altra
+       funzione, e nessuno l'aveva guardata. */
+    if (n.toLowerCase().indexOf(t.slice(0, 4)) === 0) {
+      var prima = n.split(' ')[0];
+      return articolo(prima) + n;
+    }
     if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
     /* un nome di una parola sola E' gia' il tipo: «Municipio», «Duomo»,
        «Colosseo». «Il palazzo comunale Municipio» non lo direbbe nessuno. */
-    if (n.indexOf(' ') < 0) {
-      var f0 = /(zione|sione|gione|ione|tà|tù|trice|ice)$/i.test(n) || /a$/i.test(n);
-      return (f0 ? 'la ' : (/^(S[bcdfgilmnpqrtv]|Z|Ps|Gn|X|Y)/.test(n) ? 'lo ' : 'il ')) + n;
-    }
-    var f = /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t) || /a$/.test(t);
-    var art = f ? 'la ' : (/^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ');
-    return art + t + ' ' + n;
+    if (n.indexOf(' ') < 0) return articolo(n) + n;
+    return articolo(t) + t + ' ' + n;
   }
 
   function perIlRacconto(cultura, nostri) {

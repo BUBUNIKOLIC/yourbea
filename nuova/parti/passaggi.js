@@ -33,6 +33,19 @@
 
 'use strict';
 
+/* statoDi(): «il bar, chiuso adesso», non «il bar, chiusa adesso».
+   Sentito il 21/10 nel banco di prova: «Romolo — bar, chiusa adesso».
+   L'aggettivo era femminile fisso, e meta' dei posti sono maschili. */
+function statoDi(tipo, aperto) {
+  if (aperto !== true && aperto !== false) return '';
+  var w = String(tipo || '').toLowerCase().split(' ')[0];
+  var FEMMINE_IN_E = { stazione: 1, pensione: 1 };
+  var f = !!FEMMINE_IN_E[w] ||
+          /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
+  if (aperto) return f ? ', aperta' : ', aperto';
+  return f ? ', chiusa adesso' : ', chiuso adesso';
+}
+
 function Passaggi(opzioni) {
   var o = opzioni || {};
   var dist = o.dist;
@@ -160,7 +173,8 @@ function Passaggi(opzioni) {
     if (!mig) return null;
     detti['avanti:' + chiave(mig)] = ora();
     ultimaVolta = ora();
-    return { tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
+    return {
+    tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
              testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) + '.' };
   }
 
@@ -209,7 +223,7 @@ function Passaggi(opzioni) {
        Gli orari di OpenStreetMap sanno essere complicatissimi: se non si
        capiscono con certezza non si dice niente, mai un «è aperto» a caso. */
     var aperto = apertoAdesso(mig.orari, s.quando);
-    var stato = aperto === true ? ', aperta' : (aperto === false ? ', chiusa adesso' : '');
+    var stato = statoDi(mig.cosa || '', aperto);
     return { tipo: 'passaggio', livello: eUnAvviso(mig.cosa) ? 'guida' : 'cenno', cosa: mig,
              avviso: eUnAvviso(mig.cosa),
              testo: 'Stai passando ' + nome + tipo + stato + (parte ? ', ' + parte : '') + '.' };
@@ -267,7 +281,7 @@ function Passaggi(opzioni) {
      strada o ripassandoci dopo, si possono ridire. */
   function stradaNuova() { detti = {}; }
 
-  return { eUnAvviso: eUnAvviso, inArrivo: inArrivo, prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
+  return { eUnAvviso: eUnAvviso, inArrivo: inArrivo, prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso, statoDi: statoDi };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Passaggi;

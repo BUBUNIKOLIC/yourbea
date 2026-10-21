@@ -250,6 +250,18 @@ prova('i gradini si contano in gradini, non in numeri sciolti', () => {
   console.log('      → ' + d.testo);
 });
 
+prova('«il bar, chiuso», non «il bar, chiusa»', () => {
+  /* sentito il 21/10 nel banco: «Romolo — bar, chiusa adesso». */
+  const p = Passaggi({});
+  const prova1 = p.comeSiDice ? p.comeSiDice({ t: 'bar', aperto: false }) : null;
+  const t = JSON.stringify(p);
+  if (!p.statoDi) { guasto('serve un modo di dire aperto/chiuso che sappia il genere'); return; }
+  if (!/chiuso/.test(p.statoDi('bar', false))) guasto('bar: ' + p.statoDi('bar', false));
+  if (!/chiusa/.test(p.statoDi('farmacia', false))) guasto('farmacia: ' + p.statoDi('farmacia', false));
+  if (!/aperto/.test(p.statoDi('ristorante', true))) guasto('ristorante: ' + p.statoDi('ristorante', true));
+  if (!/aperta/.test(p.statoDi('edicola', true))) guasto('edicola: ' + p.statoDi('edicola', true));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei passaggi');

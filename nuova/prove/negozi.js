@@ -213,6 +213,26 @@ prova('ma lo stesso posto scritto due volte resta un doppione', () => {
   if (n.perIlRacconto(uguale, gia).length) guasto('ha tenuto lo stesso posto due volte');
 });
 
+prova('«Qui c e LA stazione», non «Qui c e stazione»', () => {
+  /* visto il 21/10 facendo camminare l'app a Roma: «Qui c'è stazione di
+     Roma San Pietro». Quando il nome comincia col suo tipo qui si
+     restituiva il nome nudo — stesso difetto gia' corretto in
+     racconto.conArticolo, ma questa e' un'altra funzione. */
+  const n = Negozi({ dist: () => 9999 });
+  const casi = [
+    { n: 'stazione di Roma San Pietro', t: 'stazione', vuole: /^la stazione/ },
+    { n: 'Palazzo Reale',               t: 'palazzo',  vuole: /^il Palazzo/ },
+    { n: 'Chiesa del Carmine',          t: 'chiesa',   vuole: /^la Chiesa/ },
+    { n: 'Ospedale Maggiore',           t: 'ospedale', vuole: /^l'Ospedale/ }
+  ];
+  casi.forEach((c) => {
+    const d = n.perIlRacconto([{ n: c.n, t: c.t, lat: 41.9, lon: 12.5 }], [])[0];
+    if (!d) { guasto('scartato: ' + c.n); return; }
+    const dentro = d.d.replace(/^Qui c'è /, '').replace(/\.$/, '');
+    if (!c.vuole.test(dentro)) guasto('«' + c.n + '» → «' + dentro + '»');
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei negozi');
