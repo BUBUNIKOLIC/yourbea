@@ -37,6 +37,22 @@ prova('quello che l\'app nasconde sparisce davvero', () => {
   });
 });
 
+/* LA REGOLA GENERALE, non la toppa. Il 21/10, sull'Android, il tasto
+   «Come si mette sulla Home» stava in mezzo alla porta, grosso 372x290,
+   con hidden=true addosso: `.tasto{display:inline-flex}` del nostro foglio
+   batte l'[hidden] del browser, perche' il foglio dell'autore vince su
+   quello del browser a parita' di peso.
+   Nel CSS c'erano gia' tre toppe — #porta[hidden], #casa-riga[hidden],
+   #riga-casa[hidden] — una per elemento, scritte dopo essersi scottati.
+   Una regola sola le copre tutte, anche quelle che scriveremo domani. */
+prova('«hidden» spegne QUALUNQUE cosa, non solo quelle gia scottate', () => {
+  const re = /\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important/i;
+  if (!re.test(css)) {
+    guasto('manca la regola generale [hidden]{display:none !important}: ' +
+           'ogni .tasto nascosto resta visibile, com\'e\' successo col tasto «Installa» su Android');
+  }
+});
+
 prova('tutti i file della pagina portano il numero di versione', () => {
   const re = /(?:src|href)="([^"]+\.(?:js|css))"/g;
   let m;

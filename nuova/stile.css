@@ -36,6 +36,18 @@
   /* la costa italiana vera, 87 punti, dai dati pubblici: sta in un posto solo */
   --italia:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 831 1000'%3E%3Cpath d='M621.0 846.5L595.5 921.5L606.1 951.0L591.2 1000.0L537.1 964.1L501.1 953.8L402.3 905.4L412.2 856.5L495.0 865.2L567.3 854.8L621.0 846.5ZM174.2 562.7L216.7 630.3L206.7 756.3L174.5 750.3L145.6 782.1L118.8 756.9L116.0 641.9L99.8 587.4L138.8 592.2L174.2 562.7ZM398.4 33.1L499.6 57.7L492.0 104.7L508.9 145.2L452.6 131.4L395.0 165.2L398.9 212.5L390.3 239.6L413.5 288.1L479.9 336.1L515.5 414.9L594.3 491.7L649.7 491.1L667.0 512.1L647.1 531.1L710.5 565.6L762.5 594.4L823.3 644.1L830.6 661.9L817.4 696.0L778.1 651.5L716.5 635.8L686.7 697.4L737.9 732.8L729.5 782.5L699.9 788.1L662.1 869.9L632.6 877.2L632.9 848.1L647.3 797.0L662.7 776.6L635.1 721.4L613.4 673.3L584.1 661.5L563.1 620.4L517.6 603.0L487.0 564.7L434.6 558.6L379.3 515.5L314.5 453.5L266.4 398.6L244.3 304.5L209.1 293.4L151.5 261.9L118.9 274.8L77.9 319.0L48.5 326.0L56.6 284.6L18.2 272.6L0.0 198.8L24.5 169.8L3.7 134.0L6.6 107.1L37.1 127.5L71.2 123.0L110.9 90.7L123.2 105.8L156.9 102.8L172.3 64.3L224.7 76.3L255.9 60.2L261.5 21.1L304.4 34.7L312.6 16.6L382.6 0.0L398.4 33.1Z' fill='none' stroke='rgb(91,227,255)' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }
+
+/* ---------- «NASCOSTO» VUOL DIRE NASCOSTO ----------
+   Il 21/10, sull'Android, il tasto «Come si mette sulla Home» stava in
+   mezzo alla porta — grosso 372x290 — con hidden=true addosso: dentro
+   l'app installata, un invito a installarla. Causa: .tasto fa
+   display:inline-flex, e il foglio dell'autore batte l'[hidden] del
+   browser a parita' di peso.
+   Qui sotto c'erano tre toppe, una per elemento, scritte ogni volta dopo
+   essersi scottati (#porta, #casa-riga, #riga-casa). Questa riga le copre
+   tutte, anche quelle che scriveremo domani. */
+[hidden]{display:none !important}
+
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{
