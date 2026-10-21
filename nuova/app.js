@@ -176,7 +176,8 @@
   try { miei.carica(JSON.parse(localStorage.getItem('yourbea2-percorsi-miei') || '[]')); } catch (e) {}
   /* mandaIlPercorso(): il percorso diventa un link e parte col pannello di
      condivisione del telefono — WhatsApp, posta, quello che uno usa. */
-  function mandaIlPercorso(percorso) {
+  var percorsoDaMandare = null;         // quello in attesa di un destinatario
+  function mandaIlPercorso(percorso, aChi) {
     var dati = miei.perMandare(percorso);
     var chiave = '';
     try { chiave = btoa(unescape(encodeURIComponent(dati))); } catch (e) { chiave = ''; }
@@ -185,9 +186,38 @@
       return;
     }
     var link = location.origin + location.pathname + '?p=' + encodeURIComponent(chiave);
-    var frase = 'Il percorso' + (percorso.nome ? ' per ' + percorso.nome : '') +
+    /* «per medico» non si dice: l'articolo lo mette aPosto(), che e'
+       provato — «dal medico», «alla edicola» no, «all'edicola» si'. */
+    var comeSiDice = percorso.nome ? miei.aPosto(percorso.nome) : '';
+    var frase = 'Il percorso' + (comeSiDice ? ' per andare ' + comeSiDice : '') +
                 ', da Yourbea. Apri questo link e ce l\'hai anche tu:';
-    diario('MANDO IL PERCORSO: ' + (percorso.nome || '?') + ', ' + link.length + ' caratteri');
+    diario('MANDO IL PERCORSO: ' + (percorso.nome || '?') + ', ' + link.length + ' caratteri' +
+           (aChi ? ', a ' + aChi : ', a nessuno ancora'));
+
+    /* A CHI, DETTO A VOCE. «Tutto vocalmente» (Vince, 21/10): il pannello
+       di condivisione del telefono e' una griglia di icone, e chi non vede
+       la deve attraversare col lettore di schermo per mandare una cosa che
+       aveva gia' detto a parole. Se il nome l'ha detto, si va diritti al
+       messaggio: una schermata, un tasto, invia. */
+    if (aChi) {
+      var suo = contatto && somigliano(contatto.nome, aChi) ? contatto : null;
+      if (suo && suo.telefono) {
+        voce.parla('Mando a ' + suo.nome + ' il percorso' +
+                   (comeSiDice ? ' per andare ' + comeSiDice : '') +
+                   '. Apro WhatsApp col messaggio già scritto: premi invia.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        esegui([{ cosa: 'messaggio', numero: suo.telefono, testo: frase + ' ' + link }]);
+        return;
+      }
+      /* il numero lo ha il telefono: si guarda in rubrica prima di chiederlo */
+      percorsoDaMandare = percorso;
+      if (chiediAllaRubrica(aChi, 'percorso')) return;
+      percorsoDaMandare = null;
+      voce.parla('Il numero di ' + maiuscolaNome(aChi) + ' non ce l\'ho. Scrivilo nel cassetto, oppure dimmi «manda il percorso» e lo scelgo dal telefono.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+
     if (navigator.share) {
       navigator.share({ title: 'Percorso Yourbea', text: frase, url: link }).catch(function () {});
       voce.parla('Scegli a chi mandarlo.', { livello: voce.GUIDA, ancheSeUguale: true });
@@ -1019,7 +1049,11 @@
   /* ---------- le frasi che impostano le cose ----------
      «Un non vedente deve fare tutto a voce»: niente dev'essere raggiungibile
      solo col dito. Qui si risponde alle frasi capite da parti/dettatura.js. */
-  function dalDettato(t) {
+  function dalDettato(t, grezzo) {
+    /* `grezzo` e' il testo come l'ha detto: serve dove si tengono le sue
+       parole o un nome con la maiuscola. `t` e' sbassato, e serve a
+       riconoscere. */
+    grezzo = String(grezzo == null ? t : grezzo);
     var r = dettatura.capisci(t);
 
     /* STO ASPETTANDO IL NOME (prima volta che si apre).
@@ -1051,6 +1085,51 @@
       return true;
     }
 
+    /* HO CHIESTO COME SI CHIAMA IL PERCORSO, e lui risponde. Due parole:
+       «il medico», «da mia sorella». Se invece di rispondere chiede una
+       cosa, vince la cosa — il percorso resta senza nome e si puo'
+       nominare dopo. */
+    if (inAttesaDi && inAttesaDi.cosa === 'nome-percorso') {
+      var ilP = inAttesaDi.percorso;
+      if (/^(?:lascia perdere|niente|non importa|senza nome|no)$/.test(normalizza(t))) {
+        inAttesaDi = null;
+        voce.parla('Va bene, resta senza nome.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      /* VIA L'ARTICOLO DAL NOME. «Il medico» tenuto cosi' com'e' faceva
+         dire «portami all'il medico»: il nome si tiene nudo — «medico» —
+         e l'articolo lo mette aPosto() quando serve. */
+      var comeSiChiama = miei.soloIlNome(String(grezzo || '').replace(/[?!.]+$/, ''));
+      if (comeSiChiama && comeSiChiama.split(/\s+/).length <= 5 && !miei.dallaVoce(comeSiChiama)) {
+        inAttesaDi = null;
+        if (ilP) { ilP.nome = comeSiChiama; salvaIMiei(); }
+        voce.parla('Segnato. Quando vuoi dimmi «portami ' + miei.aPosto(comeSiChiama) +
+                   '». E per darlo a qualcuno: «manda il percorso», e ti chiedo a chi.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      inAttesaDi = null;            // era un comando: vince lui
+    }
+
+    /* HO CHIESTO A CHI MANDARLO. Il nome e basta: «a Lucia», «mia
+       sorella», «Lucia». */
+    if (inAttesaDi && inAttesaDi.cosa === 'a-chi-percorso') {
+      var daMand = inAttesaDi.percorso;
+      if (/^(?:lascia perdere|niente|non importa|a nessuno|no)$/.test(normalizza(t))) {
+        inAttesaDi = null;
+        voce.parla('Va bene, non lo mando.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      var chi0 = String(grezzo || '').trim().replace(/[?!.]+$/, '')
+                   .replace(/^(?:a|ad|al|alla|allo|con|mandalo a|lo mando a|mandalo)\s+/i, '').trim();
+      if (chi0 && chi0.split(/\s+/).length <= 4 && !miei.dallaVoce(chi0)) {
+        inAttesaDi = null;
+        mandaIlPercorso(daMand, chi0);
+        return true;
+      }
+      inAttesaDi = null;            // era un comando: vince lui
+    }
+
     if (inAttesaDi && inAttesaDi.cosa === 'come-stai') {
       var tono = null;
       if (/\b(bene|benissimo|tutto bene|ottimamente|alla grande|tutto ok|tutto a posto)\b/.test(t)) tono = 'bene';
@@ -1062,6 +1141,17 @@
         return true;
       }
       /* non era una risposta: era un comando. Si prosegue senza dire niente. */
+    }
+    /* IL COMANDO VINCE SULLA DOMANDA. Non basta non prenderlo per un
+       nome: va lasciato PASSARE. Al banco, dopo la prima correzione,
+       «crea percorso» non diventava più un nome ma si sentiva «non ho
+       capito il nome» e il percorso non partiva: la domanda si mangiava
+       il comando invece di cedergli il posto. E nemmeno si rilegge il
+       menu a chi ha già chiesto una cosa precisa — è il «troppo
+       frenetico» di Dario. */
+    if (inAttesaDi && inAttesaDi.cosa === 'nome' && unComando(t)) {
+      inAttesaDi = null;
+      diario('NOME: arriva un comando, vince lui');
     }
     if (inAttesaDi && inAttesaDi.cosa === 'nome' && (!r || r.cosa === 'io')) {
       var poi = inAttesaDi.poi;
@@ -1076,7 +1166,7 @@
         return true;
       }
       var secco = (r && r.cosa === 'io') ? r.nome : null;
-      if (!secco) {
+      if (!secco && !unComando(t)) {
         var m = String(t || '').trim().match(/^([a-zà-ÿ]{2,})(?:\s+([a-zà-ÿ]{2,}))?$/i);
         if (m) secco = maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
       }
@@ -1165,7 +1255,7 @@
      dice «avvisa Mariolina», il guscio cerca in rubrica e la chiama. Il
      numero dettato resta come seconda strada: nel browser, o se la rubrica
      non si può guardare. */
-  var cercatoInRubrica = null;      // { nome, poi: 'chiamata' | 'messaggio' }
+  var cercatoInRubrica = null;      // { nome, poi: 'chiamata' | 'messaggio' | 'percorso' | 'niente' }
 
   function chiediAllaRubrica(nome, poi) {
     if (!window.urbeaRubrica) return false;
@@ -1180,6 +1270,19 @@
   window.urbeaDallaRubrica = function (nome, numero, guaio) {
     var chiesto = cercatoInRubrica; cercatoInRubrica = null;
     diario('RUBRICA: ' + nome + ' → ' + (guaio || numero));
+    /* UN PERCORSO MANDATO A QUALCUNO NON CAMBIA CHI SI AVVISA. Senza
+       questo salto, «manda il percorso a Lucia» faceva di Lucia il
+       contatto d'emergenza: la prossima volta che uno dice «aiuto»,
+       chiamerebbe lei invece di chi aveva scelto. */
+    if (chiesto && chiesto.poi === 'percorso') {
+      var pm = percorsoDaMandare; percorsoDaMandare = null;
+      if (numero && pm) { mandaIlPercorso(pm, nome || chiesto.nome); return; }
+      voce.parla(numero
+        ? 'Ho perso il percorso per strada. Ridimmi: manda il percorso.'
+        : 'In rubrica ' + (chiesto.nome || nome) + ' non lo trovo. Dimmi «manda il percorso» e lo scelgo dal telefono.',
+        { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
     if (numero) {
       salvaContatto(nome, numero, chiesto && chiesto.poi !== 'niente');
       if (!chiesto || chiesto.poi === 'niente') return;   // registrato e basta
@@ -1199,6 +1302,15 @@
       { livello: voce.GUIDA, ancheSeUguale: true });
   };
   function maiuscolaNome(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
+
+  /* somigliano(): il nome detto a voce contro quello in rubrica. «Mia
+     sorella» deve trovare «Sorella», e «lucia» deve trovare «Lucia». */
+  function somigliano(a, b) {
+    var x = senzaAccenti(String(a || '').toLowerCase()).replace(/\b(?:mio|mia|il|la|lo)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    var y = senzaAccenti(String(b || '').toLowerCase()).replace(/\b(?:mio|mia|il|la|lo)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!x || !y) return false;
+    return x === y || x.indexOf(y) >= 0 || y.indexOf(x) >= 0;
+  }
 
   function salvaContatto(nome, numero, dallaRubrica) {
     contatto = { nome: nome, telefono: numero };
@@ -2016,6 +2128,13 @@
   }
   function comando(testo) {
     var t = normalizza(testo);
+    /* IL TESTO COME L'HA DETTO, accanto a quello sbassato. normalizza()
+       butta via tutto quello che non e' una lettera, apostrofi compresi:
+       al banco «qui c'è un attraversamento» si era segnato «qui c e un
+       attraversamento», e quelle sono le parole SUE — REGOLA 2 dei
+       percorsi. Chi riconosce i comandi lavora sullo sbassato; chi tiene
+       le sue parole lavora su questo. */
+    var grezzo = String(testo || '').trim();
     if (!t) return false;
     diario('COMANDO: ' + t.slice(0, 50));
     /* ha(): o il nome di un gruppo di PAROLE, o le frasi scritte lì per lì —
@@ -2091,7 +2210,7 @@
                        direzione: posizione.leggi().direzione, direzioneBuona: posizione.leggi().direzioneBuona });
       return true;
     }
-    if (dalDettato(t)) return true;
+    if (dalDettato(t, grezzo)) return true;
     /* LEGGERE: prima di «portami a» e delle passeggiate, perché «leggi il
        cartello» non è un posto dove andare; e prima di «intorno», perché
        «che c'è scritto» contiene «che c'è» e finirebbe a elencare i
@@ -2106,51 +2225,63 @@
        segna camminando, si finisce. Le parole sono le sue — «qui ho la
        panchina», «qui c'è un attraversamento» — non una formula da
        imparare. */
-    if (/^(crea|registra|segna|impara|memorizza) (un )?percorso/.test(normalizza(t)) ||
-        ha('crea percorso', 'registra percorso', 'impara questa strada')) {
+    /* TUTTO A VOCE. Le parole le riconosce la parte, dove sono provate
+       (parti/percorsiMiei.js, 27 prove). Qui c'erano quattro espressioni
+       scritte a mano e nessuna prova sopra: «manda il percorso del medico
+       a Lucia» finiva per cercare un percorso chiamato «medico a lucia»,
+       non lo trovava, e chiedeva «quale percorso?» a chi l'aveva appena
+       detto. */
+    var pv = miei.dallaVoce(grezzo);
+
+    if (pv && pv.cosa === 'crea') {
       var sp0 = posizione.leggi();
-      if (!sp0.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return true; }
-      var comeSiChiama = t.replace(/^.*?(percorso|strada)\s*/i, '')
-                          .replace(/^(per|fino a|verso|a|al|alla|allo|dal|dalla|in)\s+/i, '').trim();
-      dilloSubito(miei.comincia(comeSiChiama, { lat: sp0.lat, lon: sp0.lon }));
+      if (!sp0.pronto) {
+        voce.parla('Prima devo sapere dove sei. Aspetta che trovo la posizione e ridimmelo.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      dilloSubito(miei.comincia(pv.nome, { lat: sp0.lat, lon: sp0.lon }));
       return true;
     }
-    if (miei.staRegistrando()) {
-      /* «QUI HO LA PANCHINA», «QUI C'È UN ATTRAVERSAMENTO»: le parole sue.
-         Mentre registra, qualunque frase che comincia con «qui» è un
-         segno — non c'è niente da ricordare. */
-      var diceQui = /^(qui|adesso qui|segna qui|segno qui|metti qui)\b/i.test(t.trim());
-      if (diceQui) {
-        var sp1 = posizione.leggi();
-        var nota = t.replace(/^(segna qui|segno qui|metti qui|adesso qui|qui)\s*/i, '').trim();
-        dilloSubito(miei.segna({ lat: sp1.lat, lon: sp1.lon }, nota ? ('qui ' + nota).replace(/^qui qui /, 'qui ') : ''));
-        return true;
-      }
-      if (ha('ho finito', 'finito', 'fine percorso', 'basta cosi', 'siamo arrivati')) {
-        var fine = miei.finisci();
-        salvaIMiei();
-        dilloSubito(fine);
-        return true;
-      }
+
+    if (pv && pv.cosa === 'segna' && miei.staRegistrando()) {
+      var sp1 = posizione.leggi();
+      dilloSubito(miei.segna({ lat: sp1.lat, lon: sp1.lon }, pv.nota));
+      return true;
     }
+
+    if (pv && pv.cosa === 'finito' && miei.staRegistrando()) {
+      var fine = miei.finisci();
+      salvaIMiei();
+      dilloSubito(fine);
+      /* IL NOME SI CHIEDE ALLA FINE, non all'inizio. «Crea percorso» e
+         basta registrava un percorso senza nome: trova() non lo trovava
+         piu' e l'elenco lo diceva vuoto. Chiederlo alla partenza vuol
+         dire fermare uno che sta per camminare; alla fine e' fermo, e sa
+         dove e' arrivato. */
+      if (fine && fine.percorso && !fine.percorso.nome) {
+        inAttesaDi = { da: Date.now(), cosa: 'nome-percorso', percorso: fine.percorso };
+        voce.parla('Come lo chiamo? Dimmi per esempio: il medico, la farmacia, da mia sorella.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      }
+      return true;
+    }
+
     /* AGGIUNGERE E TOGLIERE RIFERIMENTI mentre cammini un percorso tuo:
        la seconda volta ti accorgi del palo, la terza che dopo la panchina
-       c'è il gradino. Il percorso impara, la mappa no. */
-    if (miei.sto()) {
-      var diceQui2 = /^(qui|adesso qui|segna qui|segno qui|metti qui|aggiungi qui)\b/i.test(t.trim());
-      if (diceQui2) {
+       c'e' il gradino. Il percorso impara, la mappa no. */
+    if (pv && miei.sto()) {
+      if (pv.cosa === 'segna') {
         var sq = posizione.leggi();
-        var nota2 = t.replace(/^(segna qui|segno qui|metti qui|aggiungi qui|adesso qui|qui)\s*/i, '').trim();
-        var esito = miei.aggiungiSegno({ lat: sq.lat, lon: sq.lon },
-                                       nota2 ? ('qui ' + nota2).replace(/^qui qui /, 'qui ') : '');
+        var esito = miei.aggiungiSegno({ lat: sq.lat, lon: sq.lon }, pv.nota);
         if (esito) { salvaIMiei(); dilloSubito(esito); return true; }
       }
-      if (ha('togli questo segno', 'togli il segno', 'qui non c e piu niente', 'cancella questo segno')) {
+      if (pv.cosa === 'togli-segno') {
         var st = posizione.leggi();
         var tolto = miei.toglieSegno({ lat: st.lat, lon: st.lon });
         if (tolto) { salvaIMiei(); dilloSubito(tolto); return true; }
       }
-      if (ha('lascia il percorso', 'smetti di seguire', 'basta il percorso')) {
+      if (pv.cosa === 'lascia') {
         miei.smetti();
         voce.parla('Va bene, lascio il percorso.', { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
@@ -2182,20 +2313,34 @@
        la strada dalla fermata alla sede e la manda ai soci»: diventa un
        link, si manda come un messaggio qualunque, e chi lo apre ce l'ha.
        Nessun server, nessun dato di nessuno su una macchina nostra. */
-    if (/^(manda|invia|condividi|spedisci|passa)\b/.test(normalizza(t)) && /percorso|strada/.test(normalizza(t))) {
-      var qualeMandare = t.replace(/^.*?(percorso|strada)\s*/i, '')
-                          .replace(/^(per|del|della|dello|dei|di|a|al|alla|allo)\s+/i, '').trim();
-      var daMandare = miei.trova(qualeMandare) || (miei.sto());
+    /* MANDARE UN PERCORSO A QUALCUNO, dicendo il nome. «Un volontario
+       dell'UICI registra la strada dalla fermata alla sede e la manda ai
+       soci»: diventa un link, si manda come un messaggio qualunque, e chi
+       lo apre ce l'ha. Nessun server, nessun dato di nessuno su una
+       macchina nostra. */
+    if (pv && pv.cosa === 'manda') {
+      var daMandare = (pv.quale && miei.trova(pv.quale)) || (!pv.quale && miei.sto()) || null;
+      var quanti = miei.elenco();
+      if (!daMandare && !pv.quale && quanti.length === 1) daMandare = miei.trova(quanti[0].nome);
       if (!daMandare) {
-        voce.parla('Quale percorso? Dimmi «manda il percorso del medico», per esempio.',
-                   { livello: voce.GUIDA, ancheSeUguale: true });
+        voce.parla(quanti.length
+          ? ((pv.quale ? 'Un percorso per ' + pv.quale + ' non ce l\'ho. ' : 'Quale? ') +
+             'Hai: ' + quanti.map(function (x) { return x.nome || 'uno senza nome'; }).join(', ') + '.')
+          : 'Non hai ancora nessun percorso tuo. Dimmi «crea percorso» e cammina: lo imparo da te.',
+          { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
-      mandaIlPercorso(daMandare);
+      if (!pv.a) {
+        /* NON SI APRE UN PANNELLO A CHI NON VEDE: si chiede il nome. */
+        inAttesaDi = { da: Date.now(), cosa: 'a-chi-percorso', percorso: daMandare };
+        voce.parla('A chi lo mando?', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      mandaIlPercorso(daMandare, pv.a);
       return true;
     }
 
-    if (ha('i miei percorsi', 'che percorsi ho', 'quali percorsi')) {
+    if (pv && pv.cosa === 'elenco') {
       var lista = miei.elenco();
       voce.parla(lista.length
         ? ('Hai ' + lista.length + (lista.length === 1 ? ' percorso: ' : ' percorsi: ') +
@@ -2543,6 +2688,26 @@
     return /^(?:dimmi|dammi|fammi|portami|leggi|cerca|trova|cosa|dove|quanto|quanti|chi |come|quando|puoi|mi |ti |che )/.test(t);
   }
 
+  /* ---------- «CREA PERCORSO» NON E' UN NOME DI PERSONA ----------
+     Trovato al banco il 21/10, e non era un difetto nuovo: appena entrato
+     l'app chiede «come ti chiami?», e lì accettava come nome QUALUNQUE
+     cosa di una o due parole di sole lettere. Ho detto «crea percorso» e
+     ho sentito «Piacere, Crea Percorso» — e da quel momento ogni comando
+     finiva nella domanda sbagliata. «Dove sono», «ho finito», «portami
+     casa»: tutti nomi, per lei.
+     Chi non vede apre l'app e comincia a parlare: non aspetta il turno. */
+  function unComando(t) {
+    var n = normalizza(t);
+    if (!n) return false;
+    if (miei.dallaVoce(n)) return true;
+    if (passeggiata.dallaVoce(n)) return true;
+    for (var g in PAROLE) {
+      if (!Object.prototype.hasOwnProperty.call(PAROLE, g)) continue;
+      for (var i = 0; i < PAROLE[g].length; i++) if (n.indexOf(PAROLE[g][i]) >= 0) return true;
+    }
+    return /^(?:crea|registra|segna|impara|memorizza|manda|invia|condividi|spedisci|portami|porta|dimmi|dammi|fammi|leggi|cerca|trova|apri|chiudi|accendi|spegni|chiama|avvisa|aiuto|ferma|vai|torna|compra|ripristina|abbonamento|si|no|ok)\b/.test(n);
+  }
+
   window.urbeaComando = function (testo) {
     if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
     comando(testo || '');
@@ -2773,6 +2938,46 @@
     diario('DATI NON CARICATI');
     stato('dati non caricati', true);
   });
+
+  /* ============================================================
+     ENTRARE NELL'APP PARLANDO
+     «Fai in modo che la app si possa attivare vocalmente» (Vince, 21/10).
+     Alla porta i comandi «turismo» e «utilità» c'erano gia' — e la pagina
+     li prometteva per scritto, «puoi anche dirlo» — ma il microfono alla
+     porta non lo apriva nessuno: apriAscolto() veniva chiamato DOPO
+     entra(), cioe' dopo che uno aveva premuto. Chi non vede non premeva
+     mai, e la promessa scritta sulla pagina era muta.
+
+     DUE COSE CHE NON POSSIAMO FARE, e vanno dette:
+     - APRIRE L'APP CHIUSA non lo puo' fare una pagina. Lo fa il sistema:
+       su Android, installata dal Play Store, «Ok Google, apri Yourbea»;
+       su iPhone serve una scorciatoia di Siri nel guscio.
+     - IL MICROFONO, la prima volta, lo apre il telefono solo dopo un
+       tocco. Allora: si prova subito (se il permesso c'e' gia', come
+       nell'app installata, funziona), e se non va basta sfiorare lo
+       schermo in qualunque punto — non c'e' un tasto da trovare.
+     ============================================================ */
+  (function allaPorta() {
+    if (el('porta').hidden) return;
+    var giaFatto = false;
+    function apri(perche) {
+      if (giaFatto) return;
+      giaFatto = true;
+      diario('PORTA: apro il microfono (' + perche + ')');
+      apriAscolto();
+      /* la frase solo se NON c'e' un lettore di schermo: con VoiceOver o
+         TalkBack acceso la pagina viene gia' letta, e due voci sopra la
+         stessa cosa e' quello che Dario ha chiamato «troppo frenetico». */
+      if (!voiceOver) {
+        voce.parla('Dimmi: utilità, oppure turismo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      }
+    }
+    setTimeout(function () { apri('da sola'); }, 1200);
+    /* la rete di sicurezza: il primo tocco, dovunque sia */
+    ['pointerdown', 'touchstart', 'keydown'].forEach(function (q) {
+      document.addEventListener(q, function () { apri('col tocco'); }, { once: true, passive: true });
+    });
+  })();
 
   window.YB.diagnosi = function () {
     var s = posizione.leggi();

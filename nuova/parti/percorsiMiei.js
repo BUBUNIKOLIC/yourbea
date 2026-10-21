@@ -380,6 +380,111 @@ function PercorsiMiei(opzioni) {
     return true;
   }
 
+  /* ---------- TUTTO A VOCE ----------
+     «Rendi agevole creare un percorso e condividerlo, ma tutto vocalmente»
+     (Vince, 21/10). Chi non vede non cerca un tasto: dice una cosa e
+     quella cosa deve succedere.
+
+     Le parole stanno QUI e non in app.js, per la ragione di sempre: in
+     app.js erano quattro espressioni scritte a mano e nessuna prova
+     sopra. «Manda il percorso del medico a Lucia» metteva «medico a
+     lucia» nel nome del percorso, non trovava niente, e chiedeva «quale
+     percorso?» a uno che l'aveva appena detto.
+
+     DUE ACCORTEZZE:
+     - si lavora su una copia sbassata e senza accenti LUNGA UGUALE
+       all'originale, così gli indici valgono su tutt'e due e il nome di
+       chi riceve torna come l'ha detto lui: «Lucia», non «lucia».
+     - chi riceve si stacca sull'ULTIMO «a»/«con», non sul primo: un
+       percorso può chiamarsi «a casa», e «manda il percorso a casa a
+       Lucia» deve mandare quello a Lucia. */
+
+  var VERBI_CREA  = '(?:crea|crei|creare|registra|registrare|segna|segnare|impara|imparare|memorizza|memorizzare|fammi|fai)';
+  var VERBI_MANDA = '(?:manda|mandare|mandami|invia|inviare|condividi|condividere|spedisci|spedire|passa|passare|gira|girare)';
+  var AVANTI = /^(?:per|fino a|fino al|fino alla|verso|andare|tornare|arrivare|il|lo|la|l'|un|una|uno|questa|questo|a|ad|al|allo|alla|ai|dal|dallo|dalla|del|dello|della|dei|delle|di|in|da|che faccio|che faccio per|mio|mia)\s+/i;
+
+  /* sbassa(): minuscole e via gli accenti, UN CARATTERE PER UN CARATTERE. */
+  function sbassa(t) {
+    var da = 'àáâäãèéêëìíîïòóôöõùúûüçñÀÁÂÄÃÈÉÊËÌÍÎÏÒÓÔÖÕÙÚÛÜÇÑ';
+    var a  = 'aaaaaeeeeiiiiooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN';
+    var f = '';
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charAt(i), k = da.indexOf(c);
+      f += (k >= 0 ? a.charAt(k) : c);
+    }
+    return f.toLowerCase();
+  }
+
+  /* via le preposizioni e gli articoli davanti, uno dopo l'altro:
+     «per andare dal medico» → «medico» */
+  function nudo(t) {
+    var p = String(t || '').trim().replace(/^[,.;:«»"']+|[,.;:«»"'?!]+$/g, '').trim();
+    for (var g = 0; g < 6; g++) {
+      var dopo = p.replace(AVANTI, '');
+      if (dopo === p) break;
+      p = dopo.trim();
+    }
+    return p.trim();
+  }
+
+  function dallaVoce(testo) {
+    var t = String(testo || '').trim().replace(/[?!.]+$/, '').trim();
+    if (!t) return null;
+    var n = sbassa(t);                      // lunga uguale a t: gli indici valgono su tutt'e due
+    var haPercorso = /\b(?:percorso|percorsi|strada|strade|tragitto|cammino)\b/.test(n);
+
+    /* un segno che non c'è più: prima di tutto, perché dice «segno» */
+    if (/\b(?:togli|toglie|cancella|leva|elimina)\b/.test(n) &&
+        /\b(?:segno|riferimento|punto)\b/.test(n)) return { cosa: 'togli-segno' };
+    if (/^qui non c(?:'|\s)?e\s+(?:piu\s+)?niente\b/.test(n)) return { cosa: 'togli-segno' };
+
+    /* «QUI HO LA PANCHINA»: le parole sue. */
+    var ms = n.match(/^(segna qui|segno qui|metti qui|aggiungi qui|adesso qui|qui)\b\s*/);
+    if (ms) {
+      var resto = t.slice(ms[0].length).trim();
+      var nota = /^qui$/.test(ms[1]) ? t.trim() : (resto ? 'qui ' + resto : 'qui');
+      return { cosa: 'segna', nota: nota.replace(/^qui\s+qui\b/i, 'qui') };
+    }
+
+    if (/^(?:ho finito|abbiamo finito|finito|finita|fine percorso|fine del percorso|basta cosi|siamo arrivati|sono arrivato|sono arrivata|ci siamo|e finita)\b/.test(n)) {
+      return { cosa: 'finito' };
+    }
+
+    /* MANDARE. Serve la parola «percorso»: «manda un messaggio a Lucia»
+       non è un percorso, ed è un comando che esiste davvero. */
+    if (haPercorso && new RegExp('\\b' + VERBI_MANDA + '\\b').test(n)) {
+      var dopoP = n.search(/\b(?:percorso|strada|tragitto|cammino)\b/);
+      var coda = dopoP < 0 ? '' : t.slice(dopoP).replace(/^\S+\s*/, '');
+      var codaN = sbassa(coda);
+      /* chi riceve: l'ULTIMO «a»/«ad»/«con» */
+      var chi = '', quale = coda;
+      var re = /\b(?:a|ad|con|alla|al)\s+(\S.*)$/g, m, ultimo = null;
+      while ((m = re.exec(codaN)) !== null) { ultimo = m; re.lastIndex = m.index + 1; }
+      if (ultimo) {
+        chi = coda.slice(ultimo.index + ultimo[0].length - ultimo[1].length).trim();
+        quale = coda.slice(0, ultimo.index).trim();
+      }
+      return { cosa: 'manda', quale: nudo(quale), a: chi.replace(/^[,.;:]+|[,.;:]+$/g, '').trim() };
+    }
+
+    /* L'ELENCO: «che percorsi ho», «i miei percorsi» */
+    if (haPercorso && /\b(?:quali|che|quanti|miei|mie|ho|elenco|dimmi|hai)\b/.test(n) &&
+        !new RegExp('\\b' + VERBI_CREA + '\\b').test(n)) return { cosa: 'elenco' };
+
+    /* LASCIARE quello che si sta seguendo */
+    if (haPercorso && /\b(?:lascia|lasciamo|smetti|smettiamo|basta|esci)\b/.test(n)) return { cosa: 'lascia' };
+
+    /* CREARE. «Crea percorso», «registra la strada della farmacia»,
+       «impara questa strada». */
+    if (haPercorso && new RegExp('\\b' + VERBI_CREA + '\\b').test(n)) {
+      var iP = n.search(/\b(?:percorso|strada|tragitto|cammino)\b/);
+      var dopoNome = iP < 0 ? '' : t.slice(iP).replace(/^\S+\s*/, '');
+      return { cosa: 'crea', nome: nudo(dopoNome) };
+    }
+
+    return null;
+  }
+
   function carica(roba) { tutti = (roba || []).filter(function (p) { return p && p.punti && p.punti.length > 2; }); return tutti.length; }
   function elenco() { return tutti.map(function (p) { return { nome: p.nome, metri: p.metri, segni: (p.segni || []).length }; }); }
   function perSalvare() { return tutti; }
@@ -396,7 +501,7 @@ function PercorsiMiei(opzioni) {
            passoSuPercorso: passoSuPercorso, smetti: smetti, sto: sto,
            perMandare: perMandare, daUnLink: daUnLink, aggiungi: aggiungi,
            carica: carica, elenco: elenco, perSalvare: perSalvare, butta: butta,
-           aPosto: aPosto };
+           aPosto: aPosto, dallaVoce: dallaVoce, soloIlNome: nudo };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = PercorsiMiei;

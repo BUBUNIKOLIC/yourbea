@@ -201,6 +201,100 @@ prova('togliere dove non c era niente lo dice, e non scoppia', () => {
   if (!d || !/non avevi segnato/.test(d.testo)) guasto('dice male: ' + JSON.stringify(d));
 });
 
+/* ---------- TUTTO A VOCE ----------
+   «Rendi agevole creare un percorso e condividerlo, ma tutto vocalmente»
+   (Vince, 21/10). Le parole stanno qui, dove si provano: in app.js c'erano
+   quattro espressioni scritte a mano, e una — «manda il percorso del
+   medico a Lucia» — metteva «medico a lucia» nel nome del percorso e non
+   capiva a chi mandarlo. */
+
+prova('«crea percorso per il medico»: capisce che si comincia, e come si chiama', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('crea percorso per il medico');
+  if (!d || d.cosa !== 'crea') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.nome !== 'medico') guasto('nome storto: ' + JSON.stringify(d && d.nome));
+});
+
+prova('«crea percorso» da solo: il nome non c e, e si deve poter chiedere', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('crea percorso');
+  if (!d || d.cosa !== 'crea') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.nome) guasto('si e inventato un nome: ' + d.nome);
+});
+
+prova('«registra la strada della farmacia» vale come «crea percorso»', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('registra la strada della farmacia');
+  if (!d || d.cosa !== 'crea') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.nome !== 'farmacia') guasto('nome storto: ' + JSON.stringify(d && d.nome));
+});
+
+prova('«qui ho la panchina»: e un segno, con le parole sue', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('qui ho la panchina');
+  if (!d || d.cosa !== 'segna') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && !/panchina/.test(d.nota)) guasto('ha perso le parole: ' + JSON.stringify(d && d.nota));
+});
+
+prova('«ho finito» chiude il percorso', () => {
+  const p = mondo().p;
+  ['ho finito', 'finito', 'siamo arrivati', 'basta cosi'].forEach((f) => {
+    const d = p.dallaVoce(f);
+    if (!d || d.cosa !== 'finito') guasto('«' + f + '» non chiude: ' + JSON.stringify(d));
+  });
+});
+
+prova('«manda il percorso del medico a Lucia»: il percorso e il medico, la persona e Lucia', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('manda il percorso del medico a Lucia');
+  if (!d || d.cosa !== 'manda') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.quale !== 'medico') guasto('percorso storto: ' + JSON.stringify(d && d.quale));
+  if (d && d.a !== 'Lucia') guasto('persona storta: ' + JSON.stringify(d && d.a));
+});
+
+prova('«condividi il percorso con mia sorella»: anche «con» vale', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('condividi il percorso con mia sorella');
+  if (!d || d.cosa !== 'manda') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.a !== 'mia sorella') guasto('persona storta: ' + JSON.stringify(d && d.a));
+});
+
+prova('«manda il percorso» senza dire a chi: non si inventa nessuno', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('manda il percorso');
+  if (!d || d.cosa !== 'manda') guasto('non ha capito: ' + JSON.stringify(d));
+  if (d && d.a) guasto('si e inventato una persona: ' + d.a);
+});
+
+prova('«manda un messaggio a Lucia» NON e un percorso', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('manda un messaggio a Lucia');
+  if (d && d.cosa === 'manda') guasto('ha scambiato un messaggio per un percorso');
+});
+
+prova('«portami a casa» NON tocca i percorsi', () => {
+  const p = mondo().p;
+  ['portami a casa', 'dove sono', 'che ora e', 'accendi il faro'].forEach((f) => {
+    const d = p.dallaVoce(f);
+    if (d) guasto('«' + f + '» si e preso un comando che non e suo: ' + JSON.stringify(d));
+  });
+});
+
+prova('«che percorsi ho» chiede l elenco', () => {
+  const p = mondo().p;
+  const d = p.dallaVoce('che percorsi ho');
+  if (!d || d.cosa !== 'elenco') guasto('non ha capito: ' + JSON.stringify(d));
+});
+
+prova('il nome detto dopo, quando lo chiediamo, si tiene come e', () => {
+  const w = mondo();
+  w.p.comincia('', CASA);
+  for (let i = 1; i <= 22; i++) w.p.passo(avanti(i));
+  const d = w.p.finisci('dal dentista');
+  if (d && d.percorso && d.percorso.nome !== 'dal dentista') guasto('nome perso: ' + JSON.stringify(d && d.percorso && d.percorso.nome));
+  if (!w.p.trova('dentista')) guasto('col nome dato dopo non lo ritrova piu');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei percorsi suoi');
