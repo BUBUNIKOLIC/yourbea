@@ -74,6 +74,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
        le chiamava nessuno. Codice morto che sembra una funzione fatta. */
     ascoltaAccessibilita()
     ascoltaLaProssimita()
+    segnaIlCiclo()
     /* il negozio si apre in sottofondo: se non risponde, l'app resta
        intera e semplicemente non offre niente */
     acquisti.quandoCambia = { [weak self] attivo, scadenza, prezzo in
@@ -276,6 +277,56 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      Il microfono continuo resta: questo e' il modo di dire «adesso parlo
      io» quando intorno c'e' rumore e l'ascolto continuo non basta. */
   private var vicinoAllaFaccia = false
+
+  /* ============================================================
+     PERCHÉ L'APP È SPARITA
+     «Qualche volta pare sia uscita e ho dovuto riattivarla» (Vince,
+     21/10). Il quaderno gli dà ragione: un'ora e tre minuti di silenzio
+     (08:10 → 09:14) e poi un avvio nuovo. Prima del silenzio niente di
+     strano — posizioni regolari, nessun errore.
+     Le spiegazioni sono due e vogliono rimedi opposti:
+       - iOS l'ha SOSPESA perché stava in sottofondo senza fare niente;
+       - iOS l'ha CHIUSA per fare spazio a un'altra app (memoria).
+     Il quaderno, com'era, non le distingue: in tutti e due i casi vede
+     solo silenzio. Da qui in poi scrive quando esce di scena e quando
+     torna, e quanta memoria sta usando. La prossima volta che succede, la
+     riga ce lo dice senza doverlo indovinare. */
+  private func segnaIlCiclo() {
+    let c = NotificationCenter.default
+    c.addObserver(forName: UIApplication.didEnterBackgroundNotification,
+                  object: nil, queue: .main) { [weak self] _ in
+      self?.scrivi("— in sottofondo — memoria \(self?.memoriaUsata() ?? "?")")
+    }
+    c.addObserver(forName: UIApplication.willEnterForegroundNotification,
+                  object: nil, queue: .main) { [weak self] _ in
+      self?.scrivi("— torno in primo piano —")
+    }
+    c.addObserver(forName: UIApplication.willTerminateNotification,
+                  object: nil, queue: .main) { [weak self] _ in
+      self?.scrivi("— chiusa dal sistema o dall'utente —")
+    }
+    c.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification,
+                  object: nil, queue: .main) { [weak self] _ in
+      self?.scrivi("!! MEMORIA AGLI SGOCCIOLI: \(self?.memoriaUsata() ?? "?") — qui iOS sta per chiuderci")
+    }
+    /* e un battito ogni due minuti: se il quaderno si ferma fra un battito
+       e l'altro, il momento esatto lo sappiamo al minuto. */
+    Timer.scheduledTimer(withTimeInterval: 120, repeats: true) { [weak self] _ in
+      self?.scrivi("— vivo — memoria \(self?.memoriaUsata() ?? "?")")
+    }
+  }
+
+  private func memoriaUsata() -> String {
+    var info = task_vm_info_data_t()
+    var conta = mach_msg_type_number_t(MemoryLayout<task_vm_info>.size / MemoryLayout<natural_t>.size)
+    let esito = withUnsafeMutablePointer(to: &info) {
+      $0.withMemoryRebound(to: integer_t.self, capacity: Int(conta)) {
+        task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &conta)
+      }
+    }
+    guard esito == KERN_SUCCESS else { return "?" }
+    return String(info.phys_footprint / (1024 * 1024)) + " MB"
+  }
 
   private func ascoltaLaProssimita() {
     let d = UIDevice.current
