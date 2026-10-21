@@ -193,6 +193,63 @@ prova('ma una farmacia si annuncia eccome', () => {
     guasto('la farmacia serve: non deve sparire col filtro');
 });
 
+/* ============================================================
+   GLI AVVISI ARRIVANO PRIMA — 21/10/2026
+   «È importante che in Utilità guidi il non vedente, non dica "sei qui"…
+   dica dove deve andare o descriva, non dica dove è» (Vince).
+   «Stai passando lo scivolo» arriva quando ci sei sopra: è una cronaca.
+   Trenta passi prima è una guida.                                        */
+prova('UN ATTRAVERSAMENTO SI DICE PRIMA, e in passi', () => {
+  const w = mondo();
+  const davanti = Object.assign({ cosa: 'attraversamento', semaforo: true, suona: true, tattile: true },
+                                vicino(0.00022, 0));
+  const d = w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [davanti] });
+  if (!d) { guasto('a venticinque metri va detto prima'); return; }
+  if (!/^Fra \d+ passi/.test(d.testo)) guasto('deve dire quanti passi mancano: ' + d.testo);
+  if (!/semaforo acustico/.test(d.testo)) guasto('il semaforo che suona e la cosa piu importante: ' + d.testo);
+  if (!d.avviso) guasto('e un avviso: non si spegne e non aspetta');
+  console.log('      → ' + d.testo);
+});
+
+prova('quello che hai DI FIANCO non e «in arrivo»', () => {
+  const w = mondo();
+  const diLato = Object.assign({ cosa: 'attraversamento' }, vicino(0, 0.00025));
+  if (w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [diLato] }))
+    guasto('un attraversamento a novanta gradi non e davanti');
+});
+
+prova('troppo lontano non serve ancora', () => {
+  const w = mondo();
+  const lontano = Object.assign({ cosa: 'scalini' }, vicino(0.0006, 0));
+  if (w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [lontano] }))
+    guasto('a settanta metri non e ancora un avviso');
+});
+
+prova('senza bussola non si dice «davanti»', () => {
+  const w = mondo();
+  const davanti = Object.assign({ cosa: 'scalini', quanti: 7 }, vicino(0.00022, 0));
+  if (w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: false, punti: [davanti] }))
+    guasto('senza sapere come sei girato, «davanti» e una bugia');
+});
+
+prova('lo stesso avviso non si ripete mentre ci cammini verso', () => {
+  const w = mondo();
+  const davanti = Object.assign({ cosa: 'attraversamento' }, vicino(0.00022, 0));
+  if (!w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [davanti] })) { guasto('la prima esce'); return; }
+  w.passano(20000);
+  if (w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [davanti] }))
+    guasto('lo ha ridetto mentre ci andava');
+});
+
+prova('i gradini si contano in gradini, non in numeri sciolti', () => {
+  const w = mondo();
+  const sc = Object.assign({ cosa: 'scalini', quanti: 7, corrimano: true }, vicino(0.00022, 0));
+  const d = w.p.inArrivo({ qui: QUI, direzione: 0, direzioneBuona: true, punti: [sc] });
+  if (/scalini, 7/.test(d.testo)) guasto('«degli scalini, 7» non si dice: ' + d.testo);
+  if (!/7 scalini, col corrimano/.test(d.testo)) guasto('dice male: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei passaggi');

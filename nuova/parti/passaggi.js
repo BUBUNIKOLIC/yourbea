@@ -95,6 +95,75 @@ function Passaggi(opzioni) {
     return !!p.nome || !!UTILI_DA_SOLE[p.cosa];          // REGOLA 2
   }
 
+  /* ============================================================
+     GLI AVVISI ARRIVANO PRIMA, IN PASSI
+     «È importante che in Utilità guidi il non vedente, non dica "sei
+     qui"… dica dove deve andare o descriva, non dica dove è» (Vince,
+     21/10). È la frase che regge tutto, e condanna anche gli avvisi com'erano:
+     «stai passando lo scivolo del marciapiede» arriva quando ci sei
+     sopra — è ancora «sei qui», e non serve a nessuno. Un attraversamento
+     si dice PRIMA, con quanti passi mancano, se no non è un avviso: è una
+     cronaca.
+     Qui si guarda davanti — un cono stretto, quaranta gradi — fino a
+     trentacinque metri, e si dice in passi. Il nome resta per dopo:
+     quello che serve subito è quanto manca e cos'è. */
+  var DAVANTI = o.davanti || 35;        // metri: oltre, non serve ancora
+  var CONO = o.cono || 40;              // gradi: dev'essere davvero davanti
+  var PASSO = 0.75;
+
+  function inPassi(m) {
+    var p = Math.round(m / PASSO / 5) * 5;
+    if (p <= 5) return 'pochi passi';
+    return p + ' passi';
+  }
+
+  /* comeSiChiama(): di un avviso conta cos'e' e cosa ha, non il nome. */
+  function dettagli(p) {
+    if (p.cosa === 'attraversamento') {
+      var pezzi = [];
+      if (p.suona) pezzi.push('col semaforo acustico');
+      else if (p.semaforo) pezzi.push('col semaforo');
+      else pezzi.push('senza semaforo');
+      if (p.tattile) pezzi.push('col percorso tattile');
+      return 'un attraversamento ' + pezzi.join(', ');
+    }
+    if (p.cosa === 'scalini') {
+      return (p.quanti ? p.quanti + ' scalini' : 'degli scalini') +
+             (p.corrimano ? ', col corrimano' : '');
+    }
+    if (p.cosa === 'scivolo del marciapiede') {
+      return 'lo scivolo del marciapiede' + (p.tattile ? ', col percorso tattile' : '');
+    }
+    if (p.cosa === 'paletto' || p.cosa === 'dissuasore') return 'un paletto';
+    if (p.cosa === 'ascensore') return 'un ascensore';
+    if (p.cosa === 'scala mobile') return 'una scala mobile';
+    return p.nome || p.cosa;
+  }
+
+  /* inArrivo(): quello che hai davanti e che devi sapere PRIMA. */
+  function inArrivo(s) {
+    var qui = s.qui, punti = s.punti || [];
+    if (!qui || typeof s.direzione !== 'number' || s.direzioneBuona === false) return null;
+    if (ora() - ultimaVolta < OGNI) return null;
+
+    var mig = null, dmin = Infinity;
+    punti.forEach(function (p) {
+      if (!p || !eUnAvviso(p.cosa)) return;
+      var k = 'avanti:' + chiave(p);
+      if (detti[k]) return;
+      var d = dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (d > DAVANTI) return;
+      var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
+      if (Math.abs(rel) > CONO) return;
+      if (d < dmin) { dmin = d; mig = p; }
+    });
+    if (!mig) return null;
+    detti['avanti:' + chiave(mig)] = ora();
+    ultimaVolta = ora();
+    return { tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
+             testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) + '.' };
+  }
+
   /* prossimo(): la cosa che stai passando adesso, o null. */
   function prossimo(s) {
     var qui = s.qui, punti = s.punti || [];
@@ -198,7 +267,7 @@ function Passaggi(opzioni) {
      strada o ripassandoci dopo, si possono ridire. */
   function stradaNuova() { detti = {}; }
 
-  return { eUnAvviso: eUnAvviso, prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
+  return { eUnAvviso: eUnAvviso, inArrivo: inArrivo, prossimo: prossimo, stradaNuova: stradaNuova, vaDetto: vaDetto, apertoAdesso: apertoAdesso };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Passaggi;

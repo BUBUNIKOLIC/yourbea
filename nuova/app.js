@@ -1572,6 +1572,20 @@
     /* senza precisione, le cose che si misurano in passi tacciono: e' la
        stessa regola del movimento, per un altro motivo */
     var inViaggio = !!guida.meta() || !aPiedi || !preciso;
+    /* PRIMA QUELLO CHE ARRIVA, POI QUELLO CHE PASSI. «È importante che in
+       Utilità guidi il non vedente, non dica "sei qui"… dica dove deve
+       andare o descriva, non dica dove è» (Vince, 21/10). Un
+       attraversamento detto quando ci sei sopra è una cronaca; detto
+       trenta passi prima è una guida. Questo viene prima di tutto il
+       resto, e vale anche mentre ti accompagna da qualche parte: gli
+       avvisi non si spengono mai. */
+    if (aPiedi && !(s.prec > 50)) {
+      var arriva = passaggi.inArrivo({ qui: { lat: s.lat, lon: s.lon },
+                                       punti: SERVIZI.punti || [],
+                                       direzione: s.direzione,
+                                       direzioneBuona: s.direzioneBuona });
+      if (arriva) dillo(arriva);
+    }
     var pass = inViaggio ? null : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
                                    direzione: s.direzione, direzioneBuona: s.direzioneBuona,
                                    quando: Date.now() });
