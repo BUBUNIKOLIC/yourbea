@@ -96,6 +96,82 @@
      (Vince, 21/10) — e il problema era: se diciamo che c'è un
      attraversamento e non c'è? Un percorso registrato da lui, coi suoi
      segni, è l'unico dato che non abbiamo preso da una mappa. */
+  /* IL FARO ACUSTICO: parti/faro.js (7 prove). L'idea e i numeri vengono
+     da Microsoft Soundscape (licenza MIT) — trenta gradi in rotta, dieci
+     metri per «ci sei», cinquanta fra un annuncio e l'altro. */
+  var faro = Faro({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+                    verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
+
+  /* ============================================================
+     IL SUONO DEL FARO
+     Due toni in anello — uno chiaro quando ce l'hai davanti, uno sordo
+     quando sei fuori rotta — messi nello spazio con l'audio del browser,
+     così lo senti arrivare dalla sua parte. È il modo di Soundscape, e
+     funziona anche su Android perché il browser ce l'ha già.
+     Non si usano i loro file audio: i toni si fanno qui, con un
+     oscillatore, così non c'è niente da scaricare e niente da pesare. */
+  var ilSuono = null;
+  function accendiIlSuono() {
+    if (ilSuono) return ilSuono;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var ctx = new AC();
+      var panner = ctx.createPanner();
+      panner.panningModel = 'HRTF';          // due orecchie, non due casse
+      panner.distanceModel = 'inverse';
+      panner.refDistance = 1;
+      panner.maxDistance = 20;
+      panner.connect(ctx.destination);
+
+      /* il tono: un battito, non un fischio continuo — un fischio in
+         mezzo al traffico si confonde e stanca */
+      var osc = ctx.createOscillator();
+      osc.type = 'sine';
+      var porta = ctx.createGain();
+      porta.gain.value = 0;
+      osc.connect(porta); porta.connect(panner);
+      osc.start();
+      ilSuono = { ctx: ctx, panner: panner, osc: osc, porta: porta, ultimo: 0 };
+      return ilSuono;
+    } catch (e) { return null; }
+  }
+
+  function spegniIlSuono() {
+    if (!ilSuono) return;
+    try { ilSuono.porta.gain.value = 0; } catch (e) {}
+  }
+
+  /* suonaIlFaro(): un battito, messo da quella parte. Più sei in rotta,
+     più il battito è chiaro e fitto: è il modo in cui si capisce di
+     essere girati bene senza che nessuno lo dica. */
+  function suonaIlFaro(d) {
+    var a = accendiIlSuono();
+    if (!a) return;
+    try { if (a.ctx.state === 'suspended') a.ctx.resume(); } catch (e) {}
+    var adesso = a.ctx.currentTime;
+    var ogni = d.inRotta ? 0.45 : 1.1;        // in rotta batte più spesso
+    if (adesso - a.ultimo < ogni) return;
+    a.ultimo = adesso;
+
+    /* dove sta, rispetto a chi ascolta: a sinistra x negativo, davanti z
+       negativo. Il panner fa il resto. */
+    var rad = d.rel * Math.PI / 180;
+    var x = Math.sin(rad), z = -Math.cos(rad);
+    try {
+      if (a.panner.positionX) {
+        a.panner.positionX.setValueAtTime(x, adesso);
+        a.panner.positionY.setValueAtTime(0, adesso);
+        a.panner.positionZ.setValueAtTime(z, adesso);
+      } else { a.panner.setPosition(x, 0, z); }
+    } catch (e) {}
+    a.osc.frequency.setValueAtTime(d.inRotta ? 880 : 420, adesso);
+    a.porta.gain.cancelScheduledValues(adesso);
+    a.porta.gain.setValueAtTime(0, adesso);
+    a.porta.gain.linearRampToValueAtTime(d.inRotta ? 0.22 : 0.12, adesso + 0.02);
+    a.porta.gain.exponentialRampToValueAtTime(0.0001, adesso + (d.inRotta ? 0.18 : 0.3));
+  }
+
   var miei = PercorsiMiei({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   try { miei.carica(JSON.parse(localStorage.getItem('yourbea2-percorsi-miei') || '[]')); } catch (e) {}
   /* mandaIlPercorso(): il percorso diventa un link e parte col pannello di
@@ -1635,6 +1711,15 @@
        Quello che resta, e che anzi conta di piu', e' il paesaggio: «a
        sinistra il Vesuvio, a destra il golfo con le isole». */
     var aPiedi = s.aPiedi !== false;
+    /* IL FARO: un battito da quella parte, a ogni passo. Non dice niente:
+       si sente, e basta. */
+    if (faro.acceso()) {
+      var df = faro.dove({ lat: s.lat, lon: s.lon }, s.direzione, s.direzioneBuona);
+      if (df) suonaIlFaro(df);
+      var pf = faro.passo({ lat: s.lat, lon: s.lon }, s.direzione, s.direzioneBuona);
+      if (pf) { if (pf.tipo === 'faro-arrivato') spegniIlSuono(); dillo(pf); }
+    }
+
     /* I PERCORSI SUOI: si registra camminando, o si segue quello che ha
        gia' camminato. Viene prima di tutto il resto, perche' e' l'unico
        dato di cui siamo sicuri. */
@@ -2070,6 +2155,27 @@
         voce.parla('Va bene, lascio il percorso.', { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
+    }
+
+    /* IL FARO, a voce. «Accendi il faro su casa» — oppure, senza dire
+       niente, si accende da sé quando si va verso un posto segnato. */
+    if (ha('accendi il faro', 'faro acceso', 'metti il faro', 'suonalo', 'fammi sentire dove')) {
+      var sf = posizione.leggi();
+      var metaF = faro.laMeta() || (guida.meta()) || (casaPunto ? { n: 'casa tua', lat: casaPunto.lat, lon: casaPunto.lon } : null);
+      if (!metaF) {
+        voce.parla('Su cosa? Dimmi prima dove vuoi andare, oppure segna casa con «casa è qui».',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      accendiIlSuono();
+      dilloSubito(faro.accendi(metaF.n, metaF.lat, metaF.lon));
+      return true;
+    }
+    if (ha('spegni il faro', 'basta il suono', 'togli il faro', 'spegni il suono')) {
+      spegniIlSuono();
+      var sp3 = faro.spegni();
+      if (sp3) dilloSubito(sp3); else voce.parla('Il faro è già spento.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
     }
 
     /* MANDARE UN PERCORSO A QUALCUNO. «Un volontario dell'UICI registra
