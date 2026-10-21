@@ -36,6 +36,7 @@
 
 function Fermate(opzioni) {
   var o = opzioni || {};
+  var laMisura = o.distanza || null;
   var dist = o.dist;
   var ora = o.ora || function () { return Date.now(); };
   var AVVISO = o.avviso || 500;        // REGOLA 2: si avvisa da mezzo chilometro
@@ -80,7 +81,9 @@ function Fermate(opzioni) {
       if (peso > meglio) { meglio = peso; mig = { p: x, m: d }; }
     });
     if (!mig) return '';
-    var quanto = mig.m < 120 ? '' : (', a ' + (Math.round(mig.m / 50) * 50) + ' metri');
+    /* in passi, come tutto il resto: parti/distanza.js. Qui erano rimasti
+       i metri, ed era l'ultimo posto che parlava un'altra lingua. */
+    var quanto = mig.m < 120 ? '' : (', ' + (laMisura ? laMisura.passi(mig.m) : 'a ' + Math.round(mig.m) + ' metri'));
     return ' Appena esci, ' + mig.p.n + quanto + '.';
   }
 

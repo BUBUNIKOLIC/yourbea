@@ -137,13 +137,10 @@ function Racconto(opzioni) {
           }
           return null;
         }
-        var g = gradino[vicino.n] || 0;
-        if (g < quantiGradini(vicino)) {
-          gradino[vicino.n] = g + 1;
+        if ((gradino[vicino.n] || 0) < quantiGradini(vicino)) {
           inCorso = vicino;
-          if (g === 0) return { tipo: 'scheda', luogo: vicino, testo: vicino.d, livello: 'guida' };
-          if (g === 1 && vicino.i) return { tipo: 'cosa-vedere', luogo: vicino, testo: 'Cosa vedere: ' + vicino.i, livello: 'guida' };
-          if (vicino.a) return { tipo: 'approfondimento', luogo: vicino, testo: vicino.a, livello: 'guida' };
+          var sceso = scendiDiUnGradino(vicino);
+          if (sceso && sceso.tipo !== 'finito') return sceso;
         }
       }
     }
@@ -329,22 +326,33 @@ function Racconto(opzioni) {
 
   /* ancora(): quello che succede quando l'utente dice «ancora». Scende di un
      gradino sul luogo in corso, e se è finito lo dice. */
-  function ancora() {
-    if (!inCorso) return null;
-    var g = gradino[inCorso.n] || 0;
-    if (g >= quantiGradini(inCorso)) return { tipo: 'finito', luogo: inCorso, livello: 'guida',
-                                              testo: 'Di questo ti ho detto tutto.' };
-    gradino[inCorso.n] = g + 1;
-    var fatta = comeEFatta(inCorso);
+  /* I GRADINI IN UN POSTO SOLO. Erano scritti due volte — qui e dentro
+     prossimo(), nel ramo di chi si ferma dieci secondi — e il 21/10 ne ho
+     corretto uno solo: i dati per le descrizioni orientative c'erano,
+     la parte produceva la frase giusta, la regola la lasciava passare, e
+     l'app diceva lo stesso la voce di Wikipedia, perche' passava
+     dall'altra copia. Una copia sola, e non succede piu'. */
+  function scendiDiUnGradino(p) {
+    if (!p) return null;
+    var g = gradino[p.n] || 0;
+    if (g >= quantiGradini(p)) return { tipo: 'finito', luogo: p, livello: 'guida',
+                                        testo: 'Di questo ti ho detto tutto.' };
+    gradino[p.n] = g + 1;
+    var fatta = comeEFatta(p);
     if (fatta) {
-      if (g === 0) return { tipo: 'scheda-orientativa', luogo: inCorso, testo: fatta, livello: 'guida' };
+      if (g === 0) return { tipo: 'scheda-orientativa', luogo: p, testo: fatta, livello: 'guida' };
       g = g - 1;             // da qui in poi i gradini sono quelli di sempre
     }
-    if (g === 0 && inCorso.d) return { tipo: 'scheda', luogo: inCorso, testo: inCorso.d, livello: 'guida' };
-    if (g === 0) return { tipo: 'finito', luogo: inCorso, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
-    if (g === 1 && inCorso.i) return { tipo: 'cosa-vedere', luogo: inCorso, testo: 'Cosa vedere: ' + inCorso.i, livello: 'guida' };
-    if (inCorso.a) return { tipo: 'approfondimento', luogo: inCorso, testo: inCorso.a, livello: 'guida' };
-    return { tipo: 'finito', luogo: inCorso, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
+    if (g === 0 && p.d) return { tipo: 'scheda', luogo: p, testo: p.d, livello: 'guida' };
+    if (g === 0) return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
+    if (g === 1 && p.i) return { tipo: 'cosa-vedere', luogo: p, testo: 'Cosa vedere: ' + p.i, livello: 'guida' };
+    if (p.a) return { tipo: 'approfondimento', luogo: p, testo: p.a, livello: 'guida' };
+    return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
+  }
+
+  function ancora() {
+    if (!inCorso) return null;
+    return scendiDiUnGradino(inCorso);
   }
 
   /* approfondisci(): l'utente chiede di sapere di più, in qualunque modalità.

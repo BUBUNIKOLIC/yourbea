@@ -382,6 +382,31 @@ prova('«l edificio», non «il edificio»: davanti a vocale ci vuole l apostrof
   console.log('      → ' + casi.map((c) => r.conArticolo({ n: c.n, t: c.t })).join(' · '));
 });
 
+/* ---------- FERMANDOSI: ANCHE DI LI' ESCE COM'E' FATTA ----------
+   Il 21/10, nel banco: i dati c'erano, la parte produceva la frase
+   giusta, la regola la lasciava passare — e l'app diceva lo stesso la
+   voce di Wikipedia. Causa: i gradini erano scritti DUE VOLTE, in
+   ancora() e dentro prossimo() (il ramo di chi si ferma dieci secondi), e
+   io ne avevo corretta una sola. Adesso il conto dei gradini sta in un
+   posto solo: se si sdoppia di nuovo, questa prova se ne accorge. */
+prova('FERMANDOSI davanti, la prima cosa e com e fatta — non la storia', () => {
+  const Descrizione = require('../parti/descrizione.js');
+  let adesso = 1000000;
+  const r = Racconto({ distanza: LADISTANZA, ora: () => adesso,
+                       descrizione: Descrizione({ distanza: LADISTANZA, conArticolo: Racconto({}).conArticolo }) });
+  const p = { n: 'Chiesa di Prova', t: 'chiesa', k: 3, lat: 44.8030, lon: 10.3290,
+              mat: ['mattoni'], frm: ['campanile'],
+              d: 'La chiesa fu edificata nel 1450 e rifatta nel Settecento.' };
+  const qui = { lat: 44.8029, lon: 10.3289 };
+  const giro = () => r.prossimo({ qui: qui, intorno: intorno([[p, 30, 10]], qui), modo: 'cultura', direzioneBuona: true });
+  giro();                     // il cenno, camminando
+  adesso += 11000;            // e adesso sono fermo da undici secondi
+  const d = giro();
+  if (!d) { guasto('fermandosi non ha detto niente'); return; }
+  if (d.tipo !== 'scheda-orientativa') guasto('fermandosi dice ancora la storia per prima: ' + d.tipo + ' — ' + d.testo.slice(0, 60));
+  else console.log('      → ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');

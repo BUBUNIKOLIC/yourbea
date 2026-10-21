@@ -220,6 +220,11 @@ function Descrizione(opzioni) {
        niente. Meglio passare subito alla storia. */
     if (!seconda.length && !fo) return null;
     var testo = pezzi.join('');
+    /* LA MAIUSCOLA. Senza l'apertura («Davanti a te…») la frase parte
+       dall'articolo, e dall'app si sentiva «la chiesa di Santa Maria
+       delle Grazie alle Fornaci: di mattoni»: sullo schermo si legge
+       male, e il lettore di schermo la attacca alla frase prima. */
+    if (testo) testo = testo.charAt(0).toUpperCase() + testo.slice(1);
     if (seconda.length) testo += ': ' + seconda.join(', ');
     testo += '.';
     if (fo) testo += ' ' + att + fo + '.';

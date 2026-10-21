@@ -214,6 +214,16 @@ prova('se non si sa NIENTE di com e fatta, non si dice una frase vuota', () => {
   if (g && g.testo && !/palazzo|larg|di [a-z]/.test(g.testo)) guasto('frase senza contenuto: ' + g.testo);
 });
 
+prova('la frase comincia con la maiuscola anche senza «davanti a te»', () => {
+  /* sentito dall'app il 21/10: «la chiesa di Santa Maria delle Grazie
+     alle Fornaci: di mattoni». Senza l'apertura, la frase partiva
+     dall'articolo minuscolo. */
+  const f = d().frase({ n: 'Chiesa del Carmine', t: 'chiesa', dove: '', metri: 0, materiali: ['mattoni'] });
+  if (!f) { guasto('niente frase'); return; }
+  if (!/^[A-ZÀ-Ý]/.test(f.testo)) guasto('comincia minuscola: ' + f.testo);
+  console.log('      → ' + f.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della descrizione orientativa');

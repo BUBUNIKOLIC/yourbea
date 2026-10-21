@@ -271,7 +271,7 @@
     try { localStorage.setItem('yourbea2-percorsi-miei', JSON.stringify(miei.perSalvare())); } catch (e) {}
   }
 
-  var fermate = Fermate({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
+  var fermate = Fermate({ distanza: laDistanza, dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                               verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
   var posizione = Posizione({

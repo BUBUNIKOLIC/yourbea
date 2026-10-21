@@ -99,6 +99,15 @@ prova('niente intorno: niente da dire, e non scoppia', () => {
   if (w.f.prossima({})) guasto('ha parlato senza niente');
 });
 
+prova('anche le fermate dicono i passi, non i metri', () => {
+  /* una sola misura in tutta l'app: qui era rimasto «a 100 metri». */
+  const w = mondo();
+  const d = w.f.prossima(Object.assign({ qui: { lat: 41.8980, lon: 12.4940 }, punti: [CAVOUR], luoghi: LUOGHI }, INMETRO));
+  if (!d) { guasto('niente frase'); return; }
+  if (/\d+\s*metri/.test(d.testo)) guasto('dice ancora i metri: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove delle fermate');
