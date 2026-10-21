@@ -51,23 +51,37 @@ function AChiServe() {
   /* la tabella: per ogni tipo di cosa che l'app può dire, a chi serve e se
      regge il movimento. Quello che non è qui dentro si dice sempre: sono
      le risposte ai comandi, e a quelle non si mette un filtro. */
+  /* Le colonne: Utilità, Turismo, regge il movimento, REGGE L'IMPRECISIONE.
+     L'ultima è del 21/10, e nasce da un giro vero alla Laurentina: il
+     telefono dava ±653 metri e l'app diceva lo stesso «a destra, a 130
+     metri, la stazione» — mentre lui ce l'aveva davanti. Vince: «stando
+     così non serve a nulla per i non vedenti», e ha ragione: chi vede
+     corregge con un'occhiata, chi non vede si fida e sbaglia strada.
+     Regge l'imprecisione solo quello che resta vero anche sbagliando di
+     mezzo chilometro: il paesaggio (il Vesuvio è là comunque), la strada
+     (se confermata due volte), le risposte ai comandi e l'emergenza.
+     Tutto il resto — le parti, i passi, i metri, «qui c'è» — è finzione
+     se non sappiamo dove siamo, e si tace. */
   var REGOLA = {
-    /*                        utilità  turismo  anche-non-a-piedi */
-    'avviso':               [ true,    true,    true  ],
-    'strada':               [ true,    true,    true  ],
-    'paesaggio':            [ true,    true,    true  ],
-    'aCosaServe':           [ true,    false,   false ],
-    'orientamento':         [ true,    true,    false ],
-    'civico':               [ true,    false,   false ],
-    'scena':                [ true,    true,    false ],
-    'lati':                 [ true,    true,    false ],
-    'passaggio':            [ true,    true,    false ],
-    'incrocio':             [ true,    true,    false ],
-    'scheda':               [ false,   true,    true  ],
-    'cosa-vedere':          [ false,   true,    true  ],
-    'approfondimento':      [ false,   true,    true  ],
-    'passeggiata':          [ false,   true,    true  ]
+    /*                     utilità  turismo  non-a-piedi  imprecisi */
+    'avviso':            [ true,    true,    true,        false ],
+    'strada':            [ true,    true,    true,        true  ],
+    'paesaggio':         [ true,    true,    true,        true  ],
+    'aCosaServe':        [ true,    false,   false,       false ],
+    'orientamento':      [ true,    true,    false,       false ],
+    'civico':            [ true,    false,   false,       false ],
+    'scena':             [ true,    true,    false,       false ],
+    'lati':              [ true,    true,    false,       false ],
+    'passaggio':         [ true,    true,    false,       false ],
+    'incrocio':          [ true,    true,    false,       false ],
+    'cenno':             [ true,    true,    false,       false ],
+    'superato':          [ true,    true,    false,       false ],
+    'scheda':            [ false,   true,    true,        true  ],
+    'cosa-vedere':       [ false,   true,    true,        true  ],
+    'approfondimento':   [ false,   true,    true,        true  ],
+    'passeggiata':       [ false,   true,    true,        false ]
   };
+
 
   /* serve(): la domanda che fa il resto dell'app.
      cosa  — una delle righe qui sopra
@@ -85,6 +99,8 @@ function AChiServe() {
     var perQuestoModo = (modo === 'cultura') ? r[1] : r[0];
     if (!perQuestoModo) return false;
     if (c.aPiedi === false && !r[2]) return false;
+    /* SENZA SAPERE DOVE SIAMO, NON SI DICONO LE PARTI NE' I PASSI. */
+    if (c.preciso === false && !r[3]) return false;
     return true;
   }
 

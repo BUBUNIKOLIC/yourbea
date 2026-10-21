@@ -225,7 +225,10 @@ function Racconto(opzioni) {
     return /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
   }
   function loIl(t) {
-    return /^(s[bcdfgilmnpqrtv]|z|ps|gn|x|y)/.test(t) ? 'lo ' : 'il ';
+    /* «lo» va davanti a s+CONSONANTE — sbaglio, scempio, studio — non a
+       s+vocale. Nella lista c'era per errore anche la «i», e usciva «lo
+       sito mura serviane» (quaderno del 21/10). */
+    return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(String(t).toLowerCase()) ? 'lo ' : 'il ';
   }
 
   function daRaccontare(p, modo) {

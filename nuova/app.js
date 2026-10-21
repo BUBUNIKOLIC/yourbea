@@ -1302,9 +1302,19 @@
     /* LA REGOLA: a chi serve questa cosa, e regge il movimento?
        Una cosa CHIESTA non si filtra mai: il confine serve a non riempire
        di roba chi non l'ha chiesta, non a negargliela se la chiede. */
+    var qui0 = posizione.leggi();
+    /* LA PRECISIONE, e perché è una regola e non una cautela.
+       «Se dico così a un non vedente, lui non continua dritto: va a
+       destra» (Vince, 21/10, alla Laurentina, col telefono che dava ±653
+       metri mentre l'app diceva «a destra, a 130 metri, la stazione»).
+       A chi vede una parte sbagliata è un'imprecisione da correggere con
+       un'occhiata. A chi non vede è un ORDINE, e lo esegue. */
+    var preciso = !(qui0.prec > 50);
     if (!aChiServe.serve(d.avviso ? 'avviso' : d.tipo, modo,
-                         { aPiedi: posizione.leggi().aPiedi !== false, chiesto: !!d.chiesto })) {
-      diario('REGOLA: ' + d.tipo + ' non va in ' + modo + (posizione.leggi().aPiedi === false ? ' (non a piedi)' : ''));
+                         { aPiedi: qui0.aPiedi !== false, preciso: preciso, chiesto: !!d.chiesto })) {
+      diario('REGOLA: ' + d.tipo + ' non va in ' + modo +
+             (qui0.aPiedi === false ? ' (non a piedi)' : '') +
+             (!preciso ? ' (±' + Math.round(qui0.prec) + ' m)' : ''));
       return;
     }
     if (!daDire(d)) { diario('solo monumenti: salto ' + d.tipo); return; }

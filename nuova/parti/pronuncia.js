@@ -53,9 +53,24 @@ function Pronuncia(opzioni) {
        scritta due righe sopra, e l'avevo già tradita io. */
   };
 
+  /* LE PARENTESI NON SI LEGGONO AD ALTA VOCE. Dal quaderno del 21/10:
+     «Qui c'è Laurentina (metropolitana di Roma)». Una parentesi, detta, o
+     diventa una pausa storta o la voce ci legge dentro il nome con un tono
+     che non c'entra. Una persona direbbe «Laurentina, metropolitana di
+     Roma»: la parentesi e' una virgola, e basta.
+     Resta nel testo scritto sullo schermo, dove serve. */
+  function senzaParentesi(t) {
+    return String(t)
+      .replace(/\s*\(([^)]{2,60})\)\s*$/g, ', $1')
+      .replace(/\s*\(([^)]{2,60})\)/g, ', $1,')
+      .replace(/\s*,\s*,/g, ',')
+      .replace(/\s+,/g, ',')
+      .replace(/,\s*([.!?])/g, '$1');
+  }
+
   function sistema(testo) {
     if (!testo) return testo;
-    return String(testo).replace(/[A-Za-zÀ-ÿ]+/g, function (p) {
+    return senzaParentesi(String(testo)).replace(/[A-Za-zÀ-ÿ]+/g, function (p) {
       var k = p.toLowerCase();
       var giusta = COME[k];
       if (!giusta) return p;
@@ -67,7 +82,7 @@ function Pronuncia(opzioni) {
     });
   }
 
-  return { sistema: sistema, quante: function () { return Object.keys(COME).length; } };
+  return { sistema: sistema, senzaParentesi: senzaParentesi, quante: function () { return Object.keys(COME).length; } };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Pronuncia;

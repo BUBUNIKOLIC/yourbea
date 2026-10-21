@@ -83,6 +83,43 @@ prova('quello che non è in tabella si dice, non si perde', () => {
   if (!a.serve('una-cosa-nuova', 'servizi', PIEDI)) guasto('una cosa non prevista non deve sparire');
 });
 
+/* ============================================================
+   SENZA PRECISIONE NON SI DICONO LE PARTI — 21/10/2026
+   Alla Laurentina il telefono dava ±653 metri e l'app diceva «a destra, a
+   130 metri, la stazione» mentre lui ce l'aveva davanti. Vince: «stando
+   così non serve a nulla per i non vedenti». Chi vede corregge con
+   un'occhiata; chi non vede si fida e sbaglia strada.                    */
+const SBALLATO = { aPiedi: true, preciso: false };
+
+prova('IMPRECISI: tace tutto quello che dice una parte o una distanza', () => {
+  ['cenno', 'superato', 'lati', 'scena', 'passaggio', 'incrocio',
+   'aCosaServe', 'civico', 'orientamento', 'avviso'].forEach((c) => {
+    if (a.serve(c, 'servizi', SBALLATO)) guasto(c + ' non si puo dire a 650 metri di errore');
+  });
+});
+
+prova('IMPRECISI: resta quello che e vero lo stesso', () => {
+  /* il paesaggio e a chilometri: mezzo chilometro di errore non lo sposta.
+     La strada la conferma il cercatore, non il GPS. E una scheda non dice
+     dove sei: racconta una cosa. */
+  ['paesaggio', 'strada'].forEach((c) => {
+    if (!a.serve(c, 'servizi', SBALLATO)) guasto(c + ' resta vero anche impreciso');
+  });
+  if (!a.serve('scheda', 'cultura', SBALLATO)) guasto('una scheda si puo raccontare lo stesso');
+});
+
+prova('IMPRECISI: una cosa chiesta si risponde comunque', () => {
+  if (!a.serve('cenno', 'servizi', { aPiedi: true, preciso: false, chiesto: true }))
+    guasto('se la chiede, gli si risponde — sara lui a sapere quanto fidarsi');
+});
+
+prova('PRECISI: non cambia niente di quello che c era prima', () => {
+  const buono = { aPiedi: true, preciso: true };
+  ['cenno', 'scena', 'passaggio', 'incrocio', 'avviso'].forEach((c) => {
+    if (!a.serve(c, 'servizi', buono)) guasto(c + ' con la posizione buona si dice');
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della regola');

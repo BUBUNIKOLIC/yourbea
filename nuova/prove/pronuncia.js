@@ -49,6 +49,21 @@ prova('il dizionario non è gonfio', () => {
   if (p.quante() > 60) guasto('troppe parole: ' + p.quante());
 });
 
+/* LE PARENTESI — dal quaderno del 21/10: «Qui c'è Laurentina
+   (metropolitana di Roma)». Dette ad alta voce non vogliono dire niente. */
+prova('le parentesi diventano una virgola', () => {
+  const p = Pronuncia();
+  const d = p.sistema("Qui c'è Laurentina (metropolitana di Roma).");
+  if (/[()]/.test(d)) guasto('parentesi rimaste: ' + d);
+  if (!/Laurentina, metropolitana di Roma\./.test(d)) guasto('letta male: ' + d);
+});
+
+prova('una frase senza parentesi non si tocca', () => {
+  const p = Pronuncia();
+  const t = 'Sei in via Roma.';
+  if (p.sistema(t) !== t) guasto('ha cambiato una frase pulita: ' + p.sistema(t));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pronuncia');
