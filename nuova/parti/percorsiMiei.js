@@ -297,6 +297,89 @@ function PercorsiMiei(opzioni) {
   function smetti() { inCorso = null; }
   function sto() { return inCorso ? inCorso.percorso : null; }
 
+  /* ============================================================
+     MANDARE UN PERCORSO A UN'ALTRA PERSONA
+     «Il passo successivo sarà fare una mappa dove tutti i non vedenti
+     potranno aggiungere posti, con un server — ma vediamo se i comuni
+     vogliono farlo» (Vince, 21/10).
+     Giusto l'ordine, e intanto c'e' un passo che costa zero: un percorso
+     diventa un LINK. Un volontario dell'UICI registra la strada dalla
+     fermata alla sede e la manda ai soci su WhatsApp; loro aprono il link
+     e ce l'hanno. Nessun server da pagare, nessun dato di nessuno su una
+     macchina nostra, e funziona domani.
+     Il link dev'essere corto: WhatsApp e la posta tagliano quelli lunghi.
+     Quindi la linea si assottiglia — un punto ogni quindici metri basta
+     per ritrovare la strada — mentre i SEGNI si tengono tutti, perche'
+     sono la cosa che conta. */
+  function perMandare(percorso) {
+    if (!percorso) return '';
+    var p = percorso.punti || [];
+    var magri = [];
+    var ultimo = null;
+    for (var i = 0; i < p.length; i++) {
+      if (!ultimo || i === p.length - 1 || dist(ultimo[0], ultimo[1], p[i][0], p[i][1]) > 15) {
+        magri.push([Math.round(p[i][0] * 100000), Math.round(p[i][1] * 100000)]);
+        ultimo = p[i];
+      }
+    }
+    /* differenze invece di numeri interi: un punto a quindici metri dal
+       precedente sta in tre cifre invece che in sette */
+    var fila = [];
+    for (var j = 0; j < magri.length; j++) {
+      fila.push(j === 0 ? magri[j] : [magri[j][0] - magri[j - 1][0], magri[j][1] - magri[j - 1][1]]);
+    }
+    return JSON.stringify({
+      v: 1, n: percorso.nome || '', m: Math.round(percorso.metri || 0), l: fila,
+      s: (percorso.segni || []).map(function (x) {
+        return [Math.round(x.da), x.n || ''];
+      })
+    });
+  }
+
+  /* daUnLink(): il percorso che arriva da un'altra persona. */
+  function daUnLink(testo) {
+    var d;
+    try { d = JSON.parse(testo); } catch (e) { return null; }
+    if (!d || d.v !== 1 || !d.l || d.l.length < 2) return null;
+    var punti = [];
+    var la = 0, lo = 0;
+    for (var i = 0; i < d.l.length; i++) {
+      if (i === 0) { la = d.l[i][0]; lo = d.l[i][1]; }
+      else { la += d.l[i][0]; lo += d.l[i][1]; }
+      punti.push([la / 100000, lo / 100000]);
+    }
+    var percorso = {
+      nome: String(d.n || '').slice(0, 60), punti: punti,
+      metri: d.m || Math.round(lungo(punti)), quando: ora(), daAltri: true,
+      segni: (d.s || []).map(function (x) {
+        return { da: x[0], n: String(x[1] || '').slice(0, 80),
+                 lat: puntoA(punti, x[0])[0], lon: puntoA(punti, x[0])[1] };
+      })
+    };
+    return percorso;
+  }
+
+  /* puntoA(): dove si trova, sulla linea, una certa distanza percorsa.
+     Serve perche' nel link i segni viaggiano come «al metro 120», che e'
+     piu' corto e piu' robusto di due coordinate. */
+  function puntoA(punti, quanto) {
+    var somma = 0;
+    for (var i = 1; i < punti.length; i++) {
+      var d = dist(punti[i - 1][0], punti[i - 1][1], punti[i][0], punti[i][1]);
+      if (somma + d >= quanto) return punti[i];
+      somma += d;
+    }
+    return punti[punti.length - 1];
+  }
+
+  function aggiungi(percorso) {
+    if (!percorso || !percorso.punti || percorso.punti.length < 3) return false;
+    /* se ce n'e' gia' uno con quel nome, il nuovo prende un seguito */
+    if (trova(percorso.nome)) percorso.nome = percorso.nome + ' (ricevuto)';
+    tutti.push(percorso);
+    return true;
+  }
+
   function carica(roba) { tutti = (roba || []).filter(function (p) { return p && p.punti && p.punti.length > 2; }); return tutti.length; }
   function elenco() { return tutti.map(function (p) { return { nome: p.nome, metri: p.metri, segni: (p.segni || []).length }; }); }
   function perSalvare() { return tutti; }
@@ -311,6 +394,7 @@ function PercorsiMiei(opzioni) {
            aggiungiSegno: aggiungiSegno, toglieSegno: toglieSegno,
            segna: segna, finisci: finisci, trova: trova, segui: segui,
            passoSuPercorso: passoSuPercorso, smetti: smetti, sto: sto,
+           perMandare: perMandare, daUnLink: daUnLink, aggiungi: aggiungi,
            carica: carica, elenco: elenco, perSalvare: perSalvare, butta: butta,
            aPosto: aPosto };
 }

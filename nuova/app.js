@@ -98,6 +98,54 @@
      segni, è l'unico dato che non abbiamo preso da una mappa. */
   var miei = PercorsiMiei({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   try { miei.carica(JSON.parse(localStorage.getItem('yourbea2-percorsi-miei') || '[]')); } catch (e) {}
+  /* mandaIlPercorso(): il percorso diventa un link e parte col pannello di
+     condivisione del telefono — WhatsApp, posta, quello che uno usa. */
+  function mandaIlPercorso(percorso) {
+    var dati = miei.perMandare(percorso);
+    var chiave = '';
+    try { chiave = btoa(unescape(encodeURIComponent(dati))); } catch (e) { chiave = ''; }
+    if (!chiave) {
+      voce.parla('Non sono riuscito a preparare il percorso.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    var link = location.origin + location.pathname + '?p=' + encodeURIComponent(chiave);
+    var frase = 'Il percorso' + (percorso.nome ? ' per ' + percorso.nome : '') +
+                ', da Yourbea. Apri questo link e ce l\'hai anche tu:';
+    diario('MANDO IL PERCORSO: ' + (percorso.nome || '?') + ', ' + link.length + ' caratteri');
+    if (navigator.share) {
+      navigator.share({ title: 'Percorso Yourbea', text: frase, url: link }).catch(function () {});
+      voce.parla('Scegli a chi mandarlo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(frase + ' ' + link).then(function () {
+        voce.parla('Il percorso è negli appunti: incollalo dove vuoi.', { livello: voce.GUIDA, ancheSeUguale: true });
+      });
+      return;
+    }
+    voce.parla('Questo telefono non sa condividere.', { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+
+  /* e quando ne arriva uno: si chiede, non si prende di nascosto. */
+  (function percorsoInArrivo() {
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('p'); } catch (e) {}
+    if (!q) return;
+    var dati = null;
+    try { dati = decodeURIComponent(escape(atob(q))); } catch (e) { return; }
+    var arrivato = miei.daUnLink(dati);
+    if (!arrivato) { diario('PERCORSO RICEVUTO: non si legge'); return; }
+    diario('PERCORSO RICEVUTO: ' + (arrivato.nome || '?') + ', ' + arrivato.segni.length + ' segni');
+    setTimeout(function () {
+      inAttesaDi = { da: Date.now(), cosa: 'percorso-arrivato', percorso: arrivato };
+      voce.parla('Ti hanno mandato un percorso' + (arrivato.nome ? ' per ' + arrivato.nome : '') +
+                 ': ' + Math.round(arrivato.metri / 0.75) + ' passi, ' + arrivato.segni.length +
+                 (arrivato.segni.length === 1 ? ' punto segnato' : ' punti segnati') +
+                 '. Lo tengo? Dimmi sì o no.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+    }, 2500);
+  })();
+
   function salvaIMiei() {
     try { localStorage.setItem('yourbea2-percorsi-miei', JSON.stringify(miei.perSalvare())); } catch (e) {}
   }
@@ -910,6 +958,23 @@
     /* HO CHIESTO COME STA, E HA RISPOSTO. Due parole e si va al lavoro:
        non è una conversazione. Se invece di rispondere chiede una cosa,
        vince la cosa — l'attesa cade e il comando passa. */
+    if (inAttesaDi && inAttesaDi.cosa === 'percorso-arrivato') {
+      var ilSuo = inAttesaDi.percorso;
+      inAttesaDi = null;
+      if (/^(si|si grazie|va bene|certo|tienilo|lo tengo|ok)$/.test(normalizza(t))) {
+        if (miei.aggiungi(ilSuo)) {
+          salvaIMiei();
+          voce.parla('Tenuto. Quando vuoi dimmi «portami ' + miei.aPosto(ilSuo.nome || 'lì') + '».',
+                     { livello: voce.GUIDA, ancheSeUguale: true });
+        } else {
+          voce.parla('Questo percorso non si può tenere.', { livello: voce.GUIDA, ancheSeUguale: true });
+        }
+        return true;
+      }
+      voce.parla('Va bene, non lo tengo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+
     if (inAttesaDi && inAttesaDi.cosa === 'come-stai') {
       var tono = null;
       if (/\b(bene|benissimo|tutto bene|ottimamente|alla grande|tutto ok|tutto a posto)\b/.test(t)) tono = 'bene';
@@ -2005,6 +2070,23 @@
         voce.parla('Va bene, lascio il percorso.', { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
+    }
+
+    /* MANDARE UN PERCORSO A QUALCUNO. «Un volontario dell'UICI registra
+       la strada dalla fermata alla sede e la manda ai soci»: diventa un
+       link, si manda come un messaggio qualunque, e chi lo apre ce l'ha.
+       Nessun server, nessun dato di nessuno su una macchina nostra. */
+    if (/^(manda|invia|condividi|spedisci|passa)\b/.test(normalizza(t)) && /percorso|strada/.test(normalizza(t))) {
+      var qualeMandare = t.replace(/^.*?(percorso|strada)\s*/i, '')
+                          .replace(/^(per|del|della|dello|dei|di|a|al|alla|allo)\s+/i, '').trim();
+      var daMandare = miei.trova(qualeMandare) || (miei.sto());
+      if (!daMandare) {
+        voce.parla('Quale percorso? Dimmi «manda il percorso del medico», per esempio.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      mandaIlPercorso(daMandare);
+      return true;
     }
 
     if (ha('i miei percorsi', 'che percorsi ho', 'quali percorsi')) {
