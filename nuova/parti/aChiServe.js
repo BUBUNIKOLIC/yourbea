@@ -66,6 +66,10 @@ function AChiServe() {
     /*                     utilità  turismo  non-a-piedi  imprecisi */
     'avviso':            [ true,    true,    true,        false ],
     'strada':            [ true,    true,    true,        true  ],
+    /* la fermata serve PROPRIO quando non sei a piedi: e' il momento in
+       cui conta, e senza precisione non si dice (sbagliare fermata e'
+       peggio che tacere). */
+    'fermata':           [ true,    true,    true,        false ],
     'paesaggio':         [ true,    true,    true,        true  ],
     'aCosaServe':        [ true,    false,   false,       false ],
     'orientamento':      [ true,    true,    false,       false ],

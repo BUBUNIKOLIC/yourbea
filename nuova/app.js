@@ -88,6 +88,10 @@
   /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
      sia descritta la realtà circostante: di fronte, davanti a te hai il
      golfo, Raito, i Due Fratelli… sennò numeri civici» (Vince, 18/10). */
+  /* LE FERMATE QUANDO SEI SU UN MEZZO: parti/fermate.js (8 prove).
+     «Potrebbe dire: stai per entrare in stazione Colosseo, appena esci
+     eccetera. A Cavour puoi…» (Vince, 21/10, tornando in metro). */
+  var fermate = Fermate({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                               verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
   var posizione = Posizione({
@@ -225,6 +229,10 @@
 
   /* la pagina (index.html) ha bisogno di far dire una frase: il tasto
      «come si mette sulla Home» su iPhone, che spiega i due tocchi. */
+  /* il guscio la chiama quando avvicini il telefono alla faccia: chi fa
+     quel gesto vuole parlare adesso, non aspettare la fine della frase. */
+  window.YBzitta = function () { voce.ferma(); };
+
   window.YBdillo = function (t) {
     voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true });
   };
@@ -1162,8 +1170,16 @@
     if (mio) { partiVerso({ n: mio.n, lat: mio.lat, lon: mio.lon }, qui); return; }
 
     // 2. un servizio (farmacia, commissariato, fermata...)
-    var tipo = ['farmacia', 'commissariato', 'pronto soccorso', 'fermata', 'supermercato', 'bagno', 'bancomat', 'ufficio postale', 'bar', 'ristorante']
+    /* LA METRO E LE STAZIONI mancavano, e sono la cosa che si chiede di
+       piu' in citta'. Vince, 21/10: «ho detto sia portami alla stazione
+       Laurentina sia portami alla stazione metro piu' vicina», e l'app non
+       ha fatto niente. */
+    var tipo = ['farmacia', 'commissariato', 'pronto soccorso', 'metropolitana', 'metro',
+                'stazione', 'fermata', 'supermercato', 'bagno', 'bancomat',
+                'ufficio postale', 'bar', 'ristorante']
       .find(function (x) { return cerca.indexOf(x) >= 0; });
+    /* «metro» e «metropolitana» sono la stessa cosa per il cercatore */
+    if (tipo === 'metro') tipo = 'metropolitana';
     var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(pulita, qui);
     cercatore.then(function (candidati) {
       var scelto = guida.scegli(candidati, parole, qui, tipo ? '' : pulita);
@@ -1503,6 +1519,16 @@
        Quello che resta, e che anzi conta di piu', e' il paesaggio: «a
        sinistra il Vesuvio, a destra il golfo con le isole». */
     var aPiedi = s.aPiedi !== false;
+    /* SU UN MEZZO, LE FERMATE. A piedi le dice parti/passaggi.js; qui
+       servono per sapere quando scendere, che in metro e' l'unica cosa
+       che conta — e per chi non vede e' la parte piu' difficile di un
+       viaggio in citta'. */
+    if (!aPiedi) {
+      var fe = fermate.prossima({ qui: { lat: s.lat, lon: s.lon },
+                                  punti: SERVIZI.punti || [], luoghi: LUOGHI,
+                                  aPiedi: false, preciso: !(s.prec > 50) });
+      if (fe) dillo(fe);
+    }
     /* senza precisione, le cose che si misurano in passi tacciono: e' la
        stessa regola del movimento, per un altro motivo */
     var inViaggio = !!guida.meta() || !aPiedi || !preciso;
@@ -1867,6 +1893,37 @@
       segnaCasaQui(); return true;
     }
     if (ha('portami a casa', 'torniamo a casa', 'riportami a casa', 'andiamo a casa', 'voglio tornare a casa')) { aCasa(); return true; }
+
+    /* NON TUTTI DICONO «PORTAMI A». Dal quaderno del 21/10: lui ha detto
+       «portami alla stazione Laurentina» e la dettatura ha capito «nella
+       stazione più vicina della metro Roma» — e noi, che cercavamo le
+       parole «portami a», non abbiamo fatto niente. Una persona che non
+       vede non ripete la formula giusta: dice quello che le viene.
+       Qui si riconosce la COSA chiesta, comunque sia stata detta. */
+    var chiesto = normalizza(t);
+    var cose = [
+      { parole: ['metro', 'metropolitana', 'la metro'], cerca: 'metropolitana' },
+      { parole: ['stazione'], cerca: 'stazione' },
+      { parole: ['fermata', 'autobus', 'bus'], cerca: 'fermata' },
+      { parole: ['farmacia'], cerca: 'farmacia' },
+      { parole: ['bagno', 'toilette'], cerca: 'bagno' },
+      { parole: ['bancomat'], cerca: 'bancomat' },
+      { parole: ['supermercato'], cerca: 'supermercato' }
+    ];
+    var vuoleAndare = /(portami|accompagnami|andiamo|voglio andare|devo andare|come arrivo|come ci arrivo|dove sta|dov e|dove si trova|la piu vicina|il piu vicino|piu vicina|piu vicino|cerco|trovami)/.test(chiesto);
+    if (vuoleAndare) {
+      for (var ci = 0; ci < cose.length; ci++) {
+        var c = cose[ci];
+        var trovata = c.parole.some(function (w) { return chiesto.indexOf(w) >= 0; });
+        if (!trovata) continue;
+        /* se ha detto anche un NOME — «stazione Laurentina» — si cerca
+           quello, che e' piu' preciso di «la piu' vicina». */
+        var conNome = t.replace(/^(.*?)(portami|accompagnami|andiamo|voglio andare|devo andare|cerco|trovami)\s+(a|al|alla|allo|ai|alle|in|verso)?\s*/i, '');
+        diario('CHIESTO: ' + c.cerca + (conNome && conNome.length > c.cerca.length + 3 ? ' — «' + conNome + '»' : ' (la piu vicina)'));
+        portamiA(conNome && conNome.length > c.cerca.length + 3 ? conNome : c.cerca);
+        return true;
+      }
+    }
     var meta = guida.dalComando(t);
     if (meta) {
       if (/^(?:casa|casa mia|a casa)$/.test(meta.trim())) { aCasa(); return true; }
