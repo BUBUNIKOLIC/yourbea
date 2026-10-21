@@ -91,6 +91,17 @@
   /* LE FERMATE QUANDO SEI SU UN MEZZO: parti/fermate.js (8 prove).
      «Potrebbe dire: stai per entrare in stazione Colosseo, appena esci
      eccetera. A Cavour puoi…» (Vince, 21/10, tornando in metro). */
+  /* I PERCORSI CHE SI FA LUI: parti/percorsiMiei.js (10 prove).
+     «Penso sia la migliore idea che ho avuto per ovviare al problema»
+     (Vince, 21/10) — e il problema era: se diciamo che c'è un
+     attraversamento e non c'è? Un percorso registrato da lui, coi suoi
+     segni, è l'unico dato che non abbiamo preso da una mappa. */
+  var miei = PercorsiMiei({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
+  try { miei.carica(JSON.parse(localStorage.getItem('yourbea2-percorsi-miei') || '[]')); } catch (e) {}
+  function salvaIMiei() {
+    try { localStorage.setItem('yourbea2-percorsi-miei', JSON.stringify(miei.perSalvare())); } catch (e) {}
+  }
+
   var fermate = Fermate({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                               verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
@@ -1559,6 +1570,18 @@
        Quello che resta, e che anzi conta di piu', e' il paesaggio: «a
        sinistra il Vesuvio, a destra il golfo con le isole». */
     var aPiedi = s.aPiedi !== false;
+    /* I PERCORSI SUOI: si registra camminando, o si segue quello che ha
+       gia' camminato. Viene prima di tutto il resto, perche' e' l'unico
+       dato di cui siamo sicuri. */
+    if (miei.staRegistrando()) miei.passo({ lat: s.lat, lon: s.lon });
+    if (miei.sto()) {
+      var pm = miei.passoSuPercorso({ lat: s.lat, lon: s.lon }, Date.now());
+      if (pm) {
+        dilloSubito(pm);
+        if (pm.tipo === 'percorso-arrivato') miei.smetti();
+      }
+    }
+
     /* SU UN MEZZO, LE FERMATE. A piedi le dice parti/passaggi.js; qui
        servono per sapere quando scendere, che in metro e' l'unica cosa
        che conta — e per chi non vede e' la parte piu' difficile di un
@@ -1928,6 +1951,48 @@
     /* «portami a casa» PRIMA del «portami a» generico: se no cercherebbe
        un posto che si chiama «casa», e ce ne sono a decine. */
     /* PRIMA di «portami a casa», se no «casa» da sola lo prenderebbe */
+    /* ============================================================
+       I PERCORSI SUOI, a voce. Tre comandi e basta: si comincia, si
+       segna camminando, si finisce. Le parole sono le sue — «qui ho la
+       panchina», «qui c'è un attraversamento» — non una formula da
+       imparare. */
+    if (/^(crea|registra|segna|impara|memorizza) (un )?percorso/.test(normalizza(t)) ||
+        ha('crea percorso', 'registra percorso', 'impara questa strada')) {
+      var sp0 = posizione.leggi();
+      if (!sp0.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return true; }
+      var comeSiChiama = t.replace(/^.*?(percorso|strada)\s*/i, '')
+                          .replace(/^(per|fino a|verso|a|al|alla|allo|dal|dalla|in)\s+/i, '').trim();
+      dilloSubito(miei.comincia(comeSiChiama, { lat: sp0.lat, lon: sp0.lon }));
+      return true;
+    }
+    if (miei.staRegistrando()) {
+      /* «QUI HO LA PANCHINA», «QUI C'È UN ATTRAVERSAMENTO»: le parole sue.
+         Mentre registra, qualunque frase che comincia con «qui» è un
+         segno — non c'è niente da ricordare. */
+      var diceQui = /^(qui|adesso qui|segna qui|segno qui|metti qui)\b/i.test(t.trim());
+      if (diceQui) {
+        var sp1 = posizione.leggi();
+        var nota = t.replace(/^(segna qui|segno qui|metti qui|adesso qui|qui)\s*/i, '').trim();
+        dilloSubito(miei.segna({ lat: sp1.lat, lon: sp1.lon }, nota ? ('qui ' + nota).replace(/^qui qui /, 'qui ') : ''));
+        return true;
+      }
+      if (ha('ho finito', 'finito', 'fine percorso', 'basta cosi', 'siamo arrivati')) {
+        var fine = miei.finisci();
+        salvaIMiei();
+        dilloSubito(fine);
+        return true;
+      }
+    }
+    if (ha('i miei percorsi', 'che percorsi ho', 'quali percorsi')) {
+      var lista = miei.elenco();
+      voce.parla(lista.length
+        ? ('Hai ' + lista.length + (lista.length === 1 ? ' percorso: ' : ' percorsi: ') +
+           lista.map(function (x) { return x.nome; }).join(', ') + '.')
+        : 'Non hai ancora nessun percorso tuo. Dimmi «crea percorso» e cammina: lo imparo da te.',
+        { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+
     /* l'abbonamento, a voce: chi non vede non cerca un tasto */
     if (ha('abbonamento', 'quanto costa', 'devo pagare', 'quanto manca all abbonamento')) {
       diciAbbonamento(); return true;
@@ -1954,6 +2019,19 @@
        parole «portami a», non abbiamo fatto niente. Una persona che non
        vede non ripete la formula giusta: dice quello che le viene.
        Qui si riconosce la COSA chiesta, comunque sia stata detta. */
+    /* PRIMA I SUOI PERCORSI, POI LA MAPPA. Se quella strada l'ha
+       camminata lui, non c'è geocodificatore che possa fare meglio. */
+    var suo = /(portami|accompagnami|andiamo|voglio andare|devo andare)/.test(normalizza(t))
+      ? miei.trova(t.replace(/^.*?(portami|accompagnami|andiamo|voglio andare|devo andare)\s*/i, ''))
+      : null;
+    if (suo) {
+      var sp2 = posizione.leggi();
+      if (!sp2.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return true; }
+      diario('PERCORSO MIO: ' + suo.nome);
+      dilloSubito(miei.segui(suo, { lat: sp2.lat, lon: sp2.lon }));
+      return true;
+    }
+
     var chiesto = normalizza(t);
     var cose = [
       { parole: ['metro', 'metropolitana', 'la metro'], cerca: 'metropolitana' },
