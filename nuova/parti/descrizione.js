@@ -58,27 +58,50 @@ function Descrizione(opzioni) {
      perché «una colonne» non si può sentire. */
   var FORME = {
     cupola: 'una cupola', campanile: 'un campanile', torre: 'una torre',
-    facciata: 'una facciata piatta', portico: 'un portico',
+    /* LA FACCIATA NON C'E' PIU'. Ce l'hanno tutti gli edifici, quindi non
+       distingue niente — e «piatta» ce lo eravamo inventato: dall'articolo
+       sappiamo solo che una facciata viene NOMINATA, non com'e' fatta.
+       REGOLA 6: quello che non si sa non si dice. */
+    portico: 'un portico',
     colonne: 'delle colonne', navate: 'più navate', navata: 'una navata sola',
     arcate: 'delle arcate', loggia: 'una loggia', rosone: 'un rosone',
     guglia: 'una guglia', scalinata: 'una scalinata davanti',
     abside: 'un fondo tondo', gradini: 'dei gradini'
   };
 
+  /* LA DISTANZA LA DICE UNA PARTE SOLA: parti/distanza.js (7 prove).
+     «Dovrebbe essere più precisa con le distanze» (la sorella di Vince,
+     21/10): ce n'erano quattro, con arrotondamenti diversi, e questa
+     diceva i METRI mentre il resto dell'app diceva i passi. */
+  /* si PASSA, come dist e verso: in questa cartella le parti non si
+     cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
+     grezzo, ma nessuno resta muto. */
+  var laMisura = o.distanza || null;
   function passi(m) {
-    var p = Math.round(m / PASSO / 5) * 5;
-    if (p <= 5) return 'pochi passi';
-    return p + ' passi';
+    return laMisura ? laMisura.nudi(m) : (Math.round(m / PASSO) + ' passi');
   }
 
   /* inPiani(): REGOLA 2. Sotto i due piani non si contano i piani — si
      dice che è bassa, che è l'informazione vera. Sopra, si arrotonda:
      nessuno ha bisogno della virgola. */
-  function inPiani(metri) {
+  /* L'ACCORDO. «Il ponte larga sedici passi» e «il battistero bassa» si
+     sentivano nei dati veri: l'aggettivo era femminile fisso. In italiano
+     la -e finale non dice il genere («il ponte» ma «la torre»), quindi le
+     poche parole che contano si contano. */
+  var FEMMINE_IN_E = { torre: 1, cattedrale: 1, pieve: 1, croce: 1, corte: 1,
+                       valle: 1, fonte: 1, sede: 1, arte: 1, chiese: 1 };
+  function femminile(tipo) {
+    var w = String(tipo || '').toLowerCase().split(' ')[0];
+    if (!w) return true;                        // senza tipo, il femminile e' il caso piu' comune (chiesa)
+    if (FEMMINE_IN_E[w]) return true;
+    return /(zione|sione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
+  }
+
+  function inPiani(metri, f) {
     if (!metri || metri <= 0) return '';
-    if (metri < 6) return 'bassa, meno di due piani';
+    if (metri < 6) return (f ? 'bassa' : 'basso') + ', meno di due piani';
     var p = Math.round(metri / PIANO);
-    return 'alta come un palazzo di ' + p + ' piani';
+    return (f ? 'alta' : 'alto') + ' come un palazzo di ' + p + ' piani';
   }
 
   /* LARGA QUANTO? REGOLA 2 applicata alla misura piu' utile di tutte.
@@ -86,9 +109,9 @@ function Descrizione(opzioni) {
      passi» dice quanto ci metti a costeggiarla, ed e' il dato che un
      bastone non ti puo' dare. Sotto i cinque metri non si dice: una
      facciata stretta e' normale, e il numero diventa rumore. */
-  function larga(metri) {
+  function larga(metri, f) {
     if (!metri || metri < 5) return '';
-    return 'larga ' + passi(metri);
+    return (f ? 'larga ' : 'largo ') + passi(metri);
   }
 
   function materiale(lista) {
@@ -158,7 +181,8 @@ function Descrizione(opzioni) {
     pezzi.push(apertura + (apertura ? VERBO : '') + cosa);
 
     // 3. quanto è grande — in piani, mai in metri
-    var alt = inPiani(x.altezza);
+    var fem = femminile(x.t || x.n);
+    var alt = inPiani(x.altezza, fem);
 
     // 4. di cosa è fatta
     var mat = materiale(x.materiali);
@@ -187,9 +211,14 @@ function Descrizione(opzioni) {
 
     var seconda = [];
     if (alt) seconda.push(alt);
-    var lar = larga(x.larghezza);
+    var lar = larga(x.larghezza, fem);
     if (lar) seconda.push(lar);
     if (mat) seconda.push(mat);
+    /* NIENTE DA DIRE, NIENTE FRASE. Senza altezza, larghezza, materiale
+       ne' forma resterebbe «la Chiesa X.» — il nome che l'utente ha gia'
+       sentito nel cenno — e si porterebbe via un gradino per non dire
+       niente. Meglio passare subito alla storia. */
+    if (!seconda.length && !fo) return null;
     var testo = pezzi.join('');
     if (seconda.length) testo += ': ' + seconda.join(', ');
     testo += '.';
@@ -204,7 +233,7 @@ function Descrizione(opzioni) {
     };
   }
 
-  return { frase: frase, inPiani: inPiani, passi: passi, larga: larga,
+  return { frase: frase, inPiani: inPiani, passi: passi, larga: larga, femminile: femminile,
            materiale: materiale, forma: forma };
 }
 

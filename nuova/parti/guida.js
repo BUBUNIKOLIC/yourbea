@@ -279,9 +279,16 @@ function Guida(opzioni) {
 
   /* passi(): la stessa misura in passi, come in parti/scena.js. Un passo
      e' settantacinque centimetri. */
+  /* LA DISTANZA LA DICE UNA PARTE SOLA: parti/distanza.js (7 prove).
+     «Dovrebbe essere più precisa con le distanze» (la sorella di Vince,
+     21/10): ce n'erano quattro, con arrotondamenti diversi, e questa
+     diceva i METRI mentre il resto dell'app diceva i passi. */
+  /* si PASSA, come dist e verso: in questa cartella le parti non si
+     cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
+     grezzo, ma nessuno resta muto. */
+  var laMisura = o.distanza || null;
   function passi(m) {
-    var p = Math.round(m / 0.75 / 10) * 10;
-    return p <= 10 ? 'pochi passi' : (p + ' passi');
+    return laMisura ? laMisura.nudi(m) : (Math.round(m / 0.75) + ' passi');
   }
 
   /* puoi(): «gira a destra in via Rossi» diventa «puoi svoltare a destra in

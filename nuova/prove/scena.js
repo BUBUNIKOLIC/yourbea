@@ -4,6 +4,8 @@
    Si lancia:  node nuova/prove/scena.js                                     */
 
 'use strict';
+const Distanza = require('../parti/distanza.js');
+const LADISTANZA = Distanza({});
 const Scena = require('../parti/scena.js');
 
 let errori = [], fatti = [];
@@ -30,7 +32,7 @@ function verso(la1, lo1, la2, lo2) {
 }
 function mondo(t0) {
   let adesso = t0 || 1000000;
-  const s = Scena({ dist, verso, ora: () => adesso });
+  const s = Scena({ distanza: LADISTANZA,  dist, verso, ora: () => adesso });
   return { s, passano(ms) { adesso += ms; } };
 }
 const QUI = { lat: 44.8029, lon: 10.3289 };

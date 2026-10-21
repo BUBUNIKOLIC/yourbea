@@ -4,6 +4,8 @@
    Si lancia senza telefono:  node nuova/prove/racconto.js                    */
 
 'use strict';
+const Distanza = require('../parti/distanza.js');
+const LADISTANZA = Distanza({});
 const Racconto = require('../parti/racconto.js');
 
 let errori = [], fatti = [];
@@ -27,7 +29,7 @@ const FARMACIA = { n: 'Farmacia Pirani', lat: 44.8028, lon: 10.3290, k: 0, d: 'F
 
 function mondo(t0) {
   let adesso = t0 || 1000000;
-  const r = Racconto({ ora: () => adesso });
+  const r = Racconto({ distanza: LADISTANZA,  ora: () => adesso });
   return {
     r,
     passano(ms) { adesso += ms; },
@@ -42,12 +44,19 @@ function intorno(lista, qui) {
 
 /* ==================== LE PROVE ==================== */
 
-prova('camminando dà il cenno: da che parte e quanti metri', () => {
+/* IN PASSI, NON IN METRI. «Dovrebbe essere più precisa con le distanze»
+   (la sorella di Vince, 21/10): qui si diceva «a 80 metri» mentre tutto
+   il resto dell'app diceva i passi, e si arrotondava a dieci metri. Ora
+   la misura la dà parti/distanza.js, una per tutti. */
+prova('camminando dà il cenno: da che parte e quanti passi', () => {
   const m = mondo();
   const d = m.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 80, 30]]), modo: 'cultura' });
   if (!d) return guasto('non ha detto niente camminando');
   if (d.tipo !== 'cenno') guasto('primo gradino sbagliato: ' + d.tipo);
-  if (!/sulla destra/.test(d.testo) || !/80 metri/.test(d.testo)) guasto('il cenno non dice parte e metri: ' + d.testo);
+  if (!/sulla destra/.test(d.testo)) guasto('il cenno non dice da che parte: ' + d.testo);
+  if (!/\d+ passi/.test(d.testo)) guasto('il cenno non dice quanti passi: ' + d.testo);
+  if (/metri/.test(d.testo)) guasto('dice ancora i metri: ' + d.testo);
+  console.log('      → ' + d.testo);
   if (!/Palazzo del Governatore/.test(d.testo)) guasto('il cenno non dice il nome');
 });
 
@@ -281,7 +290,7 @@ prova('IN UTILITA non si ripete «qui c e lo stadio» ogni dieci secondi', () =>
    c'e' Palazzo Reale», «Qui c'e' Fontana di Trevi». Trovato il 21/10
    scrivendo le descrizioni orientative. */
 prova('«Qui c e LA Chiesa del Carmine», non «Qui c e Chiesa del Carmine»', () => {
-  const r = Racconto({});
+  const r = Racconto({ distanza: LADISTANZA, });
   const casi = [
     { n: 'Chiesa del Carmine',    t: 'chiesa',     vuole: /^la Chiesa del Carmine$/ },
     { n: 'Basilica di Massenzio', t: 'basilica',   vuole: /^la Basilica di Massenzio$/ },
@@ -298,7 +307,7 @@ prova('«Qui c e LA Chiesa del Carmine», non «Qui c e Chiesa del Carmine»', (
 });
 
 prova('e quello che gia aveva l articolo non ne prende un altro', () => {
-  const r = Racconto({});
+  const r = Racconto({ distanza: LADISTANZA, });
   const d = r.conArticolo({ n: 'Il Vittoriano', t: 'monumento' });
   if (/^(il|la|lo)\s+(Il|La|Lo)\s/i.test(d)) guasto('due articoli: ' + d);
 });
@@ -312,7 +321,7 @@ prova('e quello che gia aveva l articolo non ne prende un altro', () => {
    I gradini diventano: 0 com'e' fatta, 1 la storia, 2 cosa vedere... */
 prova('la scheda dice com e FATTA, e la storia passa ad «ancora»', () => {
   const Descrizione = require('../parti/descrizione.js');
-  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const r = Racconto({ distanza: LADISTANZA,  descrizione: Descrizione({ conArticolo: Racconto({ distanza: LADISTANZA, }).conArticolo }) });
   const p = { n: 'Basilica di Massenzio', t: 'basilica', k: 3, lat: 41.8925, lon: 12.4889,
               h: 35, l: 65, mat: ['marmo'], frm: ['abside', 'colonne'],
               d: 'Fu fatta costruire da Massenzio agli inizi del IV secolo.' };
@@ -334,7 +343,7 @@ prova('la scheda dice com e FATTA, e la storia passa ad «ancora»', () => {
 
 prova('senza dati su com e fatta, tutto resta come prima', () => {
   const Descrizione = require('../parti/descrizione.js');
-  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const r = Racconto({ distanza: LADISTANZA,  descrizione: Descrizione({ conArticolo: Racconto({ distanza: LADISTANZA, }).conArticolo }) });
   const p = { n: 'Chiesa di San Luigi dei Francesi', t: 'chiesa', k: 3, lat: 41.8991, lon: 12.4745,
               d: 'La chiesa fu costruita fra il 1518 e il 1589.' };
   r.prossimo({ qui: { lat: 41.8989, lon: 12.4745 }, intorno: [{ p: p, m: 22 }], modo: 'cultura', direzioneBuona: true });
@@ -344,7 +353,7 @@ prova('senza dati su com e fatta, tutto resta come prima', () => {
 
 prova('e «ti ho detto tutto» arriva alla fine, non prima', () => {
   const Descrizione = require('../parti/descrizione.js');
-  const r = Racconto({ descrizione: Descrizione({ conArticolo: Racconto({}).conArticolo }) });
+  const r = Racconto({ distanza: LADISTANZA,  descrizione: Descrizione({ conArticolo: Racconto({ distanza: LADISTANZA, }).conArticolo }) });
   const p = { n: 'Torre A', t: 'torre', k: 3, lat: 41.9, lon: 12.5, h: 40, mat: ['pietra'],
               d: 'Fu eretta nel Trecento.' };
   r.prossimo({ qui: { lat: 41.8998, lon: 12.5 }, intorno: [{ p: p, m: 22 }], modo: 'cultura', direzioneBuona: true });
@@ -356,6 +365,21 @@ prova('e «ti ho detto tutto» arriva alla fine, non prima', () => {
   if (detti[1] !== 'scheda') guasto('la storia non e il secondo gradino: ' + detti.join(','));
   if (detti.indexOf('finito') < 2) guasto('finisce troppo presto: ' + detti.join(','));
   console.log('      → i gradini: ' + detti.join(' → '));
+});
+
+prova('«l edificio», non «il edificio»: davanti a vocale ci vuole l apostrofo', () => {
+  const r = Racconto({ distanza: LADISTANZA, });
+  const casi = [
+    { n: 'edificio palazzo del Consorzio agrario', t: 'edificio', vuole: /^l'edificio/ },
+    { n: 'Arco di Augusto',  t: 'arco',       vuole: /^l'Arco/ },
+    { n: 'Ospedale Maggiore', t: 'ospedale',  vuole: /^l'Ospedale/ },
+    { n: 'Isola Tiberina',    t: 'isola',     vuole: /^l'Isola/ }
+  ];
+  casi.forEach((c) => {
+    const d = r.conArticolo({ n: c.n, t: c.t });
+    if (!c.vuole.test(d)) guasto('«' + c.n + '» → «' + d + '»');
+  });
+  console.log('      → ' + casi.map((c) => r.conArticolo({ n: c.n, t: c.t })).join(' · '));
 });
 
 const passate = fatti.filter(Boolean).length;

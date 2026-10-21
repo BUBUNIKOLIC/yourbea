@@ -83,6 +83,11 @@
   /* LA REGOLA, in un posto solo: parti/aChiServe.js (10 prove). «Non
      m'interessa ciò che è dentro, voglio ci sia la regola» (Vince, 19/10).
      Chi vuole dire qualcosa passa di lì. */
+  /* UNA MISURA SOLA PER TUTTI: parti/distanza.js (7 prove). «Dovrebbe
+     essere più precisa con le distanze» (la sorella di Vince, 21/10):
+     c'erano quattro arrotondamenti diversi e due unità, e il cenno
+     diceva i metri mentre il resto diceva i passi. */
+  var laDistanza = Distanza({});
   var aChiServe = AChiServe();
   /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
      parti/descrizione.js (15 prove). La scheda che si sentiva fermandosi
@@ -93,8 +98,8 @@
      L'articolo lo mette racconto.conArticolo, che ha gia' pagato tutte le
      trappole: si passa quello invece di riscriverlo. Qui `racconto` non
      esiste ancora, ma la funzione viene CHIAMATA dopo, quando c'e'. */
-  var descrizione = Descrizione({ conArticolo: function (p) { return racconto.conArticolo(p); } });
-  var racconto = Racconto({ descrizione: descrizione });
+  var descrizione = Descrizione({ distanza: laDistanza, conArticolo: function (p) { return racconto.conArticolo(p); } });
+  var racconto = Racconto({ descrizione: descrizione, distanza: laDistanza });
   /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
      sia descritta la realtà circostante: di fronte, davanti a te hai il
      golfo, Raito, i Due Fratelli… sennò numeri civici» (Vince, 18/10). */
@@ -182,7 +187,7 @@
     a.porta.gain.exponentialRampToValueAtTime(0.0001, adesso + (d.inRotta ? 0.18 : 0.3));
   }
 
-  var miei = PercorsiMiei({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
+  var miei = PercorsiMiei({ distanza: laDistanza,  dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   try { miei.carica(JSON.parse(localStorage.getItem('yourbea2-percorsi-miei') || '[]')); } catch (e) {}
   /* mandaIlPercorso(): il percorso diventa un link e parte col pannello di
      condivisione del telefono — WhatsApp, posta, quello che uno usa. */
@@ -567,7 +572,7 @@
   }
 
   /* la scena intorno: la mappa la scaricavamo e non la diceva nessuno */
-  var scena = Scena({ dist: posizione.dist, verso: posizione.verso });
+  var scena = Scena({ distanza: laDistanza,  dist: posizione.dist, verso: posizione.verso });
   /* gli incroci: «superavo gli incroci e non mi dicevi quali strade
      superavo». È roba di Utilità: in Turismo si parla d'arte. */
   var incroci = Incroci({ dist: posizione.dist, verso: posizione.verso });
@@ -798,7 +803,7 @@
      frasi che servono a girare. «Più parole, un linguaggio più articolato,
      potrebbe fare più compagnia» (Vince, 16/10). */
   var modi = Modi({ nome: ioSonoIo });
-  var guida = Guida({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+  var guida = Guida({ distanza: laDistanza,  dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       diario: diario });
 

@@ -47,11 +47,19 @@ function Scena(opzioni) {
      stessa misura serve dentro due frasi diverse («a una ventina di passi»
      e «larga 110 passi»), e incollare l'articolo a mano dava «larga una
      110 passi». */
+  /* LA DISTANZA LA DICE UNA PARTE SOLA: parti/distanza.js (7 prove).
+     «Dovrebbe essere più precisa con le distanze» (la sorella di Vince,
+     21/10): ce n'erano quattro, con arrotondamenti diversi, e questa
+     diceva i METRI mentre il resto dell'app diceva i passi. */
+  /* E NIENTE PIU' «UNA VENTINA DI PASSI». Era un modo di dire gentile, ma
+     chi non vede conta i passi davvero: «una ventina» gli toglie proprio
+     la cosa che gli serve. */
+  /* si PASSA, come dist e verso: in questa cartella le parti non si
+     cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
+     grezzo, ma nessuno resta muto. */
+  var laMisura = o.distanza || null;
   function passiNudi(m) {
-    var p = Math.round(m / PASSO / 5) * 5;
-    if (p <= 5) return 'pochi passi';
-    if (p < 100) return 'una ' + dentina(p);
-    return (Math.round(p / 10) * 10) + ' passi';
+    return laMisura ? laMisura.nudi(m) : (Math.round(m / PASSO) + ' passi');
   }
   function dentina(p) {
     var nomi = { 10: 'decina di passi', 20: 'ventina di passi', 30: 'trentina di passi',

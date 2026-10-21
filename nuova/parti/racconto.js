@@ -237,17 +237,20 @@ function Racconto(opzioni) {
        la prima parola del NOME, che qui è anche il tipo. */
     if (n.toLowerCase().indexOf(capo) === 0) {
       var prima = n.split(' ')[0];
+      if (/^[aeiouàèéìòóù]/i.test(prima)) return loIl(prima) + n;   // «l'Isola», non «la Isola»
       return (femminile(prima) ? 'la ' : loIl(prima)) + n;
     }
     if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
     /* un nome di una parola sola E' gia' il tipo: «Municipio», «Colosseo»,
        «Duomo». «Il palazzo comunale Municipio» non lo direbbe nessuno. */
     if (n.indexOf(' ') < 0) {
+      if (/^[aeiouàèéìòóù]/i.test(n)) return loIl(n) + n;
       return (femminile(n) ? 'la ' : loIl(n)) + n;
     }
     /* «la chiesa DI San Luigi dei Francesi», non «la chiesa San Luigi»:
        davanti a un santo o a un nome proprio ci vuole il «di». */
     var di = /^(San |Sant'|Santa |Santo |Santi |SS\.|Ss\.)/i.test(n) ? 'di ' : '';
+    if (/^[aeiouàèéìòóù]/i.test(capo)) return loIl(capo) + capo + ' ' + di + n;
     return (femminile(capo) ? 'la ' : loIl(capo)) + capo + ' ' + di + n;
   }
 
@@ -264,7 +267,12 @@ function Racconto(opzioni) {
     /* «lo» va davanti a s+CONSONANTE — sbaglio, scempio, studio — non a
        s+vocale. Nella lista c'era per errore anche la «i», e usciva «lo
        sito mura serviane» (quaderno del 21/10). */
-    return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(String(t).toLowerCase()) ? 'lo ' : 'il ';
+    var w = String(t).toLowerCase();
+    /* DAVANTI A VOCALE L'APOSTROFO, e vale per tutt'e due i generi: «il
+       edificio» e «la Isola» non si dicono. Trovato il 21/10 guardando
+       le descrizioni vere: «il edificio palazzo del Consorzio agrario». */
+    if (/^[aeiouàèéìòóù]/.test(w)) return "l'";
+    return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(w) ? 'lo ' : 'il ';
   }
 
   function daRaccontare(p, modo) {
@@ -307,10 +315,16 @@ function Racconto(opzioni) {
     if (Math.abs(r) > 145) return 'dietro di te';
     return r > 0 ? 'sulla destra' : 'sulla sinistra';
   }
+  /* LA DISTANZA LA DICE UNA PARTE SOLA: parti/distanza.js (7 prove).
+     «Dovrebbe essere più precisa con le distanze» (la sorella di Vince,
+     21/10): ce n'erano quattro, con arrotondamenti diversi, e questa
+     diceva i METRI mentre il resto dell'app diceva i passi. */
+  /* si PASSA, come dist e verso: in questa cartella le parti non si
+     cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
+     grezzo, ma nessuno resta muto. */
+  var laMisura = o.distanza || null;
   function metri(m) {
-    if (m < 25) return 'a pochi passi';
-    if (m < 1000) return 'a ' + (Math.round(m / 10) * 10) + ' metri';
-    return 'a ' + (Math.round(m / 100) / 10).toString().replace('.', ' e ') + ' chilometri';
+    return laMisura ? laMisura.passi(m) : ('a ' + Math.round(m) + ' metri');
   }
 
   /* ancora(): quello che succede quando l'utente dice «ancora». Scende di un

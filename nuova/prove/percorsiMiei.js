@@ -7,6 +7,8 @@
    Si lancia:  node nuova/prove/percorsiMiei.js                           */
 
 'use strict';
+const Distanza = require('../parti/distanza.js');
+const LADISTANZA = Distanza({});
 const PercorsiMiei = require('../parti/percorsiMiei.js');
 
 let errori = [], fatti = [];
@@ -25,7 +27,7 @@ function dist(la1, lo1, la2, lo2) {
 }
 function mondo() {
   let adesso = 1000000;
-  const p = PercorsiMiei({ dist, ora: () => adesso });
+  const p = PercorsiMiei({ distanza: LADISTANZA,  dist, ora: () => adesso });
   return { p, passano(ms) { adesso += ms; }, quando: () => adesso };
 }
 /* una camminata vera: duecento metri verso nord, un punto ogni dieci */

@@ -20,6 +20,8 @@
    Si lancia:  node nuova/prove/descrizione.js                            */
 
 'use strict';
+const Distanza = require('../parti/distanza.js');
+const LADISTANZA = Distanza({});
 const Descrizione = require('../parti/descrizione.js');
 
 let errori = [], fatti = [];
@@ -36,10 +38,10 @@ function prova(nome, f) {
    scrive un altro. */
 const Racconto = require('../parti/racconto.js');
 const conArticolo = Racconto({}).conArticolo;
-const d = () => Descrizione({ conArticolo });
+const d = () => Descrizione({ distanza: LADISTANZA,  conArticolo });
 
 prova('REGOLA 1: prima dove sei rispetto a lui, poi cos e', () => {
-  const f = d().frase({ n: 'Duomo di Milano', t: 'cattedrale', dove: 'destra', metri: 30 });
+  const f = d().frase({ n: 'Duomo di Milano', t: 'cattedrale', dove: 'destra', metri: 30, materiali: ['marmo'] });
   if (!f) { guasto('niente frase'); return; }
   const posDove = f.testo.toLowerCase().indexOf('destra');
   const posNome = f.testo.indexOf('Duomo');
@@ -92,7 +94,9 @@ prova('REGOLA 5: la storia resta, ma in coda e separata', () => {
 });
 
 prova('REGOLA 6: quello che non si sa NON si dice', () => {
-  const f = d().frase({ n: 'Chiesa di San Luigi dei Francesi', t: 'chiesa', dove: 'sinistra', metri: 20 });
+  /* un dato lo sappiamo (il travertino): tutto il RESTO non si inventa */
+  const f = d().frase({ n: 'Chiesa di San Luigi dei Francesi', t: 'chiesa', dove: 'sinistra',
+                        metri: 20, materiali: ['travertino'] });
   if (!f) { guasto('niente frase'); return; }
   if (/metri|piani|mattoni|pietra|marmo/.test(f.testo)) {
     guasto('si e inventato quello che non sapeva: ' + f.testo);
@@ -112,7 +116,7 @@ prova('senza niente da dire non si inventa una frase vuota', () => {
 });
 
 prova('L ARTICOLO C E: «hai il Duomo», non «hai Duomo»', () => {
-  const f = d().frase({ n: 'Duomo di Milano', t: 'cattedrale', dove: 'davanti', metri: 40 });
+  const f = d().frase({ n: 'Duomo di Milano', t: 'cattedrale', dove: 'davanti', metri: 40, materiali: ['marmo'] });
   if (!f) { guasto('niente frase'); return; }
   /* la forma esatta la decide racconto.conArticolo, che ha la sua
      convenzione («la cattedrale Duomo di Milano»): qui si pretende solo
@@ -121,7 +125,7 @@ prova('L ARTICOLO C E: «hai il Duomo», non «hai Duomo»', () => {
     guasto('manca l articolo: ' + f.testo);
   }
   if (!/\b(il|lo|la|l')\s/.test(f.testo)) guasto('nessun articolo: ' + f.testo);
-  const g = d().frase({ n: 'Chiesa del Carmine', t: 'chiesa', dove: 'destra', metri: 25 });
+  const g = d().frase({ n: 'Chiesa del Carmine', t: 'chiesa', dove: 'destra', metri: 25, materiali: ['laterizio'] });
   if (g && /hai Chiesa/.test(g.testo)) guasto('manca l articolo al femminile: ' + g.testo);
   console.log('      → ' + f.testo);
   console.log('      → ' + (g && g.testo));
@@ -162,8 +166,8 @@ prova('una larghezza assurda non si dice', () => {
 
 prova('«la Torre del Mangia ha una torre» non si dice', () => {
   const casi = [
-    { n: 'Torre del Mangia', t: 'torre', forme: ['torre'] },
-    { n: 'Cupola del Brunelleschi', t: 'cupola', forme: ['cupola'] },
+    { n: 'Torre del Mangia', t: 'torre', forme: ['torre'], materiali: ['marmo'] },
+    { n: 'Cupola del Brunelleschi', t: 'cupola', forme: ['cupola'], materiali: ['mattoni'] },
     { n: 'Campanile di Giotto', t: 'campanile', forme: ['campanile', 'colonne'] }
   ];
   casi.forEach((c) => {
@@ -177,6 +181,37 @@ prova('«la Torre del Mangia ha una torre» non si dice', () => {
   });
   console.log('      → ' + d().frase({ n: 'Campanile di Giotto', t: 'campanile',
                                        dove: 'destra', metri: 20, forme: ['campanile', 'colonne'] }).testo);
+});
+
+prova('«una facciata piatta» non si dice: PIATTA non lo sappiamo', () => {
+  const f = d().frase({ n: 'Chiesa X', t: 'chiesa', dove: 'destra', metri: 20, forme: ['facciata'] });
+  if (f && /piatta|facciata/.test(f.testo)) {
+    guasto('dice la facciata — che ce l hanno tutti — e per di piu «piatta», che non sappiamo: ' + f.testo);
+  }
+});
+
+prova('L ACCORDO: «il ponte largo», non «il ponte larga»', () => {
+  const p = d().frase({ n: 'Ponte dell\'Impero', t: 'ponte', dove: 'destra', metri: 30, larghezza: 12 });
+  if (p && /larga/.test(p.testo)) guasto('«larga» per un ponte: ' + p.testo);
+  const b = d().frase({ n: 'Battistero di San Giovanni', t: 'battistero', dove: 'destra', metri: 30, altezza: 5 });
+  if (b && /\bbassa\b/.test(b.testo)) guasto('«bassa» per un battistero: ' + b.testo);
+  const c = d().frase({ n: 'Chiesa di San Giusto', t: 'chiesa', dove: 'destra', metri: 30, larghezza: 12, altezza: 5 });
+  if (c && /largo|basso/.test(c.testo)) guasto('«largo» per una chiesa: ' + c.testo);
+  console.log('      → ' + (p && p.testo));
+  console.log('      → ' + (b && b.testo));
+  console.log('      → ' + (c && c.testo));
+});
+
+prova('se non si sa NIENTE di com e fatta, non si dice una frase vuota', () => {
+  /* dopo aver tolto la facciata, restavano schede il cui unico dato era
+     proprio quella: la frase diventava «la Chiesa X.» e si mangiava un
+     gradino per non dire niente. */
+  const f = d().frase({ n: 'Chiesa X', t: 'chiesa', dove: 'destra', metri: 20, forme: ['facciata'] });
+  if (f && f.testo && !/palazzo|larg|di [a-z]/.test(f.testo)) {
+    guasto('frase senza contenuto: ' + f.testo);
+  }
+  const g = d().frase({ n: 'Chiesa Y', t: 'chiesa', dove: 'destra', metri: 20 });
+  if (g && g.testo && !/palazzo|larg|di [a-z]/.test(g.testo)) guasto('frase senza contenuto: ' + g.testo);
 });
 
 const passate = fatti.filter(Boolean).length;

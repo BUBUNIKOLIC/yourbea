@@ -4,6 +4,8 @@
    Si lancia:  node nuova/prove/emergenza-guida.js                            */
 
 'use strict';
+const Distanza = require('../parti/distanza.js');
+const LADISTANZA = Distanza({});
 const Emergenza = require('../parti/emergenza.js');
 const Guida = require('../parti/guida.js');
 
@@ -104,13 +106,13 @@ prova('le parole dell\'emergenza si riconoscono', () => {
 /* ==================== PORTAMI A ==================== */
 
 prova('«portami a via Gioberti» si riconosce e si estrae la meta', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   if (g.dalComando('portami a via Vincenzo Gioberti') !== 'via vincenzo gioberti') guasto('non estrae la meta');
   if (g.dalComando('che tempo fa')) guasto('ha preso per meta una frase qualunque');
 });
 
 prova('IL DIFETTO DI LATINA: se dici la città, si rispetta la città', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const parole = g.cittaNelTesto('via vincenzo gioberti latina');
   if (parole.indexOf('latina') < 0) guasto('non ha capito che la città è Latina');
   const candidati = [
@@ -124,14 +126,14 @@ prova('IL DIFETTO DI LATINA: se dici la città, si rispetta la città', () => {
 });
 
 prova('«Cisterna di Latina» non è «Latina»: il comune si confronta per intero', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   if (g.cittaCombacia('Cisterna di Latina', ['latina'])) guasto('ha confuso Cisterna con Latina');
   if (!g.cittaCombacia('Latina', ['gioberti', 'latina'])) guasto('non riconosce Latina');
   if (!g.cittaCombacia('Torre del Greco', ['torre', 'greco'])) guasto('non riconosce i nomi di più parole');
 });
 
 prova('senza città detta, si prende la più vicina', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const candidati = [
     { nome: 'Farmacia', citta: 'Roma', lat: 41.9000, lon: 12.4900 },
     { nome: 'Farmacia', citta: 'Roma', lat: 41.8960, lon: 12.4825 }
@@ -141,7 +143,7 @@ prova('senza città detta, si prende la più vicina', () => {
 });
 
 prova('si parte dicendo dove sei, quanto manca e la prima mossa', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const p = { metri: 250, svolte: [
     { lat: 41.4660, lon: 12.9080, testo: 'Cammina verso sud-est su Via Fabio Filzi.' },
     { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Vincenzo Monti.' }
@@ -157,7 +159,7 @@ prova('si parte dicendo dove sei, quanto manca e la prima mossa', () => {
 });
 
 prova('LA SVOLTA si dice a venticinque metri, non a cento', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const svolta = { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Vincenzo Monti.' };
   const p = { metri: 250, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
   g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -176,7 +178,7 @@ prova('LA SVOLTA si dice a venticinque metri, non a cento', () => {
    da lontano per prepararti, una quando ci sei. A piedi settanta metri sono
    venti secondi: il tempo di spostarsi sul lato giusto del marciapiede. */
 prova('la svolta si preannuncia da settanta metri', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const svolta = { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Vincenzo Monti.' };
   const p = { metri: 250, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
   g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -194,7 +196,7 @@ prova('la svolta si preannuncia da settanta metri', () => {
 });
 
 prova('se ti allontani dal percorso, lo dice', () => {
-  const g = Guida({ dist, verso, fuoriDa: 5000 });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso, fuoriDa: 5000 });
   const p = { metri: 250, linea: [[41.4658, 12.9078], [41.4663, 12.9083], [41.4670, 12.9090]],
               svolte: [{ lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra.' }] };
   g.vaiA({ n: 'meta', lat: 41.4700, lon: 12.9120 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -207,7 +209,7 @@ prova('se ti allontani dal percorso, lo dice', () => {
 });
 
 prova('L\'ARRIVO si dice una volta sola, e la guida finisce', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   g.vaiA({ n: 'Via Vincenzo Gioberti', lat: 41.4665, lon: 12.9086 }, { lat: 41.4658, lon: 12.9078 }, DOVE, null);
   const d = g.passo({ lat: 41.46651, lon: 12.90861 }, 3000);
   if (!d || d.tipo !== 'arrivato') guasto('non dice che sei arrivato');
@@ -222,7 +224,7 @@ prova('SENZA PERCORSO si dice da che parte, rispetto a chi cammina', () => {
      così» — Vince, 16/10, camminando. Il nord non ce l'ha in testa nessuno,
      e a chi non vede non serve a niente: conta da che parte sei girato,
      e quello si sa dallo spostamento. */
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const meta = { n: 'Farmacia Pirani', lat: 41.4700, lon: 12.9120 };
   const d = g.vaiA(meta, { lat: 41.4658, lon: 12.9078, direzione: 45, direzioneBuona: true }, DOVE, null);
   if (!/Ti porto a Farmacia Pirani/.test(d.testo)) guasto('non dice dove ti porta');
@@ -230,17 +232,17 @@ prova('SENZA PERCORSO si dice da che parte, rispetto a chi cammina', () => {
   if (/\b(?:nord|sud|est|ovest)\b/i.test(d.testo)) guasto('i punti cardinali a chi cammina non dicono niente: ' + d.testo);
   if (!/continua così/i.test(d.testo)) guasto('andando verso la meta si dice continua così: ' + d.testo);
 
-  const g2 = Guida({ dist, verso });
+  const g2 = Guida({ distanza: LADISTANZA,  dist, verso });
   const indietro = g2.vaiA(meta, { lat: 41.4658, lon: 12.9078, direzione: 225, direzioneBuona: true }, DOVE, null);
   if (!/torna indietro/i.test(indietro.testo)) guasto('andando dalla parte opposta si dice torna indietro: ' + indietro.testo);
 
-  const g3 = Guida({ dist, verso });
+  const g3 = Guida({ distanza: LADISTANZA,  dist, verso });
   const fermo = g3.vaiA(meta, { lat: 41.4658, lon: 12.9078 }, DOVE, null);
   if (!/qualche passo/i.test(fermo.testo)) guasto('senza sapere come sei girato non si inventa: ' + fermo.testo);
 });
 
 prova('«lascia perdere» spegne la guida', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   g.vaiA({ n: 'meta', lat: 41.47, lon: 12.91 }, { lat: 41.4658, lon: 12.9078 }, DOVE, null);
   const d = g.lascia();
   if (!d || d.tipo !== 'lascio') guasto('non risponde');
@@ -322,7 +324,7 @@ prova('il numero della chiamata porta il prefisso, se no iOS mostra le cifre', (
    andata. Un candidato che non ha nemmeno una parola in comune con quello
    che è stato chiesto non è un candidato. */
 prova('un candidato che non c\'entra niente si scarta', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const qui = { lat: 41.8232, lon: 12.4814 };
   const candidati = [
     { nome: 'Non si mangia, Via degli Equi', citta: 'Roma', lat: 41.8925, lon: 12.5160 },
@@ -333,7 +335,7 @@ prova('un candidato che non c\'entra niente si scarta', () => {
 });
 
 prova('se nessun candidato c\'entra, non ci si incammina', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const qui = { lat: 41.8232, lon: 12.4814 };
   const scelto = g.scegli([{ nome: 'Non si mangia, Via degli Equi', citta: 'Roma', lat: 41.89, lon: 12.51 }],
                           [], qui, 'via dei corazzieri 47');
@@ -341,7 +343,7 @@ prova('se nessun candidato c\'entra, non ci si incammina', () => {
 });
 
 prova('le parole che contano: via e numero non distinguono niente', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const p = g.parolePiene('portami a via dei corazzieri numero 47');
   if (p.indexOf('corazzieri') < 0) guasto('ha perso la parola che conta');
   if (p.indexOf('via') >= 0 || p.indexOf('numero') >= 0) guasto('via e numero stanno in ogni indirizzo: ' + p.join(','));
@@ -352,7 +354,7 @@ prova('le parole che contano: via e numero non distinguono niente', () => {
    arrivato» e ha finito, perché poi uno guarda. A piedi e senza vedere,
    il numero giusto non serve se non sai da che parte è la porta. */
 prova('all\'arrivo si dice da che parte è, e cosa ha accanto', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const meta = { n: 'Via dei Corazzieri 47', lat: 41.8240, lon: 12.4814 };
   g.vaiA(meta, { lat: 41.8230, lon: 12.4814, direzione: 0, direzioneBuona: true }, DOVE, null);
   /* arrivo camminando verso nord, con la meta appena a destra */
@@ -364,7 +366,7 @@ prova('all\'arrivo si dice da che parte è, e cosa ha accanto', () => {
 });
 
 prova('senza bussola si dice comunque che sei arrivato', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const meta = { n: 'casa tua', lat: 41.8240, lon: 12.4814 };
   g.vaiA(meta, { lat: 41.8230, lon: 12.4814 }, DOVE, null);
   const d = g.passo({ lat: 41.82399, lon: 12.48141 }, 5000, {});
@@ -377,7 +379,7 @@ prova('senza bussola si dice comunque che sei arrivato', () => {
    diceva i numeri civici» (Vince, 16/10, in scooter). Prima di muoversi
    uno vuole il disegno del percorso in testa: tre nomi bastano. */
 prova('prima di partire si dicono le strade che si faranno', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const p = { metri: 700, svolte: [
     { lat: 41.4658, lon: 12.9078, testo: 'Cammina su Via Giovanni Volpato.' },
     { lat: 41.4663, lon: 12.9083, testo: 'Svolta a destra su Via Portuense.' },
@@ -392,7 +394,7 @@ prova('prima di partire si dicono le strade che si faranno', () => {
 prova('tre strade, non dieci', () => {
   /* un elenco lungo non si tiene a mente camminando, e le svolte le
      ridirà una per una al momento giusto */
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const nomi = g.elencoStrade(['Via A', 'Via B', 'Via C', 'Via D', 'Via E']);
   if ((nomi.match(/Via/g) || []).length > 3) guasto('troppe: ' + nomi);
   if (!/e poi ancora/.test(nomi)) guasto('deve dire che ce ne sono altre: ' + nomi);
@@ -416,7 +418,7 @@ prova('il 112 non parte di soppiatto: cinque secondi per fermarlo', () => {
    Un navigatore per chi vede tace fra una svolta e l'altra. Chi non vede,
    nel silenzio, non sa se sta ancora andando bene.                       */
 prova('IL FILO: non resta zitto piu di venti secondi mentre ti accompagna', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const svolta = { lat: 41.4700, lon: 12.9120, testo: 'Svolta a destra su Via Rossi.' };
   const p = { metri: 400, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
   g.vaiA({ n: 'casa tua', lat: 41.4710, lon: 12.9130 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -433,7 +435,7 @@ prova('IL FILO: non resta zitto piu di venti secondi mentre ti accompagna', () =
 });
 
 prova('IL FILO dice anche cosa farai dopo', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const svolta = { lat: 41.4700, lon: 12.9120, testo: 'Svolta a sinistra su Via Verdi.' };
   const p = { metri: 400, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
   g.vaiA({ n: 'casa tua', lat: 41.4710, lon: 12.9130 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -442,7 +444,7 @@ prova('IL FILO dice anche cosa farai dopo', () => {
 });
 
 prova('IL FILO non parla sopra una svolta', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const svolta = { lat: 41.46585, lon: 12.90785, testo: 'Svolta a destra su Via Rossi.' };
   const p = { metri: 100, svolte: [{ lat: 41.4658, lon: 12.9078, testo: 'Cammina.' }, svolta] };
   g.vaiA({ n: 'casa tua', lat: 41.4660, lon: 12.9080 }, { lat: 41.4658, lon: 12.9078 }, DOVE, p);
@@ -457,7 +459,7 @@ prova('IL FILO non parla sopra una svolta', () => {
    Tutti e due passavano il controllo, perche' bastava che UNA parola piena
    comparisse: e «latina» e' una parola piena.                            */
 prova('LA VIA SBAGLIATA NELLA CITTA GIUSTA si butta', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const candidati = [{ nome: 'Via dei Marrucini, Latina', citta: 'Latina',
                        lat: 41.45932, lon: 12.92574 }];
   const scelto = g.scegli(candidati, ['latina'], { lat: 41.4676, lon: 12.9036 },
@@ -466,7 +468,7 @@ prova('LA VIA SBAGLIATA NELLA CITTA GIUSTA si butta', () => {
 });
 
 prova('LA VIA GIUSTA NELLA CITTA SBAGLIATA si butta', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const candidati = [
     { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82586, lon: 12.48608 },
     { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82301, lon: 12.48121 }
@@ -477,7 +479,7 @@ prova('LA VIA GIUSTA NELLA CITTA SBAGLIATA si butta', () => {
 });
 
 prova('e quella giusta si prende', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const candidati = [
     { nome: 'Via dei Marrucini, Latina', citta: 'Latina', lat: 41.45932, lon: 12.92574 },
     { nome: 'Via dei Corazzieri, Latina', citta: 'Latina', lat: 41.4701, lon: 12.9050 },
@@ -491,7 +493,7 @@ prova('e quella giusta si prende', () => {
 });
 
 prova('senza citta detta, fra due vie con lo stesso nome si prende la piu vicina', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const candidati = [
     { nome: 'Via Roma', citta: 'Milano', lat: 45.46, lon: 9.19 },
     { nome: 'Via Roma', citta: 'Latina', lat: 41.4680, lon: 12.9040 }
@@ -506,7 +508,7 @@ prova('senza citta detta, fra due vie con lo stesso nome si prende la piu vicina
    c'e' ne' su Photon ne' su Nominatim. Prendendo il piu' vicino a chi
    cerca si finiva sempre all'imbocco.                                     */
 prova('UNA VIA A PEZZI: si prende il mezzo, e si dice di quanto si puo sbagliare', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const c = [
     { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82586, lon: 12.48608 },
     { nome: 'Via dei Corazzieri', citta: 'Roma', lat: 41.82301, lon: 12.48121 },
@@ -523,7 +525,7 @@ prova('UNA VIA A PEZZI: si prende il mezzo, e si dice di quanto si puo sbagliare
 });
 
 prova('due vie DIVERSE non si mediano: sarebbe un punto in mezzo al niente', () => {
-  const g = Guida({ dist, verso });
+  const g = Guida({ distanza: LADISTANZA,  dist, verso });
   const c = [
     { nome: 'Via Roma', citta: 'Latina', lat: 41.4680, lon: 12.9040 },
     { nome: 'Via Milano', citta: 'Latina', lat: 41.4700, lon: 12.9100 }

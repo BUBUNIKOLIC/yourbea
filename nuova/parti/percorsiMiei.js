@@ -51,10 +51,16 @@ function PercorsiMiei(opzioni) {
   var inRegistrazione = null;
   var inCorso = null;                        // { percorso, quale, avvisato }
 
+  /* LA DISTANZA LA DICE UNA PARTE SOLA: parti/distanza.js (7 prove).
+     «Dovrebbe essere più precisa con le distanze» (la sorella di Vince,
+     21/10): ce n'erano quattro, con arrotondamenti diversi, e questa
+     diceva i METRI mentre il resto dell'app diceva i passi. */
+  /* si PASSA, come dist e verso: in questa cartella le parti non si
+     cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
+     grezzo, ma nessuno resta muto. */
+  var laMisura = o.distanza || null;
   function passi(m) {
-    var p = Math.round(m / PASSO / 5) * 5;
-    if (p <= 5) return 'pochi passi';
-    return p + ' passi';
+    return laMisura ? laMisura.nudi(m) : (Math.round(m / PASSO) + ' passi');
   }
 
   function lungo(punti) {
