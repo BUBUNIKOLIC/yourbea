@@ -238,6 +238,15 @@ prova('la frase che la voce dice NON finisce nel riquadro del lettore di schermo
   });
 });
 
+prova('i percorsi tuoi si possono trovare senza sapere la formula', () => {
+  /* «Non l'ho visto nelle scritte» (Vince, 21/10): la funzione esisteva
+     solo come parola da dire — «crea percorso» — e nessuno poteva
+     scoprirla. Un tasto, e che sia attaccato a qualcosa. */
+  if (!/id="percorso"/.test(html)) guasto('manca il tasto dei percorsi nel cassetto');
+  if (!/el\('percorso'\)\.addEventListener/.test(app)) guasto('il tasto c e ma non lo ascolta nessuno');
+  if (!/crea percorso/.test(app)) guasto('il tasto non fa partire la registrazione');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pagina');

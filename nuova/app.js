@@ -2912,6 +2912,23 @@
     } catch (e) {}
   }
   el('cosa-sentire').addEventListener('click', function () { cosaSentire(!soloMonumenti); });
+
+  /* IL TASTO DEI PERCORSI TUOI. La voce li sapeva fare da sempre, ma
+     nessuno poteva scoprirli: non erano scritti da nessuna parte.
+     Il tasto fa esattamente quello che fa la voce — stessa strada, stesso
+     codice provato — e cambia faccia mentre registri, cosi' si vede a
+     colpo d'occhio che l'app sta imparando la strada. */
+  function scriviTastoPercorso() {
+    try {
+      el('percorso').textContent = miei.staRegistrando() ? 'Ho finito il percorso' : 'Crea un percorso';
+    } catch (e) {}
+  }
+  el('percorso').addEventListener('click', function () {
+    comando(miei.staRegistrando() ? 'ho finito' : 'crea percorso');
+    scriviTastoPercorso();
+  });
+  scriviTastoPercorso();
+  setInterval(scriviTastoPercorso, 2000);
   scriviTastoCosaSentire();
   scriviTastoMusica();
 
