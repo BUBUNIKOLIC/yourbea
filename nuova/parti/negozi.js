@@ -129,8 +129,21 @@ function Negozi(opzioni) {
          stare e chi orienta (Utilita') lo usa. */
       if (!x.n) return;
       var suo = normalizza(x.n);
+      /* UN NOME UGUALE LONTANO NON E' LO STESSO POSTO. Misurato il 21/10:
+         1.790 monumenti su 20.836 — l'8,6% di tutta Italia — sparivano
+         perche' qui il nome si confrontava senza guardare DOVE. La chiesa
+         di Santa Maria delle Grazie alle Fornaci, a Roma, veniva
+         cancellata da chiese con un nome simile a 95, 96, 202 e 477
+         chilometri. In Italia «Santa Maria delle Grazie», «San Giovanni»,
+         «Duomo» si ripetono in ogni provincia.
+         Adesso il nome vale solo da vicino: entro trecento metri e' la
+         stessa cosa segnata due volte, piu' in la' e' un altro posto che
+         si chiama uguale. */
+      var UGUALE_ENTRO = 300;
       var gia = (nostri || []).some(function (p) {
-        if (dist(p.lat, p.lon, x.lat, x.lon) < 60) return true;
+        var m = dist(p.lat, p.lon, x.lat, x.lon);
+        if (m < 60) return true;
+        if (m > UGUALE_ENTRO) return false;
         var n2 = normalizza(p.n);
         return n2 && suo && (n2 === suo || n2.indexOf(suo) >= 0 || suo.indexOf(n2) >= 0);
       });
@@ -163,15 +176,34 @@ function Negozi(opzioni) {
       if (x.d && x.d.length > 420) peso += 2;
       else if (x.d && x.d.length > 260) peso += 1;
 
+      /* COM'E' FATTA VIENE DIETRO. Qui ogni luogo del quadretto viene
+         RICOSTRUITO da zero, con un elenco fisso di campi: il 21/10 i dati
+         per le descrizioni orientative — altezza, larghezza, materiale,
+         forma — sono stati fatti, messi nei quadretti e pubblicati, e poi
+         non si sentivano. Restavano nel file: di qui non passavano.
+         E vengono dietro anche ai luoghi MINORI: una chiesetta di
+         quartiere non merita mezzo minuto di storia dell'arte, ma «di
+         mattoni, con un campanile» è proprio quello che serve a chi non
+         vede, e costa due secondi. */
+      function comeEFatta(y) {
+        var c = {};
+        if (x.h) c.h = x.h;
+        if (x.l) c.l = x.l;
+        if (x.mat && x.mat.length) c.mat = x.mat;
+        if (x.frm && x.frm.length) c.frm = x.frm;
+        for (var k in c) if (Object.prototype.hasOwnProperty.call(c, k)) y[k] = c[k];
+        return y;
+      }
+
       if (!x.d || peso < 2) {
-        fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
+        fuori.push(comeEFatta({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
                      d: 'Qui c\'è ' + (comeSiChiama || intro || x.n) + '.', i: '', a: '',
                      intro: intro, daWiki: true, minore: true,
-                     senzaScheda: !x.d });
+                     senzaScheda: !x.d }));
         return;
       }
-      fuori.push({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
-                   d: x.d, i: '', a: '', intro: intro, daWiki: true });
+      fuori.push(comeEFatta({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
+                   d: x.d, i: '', a: '', intro: intro, daWiki: true }));
     });
     return fuori;
   }

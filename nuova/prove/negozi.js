@@ -145,6 +145,74 @@ prova('quella che conta si racconta per intero', () => {
   if (fuori[0].d.length < 200) guasto('e la scheda vera');
 });
 
+/* ---------- COM'E' FATTA DEVE ARRIVARE FINO IN FONDO ----------
+   Il 21/10 i dati per le descrizioni orientative — altezza, larghezza,
+   materiale, forma — sono stati messi nei quadretti e pubblicati. Poi non
+   si sentivano. Causa: qui dentro ogni luogo del quadretto viene
+   RICOSTRUITO da zero con un elenco fisso di campi, e quei quattro non
+   c'erano: restavano nel file e non arrivavano mai all'app. */
+prova('i dati di com e fatta non si perdono per strada', () => {
+  const n = Negozi({});
+  const dal = [{ n: 'Chiesa di Prova', t: 'chiesa', lat: 41.9, lon: 12.5,
+                 d: 'Una scheda abbastanza lunga da passare la soglia. '.repeat(12),
+                 y: 1300, arch: ['Tizio'],
+                 h: 35, l: 65, mat: ['marmo'], frm: ['campanile', 'navata'] }];
+  const fuori = n.perIlRacconto(dal, []);
+  if (!fuori.length) { guasto('non e passata nessuna scheda'); return; }
+  const p = fuori[0];
+  if (p.h !== 35) guasto('persa l altezza: ' + JSON.stringify(p.h));
+  if (p.l !== 65) guasto('persa la larghezza: ' + JSON.stringify(p.l));
+  if (!p.mat || p.mat[0] !== 'marmo') guasto('perso il materiale: ' + JSON.stringify(p.mat));
+  if (!p.frm || p.frm.length !== 2) guasto('persa la forma: ' + JSON.stringify(p.frm));
+});
+
+prova('e non si perdono nemmeno per i luoghi minori', () => {
+  const n = Negozi({});
+  const dal = [{ n: 'Chiesetta', t: 'chiesa', lat: 41.9, lon: 12.5, mat: ['mattoni'], h: 8 }];
+  const p = n.perIlRacconto(dal, [])[0];
+  if (!p) { guasto('non e passata'); return; }
+  if (p.h !== 8 || !p.mat) guasto('un luogo minore perde com e fatto: ' + JSON.stringify(p));
+});
+
+/* ---------- UN NOME UGUALE A CINQUECENTO CHILOMETRI NON E' LO STESSO POSTO ----------
+   Misurato il 21/10: 1.790 monumenti su 20.836 — l'8,6% di tutta Italia —
+   sparivano perche' il confronto fra i nomi non guardava DOVE sono. La
+   chiesa di Santa Maria delle Grazie alle Fornaci, a Roma, veniva
+   cancellata da chiese con un nome simile a 95, 96, 202 e 477 km.
+   In Italia «Santa Maria delle Grazie», «San Giovanni», «Duomo» si
+   ripetono in ogni provincia: un nome uguale lontano non e' un doppione,
+   e' un altro posto. */
+prova('un nome simile LONTANO non cancella un monumento', () => {
+  const R = 6371000, P = Math.PI / 180;
+  const dist = (a, b, c, d) => {
+    const x = (c - a) * P, y = (d - b) * P;
+    const h = Math.sin(x / 2) ** 2 + Math.cos(a * P) * Math.cos(c * P) * Math.sin(y / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+  const n = Negozi({ dist });
+  const aMilano = [{ n: 'Chiesa di Santa Maria delle Grazie', lat: 45.4659, lon: 9.1709 }];
+  const aRoma = [{ n: 'Chiesa di Santa Maria delle Grazie alle Fornaci', t: 'chiesa',
+                   lat: 41.89746, lon: 12.45521, mat: ['mattoni'], frm: ['campanile'] }];
+  const fuori = n.perIlRacconto(aRoma, aMilano);
+  if (!fuori.length) guasto('cancellata da una chiesa a 480 km');
+  if (fuori.length && !fuori[0].mat) guasto('passata ma senza i dati');
+});
+
+prova('ma lo stesso posto scritto due volte resta un doppione', () => {
+  const R = 6371000, P = Math.PI / 180;
+  const dist = (a, b, c, d) => {
+    const x = (c - a) * P, y = (d - b) * P;
+    const h = Math.sin(x / 2) ** 2 + Math.cos(a * P) * Math.cos(c * P) * Math.sin(y / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+  const n = Negozi({ dist });
+  /* stesso nome, 80 metri: e' la stessa chiesa segnata due volte — oltre
+     i 60 m del controllo sulle coordinate, ma col nome che combacia */
+  const gia = [{ n: 'Chiesa di San Rocco', lat: 41.9000, lon: 12.5000 }];
+  const uguale = [{ n: 'Chiesa di San Rocco', t: 'chiesa', lat: 41.9007, lon: 12.5000 }];
+  if (n.perIlRacconto(uguale, gia).length) guasto('ha tenuto lo stesso posto due volte');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei negozi');
