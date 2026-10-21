@@ -317,6 +317,26 @@ prova('sullo schermo, all\'ultima riga non si offre la prossima', () => {
   if (!/>=\s*d\.quante/.test(dentro)) guasto('e non guarda se la riga detta è l\'ultima');
 });
 
+/* ---------- DENTRO L'APP, MA QUESTO TELEFONO NON SA LEGGERE ----------
+   Lo crea il guscio Android: la lettura dei cartelli su iPhone la fa
+   Vision, dentro il sistema; su Android servirebbe ML Kit e non c'e'
+   ancora. Senza questa frase, uno che e' NELL'APP si sentiva rispondere
+   «mi serve l'app di Yourbea installata sul telefono» — che e' falso, e a
+   chi non vede non lascia niente da fare. */
+prova('nel browser dice che serve l app; nell app dice che e il telefono', () => {
+  const l = Lettura({});
+  const b = l.senzaGuscio();
+  const a = l.nonSaLeggere();
+  if (!b || !/app di Yourbea|browser/i.test(b.testo)) guasto('nel browser dice male: ' + JSON.stringify(b));
+  if (!a) { guasto('nonSaLeggere() non c e'); return; }
+  if (/installata sul telefono|dentro il browser/i.test(a.testo)) {
+    guasto('nell app ripete la frase del browser: ' + a.testo);
+  }
+  if (!/questo telefono|android|iphone/i.test(a.testo)) guasto('non dice di che si tratta: ' + a.testo);
+  if (a.testo === b.testo) guasto('le due frasi sono la stessa');
+  console.log('      → ' + a.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della lettura');

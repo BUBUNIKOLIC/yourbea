@@ -221,12 +221,24 @@ function Lettura(opzioni) {
                  'dentro il browser non posso aprire la fotocamera.', 'lettura-guaio');
   }
 
+  /* nonSaLeggere(): sei NELL'APP, ma questo telefono non sa leggere. Due
+     frasi diverse perche' sono due situazioni diverse, e a chi non vede
+     non si dice una cosa falsa: «serve l'app installata» detto dentro
+     l'app installata non lascia niente da fare.
+     Su iPhone il riconoscimento del testo sta dentro il sistema (Vision):
+     gratis e senza rete. Su Android servirebbe ML Kit, e non c'e' ancora. */
+  function nonSaLeggere() {
+    return frase('Su questo telefono non so ancora leggere i cartelli: per adesso lo so fare solo su iPhone. ' +
+                 'Tutto il resto funziona — dimmi dove vuoi andare, o cosa c\'è intorno.', 'lettura-guaio');
+  }
+
   function aspetta() { return frase('Guardo.', 'lettura-aspetta'); }
 
   function azzera() { righe = []; quale = 0; quando = 0; }
 
   return { risposta: risposta, ancora: ancora, inCorso: inCorso, pulisci: pulisci,
-           senzaGuscio: senzaGuscio, aspetta: aspetta, azzera: azzera,
+           senzaGuscio: senzaGuscio, nonSaLeggere: nonSaLeggere,
+           aspetta: aspetta, azzera: azzera,
            tutte: function () { return righe.map(function (r) { return r.t; }); },
            aChePunto: function () { return { quale: quale, quante: righe.length }; } };
 }

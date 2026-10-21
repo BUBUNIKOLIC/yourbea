@@ -2588,10 +2588,16 @@
      parti/lettura.js (18 prove). */
   function leggiIlCartello() {
     if (!window.urbeaLeggi) {
-      /* nel browser la fotocamera non si apre così: non si promette una
-         cosa che non si può fare, e non si resta zitti. */
-      diario('LEGGO: niente porta urbeaLeggi (non siamo nel guscio)');
-      diciLaLettura(lettura.senzaGuscio());
+      /* DUE SITUAZIONI, DUE FRASI. Nel browser la fotocamera non si apre:
+         non si promette una cosa che non si può fare, e non si resta
+         zitti. Ma DENTRO L'APP la stessa frase — «mi serve l'app
+         installata sul telefono» — è falsa e non lascia niente da fare: è
+         il caso del guscio Android, dove la lettura non c'è ancora.
+         Che si sia in un guscio lo dice urbeaHaPosizione, che è l'unica
+         cosa che tutt'e due i gusci mettono sempre. */
+      var nelGuscio = !!window.urbeaHaPosizione;
+      diario('LEGGO: niente porta urbeaLeggi (' + (nelGuscio ? 'guscio senza lettura' : 'non siamo nel guscio') + ')');
+      diciLaLettura(nelGuscio ? lettura.nonSaLeggere() : lettura.senzaGuscio());
       return;
     }
     diario('LEGGO: chiedo lo scatto');
