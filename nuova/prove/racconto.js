@@ -274,6 +274,35 @@ prova('IN UTILITA non si ripete «qui c e lo stadio» ogni dieci secondi', () =>
   if (due && /stadio/.test(due.testo || '')) guasto('lo ha ridetto dopo venti secondi: ' + due.testo);
 });
 
+/* ---------- L'ARTICOLO NON SI PERDE QUANDO IL NOME E' GIA' IL TIPO ----------
+   Il 20/10 si tolse il tipo doppio («la chiesa cattolica chiesa di San
+   Marco»): giusto, ma insieme al doppione se n'e' andato anche
+   l'articolo, e in Utilita' usciva «Qui c'e' Chiesa del Carmine», «Qui
+   c'e' Palazzo Reale», «Qui c'e' Fontana di Trevi». Trovato il 21/10
+   scrivendo le descrizioni orientative. */
+prova('«Qui c e LA Chiesa del Carmine», non «Qui c e Chiesa del Carmine»', () => {
+  const r = Racconto({});
+  const casi = [
+    { n: 'Chiesa del Carmine',    t: 'chiesa',     vuole: /^la Chiesa del Carmine$/ },
+    { n: 'Basilica di Massenzio', t: 'basilica',   vuole: /^la Basilica di Massenzio$/ },
+    { n: 'Palazzo Reale',         t: 'palazzo',    vuole: /^il Palazzo Reale$/ },
+    { n: 'Fontana di Trevi',      t: 'fontana',    vuole: /^la Fontana di Trevi$/ },
+    { n: 'Teatro Massimo',        t: 'teatro',     vuole: /^il Teatro Massimo$/ },
+    { n: 'Stadio Olimpico',       t: 'stadio',     vuole: /^lo Stadio Olimpico$/ }
+  ];
+  casi.forEach((c) => {
+    const d = r.conArticolo({ n: c.n, t: c.t });
+    if (!c.vuole.test(d)) guasto('«' + c.n + '» → «' + d + '»');
+  });
+  console.log('      → ' + casi.map((c) => r.conArticolo({ n: c.n, t: c.t })).join(' · '));
+});
+
+prova('e quello che gia aveva l articolo non ne prende un altro', () => {
+  const r = Racconto({});
+  const d = r.conArticolo({ n: 'Il Vittoriano', t: 'monumento' });
+  if (/^(il|la|lo)\s+(Il|La|Lo)\s/i.test(d)) guasto('due articoli: ' + d);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');

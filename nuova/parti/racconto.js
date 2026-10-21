@@ -202,7 +202,15 @@ function Racconto(opzioni) {
        solo la prima parola: «la cattedrale Santa Maria Assunta», non «la
        cattedrale cattolica Santa Maria Assunta». */
     var capo = t.split(' ')[0];
-    if (n.toLowerCase().indexOf(capo) === 0) return n;
+    /* IL NOME COMINCIA GIA' COL SUO TIPO: «Chiesa del Carmine», «Palazzo
+       Reale». Il tipo davanti non si rimette — sarebbe il doppione del
+       20/10 — ma L'ARTICOLO SI': togliendo tutto usciva «Qui c'è Chiesa
+       del Carmine», e in italiano non si dice. L'articolo si accorda con
+       la prima parola del NOME, che qui è anche il tipo. */
+    if (n.toLowerCase().indexOf(capo) === 0) {
+      var prima = n.split(' ')[0];
+      return (femminile(prima) ? 'la ' : loIl(prima)) + n;
+    }
     if (/^(il |la |lo |i |le |l'|gli )/i.test(n)) return n;
     /* un nome di una parola sola E' gia' il tipo: «Municipio», «Colosseo»,
        «Duomo». «Il palazzo comunale Municipio» non lo direbbe nessuno. */
