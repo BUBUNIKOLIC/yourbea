@@ -233,6 +233,19 @@
      quel gesto vuole parlare adesso, non aspettare la fine della frase. */
   window.YBzitta = function () { voce.ferma(); };
 
+  /* SE UN'ALTRA APP STA SUONANDO, YOURBEA TACE — scelta di Vince, 21/10,
+     dopo aver scoperto che l'app si addormentava proprio quando apriva
+     Radio 24. Tace, ma resta viva e continua a seguire la strada: appena
+     la radio finisce riprende. Se nel frattempo qualcuno chiede qualcosa,
+     gli si risponde — una domanda non si lascia cadere. */
+  var altraRadio = false;
+  var ultimoSegnoDiVita = 0;
+  window.YBaltraRadio = function (acceso) {
+    altraRadio = !!acceso;
+    diario('ALTRA APP CON L\'AUDIO: ' + (altraRadio ? 'taccio' : 'posso riparlare'));
+    if (altraRadio) voce.ferma();
+  };
+
   window.YBdillo = function (t) {
     voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true });
   };
@@ -1311,6 +1324,33 @@
   function dillo(d) {
     if (!d) return;
     if (!hoLaParola) return;
+    /* ============================================================
+       MENTRE LA RADIO PARLA: POCO, MA NON NIENTE
+       «Se la radio parla l'app sta in silenzio… oppure può dire
+       un'informazione utile, ma poco, per far capire che è ancora lì»
+       (Vince, 21/10). La seconda frase è la più importante, e nasce da
+       quello che gli è successo: l'app è ammutolita e lui ha pensato che
+       fosse uscita — infatti era sospesa davvero.
+       Il silenzio totale, a chi non vede, non dice «sto rispettando la
+       tua radio»: dice «non ci sono più». Quindi:
+       - GLI AVVISI passano sempre. Un attraversamento o uno scalino non
+         sono informazione, sono dove metti i piedi: la radio non li
+         rimanda.
+       - UNA COSA OGNI TRE MINUTI passa lo stesso — la strada in cui sei
+         entrato, la fermata che arriva — e basta quella per sapere che
+         c'è ancora.
+       - IL RESTO tace, e tornerà quando la radio finisce. */
+    if (altraRadio && d.livello !== 'emergenza' && !d.chiesto) {
+      var SEGNO_DI_VITA = 180000;
+      var vale = d.avviso || d.tipo === 'strada' || d.tipo === 'fermata' ||
+                 d.tipo === 'svolta' || d.tipo === 'preavviso' || d.tipo === 'arrivato';
+      if (!vale) { diario('RADIO: taccio ' + d.tipo); return; }
+      if (!d.avviso && Date.now() - ultimoSegnoDiVita < SEGNO_DI_VITA) {
+        diario('RADIO: taccio ' + d.tipo + ' (già detto qualcosa da poco)');
+        return;
+      }
+      if (!d.avviso) ultimoSegnoDiVita = Date.now();
+    }
     if (staAspettando() && d.livello !== 'emergenza') {
       diario('ZITTO: sto aspettando una risposta (' + inAttesaDi.cosa + ')');
       return;
