@@ -419,6 +419,43 @@ prova('i cenni a pezzi tengono il loro tetto: tante clip corte', () => {
   if (m.dette.length > 1) guasto('ha buttato via le clip a meta: ' + m.dette[1]);
 });
 
+/* ---------- IL NUMERO INVECCHIA MENTRE LO DICI ----------
+   A piedi si fa un passo e mezzo al secondo. Fra il momento in cui l'app
+   decide «a 40 passi» e quello in cui lo SENTI passano secondi: la frase
+   si mette in coda dietro a un'altra, e la voce ci mette il suo. Quando
+   senti «40» sei a 33 — e l'errore va sempre nella stessa direzione,
+   quindi non si compensa mai.
+   `valida` sapeva solo BUTTARE una frase scaduta. `rifai` la RISCRIVE: la
+   distanza si ricalcola quando la frase esce dalla coda. */
+prova('«rifai» riscrive la frase quando esce dalla coda, non prima', () => {
+  const m = Mondo();
+  let giri = 0;
+  m.motore.parla('Prima frase, che tiene occupato il motore.', { livello: 2 });
+  m.motore.parla('a 40 passi', {
+    livello: 2, ancheSeUguale: true,
+    rifai: function () { giri++; return 'a ' + (40 - 7 * giri) + ' passi'; }
+  });
+  m.passano(50); m.finisciLaVoce(); m.passano(400);
+  const dette = m.sistema.join(' | ');
+  if (!/a 33 passi/.test(dette)) guasto('non ha ricalcolato uscendo dalla coda: ' + dette);
+  if (/a 40 passi/.test(dette)) guasto('ha detto il numero vecchio: ' + dette);
+});
+
+prova('se «rifai» non ha piu niente da dire, la frase si butta', () => {
+  const m = Mondo();
+  m.motore.parla('Prima frase.', { livello: 2 });
+  m.motore.parla('a 40 passi', { livello: 2, ancheSeUguale: true, rifai: function () { return ''; } });
+  m.passano(50); m.finisciLaVoce(); m.passano(400);
+  if (/passi/.test(m.sistema.join(' | '))) guasto('ha detto una frase che non valeva piu');
+});
+
+prova('senza coda, «rifai» vale lo stesso', () => {
+  const m = Mondo();
+  m.motore.parla('x', { livello: 2, ancheSeUguale: true, rifai: function () { return 'a 12 passi'; } });
+  m.passano(50);
+  if (!/a 12 passi/.test(m.sistema.join(' | '))) guasto('subito non lo usa: ' + m.sistema.join(' | '));
+});
+
 (async () => {
   for (const p of prove) {
     errori = [];

@@ -1349,12 +1349,33 @@
     }
   }
 
+  /* ---------- IL NUMERO INVECCHIA MENTRE LO DICI ----------
+     «Correggi la precisione nelle distanze a piedi» (Vince, 21/10).
+     A piedi si fa un passo e mezzo al secondo, e fra il momento in cui
+     decidiamo «a 40 passi» e quello in cui lui lo SENTE passano secondi:
+     la frase aspetta in coda dietro a un'altra, e la voce ci mette il
+     suo. Quando senti «40» sei a 33 — e l'errore va sempre nella stessa
+     direzione, quindi non si compensa: si accumula.
+     Qui si attacca alla frase il modo di rifarsi: parti/voce.js la
+     ricalcola nel momento esatto in cui apre bocca. In macchina non
+     serve (il cenno lì non si dice nemmeno), a piedi sì. */
+  function rifaiLaDistanza(d, testo) {
+    if (!d || !d.luogo || !(d.luogo.lat > 0) || !testo) return null;
+    if (!/\d+ passi|pochi passi/.test(testo)) return null;
+    return function () {
+      var s = posizione.leggi();
+      if (!s.pronto) return null;                  // non si sa: resta quella di prima
+      var m = posizione.dist(s.lat, s.lon, d.luogo.lat, d.luogo.lon);
+      return testo.replace(/\d+ passi|pochi passi/, laDistanza.nudi(m));
+    };
+  }
+
   function dilloSubito(d) {
     if (!d) return;
     if (!hoLaParola) return;
     laStradaVienePrima(d);
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
-    voce.parla(d.testo, { livello: liv, ancheSeUguale: true });
+    voce.parla(d.testo, { livello: liv, ancheSeUguale: true, rifai: rifaiLaDistanza(d, d.testo) });
     mostra({ titolo: titoloDi(d), testo: d.testo, gradino: '' });
     alLettore(d.testo, true);        // la voce la sta gia dicendo
     esegui(d.mosse);
@@ -1684,7 +1705,8 @@
        quindi le clip incise restano allineate — e la clip, se c'è, la dice
        per intero lei: l'attacco va solo sul testo della voce di sistema. */
     var detto = modi.veste(d.tipo, d.testo);
-    var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo });
+    var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo,
+                                    rifai: rifaiLaDistanza(d, detto) });
     if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
        ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha

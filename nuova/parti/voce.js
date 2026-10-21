@@ -144,9 +144,37 @@ function MotoreVoce(opzioni) {
     while (coda.length) {
       var f = coda.shift();
       if (f.valida && !f.valida()) { diario('SCADUTA, non la dico: ' + String(f.testo).slice(0, 40)); continue; }
+      if (!rifaiLaFrase(f)) continue;
       return f;
     }
     return null;
+  }
+
+  /* ---------- IL NUMERO INVECCHIA MENTRE LO DICI ----------
+     A piedi si fa un passo e mezzo al secondo. Fra il momento in cui
+     l'app decide «a 40 passi» e quello in cui uno lo SENTE passano
+     secondi: la frase aspetta in coda dietro a un'altra, e la voce ci
+     mette il suo. Quando senti «40» sei a 33 — e l'errore va SEMPRE
+     nella stessa direzione, quindi non si compensa mai: si accumula.
+     `valida` sapeva soltanto buttare una frase diventata falsa. `rifai`
+     la riscrive: chi la mette in coda passa una funzione, e la distanza
+     si ricalcola nel momento in cui la frase esce. Se non ha più niente
+     da dire, torna vuoto e la frase si butta. */
+  function rifaiLaFrase(f) {
+    if (!f || typeof f.rifai !== 'function') return true;
+    var nuovo;
+    try { nuovo = f.rifai(); } catch (e) { return true; }   // meglio la vecchia che niente
+    if (nuovo === null || nuovo === undefined) return true;
+    nuovo = String(nuovo).trim();
+    if (!nuovo) { diario('RIFATTA a vuoto, non la dico: ' + String(f.testo).slice(0, 40)); return false; }
+    if (nuovo !== f.testo) {
+      diario('RIFATTA uscendo dalla coda: «' + String(f.testo).slice(0, 40) + '» → «' + nuovo.slice(0, 40) + '»');
+      f.testo = nuovo;
+      /* il confronto dei doppioni segue il testo nuovo, se non gliene
+         hanno dato uno apposta */
+      if (!f.uguale || f.uguale === f.testo) f.uguale = nuovo;
+    }
+    return true;
   }
 
   var dettaDaSistema = -1;        // il turno in cui la voce di sistema ha già parlato
@@ -282,6 +310,7 @@ function MotoreVoce(opzioni) {
     var clip = p.clip || null;
     var ancheSeUguale = !!p.ancheSeUguale;
     var valida = typeof p.valida === 'function' ? p.valida : null;
+    var rifai = typeof p.rifai === 'function' ? p.rifai : null;
     /* COSA SI CONFRONTA, PER LA REGOLA 5. Da quando parti/modi.js cambia la
        parolina davanti ai cenni — «Senti, sulla destra…», «Ecco, sulla
        destra…» — la stessa frase arriva qui scritta in due modi, e il
@@ -298,7 +327,14 @@ function MotoreVoce(opzioni) {
       return false;
     }
 
-    if (!parlando) { avvia({ testo: testo, clip: clip, livello: livello, uguale: daConfrontare }); return true; }
+    if (!parlando) {
+      /* anche senza coda si rifà: fra il decidere e l'aprire bocca c'è
+         comunque il tempo del motore, e la regola dev'essere una sola. */
+      var subito = { testo: testo, clip: clip, livello: livello, uguale: daConfrontare, rifai: rifai };
+      if (!rifaiLaFrase(subito)) return false;
+      avvia(subito);
+      return true;
+    }
 
     // REGOLA 4: più importante interrompe; pari o meno importante aspetta;
     // solo un cenno, che è ripetibile, si butta se non c'è posto
@@ -313,7 +349,7 @@ function MotoreVoce(opzioni) {
       if (normalizza(coda[i].uguale || coda[i].testo) === normalizza(daConfrontare)) { diario('GIÀ IN CODA'); return true; }
     }
     if (livello === CENNO && coda.length >= CODA_MAX) { diario('CODA PIENA, cenno buttato'); return false; }
-    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida, uguale: daConfrontare });
+    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida, rifai: rifai, uguale: daConfrontare });
     coda.sort(function (a, b) { return b.livello - a.livello; });
     if (coda.length > CODA_MAX) coda.length = CODA_MAX;
     diario('IN CODA (' + livello + '): ' + String(testo).slice(0, 40));
