@@ -150,6 +150,57 @@ prova('si salvano e si ricaricano', () => {
   if (!w2.p.trova('edicola')) guasto('il nome si è perso');
 });
 
+/* AGGIUNGERE RIFERIMENTI A UN PERCORSO GIÀ FATTO — «ed è possibile
+   aggiungere riferimenti?» (Vince, 21/10). La seconda volta uno si accorge
+   del palo, la terza del gradino: il percorso impara, la mappa no.      */
+prova('SI AGGIUNGE UN SEGNO mentre si cammina un percorso gia fatto', () => {
+  const w = mondo();
+  const fatto = registraIlPercorso(w, [{ a: 8, n: 'la panchina' }]);
+  w.p.segui(fatto.percorso, CASA);
+  const d = w.p.aggiungiSegno(avanti(15), 'il palo della luce');
+  if (!d) { guasto('deve poterlo aggiungere'); return; }
+  if (!/2 punti/.test(d.testo)) guasto('dice male: ' + d.testo);
+  if (fatto.percorso.segni.length !== 2) guasto('non l ha aggiunto');
+  if (fatto.percorso.segni[1].n !== 'il palo della luce') guasto('le parole sono sue');
+  console.log('      → ' + d.testo);
+});
+
+prova('un segno nuovo A DUE PASSI da uno vecchio lo SOSTITUISCE', () => {
+  const w = mondo();
+  const fatto = registraIlPercorso(w, [{ a: 8, n: 'una panchina' }]);
+  w.p.segui(fatto.percorso, CASA);
+  const d = w.p.aggiungiSegno(avanti(8), 'la panchina col cestino');
+  if (fatto.percorso.segni.length !== 1) guasto('non deve accatastarne due');
+  if (fatto.percorso.segni[0].n !== 'la panchina col cestino') guasto('la seconda volta lo dice meglio');
+  if (!/Cambiato/.test(d.testo)) guasto('deve dire che ha cambiato: ' + d.testo);
+});
+
+prova('IL SEGNO APPENA MESSO non si ridice subito', () => {
+  const w = mondo();
+  const fatto = registraIlPercorso(w, []);
+  w.p.segui(fatto.percorso, CASA);
+  w.p.aggiungiSegno(avanti(10), 'il palo');
+  const d = w.p.passoSuPercorso(avanti(10), w.quando());
+  if (d && /palo/.test(d.testo)) guasto('lo ha ridetto subito dopo averlo messo');
+});
+
+prova('SI TOGLIE un segno che non c e piu', () => {
+  const w = mondo();
+  const fatto = registraIlPercorso(w, [{ a: 8, n: 'la panchina' }]);
+  w.p.segui(fatto.percorso, CASA);
+  const d = w.p.toglieSegno(avanti(8));
+  if (!d || !/Tolto/.test(d.testo)) guasto('deve poterlo togliere: ' + JSON.stringify(d));
+  if (fatto.percorso.segni.length !== 0) guasto('non l ha tolto');
+});
+
+prova('togliere dove non c era niente lo dice, e non scoppia', () => {
+  const w = mondo();
+  const fatto = registraIlPercorso(w, []);
+  w.p.segui(fatto.percorso, CASA);
+  const d = w.p.toglieSegno(avanti(5));
+  if (!d || !/non avevi segnato/.test(d.testo)) guasto('dice male: ' + JSON.stringify(d));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei percorsi suoi');

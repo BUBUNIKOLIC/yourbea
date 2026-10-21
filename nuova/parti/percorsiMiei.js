@@ -235,6 +235,64 @@ function PercorsiMiei(opzioni) {
     return null;
   }
 
+  /* ============================================================
+     AGGIUNGERE RIFERIMENTI A UN PERCORSO GIÀ FATTO
+     «Ed è possibile aggiungere riferimenti?» (Vince, 21/10). Sì, e deve
+     esserlo: un percorso non si finisce di conoscere la prima volta che lo
+     si cammina. La seconda uno si accorge del palo, la terza che dopo la
+     panchina c'è il gradino. Così il percorso migliora ogni volta che lo
+     si fa — che è poi la ragione per cui questa idea batte la mappa: la
+     mappa resta ferma, questo impara.
+     Il segno si aggancia a QUANTO HAI CAMMINATO, non alle coordinate: se
+     il GPS sbaglia di dieci metri di lato, il punto lungo il percorso
+     resta giusto lo stesso. */
+  function aggiungiSegno(qui, nota) {
+    if (!inCorso) return null;
+    var percorso = inCorso.percorso;
+    var d = dovunqueSiaSulPercorso(percorso, qui);
+    var testo = String(nota || '').trim();
+    /* se c'e' gia' un segno a pochi passi, si sostituisce invece di
+       accatastarne due: la seconda volta uno lo dice meglio. */
+    var vicinoC = null;
+    (percorso.segni || []).forEach(function (x) {
+      if (Math.abs(x.da - d.quanto) < 12) vicinoC = x;
+    });
+    if (vicinoC) {
+      var prima = vicinoC.n;
+      vicinoC.n = testo || vicinoC.n;
+      vicinoC.lat = qui.lat; vicinoC.lon = qui.lon; vicinoC.da = d.quanto;
+      return { tipo: 'percorso-segno', livello: 'guida', cambiato: true,
+               testo: 'Cambiato: qui adesso c\'è ' + (testo || prima) + '.' };
+    }
+    percorso.segni.push({ lat: qui.lat, lon: qui.lon, da: d.quanto, n: testo });
+    percorso.segni.sort(function (a, b) { return a.da - b.da; });
+    /* e non si ridice subito quello appena messo */
+    inCorso.fatti['s' + Math.round(d.quanto)] = true;
+    inCorso.fatti['avs' + Math.round(d.quanto)] = true;
+    return { tipo: 'percorso-segno', livello: 'guida',
+             testo: 'Segnato' + (testo ? ': ' + testo : '') + '. Adesso questo percorso ha ' +
+                    percorso.segni.length + (percorso.segni.length === 1 ? ' punto.' : ' punti.') };
+  }
+
+  /* toglieSegno(): le cose cambiano — una panchina si toglie, un cantiere
+     finisce. Chi ha messo un segno dev'essere capace di toglierlo. */
+  function toglieSegno(qui) {
+    if (!inCorso) return null;
+    var percorso = inCorso.percorso;
+    var d = dovunqueSiaSulPercorso(percorso, qui);
+    var quale = null;
+    (percorso.segni || []).forEach(function (x) {
+      if (Math.abs(x.da - d.quanto) < 20) quale = x;
+    });
+    if (!quale) {
+      return { tipo: 'percorso-niente', livello: 'guida',
+               testo: 'Qui non avevi segnato niente.' };
+    }
+    percorso.segni = percorso.segni.filter(function (x) { return x !== quale; });
+    return { tipo: 'percorso-tolto', livello: 'guida',
+             testo: 'Tolto' + (quale.n ? ': ' + quale.n : '') + '.' };
+  }
+
   function capo(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
   function smetti() { inCorso = null; }
   function sto() { return inCorso ? inCorso.percorso : null; }
@@ -250,6 +308,7 @@ function PercorsiMiei(opzioni) {
   }
 
   return { comincia: comincia, staRegistrando: staRegistrando, passo: passo,
+           aggiungiSegno: aggiungiSegno, toglieSegno: toglieSegno,
            segna: segna, finisci: finisci, trova: trova, segui: segui,
            passoSuPercorso: passoSuPercorso, smetti: smetti, sto: sto,
            carica: carica, elenco: elenco, perSalvare: perSalvare, butta: butta,

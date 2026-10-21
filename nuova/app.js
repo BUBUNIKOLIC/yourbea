@@ -1983,6 +1983,30 @@
         return true;
       }
     }
+    /* AGGIUNGERE E TOGLIERE RIFERIMENTI mentre cammini un percorso tuo:
+       la seconda volta ti accorgi del palo, la terza che dopo la panchina
+       c'è il gradino. Il percorso impara, la mappa no. */
+    if (miei.sto()) {
+      var diceQui2 = /^(qui|adesso qui|segna qui|segno qui|metti qui|aggiungi qui)\b/i.test(t.trim());
+      if (diceQui2) {
+        var sq = posizione.leggi();
+        var nota2 = t.replace(/^(segna qui|segno qui|metti qui|aggiungi qui|adesso qui|qui)\s*/i, '').trim();
+        var esito = miei.aggiungiSegno({ lat: sq.lat, lon: sq.lon },
+                                       nota2 ? ('qui ' + nota2).replace(/^qui qui /, 'qui ') : '');
+        if (esito) { salvaIMiei(); dilloSubito(esito); return true; }
+      }
+      if (ha('togli questo segno', 'togli il segno', 'qui non c e piu niente', 'cancella questo segno')) {
+        var st = posizione.leggi();
+        var tolto = miei.toglieSegno({ lat: st.lat, lon: st.lon });
+        if (tolto) { salvaIMiei(); dilloSubito(tolto); return true; }
+      }
+      if (ha('lascia il percorso', 'smetti di seguire', 'basta il percorso')) {
+        miei.smetti();
+        voce.parla('Va bene, lascio il percorso.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+    }
+
     if (ha('i miei percorsi', 'che percorsi ho', 'quali percorsi')) {
       var lista = miei.elenco();
       voce.parla(lista.length
