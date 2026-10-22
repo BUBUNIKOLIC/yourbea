@@ -319,6 +319,29 @@ def viaIlCodice(wikitesto):
     t = re.sub(r'[ \t]+', ' ', t)
     return t
 
+# LE SEZIONI CHE PARLANO DELL'EDIFICIO, e non di altro. Misurato il
+# 22/10 su un campione di luoghi che una scheda ce l'hanno ma «com'e'
+# fatta» no: in OTTO casi su SEDICI le misure c'erano, ma fuori
+# dall'incipit — quasi sempre sotto «Descrizione». Leggendo solo
+# l'incipit le stavamo buttando.
+# Non si prende tutto l'articolo: «Note», «Bibliografia», «Opere
+# esposte», «Voci correlate» parlano d'altro, e da li' uscivano i
+# materiali dei quadri appesi invece di quelli dei muri.
+DESCRIVONO = re.compile(r'^\s*(?:la\s+|il\s+|lo\s+)?'
+                       r'(?:descrizione|architettura|struttura|esterno|interno|'
+                       r'aspetto|caratteristiche|facciata|campanile|edificio|'
+                       r'storia\s+e\s+descrizione|descrizione\s+e\s+storia)', re.I)
+
+def pezziCheDescrivono(wikitesto):
+    """l'incipit PIU' le sezioni che parlano di com'e' fatto l'edificio."""
+    pulito = viaIlCodice(wikitesto)
+    pezzi = re.split(r'\n==+\s*([^=\n]+?)\s*==+', pulito)
+    fuori = [pezzi[0]]                       # l'incipit, che vale sempre
+    for i in range(1, len(pezzi) - 1, 2):
+        if DESCRIVONO.match(pezzi[i]):
+            fuori.append(pezzi[i + 1])
+    return '\n'.join(fuori)
+
 def soloIncipit(wikitesto):
     """L'INCIPIT PARLA DEL SOGGETTO; il resto dell'articolo parla d'altro —
        la storia della citta', le opere dentro, la contrada. Pescando da
@@ -359,8 +382,9 @@ def dalTestoPieno(testo, nome='', tipo=''):
         if mats:
             fuori['mat'] = mats
 
-    # 2. L'INCIPIT, per quello che la scheda non aveva
-    incipit = soloIncipit(testo)
+    # 2. L'INCIPIT E LE SEZIONI CHE DESCRIVONO, per quello che la scheda
+    #    non aveva. L'incipit da solo lasciava fuori meta' delle misure.
+    incipit = pezziCheDescrivono(testo)
     if 'h' not in fuori:
         m = ALTEZZA.search(incipit)
         if m:
