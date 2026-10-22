@@ -1,0 +1,31 @@
+it.vdmdata.urbea.app-fragment-1.5.4-0 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/1055e7427dcae85d709193bb0c22a99f/transformed/fragment-1.5.4/res
+it.vdmdata.urbea.app-emoji2-views-helper-1.3.0-1 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/1cdc862266b9746f04ef6fcb03fc6311/transformed/emoji2-views-helper-1.3.0/res
+it.vdmdata.urbea.app-core-ktx-1.15.0-2 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/21f0b47bdc6643dfdbb85974eae20b31/transformed/core-ktx-1.15.0/res
+it.vdmdata.urbea.app-appcompat-1.7.0-3 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/21f40e6831ccc2dba3f365f1fa5aa5be/transformed/appcompat-1.7.0/res
+it.vdmdata.urbea.app-tracing-1.2.0-4 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/42c6a9748943a40dba9d3cc780199fde/transformed/tracing-1.2.0/res
+it.vdmdata.urbea.app-lifecycle-runtime-2.6.2-5 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/44249a215d7418833c4622bd2d553119/transformed/lifecycle-runtime-2.6.2/res
+it.vdmdata.urbea.app-play-services-base-18.5.0-6 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/470f9d093975339c65e302fd8c11a87b/transformed/play-services-base-18.5.0/res
+it.vdmdata.urbea.app-billing-7.1.1-7 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/49109b620f5271123e7cbd9369dfc278/transformed/billing-7.1.1/res
+it.vdmdata.urbea.app-lifecycle-livedata-core-2.6.2-8 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/49a479a749ebb611a0ed04595ba8a69e/transformed/lifecycle-livedata-core-2.6.2/res
+it.vdmdata.urbea.app-savedstate-1.2.1-9 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/4c9a0fd266877b2518fb460fae9f7a13/transformed/savedstate-1.2.1/res
+it.vdmdata.urbea.app-activity-1.7.0-10 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/4d09c078ac60e3a92d178d24ce5ad642/transformed/activity-1.7.0/res
+it.vdmdata.urbea.app-lifecycle-viewmodel-2.6.2-11 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/4fe0fd6c415805b12aea80dc528c36bb/transformed/lifecycle-viewmodel-2.6.2/res
+it.vdmdata.urbea.app-lifecycle-livedata-2.6.2-12 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/5761853ebc464ec5840009619dc125b3/transformed/lifecycle-livedata-2.6.2/res
+it.vdmdata.urbea.app-profileinstaller-1.3.1-13 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/5ac3ab049421cc0ad6ef7b615a6cc4b7/transformed/profileinstaller-1.3.1/res
+it.vdmdata.urbea.app-emoji2-1.3.0-14 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/7d3935093331f814f1225c7dd6d9a5ae/transformed/emoji2-1.3.0/res
+it.vdmdata.urbea.app-webkit-1.12.1-15 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/8e7273a8b88e0b5652e9b65f2a2d0864/transformed/webkit-1.12.1/res
+it.vdmdata.urbea.app-startup-runtime-1.1.1-16 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/a382e0189ad62cf4b941ffd72beda4b5/transformed/startup-runtime-1.1.1/res
+it.vdmdata.urbea.app-lifecycle-viewmodel-savedstate-2.6.2-17 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/c1b618c961dbb566e6bfddbb15416ef9/transformed/lifecycle-viewmodel-savedstate-2.6.2/res
+it.vdmdata.urbea.app-appcompat-resources-1.7.0-18 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/c31187c29d025c80f2a0a4ff1f8e5ffc/transformed/appcompat-resources-1.7.0/res
+it.vdmdata.urbea.app-play-services-basement-18.4.0-19 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/c4386b6fc60f3841e162027bfdc478f5/transformed/play-services-basement-18.4.0/res
+it.vdmdata.urbea.app-annotation-experimental-1.4.1-20 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/c6701f0aec77b966529b3de31c824db0/transformed/annotation-experimental-1.4.1/res
+it.vdmdata.urbea.app-core-1.15.0-21 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/c790e5adc8a22fa8dc2971daa4df1ef8/transformed/core-1.15.0/res
+it.vdmdata.urbea.app-lifecycle-process-2.6.2-22 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/e0a0f6261a2b0a3112a6961d3ea614e6/transformed/lifecycle-process-2.6.2/res
+it.vdmdata.urbea.app-core-runtime-2.2.0-23 /Users/vincedimeglio/.gradle/caches/9.8.2/transforms/f133e22fa181243331673ea11cc6ccae/transformed/core-runtime-2.2.0/res
+it.vdmdata.urbea.app-pngs-24 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/build/generated/res/pngs/release
+it.vdmdata.urbea.app-resValues-25 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/build/generated/res/resValues/release
+it.vdmdata.urbea.app-packageReleaseResources-26 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/build/intermediates/incremental/release/packageReleaseResources/merged.dir
+it.vdmdata.urbea.app-packageReleaseResources-27 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/build/intermediates/incremental/release/packageReleaseResources/stripped.dir
+it.vdmdata.urbea.app-release-28 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/build/intermediates/merged_res/release/mergeReleaseResources
+it.vdmdata.urbea.app-main-29 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/src/main/res
+it.vdmdata.urbea.app-release-30 /Users/vincedimeglio/Desktop/ARCHIVIO DESKTOP/URBEA/guscio-android/app/src/release/res

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yourbea</string>
+    <string name="cammino_testo">Sto seguendo dove sei. Per fermarmi, dimmi «ferma».</string>
+    <string name="cammino_titolo">Yourbea ti accompagna</string>
+    <style name="Tema" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:windowBackground">#101014</item>
+  </style>
+</resources>

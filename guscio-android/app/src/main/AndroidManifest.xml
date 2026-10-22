@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  IL GUSCIO ANDROID — Yourbea, 21/10/2026
+      L'app vera e' la pagina: https://bubunikolic.github.io/yourbea/nuova/
+      Questo e' solo il guscio, e fa le cose che una pagina web non puo':
+      il microfono che resta aperto, il GPS mentre lo schermo e' spento, la
+      rubbrica, e i soldi.
+      PERCHE' NON BASTA LA TWA DI OTTOBRE: una Trusted Web Activity e'
+      Chrome senza i bordi. Non puo' vendere niente (serve Play Billing),
+      non puo' tenere il GPS acceso in sottofondo, e non puo' dare alla
+      pagina nessuna delle funzioni window.urbea*. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <!-- CHI NON VEDE CAMMINA COL TELEFONO IN TASCA. Senza questo e senza il
+       servizio in primo piano, Android spegne il GPS appena lo schermo si
+       spegne: e' lo stesso guaio per cui su iPhone l'app «spariva». -->
+  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- il contapassi: da Android 10 vuole il suo permesso -->
+  <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="com.android.vending.BILLING" />
+
+  <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+  <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+  <application
+      android:label="@string/app_name"
+      android:icon="@mipmap/ic_launcher"
+      android:roundIcon="@mipmap/ic_launcher"
+      android:usesCleartextTraffic="false"
+      android:allowBackup="true"
+      android:theme="@style/Tema">
+
+    <activity
+        android:name=".Guscio"
+        android:exported="true"
+        android:screenOrientation="portrait"
+        android:configChanges="orientation|screenSize|keyboardHidden|fontScale|uiMode"
+        android:launchMode="singleTask">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <!-- «Ok Google, apri Yourbea» lo fa il sistema da se', con questo
+           nome. Ma un percorso mandato per WhatsApp deve aprirsi QUI e non
+           nel browser: per questo il filtro sul link. -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" android:host="bubunikolic.github.io"
+              android:pathPrefix="/yourbea/nuova" />
+      </intent-filter>
+    </activity>
+
+    <service
+        android:name=".ServizioCammino"
+        android:exported="false"
+        android:foregroundServiceType="location" />
+  </application>
+</manifest>

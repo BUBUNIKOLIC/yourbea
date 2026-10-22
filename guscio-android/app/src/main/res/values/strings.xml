@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Yourbea</string>
+  <string name="cammino_titolo">Yourbea ti accompagna</string>
+  <string name="cammino_testo">Sto seguendo dove sei. Per fermarmi, dimmi «ferma».</string>
+</resources>

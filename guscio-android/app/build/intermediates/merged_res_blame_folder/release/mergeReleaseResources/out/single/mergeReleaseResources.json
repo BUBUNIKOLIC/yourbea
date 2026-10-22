@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "it.vdmdata.urbea.app-release-28:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "it.vdmdata.urbea.app-main-29:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "it.vdmdata.urbea.app-release-28:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "it.vdmdata.urbea.app-main-29:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "it.vdmdata.urbea.app-release-28:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "it.vdmdata.urbea.app-main-29:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "it.vdmdata.urbea.app-release-28:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "it.vdmdata.urbea.app-main-29:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "it.vdmdata.urbea.app-release-28:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "it.vdmdata.urbea.app-main-29:/mipmap-hdpi/ic_launcher.png"
+    }
+]
