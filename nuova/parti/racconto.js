@@ -48,6 +48,7 @@ function Racconto(opzioni) {
   var detti = {};            // nome -> {quando, lat, lon}
   var gradino = {};          // nome -> quanti gradini ho già detto
   var inCorso = null;        // il luogo di cui sto raccontando
+  var inCorsoDove = null;    // e da dove lo stavo raccontando
 
   /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
      «Non basta leggere la pagina Wikipedia: serve un'audiodescrizione
@@ -91,8 +92,29 @@ function Racconto(opzioni) {
     return dist(qui.lat, qui.lon, v.lat, v.lon) < 200;
   }
 
+  /* QUELLO CHE STAVI GUARDANDO, SE TE NE VAI, NON LO GUARDI PIU'.
+     22/10 notte, facendo camminare l'app sui Fori Imperiali dentro
+     l'emulatore: «Qui c'e' il Palazzo Guidiccioni». Quel palazzo sta a
+     **Lucca**, duecentosettanta chilometri piu' in la'. Era il luogo
+     «in corso» della camminata di prima, e `inCorso` non ha mai avuto
+     un controllo di distanza: bastava fermarsi dieci secondi, dovunque
+     nel mondo, e l'app riprendeva a raccontare quello.
+     Non e' un caso di laboratorio: succede a chiunque prenda un treno,
+     o apra l'app il giorno dopo in un'altra citta'. E vale anche per
+     «ancora», che riprende da li' senza sapere dove sei.
+     Duecento metri: oltre, quel posto non ce l'hai piu' davanti. */
+  var TROPPO_LONTANO = o.troppoLontano || 200;
+  function lasciaQuelloLontano(qui) {
+    if (!inCorso || !inCorsoDove || !qui) return;
+    if (dist(qui.lat, qui.lon, inCorsoDove.lat, inCorsoDove.lon) > TROPPO_LONTANO) {
+      inCorso = null;
+      inCorsoDove = null;
+    }
+  }
+
   /* dove(): aggiorna il senso di «fermo». Si chiama a ogni posizione nuova. */
   function dove(qui) {
+    lasciaQuelloLontano(qui);
     if (fermoLat === null || dist(qui.lat, qui.lon, fermoLat, fermoLon) > FERMO_RAGGIO) {
       fermoLat = qui.lat; fermoLon = qui.lon; fermoDa = ora();
       return false;
@@ -131,14 +153,14 @@ function Racconto(opzioni) {
           var quandoFermo = fermiDetti[vicino.n] || 0;
           if (ora() - quandoFermo > 180000) {
             fermiDetti[vicino.n] = ora();
-            inCorso = vicino;
+            inCorso = vicino; inCorsoDove = { lat: qui.lat, lon: qui.lon };
             return { tipo: 'aCosaServe', luogo: vicino, livello: 'guida',
                      testo: 'Qui c\'è ' + conArticolo(vicino) + '.' };
           }
           return null;
         }
         if ((gradino[vicino.n] || 0) < quantiGradini(vicino)) {
-          inCorso = vicino;
+          inCorso = vicino; inCorsoDove = { lat: qui.lat, lon: qui.lon };
           var sceso = scendiDiUnGradino(vicino);
           if (sceso && sceso.tipo !== 'finito') return sceso;
         }
@@ -185,7 +207,7 @@ function Racconto(opzioni) {
       }
       if (o.m > raggio(p, modo)) continue;
       detti[p.n] = { quando: ora(), lat: qui.lat, lon: qui.lon };
-      inCorso = p;
+      inCorso = p; inCorsoDove = { lat: qui.lat, lon: qui.lon };
       gradino[p.n] = 0;
       /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
          non essere gettato. Era il difetto di Gabri a Parma. */
@@ -458,7 +480,7 @@ function Racconto(opzioni) {
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
     gradinoDi: function (p) { return gradino[p.n] || 0; },
-    dimentica: function () { detti = {}; gradino = {}; fatteCosi = {}; inCorso = null; }
+    dimentica: function () { detti = {}; gradino = {}; fatteCosi = {}; inCorso = null; inCorsoDove = null; }
   };
 }
 

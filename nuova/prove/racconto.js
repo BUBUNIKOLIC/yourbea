@@ -463,6 +463,43 @@ prova('in Turismo un luogo senza scheda non prende il cenno', () => {
   if (d) guasto('in Turismo accenna una cosa che poi non sa raccontare: ' + d.testo);
 });
 
+prova('QUELLO CHE HAI LASCIATO A 270 KM NON TE LO RACCONTA PIU', () => {
+  /* 22/10 notte, camminando sui Fori Imperiali dentro l emulatore: «Qui
+     c e il Palazzo Guidiccioni». Quel palazzo sta a Lucca. Era il luogo
+     «in corso» della camminata di prima, e inCorso non ha mai avuto un
+     controllo di distanza: bastava fermarsi dieci secondi, dovunque nel
+     mondo. Succede a chiunque prenda un treno. */
+  const m = mondo();
+  const lucca = { n: 'Palazzo Guidiccioni', t: 'palazzo', lat: 43.84403, lon: 10.5048,
+                  k: 1, d: 'Un palazzo che sta a Lucca.' };
+  const aLucca = { lat: 43.8440, lon: 10.5047 };
+  m.r.prossimo({ qui: aLucca, intorno: intorno([[lucca, 20, 0]], aLucca),
+                 modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (!m.r.inCorso()) return guasto('a Lucca non lo ha nemmeno preso in carico');
+  const aiFori = { lat: 41.8902, lon: 12.4922 };
+  m.passano(60000);
+  let d = null;
+  for (let i = 0; i < 3; i++) { m.passano(5000); d = m.r.prossimo({ qui: aiFori, intorno: [], modo: 'cultura', direzioneBuona: true, aPiedi: true }); }
+  if (d) guasto('ai Fori racconta ancora Lucca: ' + d.testo);
+  if (m.r.ancora()) guasto('e «ancora» riprende da Lucca');
+  if (m.r.inCorso()) guasto('il luogo in corso e ancora quello di Lucca');
+});
+
+prova('MA A VENTI METRI RESTA QUELLO CHE STAI GUARDANDO', () => {
+  const m = mondo();
+  const p = { n: 'Chiesa di Prova', t: 'chiesa', lat: 44.8030, lon: 10.3290, k: 1,
+              d: 'La chiesa fu edificata nel 1450.', i: 'Il portale.' };
+  m.r.prossimo({ qui: QUI, intorno: intorno([[p, 25, 0]], QUI), modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (!m.r.inCorso()) return guasto('non lo ha preso in carico');
+  /* ci si sposta di una ventina di metri: sei ancora davanti, e «ancora»
+     deve continuare a parlare di quello */
+  const poco = { lat: QUI.lat + 0.00018, lon: QUI.lon };
+  m.passano(5000);
+  m.r.prossimo({ qui: poco, intorno: intorno([[p, 30, 0]], poco), modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (!m.r.inCorso()) guasto('spostandosi di venti metri lo ha gia lasciato perdere');
+  if (!m.r.ancora()) guasto('e «ancora» non dice piu niente');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');
