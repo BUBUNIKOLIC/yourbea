@@ -12,8 +12,8 @@
 12-->
 13<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 14    package="it.vdmdata.urbea"
-15    android:versionCode="10"
-16    android:versionName="1.5.1" >
+15    android:versionCode="11"
+16    android:versionName="1.5.2" >
 17
 18    <uses-sdk
 19        android:minSdkVersion="26"

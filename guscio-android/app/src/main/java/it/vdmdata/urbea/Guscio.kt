@@ -558,10 +558,19 @@ class Guscio : AppCompatActivity() {
     })
   }
 
+  /* SI RIPETE ANCHE SE NON CAMBIA. La pagina, dopo un minuto e mezzo di
+     silenzio, butta l'informazione e torna a indovinare dalla velocita':
+     fermo a un semaforo in scooter, in quindici secondi la media mobile
+     scende a zero e l'app ricomincia a dare gli attraversamenti contati
+     in passi. Un fiato ogni mezzo minuto e non scade mai. */
+  private var ultimoFiato = 0L
+
   private fun diLaAttivita(come: String) {
-    if (come == ultimaAttivita) return
+    val ora = System.currentTimeMillis()
+    if (come == ultimaAttivita && ora - ultimoFiato < 30000) return
+    if (come != ultimaAttivita) scrivi("passometro: " + come)
     ultimaAttivita = come
-    scrivi("passometro: " + come)
+    ultimoFiato = ora
     allaPagina("window.urbeaAttivita && window.urbeaAttivita(\"" + come + "\", true)")
   }
 

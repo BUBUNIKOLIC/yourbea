@@ -56,6 +56,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private let passometro = CMMotionActivityManager()
   private let contapassi = CMPedometer()
   private var ultimaAttivita = ""
+  private var comeMiMuovo = ""
+  private var battitoAttivita: Timer?
   private let riconoscitore = SFSpeechRecognizer(locale: Locale(identifier: "it-IT"))
   private var motore: AVAudioEngine?
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
@@ -547,8 +549,21 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       let riga = come + (sicuro ? "" : "?")
       if riga == self.ultimaAttivita { return }
       self.ultimaAttivita = riga
+      self.comeMiMuovo = come
       self.scrivi("passometro: " + riga)
       self.allaPagina("window.urbeaAttivita && window.urbeaAttivita(\"\(come)\", \(sicuro ? "true" : "false"))")
+    }
+    /* E SI RIPETE OGNI MEZZO MINUTO, anche se non cambia niente.
+       CoreMotion parla solo quando l'attivita' CAMBIA: fermo in scooter a
+       un semaforo puo' tacere per un quarto d'ora. Dall'altra parte la
+       pagina, dopo un minuto e mezzo di silenzio, butta l'informazione e
+       torna a indovinare dalla velocita' — ed e' li' che il 22/10 ha
+       ricominciato a dare gli attraversamenti in passi a uno che andava a
+       cinquanta all'ora. Un fiato ogni trenta secondi e non scade mai. */
+    battitoAttivita = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+      guard let self = self, !self.comeMiMuovo.isEmpty else { return }
+      let sicuro = !self.ultimaAttivita.hasSuffix("?")
+      self.allaPagina("window.urbeaAttivita && window.urbeaAttivita(\"\(self.comeMiMuovo)\", \(sicuro ? "true" : "false"))")
     }
   }
 
