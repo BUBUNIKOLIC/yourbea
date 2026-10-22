@@ -367,24 +367,29 @@ function Racconto(opzioni) {
     var r = rango(p);
     return r >= 3 ? Math.round(base * 1.7) : (r === 2 ? Math.round(base * 1.3) : base);
   }
-  /* FIN DOVE SI GUARDA, E PERCHE' STA SCRITTO QUI DENTRO.
-     Il moltiplicatore e' quello di Microsoft Soundscape (sei volte, in
-     macchina), ma con un tetto che loro non hanno bisogno di mettere:
-     camminando loro annunciano a cinquanta metri, noi a duecentoquaranta,
-     e sei volte duecentoquaranta sarebbero un chilometro e mezzo di roba
-     annunciata che poi non passi nemmeno accanto. Mille e duecento metri
-     sono un minuto e mezzo a cinquanta all'ora: il tempo di sentirlo
-     dire e di arrivarci.
-     E sta qui, non in app.js, perche' chi raccoglie i posti intorno deve
-     guardare esattamente fin dove guarda il racconto: scritto in due
-     posti, al primo ritocco si scolla — e' gia' successo coi gradini. */
-  var PIU_LONTANO = 6;            // il moltiplicatore di Soundscape
-  var MAI_OLTRE = 1200;           // ...ma non oltre
+  /* FIN DOVE SI GUARDA QUANDO NON CAMMINI, e perche' si e' stretto.
+     Il 22/10 l'avevo aperto a mille e duecento metri: sei volte il
+     raggio, come fa Microsoft Soundscape in macchina. Vince l'ha provata
+     in scooter la sera stessa: «sono entrato nel palazzetto e mi diceva
+     che a 900 passi c'era la chiesa di San Marco». La cattedrale era a
+     seicento metri buoni, e lui stava entrando da un'altra parte.
+     L'errore non era il moltiplicatore, era l'idea: a Soundscape
+     quel raggio serve per ANNUNCIARE IN ANTICIPO qualcosa verso cui stai
+     andando. Chi gira in citta' per i fatti suoi non sta andando da
+     nessuna parte in particolare, e una cosa a seicento metri non la
+     incontra mai: la sente e basta.
+     «Non spegnerli, ma stringi: solo quelli molto vicini» (Vince).
+     Centocinquanta metri: a trenta all'ora sono venti secondi, cioe'
+     glielo si dice mentre ci passa davanti — non mentre e' da un'altra
+     parte. E restano solo i luoghi di rango 3, uno ogni 45 secondi.
+     E l'elenco dei posti intorno torna a mezzo chilometro per tutti:
+     allargarlo serviva solo a questo, e intanto allargava anche le
+     altre parti che lo usano. */
+  var MOLTO_VICINO = 150;         // in movimento, e basta
+  function finDove() { return 500; }
   function soglia(p, modo, aPiedi) {
-    var r = raggio(p, modo);
-    return aPiedi === false ? Math.min(r * PIU_LONTANO, MAI_OLTRE) : r;
+    return aPiedi === false ? MOLTO_VICINO : raggio(p, modo);
   }
-  function finDove(aPiedi) { return aPiedi === false ? MAI_OLTRE : 500; }
   /* QUATTRO PAROLE, NON SETTE. «In Utilità metti avanti, dietro, destra,
      sinistra. Non nord» (Vince, 16/10). «Proprio a destra» e «indietro a
      destra» sembrano precise e invece fanno fermare a pensare: chi

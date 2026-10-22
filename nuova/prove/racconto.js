@@ -419,11 +419,17 @@ const BASILICA = { n: 'Basilica di Prova', lat: 44.8100, lon: 10.3289, k: 1, r: 
 const CHIESETTA = { n: 'Chiesetta di Prova', lat: 44.8030, lon: 10.3289, k: 1,
   d: 'Una chiesetta che camminando si racconta e in macchina no.' };
 
-prova('in movimento la basilica si dice, e a un chilometro di distanza', () => {
+prova('in movimento la basilica si dice solo quando ci passi davanti', () => {
+  /* «Sono entrato nel palazzetto e mi diceva che a 900 passi c'era la
+     chiesa di San Marco» (Vince, 22/10, in scooter). A seicento metri non
+     ci passi: la senti e basta. Adesso centocinquanta e non di piu. */
   const m = mondo();
-  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BASILICA, 900, 10]], QUI),
+  const lontano = m.r.prossimo({ qui: QUI, intorno: intorno([[BASILICA, 600, 10]], QUI),
+                                 modo: 'cultura', direzioneBuona: true, aPiedi: false });
+  if (lontano) guasto('in movimento annuncia roba a 600 metri: ' + lontano.testo);
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BASILICA, 120, 10]], QUI),
                            modo: 'cultura', direzioneBuona: true, aPiedi: false });
-  if (!d) return guasto('in movimento tace ancora: era il difetto di Termini');
+  if (!d) return guasto('e adesso tace anche quando ci passi davanti');
   if (d.tipo !== 'cenno') return guasto('tipo sbagliato: ' + d.tipo);
   if (/passi/.test(d.testo)) guasto('dice i passi a chi e in macchina: ' + d.testo);
   if (!/metri|chilometr/.test(d.testo)) guasto('non dice quanto manca: ' + d.testo);

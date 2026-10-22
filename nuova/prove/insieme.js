@@ -194,18 +194,18 @@ prova('IN MACCHINA non si tace: si guarda piu lontano e si dice meno', () => {
   }
 });
 
-prova('IN MACCHINA l app guarda un chilometro e mezzo, non cinquecento metri', () => {
-  /* il raggio per sei di parti/racconto non serve a niente se l elenco dei
-     posti intorno si ferma prima: era li che moriva, nell app vera. */
+prova('L ELENCO DEI POSTI INTORNO resta mezzo chilometro, sempre', () => {
+  /* Il 22/10 l avevo allargato a 1200 metri quando non cammini, per dare
+     aria al raggio del racconto. Ma vicini() lo usano anche altre parti —
+     il giro di parole, «dove sono» — e allargarlo allargava anche loro.
+     Adesso il raggio stretto sta dentro il racconto, e questo resta fermo. */
   const posto = unPostoConIDati();
   if (!posto) { guasto('niente dati'); return; }
   const a = App('cultura');
   a.caricaQuadretto(posto.quadretto);
   const qui = { lat: posto.luogo.lat - 0.008, lon: posto.luogo.lon, direzione: 0 };
-  const camminando = a.vicini(qui, true).length;
-  const inMacchina = a.vicini(qui, false).length;
-  if (!(inMacchina > camminando)) {
-    guasto('in macchina guarda lontano come a piedi: ' + inMacchina + ' contro ' + camminando);
+  if (a.vicini(qui, true).length !== a.vicini(qui, false).length) {
+    guasto('l elenco cambia a seconda di come ti muovi');
   }
 });
 
@@ -244,9 +244,9 @@ prova('IN MACCHINA, davanti a un punto di riferimento VERO, l app parla', () => 
   const g = unQuadrettoConUnGrande(a.racconto);
   if (!g) { guasto('niente punti di riferimento nei dati'); return; }
   a.caricaQuadretto(g.quadretto);
-  const qui = { lat: g.luogo.lat - 0.007, lon: g.luogo.lon, direzione: 0 };   // ~780 metri
+  const qui = { lat: g.luogo.lat - 0.001, lon: g.luogo.lon, direzione: 0 };   // ~110 metri: ci passi davanti
   const d = a.passo(qui, false);
-  if (!d) { guasto('in macchina tace ancora a 780 metri da ' + g.luogo.n); return; }
+  if (!d) { guasto('in macchina tace anche passandoci davanti: ' + g.luogo.n); return; }
   if (/passi/.test(d.testo)) guasto('in macchina conta i passi: ' + d.testo);
   console.log('      → ' + d.testo);
 });
@@ -256,7 +256,7 @@ prova('IN MACCHINA non diventa una radio: uno ogni tre quarti di minuto', () => 
   const g = unQuadrettoConUnGrande(a.racconto);
   if (!g) { guasto('niente punti di riferimento nei dati'); return; }
   a.caricaQuadretto(g.quadretto);
-  const qui = { lat: g.luogo.lat - 0.007, lon: g.luogo.lon, direzione: 0 };
+  const qui = { lat: g.luogo.lat - 0.001, lon: g.luogo.lon, direzione: 0 };
   if (!a.passo(qui, false)) { guasto('la prima non e uscita'); return; }
   a.passano(6000);
   if (a.passo(qui, false)) guasto('sei secondi dopo ne dice un altro: e una radio');
