@@ -22,6 +22,7 @@
        window.urbeaPosizione()    il guscio la chiama a ogni passo
        window.urbeaAttivita()     fermo/cammina/corre/bici/mezzo, dal passometro
        window.urbeaVibra()        la pagina chiede un colpo alla mano
+       window.urbeaPassi()        quanti passi hai fatto da quando e' aperta
        window.urbeaAscolta()      apri il microfono, una frase
        window.urbeaChiudiAscolto()
        window.urbeaComando()      il guscio la chiama con la frase capita
@@ -53,6 +54,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private var pagina: WKWebView!
   private let gps = CLLocationManager()
   private let passometro = CMMotionActivityManager()
+  private let contapassi = CMPedometer()
   private var ultimaAttivita = ""
   private let riconoscitore = SFSpeechRecognizer(locale: Locale(identifier: "it-IT"))
   private var motore: AVAudioEngine?
@@ -466,6 +468,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     gps.requestWhenInUseAuthorization()
     gps.startUpdatingLocation()
     preparaPassometro()
+    preparaContapassi()
     /* IL BATTITO. iOS manda una posizione nuova solo quando ti SPOSTI di
        cinque metri: fermo in casa il guscio taceva, e la pagina — che dopo
        cinque secondi di silenzio si arrende e chiede al browser — finiva a
@@ -494,6 +497,26 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      pagina decide: se la parola e' fresca comanda lei, se no si torna
      alla velocita' come prima — un telefono vecchio o un permesso negato
      non devono lasciare l'app senza niente. */
+  /* QUANTI PASSI HAI FATTO. Serve per misurare quanto e' lungo il passo
+     di chi cammina: il GPS dice i metri, il contapassi dice i passi, e la
+     divisione e' la sua falcata. Settantacinque centimetri sono la media
+     di una popolazione e non il passo di nessuno — a sedici passi da una
+     porta, fra 0,60 e 0,80 ci sono quattro metri di differenza, cioe' la
+     porta sbagliata. */
+  private func preparaContapassi() {
+    guard CMPedometer.isStepCountingAvailable() else {
+      scrivi("contapassi: questo telefono non ce l'ha")
+      return
+    }
+    contapassi.startUpdates(from: Date()) { [weak self] d, _ in
+      guard let self = self, let d = d else { return }
+      let n = d.numberOfSteps.intValue
+      DispatchQueue.main.async {
+        self.allaPagina("window.urbeaPassi && window.urbeaPassi(\(n))")
+      }
+    }
+  }
+
   private func preparaPassometro() {
     guard CMMotionActivityManager.isActivityAvailable() else {
       scrivi("passometro: questo telefono non ce l'ha")

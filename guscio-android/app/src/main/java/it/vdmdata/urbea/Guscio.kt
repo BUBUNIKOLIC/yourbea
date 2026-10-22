@@ -8,6 +8,7 @@
       window.urbeaPosizione()    il guscio la chiama a ogni passo
       window.urbeaAttivita()     fermo/cammina/mezzo, dal contapassi
       window.urbeaVibra()        un colpo alla mano: il faro e le svolte
+      window.urbeaPassi()        quanti passi hai fatto da quando e' aperta
       window.urbeaAscolta()      apri il microfono
       window.urbeaChiudiAscolto()
       window.urbeaComando()      il guscio la chiama con la frase capita
@@ -515,6 +516,9 @@ class Guscio : AppCompatActivity() {
   private var quantiPassi = 0
   private var ultimaAttivita = ""
   private var velocitaOra = 0f
+  /* i passi da quando l'app e' aperta: servono alla pagina per
+     misurare quanto e' lunga la falcata di chi cammina */
+  private var passiInTutto = 0
 
   private fun guardaIPassi() {
     val sm = getSystemService(Context.SENSOR_SERVICE) as? SensorManager ?: return
@@ -534,6 +538,12 @@ class Guscio : AppCompatActivity() {
         quantiPassi++
         ultimoPasso = ora
         if (quantiPassi >= 3) diLaAttivita("cammina")
+        passiInTutto++
+        /* si manda ogni dieci, non a ogni passo: la pagina somma lo stesso
+           e il ponte non si intasa camminando */
+        if (passiInTutto % 10 == 0) {
+          allaPagina("window.urbeaPassi && window.urbeaPassi($passiInTutto)")
+        }
       }
       override fun onAccuracyChanged(s: Sensor?, a: Int) {}
     }, s, SensorManager.SENSOR_DELAY_NORMAL)
