@@ -472,10 +472,24 @@
     var s = posizione.leggi();
     if (!s.pronto) return [];
     var lista = [];
+    /* QUANTO LONTANO SI GUARDA DIPENDE DA QUANTO VAI FORTE. Camminando,
+       mezzo chilometro e' gia' dieci minuti. In macchina mezzo chilometro
+       sono venti secondi: un luogo entra nell'elenco e ne sei gia' fuori
+       prima che l'app apra bocca — ed era questo, insieme alla regola del
+       cenno, a far tacere il Turismo da Termini a casa. In movimento si
+       guarda un chilometro e mezzo, che e' il raggio per sei di
+       parti/racconto (la regola di Soundscape): se qui si tagliasse a
+       cinquecento metri, quel raggio non servirebbe a niente. */
+    /* fin dove lo decide parti/racconto: e' la stessa regola del raggio,
+       e deve restare una copia sola. La scatola e' solo un prefiltro
+       veloce: larga abbastanza da non tagliare niente nemmeno in cima
+       all'Italia, dove un grado di longitudine e' piu' corto. */
+    var FIN_DOVE = racconto.finDove(s.aPiedi);
+    var SCATOLA = FIN_DOVE / 70000;
     LUOGHI.forEach(function (p) {
-      if (Math.abs(p.lat - s.lat) > 0.008 || Math.abs(p.lon - s.lon) > 0.008) return;
+      if (Math.abs(p.lat - s.lat) > SCATOLA || Math.abs(p.lon - s.lon) > SCATOLA) return;
       var m = posizione.dist(s.lat, s.lon, p.lat, p.lon);
-      if (m > 500) return;
+      if (m > FIN_DOVE) return;
       var rel = ((posizione.verso(s.lat, s.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       lista.push({ p: p, m: m, rel: rel });
     });
@@ -2112,8 +2126,12 @@
       return;
     }
     // e il racconto
+    /* COME TI MUOVI DECIDE COSA SENTI: senza questo il racconto credeva
+       di avere sempre davanti uno che cammina, e in macchina produceva
+       cenni a ottanta passi che la regola poi buttava via in silenzio. */
     var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo,
                                 direzioneBuona: s.direzioneBuona,
+                                aPiedi: s.aPiedi,
                                 cardinale: null });
     if (d) dillo(d);
   });

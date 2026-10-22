@@ -407,6 +407,61 @@ prova('FERMANDOSI davanti, la prima cosa e com e fatta — non la storia', () =>
   else console.log('      → ' + d.testo);
 });
 
+/* ==================== IL MOVIMENTO: NON SI TACE, SI GUARDA PIU' LONTANO ====================
+   «Turismo non ha mai parlato» (Vince, 21/10, da Termini a casa, fino a 77
+   km/h). La regola del cenno buttava via tutto. Adesso vale la regola di
+   Soundscape: raggio per sei, solo le cose grandi, e i metri al posto dei
+   passi. Queste quattro prove sono quelle che il quaderno di quella sera
+   avrebbe fatto fallire. */
+
+const BASILICA = { n: 'Basilica di Prova', lat: 44.8100, lon: 10.3289, k: 1, r: 3,
+  d: 'Una basilica grande abbastanza da vedersi da lontano.', i: 'Il portale.' };
+const CHIESETTA = { n: 'Chiesetta di Prova', lat: 44.8030, lon: 10.3289, k: 1,
+  d: 'Una chiesetta che camminando si racconta e in macchina no.' };
+
+prova('in movimento la basilica si dice, e a un chilometro di distanza', () => {
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BASILICA, 900, 10]], QUI),
+                           modo: 'cultura', direzioneBuona: true, aPiedi: false });
+  if (!d) return guasto('in movimento tace ancora: era il difetto di Termini');
+  if (d.tipo !== 'cenno') return guasto('tipo sbagliato: ' + d.tipo);
+  if (/passi/.test(d.testo)) guasto('dice i passi a chi e in macchina: ' + d.testo);
+  if (!/metri|chilometr/.test(d.testo)) guasto('non dice quanto manca: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
+prova('in movimento la chiesetta non si dice: a quella velocita e rumore', () => {
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[CHIESETTA, 100, 10]], QUI),
+                           modo: 'cultura', direzioneBuona: true, aPiedi: false });
+  if (d) guasto('in macchina dice anche le cose piccole: ' + d.testo);
+});
+
+prova('quello che non si e detto in macchina non si e consumato', () => {
+  const m = mondo();
+  m.r.prossimo({ qui: QUI, intorno: intorno([[CHIESETTA, 100, 10]], QUI),
+                 modo: 'cultura', direzioneBuona: true, aPiedi: false });
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[CHIESETTA, 100, 10]], QUI),
+                           modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (!d) return guasto('sceso dalla macchina, la chiesetta e sparita per sempre');
+  console.log('      → ' + d.testo);
+});
+
+prova('camminando la basilica a 900 metri resta troppo lontana', () => {
+  const m = mondo();
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[BASILICA, 900, 10]], QUI),
+                           modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (d) guasto('a piedi annuncia roba a 900 metri: ' + d.testo);
+});
+
+prova('in Turismo un luogo senza scheda non prende il cenno', () => {
+  const m = mondo();
+  const senza = { n: 'Ferramenta Prova', lat: 44.8030, lon: 10.3290, k: 1, senzaScheda: true };
+  const d = m.r.prossimo({ qui: QUI, intorno: intorno([[senza, 50, 10]], QUI),
+                           modo: 'cultura', direzioneBuona: true, aPiedi: true });
+  if (d) guasto('in Turismo accenna una cosa che poi non sa raccontare: ' + d.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');

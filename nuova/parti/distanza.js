@@ -56,7 +56,23 @@ function Distanza(opzioni) {
 
   function passi(metri) { return 'a ' + nudi(metri); }
 
-  return { passi: passi, nudi: nudi, quanti: quanti };
+  /* IN MACCHINA I PASSI NON ESISTONO. «A ottocento passi la basilica»
+     detto a chi va a cinquanta all'ora non e' una misura: i passi li
+     capisci perche' li fai, e seduto non ne fai nessuno. In movimento si
+     torna ai metri, arrotondati a cinquanta — fingere i dieci metri
+     mentre ne percorri quindici al secondo sarebbe una bugia — e sopra il
+     chilometro si dicono i chilometri, come per i passi. */
+  function inMetri(m) {
+    var v = Number(m) || 0;
+    if (v >= 950) {
+      var km = Math.round(v / 100) / 10;
+      return 'a ' + String(km).replace('.', ' e ') +
+             (km === 1 ? ' chilometro' : ' chilometri');
+    }
+    return 'a ' + Math.max(50, Math.round(v / 50) * 50) + ' metri';
+  }
+
+  return { passi: passi, nudi: nudi, quanti: quanti, inMetri: inMetri };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Distanza;

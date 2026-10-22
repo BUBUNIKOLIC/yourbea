@@ -48,6 +48,8 @@ function Racconto(opzioni) {
   var detti = {};            // nome -> {quando, lat, lon}
   var gradino = {};          // nome -> quanti gradini ho già detto
   var inCorso = null;        // il luogo di cui sto raccontando
+  var ultimoInCorsa = 0;     // l'ultima cosa detta mentre si va in macchina
+  var IN_CORSA_OGNI = o.inCorsaOgni || 45000;
 
   /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
      «Non basta leggere la pagina Wikipedia: serve un'audiodescrizione
@@ -145,11 +147,41 @@ function Racconto(opzioni) {
       }
     }
 
-    // 2. CAMMINANDO: il cenno del prossimo luogo non ancora detto
+    /* 2. IL CENNO DEL PROSSIMO LUOGO NON ANCORA DETTO — CAMMINANDO, E
+       ANCHE IN MOVIMENTO, MA NON ALLO STESSO MODO.
+       «Turismo non ha mai parlato» (Vince, 21/10, da Termini a casa). Il
+       quaderno del telefono dava fino a 77 km/h e decine di righe «REGOLA:
+       cenno non va in cultura (non a piedi)»: la regola del movimento
+       buttava via tutto, e il silenzio durava venti minuti. Tacere non era
+       la risposta, e non lo e' nemmeno spiegare perche' si tace.
+       Lo risolve in una riga sola Microsoft Soundscape (sorgente aperto,
+       licenza MIT), l'app per non vedenti di Microsoft: in macchina NON
+       tace — guarda SEI VOLTE PIU' LONTANO e dice SOLO le cose grandi
+       (`CalloutRangeContext.automotive`, moltiplicatore 6, piu' il filtro
+       che tiene solo i landmark e le fermate). Ed e' giusto: a cinquanta
+       all'ora il problema non e' che la basilica non interessa, e' che a
+       duecentoquaranta metri la annunci quando ci sei gia' passato.
+       Quindi in movimento: raggio per sei, solo i luoghi di rango 2 in su,
+       le distanze in metri e non in passi (i passi li capisci perche' li
+       fai, e seduto non ne fai nessuno), e niente «dietro di te hai
+       superato» — a quella velocita' e' gia' perso. */
+    var aPiedi = situazione.aPiedi !== false;
+    /* E NON PIU' DI UNO OGNI TRE QUARTI DI MINUTO. Camminando il respiro
+       di app.js basta, perche' i posti si presentano a passo d'uomo. In
+       macchina no: a cinquanta all'ora, con un chilometro e due di
+       raggio, nel centro di Roma ce ne sono settantotto a portata, e
+       senza un freno uscirebbero uno ogni sei secondi — cioe' una radio
+       che elenca. Quarantacinque secondi sono circa seicento metri: il
+       tempo di sentirlo e di passarci davanti. */
+    if (!aPiedi && ora() - ultimoInCorsa < IN_CORSA_OGNI) return null;
     for (var i = 0; i < intorno.length; i++) {
       var o = intorno[i], p = o.p;
-      if (!daRaccontare(p)) continue;           // qui si raccontano i luoghi
+      /* il modo va passato: senza, in Turismo passavano anche i luoghi
+         senza scheda — un cenno per una cosa che poi, fermandosi, non si
+         puo' raccontare */
+      if (!daRaccontare(p, modo)) continue;     // qui si raccontano i luoghi
       if (giaDetto(p, qui)) continue;
+      if (!aPiedi && rango(p) < 3) continue;    // in corsa, solo i punti di riferimento
       /* QUELLO CHE TI SEI GIÀ LASCIATO DIETRO. «E hai passato questo
          monumento altrettanto importante… se non lo è, dietro di te hai
          superato» (Vince, 16/10). Camminando si passa accanto a una chiesa
@@ -159,11 +191,13 @@ function Racconto(opzioni) {
          conta meno è una riga sola, e solo finché è a portata di mano. */
       var dietro = Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150);
       if (dietro) {
+        if (!aPiedi) continue;                  // in corsa, quello che è dietro è già perso
         if (situazione.direzioneBuona === false) continue;   // senza bussola «dietro» è una bugia
         if (rango(p) >= 2 ? o.m > 120 : o.m > 45) continue;
       }
-      if (o.m > raggio(p, modo)) continue;
+      if (o.m > soglia(p, modo, aPiedi)) continue;
       detti[p.n] = { quando: ora(), lat: qui.lat, lon: qui.lon };
+      if (!aPiedi) ultimoInCorsa = ora();
       inCorso = p;
       gradino[p.n] = 0;
       /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
@@ -181,7 +215,7 @@ function Racconto(opzioni) {
                  testo: 'Dietro di te hai superato ' + p.n + '.' };
       }
       return { tipo: 'cenno', luogo: p, livello: liv, dietro: dietro,
-               rel: o.rel, metri: Math.round(o.m),
+               rel: o.rel, metri: Math.round(o.m), aPiedi: aPiedi,
                direzioneBuona: situazione.direzioneBuona !== false,
                cardinale: situazione.cardinale || null,
                /* senza sapere come sei girato, «sulla destra» sarebbe una
@@ -192,7 +226,7 @@ function Racconto(opzioni) {
                testo: dietro
                  ? ('Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.')
                  : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
-                    metri(o.m) + ', ' + p.n + '.') };
+                    quanto(o.m, aPiedi) + ', ' + p.n + '.') };
     }
     return null;
   }
@@ -288,9 +322,44 @@ function Racconto(opzioni) {
     return null;
   }
 
+  /* IL RANGO — e perche' fino al 22/10 non esisteva.
+     La regola era «scheda lunga E "cosa vedere"», ma il campo `i` nei dati
+     veri non c'e' su NESSUNO dei 20.836 luoghi d'Italia, e il campo `r`
+     nemmeno: contati uno per uno, i luoghi di rango 2 erano zero. Cioe'
+     tutto quello che dipende dal rango — il raggio piu' largo per le cose
+     grandi, la regola di cosa si dice in movimento, quanto in la si
+     guarda indietro — era codice che non si accendeva mai.
+     Adesso il rango si ricava da quello che i dati HANNO davvero:
+     - 3, si vede da lontano: un tipo che e' un punto di riferimento
+       (basilica, castello, teatro, museo, sito archeologico...) e una
+       scheda che ha qualcosa da dire; oppure alto piu' di trenta metri,
+       e allora il tipo non conta.
+     - 2, merita un raggio piu' largo: ha una scheda vera.
+     - 1, tutto il resto.
+     Contati sui dati veri: 995 luoghi di rango 3 su 20.836 (il 4,8%) —
+     78 entro un chilometro e due dal centro di Roma, 8 a Lucca, 2 a
+     Latina. E' la misura giusta per una cosa che si dice andando in
+     macchina. */
+  var NOTEVOLI = ['basilica', 'cattedrale', 'duomo', 'castello', 'rocca',
+                  'fortezza', 'reggia', 'anfiteatro', 'arena', 'abbazia',
+                  'certosa', 'santuario', 'acquedotto', 'obelisco', 'faro',
+                  'stadio', 'porta cittadina', 'mura', 'teatro', 'monastero',
+                  'sito archeologico', 'torre', 'ponte', 'museo',
+                  'parco cittadino'];
+  function tipoNotevole(p) {
+    var t = String(p.t || '').toLowerCase();
+    if (!t) return false;
+    for (var i = 0; i < NOTEVOLI.length; i++) {
+      if (t.indexOf(NOTEVOLI[i]) === 0 || t.indexOf(' ' + NOTEVOLI[i]) >= 0) return true;
+    }
+    return false;
+  }
   function rango(p) {
     if (p.r) return p.r;                         // rango già calcolato dai dati
-    if ((p.d || '').length >= 240 && p.i) return 2;
+    var quanto = (p.d || '').length;
+    if ((p.h || 0) >= 30) return 3;              // alto cosi', lo vedi comunque
+    if (tipoNotevole(p) && quanto >= 400) return 3;
+    if (quanto >= 240) return 2;
     return 1;
   }
   function raggio(p, modo) {
@@ -298,6 +367,24 @@ function Racconto(opzioni) {
     var r = rango(p);
     return r >= 3 ? Math.round(base * 1.7) : (r === 2 ? Math.round(base * 1.3) : base);
   }
+  /* FIN DOVE SI GUARDA, E PERCHE' STA SCRITTO QUI DENTRO.
+     Il moltiplicatore e' quello di Microsoft Soundscape (sei volte, in
+     macchina), ma con un tetto che loro non hanno bisogno di mettere:
+     camminando loro annunciano a cinquanta metri, noi a duecentoquaranta,
+     e sei volte duecentoquaranta sarebbero un chilometro e mezzo di roba
+     annunciata che poi non passi nemmeno accanto. Mille e duecento metri
+     sono un minuto e mezzo a cinquanta all'ora: il tempo di sentirlo
+     dire e di arrivarci.
+     E sta qui, non in app.js, perche' chi raccoglie i posti intorno deve
+     guardare esattamente fin dove guarda il racconto: scritto in due
+     posti, al primo ritocco si scolla — e' gia' successo coi gradini. */
+  var PIU_LONTANO = 6;            // il moltiplicatore di Soundscape
+  var MAI_OLTRE = 1200;           // ...ma non oltre
+  function soglia(p, modo, aPiedi) {
+    var r = raggio(p, modo);
+    return aPiedi === false ? Math.min(r * PIU_LONTANO, MAI_OLTRE) : r;
+  }
+  function finDove(aPiedi) { return aPiedi === false ? MAI_OLTRE : 500; }
   /* QUATTRO PAROLE, NON SETTE. «In Utilità metti avanti, dietro, destra,
      sinistra. Non nord» (Vince, 16/10). «Proprio a destra» e «indietro a
      destra» sembrano precise e invece fanno fermare a pensare: chi
@@ -322,6 +409,12 @@ function Racconto(opzioni) {
   var laMisura = o.distanza || null;
   function metri(m) {
     return laMisura ? laMisura.passi(m) : ('a ' + Math.round(m) + ' metri');
+  }
+  /* camminando si contano i passi, in movimento i metri: la misura segue
+     il corpo di chi ascolta, non il numero */
+  function quanto(m, aPiedi) {
+    if (aPiedi === false && laMisura && laMisura.inMetri) return laMisura.inMetri(m);
+    return metri(m);
   }
 
   /* ancora(): quello che succede quando l'utente dice «ancora». Scende di un
@@ -381,6 +474,7 @@ function Racconto(opzioni) {
   return {
     prossimo: prossimo, ancora: ancora, approfondisci: approfondisci, salta: salta,
     conArticolo: conArticolo,
+    finDove: finDove, rango: rango,
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
     gradinoDi: function (p) { return gradino[p.n] || 0; },

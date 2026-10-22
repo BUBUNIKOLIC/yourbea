@@ -70,18 +70,21 @@ function App(modo) {
       LUOGHI = LUOGHI.concat(nuovi);
       return nuovi.length;
     },
-    vicini(qui) {
+    vicini(qui, aPiedi) {
+      /* fin dove si guarda lo dice il racconto, come in app.js */
+      const finDove = racconto.finDove(aPiedi);
       return LUOGHI.map((p) => ({ p, m: dist(qui.lat, qui.lon, p.lat, p.lon),
                                   rel: ((verso(qui.lat, qui.lon, p.lat, p.lon) - (qui.direzione || 0) + 540) % 360) - 180 }))
-                   .filter((o) => o.m < 500).sort((a, b) => a.m - b.m);
+                   .filter((o) => o.m < finDove).sort((a, b) => a.m - b.m);
     },
     /* un passo: come il giro di app.js — racconto, poi la regola, poi si dice */
-    passo(qui) {
-      const d = racconto.prossimo({ qui, intorno: this.vicini(qui), modo,
-                                    direzioneBuona: true, cardinale: null });
+    passo(qui, aPiedi) {
+      const a = aPiedi !== false;
+      const d = racconto.prossimo({ qui, intorno: this.vicini(qui, a), modo,
+                                    direzioneBuona: true, aPiedi: a, cardinale: null });
       if (!d) return null;
       if (!aChiServe.serve(d.avviso ? 'avviso' : d.tipo, modo === 'cultura' ? 'cultura' : 'servizi',
-                           { aPiedi: true, preciso: true, chiesto: false })) return null;
+                           { aPiedi: a, preciso: true, chiesto: false })) return null;
       dette.push(d.testo);
       return d;
     },
@@ -171,14 +174,94 @@ prova('I CAMPI NUOVI ARRIVANO FINO IN FONDO, passando dal filtro vero', () => {
   if (avevaPrima && !haAdesso) guasto('i campi si sono persi per strada: ' + posto.luogo.n);
 });
 
-prova('IN MACCHINA i monumenti tacciono, e non è un guasto', () => {
+prova('IN MACCHINA non si tace: si guarda piu lontano e si dice meno', () => {
+  /* Questa prova diceva il contrario fino al 22/10 mattina — «in macchina i
+     monumenti tacciono, e non e un guasto» — e fissava nel banco il difetto
+     che Vince aveva appena trovato camminando da Termini a casa: venti
+     minuti di silenzio in Turismo. La regola giusta e quella di Microsoft
+     Soundscape: in macchina il filtro non spegne, allarga. */
   const aChiServe = AChiServe();
-  if (aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: true })) {
-    guasto('a settanta all ora annuncia i monumenti');
+  if (!aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: true })) {
+    guasto('in macchina il Turismo tace di nuovo');
   }
   if (!aChiServe.serve('strada', 'cultura', { aPiedi: false, preciso: true })) {
     guasto('ma le strade in macchina si devono dire');
   }
+  /* e senza sapere dove sei non si annuncia niente lo stesso: la regola
+     della precisione non l ha scalzata nessuno */
+  if (aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: false })) {
+    guasto('annuncia monumenti senza sapere dove sei');
+  }
+});
+
+prova('IN MACCHINA l app guarda un chilometro e mezzo, non cinquecento metri', () => {
+  /* il raggio per sei di parti/racconto non serve a niente se l elenco dei
+     posti intorno si ferma prima: era li che moriva, nell app vera. */
+  const posto = unPostoConIDati();
+  if (!posto) { guasto('niente dati'); return; }
+  const a = App('cultura');
+  a.caricaQuadretto(posto.quadretto);
+  const qui = { lat: posto.luogo.lat - 0.008, lon: posto.luogo.lon, direzione: 0 };
+  const camminando = a.vicini(qui, true).length;
+  const inMacchina = a.vicini(qui, false).length;
+  if (!(inMacchina > camminando)) {
+    guasto('in macchina guarda lontano come a piedi: ' + inMacchina + ' contro ' + camminando);
+  }
+});
+
+/* ---------- un quadretto VERO che contenga un punto di riferimento ---------- */
+function unQuadrettoConUnGrande(r) {
+  const dir = path.join(__dirname, '..', 'dati', 'cultura');
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.json')) continue;
+    let d;
+    try { d = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); } catch (e) { continue; }
+    const lista = Array.isArray(d) ? d : Object.values(d)[0];
+    if (!Array.isArray(lista)) continue;
+    for (const x of lista) {
+      if (x && x.lat && r.rango(x) >= 3) return { quadretto: f.replace('.json', ''), luogo: x };
+    }
+  }
+  return null;
+}
+
+prova('IL RANGO ESISTE DAVVERO NEI DATI, non solo nelle prove inventate', () => {
+  /* Fino al 22/10 valeva «scheda lunga E cosa vedere», e il campo «cosa
+     vedere» nei dati veri non c e su nessuno dei 20.836 luoghi d Italia:
+     i luoghi di rango 2 erano ZERO, e tutto quello che dipende dal rango
+     era codice spento. Questa prova e li apposta perche non succeda piu. */
+  const r = Racconto({});
+  const g = unQuadrettoConUnGrande(r);
+  if (!g) guasto('nei dati veri non c e un solo punto di riferimento: il rango e di nuovo morto');
+  else console.log('      → ' + g.luogo.n + ' (' + g.luogo.t + ')');
+});
+
+prova('IN MACCHINA, davanti a un punto di riferimento VERO, l app parla', () => {
+  /* la prova che il 21/10 sarebbe fallita: venti minuti da Termini a casa
+     senza una parola. Qui si va in macchina, con dati veri, e si pretende
+     di sentire qualcosa. */
+  const a = App('cultura');
+  const g = unQuadrettoConUnGrande(a.racconto);
+  if (!g) { guasto('niente punti di riferimento nei dati'); return; }
+  a.caricaQuadretto(g.quadretto);
+  const qui = { lat: g.luogo.lat - 0.007, lon: g.luogo.lon, direzione: 0 };   // ~780 metri
+  const d = a.passo(qui, false);
+  if (!d) { guasto('in macchina tace ancora a 780 metri da ' + g.luogo.n); return; }
+  if (/passi/.test(d.testo)) guasto('in macchina conta i passi: ' + d.testo);
+  console.log('      → ' + d.testo);
+});
+
+prova('IN MACCHINA non diventa una radio: uno ogni tre quarti di minuto', () => {
+  const a = App('cultura');
+  const g = unQuadrettoConUnGrande(a.racconto);
+  if (!g) { guasto('niente punti di riferimento nei dati'); return; }
+  a.caricaQuadretto(g.quadretto);
+  const qui = { lat: g.luogo.lat - 0.007, lon: g.luogo.lon, direzione: 0 };
+  if (!a.passo(qui, false)) { guasto('la prima non e uscita'); return; }
+  a.passano(6000);
+  if (a.passo(qui, false)) guasto('sei secondi dopo ne dice un altro: e una radio');
+  a.passano(50000);
+  a.passo(qui, false);                 // dopo il freno puo riparlare (se c e altro)
 });
 
 prova('UN NOME UGUALE LONTANO non cancella un monumento (1.790 persi il 21/10)', () => {
