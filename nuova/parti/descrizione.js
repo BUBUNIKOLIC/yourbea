@@ -97,7 +97,19 @@ function Descrizione(opzioni) {
     return /(zione|sione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
   }
 
-  function inPiani(metri, f) {
+  /* I PIANI CONTATI BATTONO I PIANI CALCOLATI. Fino al 22/10 i piani si
+     ricavavano dall'altezza dividendo per tre: una stima, e si sentiva —
+     «alto come un palazzo di quindici piani» per una chiesa che di piani
+     non ne ha nessuno. OpenStreetMap invece ha `building:levels`, cioe'
+     i piani CONTATI da chi c'e' stato: misurati sul centro di Roma,
+     ce l'ha l'11% dei monumenti col nome. Quando c'e' quello, si dice
+     quello — e si dice «di N piani», non «come un palazzo di N piani»,
+     perche' non e' piu' un paragone: e' il numero vero. */
+  function inPiani(metri, f, piani) {
+    if (piani > 0) {
+      if (piani === 1) return (f ? 'bassa' : 'basso') + ', un piano solo';
+      return (f ? 'alta' : 'alto') + ' ' + piani + ' piani';
+    }
     if (!metri || metri <= 0) return '';
     if (metri < 6) return (f ? 'bassa' : 'basso') + ', meno di due piani';
     var p = Math.round(metri / PIANO);
@@ -182,7 +194,7 @@ function Descrizione(opzioni) {
 
     // 3. quanto è grande — in piani, mai in metri
     var fem = femminile(x.t || x.n);
-    var alt = inPiani(x.altezza, fem);
+    var alt = inPiani(x.altezza, fem, x.piani);
 
     // 4. di cosa è fatta
     var mat = materiale(x.materiali);

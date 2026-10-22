@@ -65,13 +65,13 @@ function Racconto(opzioni) {
   function comeEFatta(p) {
     if (!o.descrizione || !p || !p.n) return '';
     if (Object.prototype.hasOwnProperty.call(fatteCosi, p.n)) return fatteCosi[p.n];
-    var ha = p.h || p.l || (p.mat && p.mat.length) || (p.frm && p.frm.length);
+    var ha = p.h || p.pi || p.l || (p.mat && p.mat.length) || (p.frm && p.frm.length);
     if (!ha) { fatteCosi[p.n] = ''; return ''; }
     /* si chiama UNA VOLTA SOLA per posto: la descrizione gira le parole da
        se', e chiamarla due volte (una per contare i gradini, una per
        dirla) la farebbe girare a vuoto. */
     var f = o.descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
-                                  altezza: p.h, larghezza: p.l,
+                                  altezza: p.h, piani: p.pi, larghezza: p.l,
                                   materiali: p.mat, forme: p.frm });
     fatteCosi[p.n] = (f && f.testo) || '';
     return fatteCosi[p.n];
@@ -366,7 +366,7 @@ function Racconto(opzioni) {
   function rango(p) {
     if (p.r) return p.r;                         // rango già calcolato dai dati
     var quanto = (p.d || '').length;
-    if ((p.h || 0) >= 30) return 3;              // alto cosi', lo vedi comunque
+    if ((p.h || 0) >= 30 || (p.pi || 0) >= 10) return 3;              // alto cosi', lo vedi comunque
     if (tipoNotevole(p) && quanto >= 400) return 3;
     if (quanto >= 240) return 2;
     return 1;
