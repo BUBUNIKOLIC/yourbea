@@ -448,6 +448,12 @@ function Racconto(opzioni) {
   return {
     prossimo: prossimo, ancora: ancora, approfondisci: approfondisci, salta: salta,
     conArticolo: conArticolo,
+    /* la chiama anche app.js, nel giro di parole: senza, ogni giro si
+       schiantava con «racconto.daRaccontare is not a function» e il
+       Turismo restava quasi muto camminando. Non era mai stata
+       esportata, e il banco non poteva accorgersene perche' non carica
+       app.js: adesso c'e' prove/chiamate.js. */
+    daRaccontare: daRaccontare,
     finDove: finDove, rango: rango,
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
