@@ -928,6 +928,29 @@
   var musica = Musica({});
   try { musica.accendi(localStorage.getItem('yourbea2-musica') !== 'no'); } catch (e) {}
   var tappeto = null, tappetoQuale = '';
+  var ultimoAvvioMusica = 0;
+  /* ============================================================
+     LA MUSICA NON PARTE MENTRE L'APP PARLA
+     «All'inizio balbettava come ieri, poi è andata» (Vince, 22/10, in
+     scooter). Il quaderno di quella corsa lo conta: 49 interruzioni
+     dell'audio in una giornata, e **34 su 49 entro due secondi da un
+     "MUSICA: suona". Non era una telefonata, non era un'altra app: era
+     la nostra musica di sottofondo.
+     Il meccanismo, riga per riga, alle 15:10:38 — l'app dice «Ciao
+     Vincenzo, ti racconto quello che hai intorno», due secondi dopo
+     parte il tappeto, e nello stesso secondo arriva «audio interrotto»:
+     la frase muore a meta'. Poi il microfono si apre, l'elemento audio
+     viene messo in pausa dal sistema, noi vediamo `paused` e chiamiamo
+     `play()`, che riconfigura di nuovo la sessione e interrompe di
+     nuovo. Un cerchio: interruzione → pausa → play → interruzione.
+     DUE REGOLE, e sono le stesse che si userebbero con una persona:
+     1. NON SI ATTACCA A PARLARE MENTRE PARLA UN ALTRO. Se la voce sta
+        dicendo qualcosa, la musica aspetta: il volume lo si puo'
+        cambiare (non tocca la sessione), ma `play()` no.
+     2. E NON SI RIPROVA A RAFFICA. Dopo un avvio, tre secondi di
+        respiro: se il sistema l'ha messa in pausa per una ragione sua,
+        riprovarci dopo mezzo secondo riapre il cerchio.
+     La musica e' un di piu'; la voce e' l'app. Nel dubbio, tace lei. */
   function suonaMusica(d) {
     if (!d.suona) {
       if (tappeto && !tappeto.paused) { try { tappeto.pause(); } catch (e) {} }
@@ -945,8 +968,13 @@
       tappeto.onerror = function () { diario('MUSICA: il file non si carica (' + tappetoQuale + ')'); };
       tappetoQuale = d.brano;
     }
+    /* il volume si puo' cambiare sempre: non tocca la sessione audio */
     tappeto.volume = d.volume;
     if (tappeto.paused) {
+      /* ma riattaccare no, non mentre l'app parla o sta per parlare */
+      if (voce.staParlando()) { diario('MUSICA: aspetto, sta parlando'); return; }
+      if (Date.now() - ultimoAvvioMusica < 3000) return;
+      ultimoAvvioMusica = Date.now();
       var p = tappeto.play();
       if (p && p.then) {
         p.then(function () { diario('MUSICA: suona ' + tappetoQuale + ', volume ' + d.volume); })
