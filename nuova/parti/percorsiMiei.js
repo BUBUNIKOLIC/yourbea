@@ -317,16 +317,67 @@ function PercorsiMiei(opzioni) {
      Quindi la linea si assottiglia — un punto ogni quindici metri basta
      per ritrovare la strada — mentre i SEGNI si tengono tutti, perche'
      sono la cosa che conta. */
+  /* QUANTO PUO' ESSERE LUNGO UN LINK. Misurato il 22/10: tenendo un punto
+     ogni quindici metri, un percorso di due chilometri diventava un
+     indirizzo WhatsApp di 3.400 caratteri, e cinque chilometri 8.000.
+     WhatsApp e Safari a quelle lunghezze tagliano l'indirizzo o non lo
+     aprono proprio: il percorso partiva e non arrivava. E non te ne
+     accorgi, perche' da questa parte sembra tutto andato bene.
+     Duemila caratteri stanno dentro dovunque. */
+  var LINK_MAX = o.linkMax || 1400;          // caratteri di dati, prima del base64
+
+  /* I PUNTI CHE CONTANO SONO LE SVOLTE. Togliere un punto ogni tanto
+     taglia le curve, e tagliando le curve chi segue il percorso si sente
+     dire «ti sei allontanato» stando sul marciapiede giusto (fuori strada
+     e' a trenta metri). Invece si tengono i punti dove la strada GIRA e si
+     buttano quelli in mezzo al rettilineo, che non dicono niente: e'
+     Ramer-Douglas-Peucker, e su un percorso dritto lascia due punti.
+     La tolleranza parte da cinque metri e si allarga solo se serve, mai
+     oltre dodici: oltre, la forma non sarebbe piu' quella camminata. */
+  function quantoSiScosta(a, b, c) {
+    /* quanto il punto b e' lontano dalla retta a-c, in metri */
+    var l = dist(a[0], a[1], c[0], c[1]);
+    if (l < 0.5) return dist(a[0], a[1], b[0], b[1]);
+    var t = (((b[0] - a[0]) * (c[0] - a[0])) + ((b[1] - a[1]) * (c[1] - a[1]) * 0.56)) /
+            (((c[0] - a[0]) * (c[0] - a[0])) + ((c[1] - a[1]) * (c[1] - a[1]) * 0.56));
+    t = Math.max(0, Math.min(1, t));
+    return dist(b[0], b[1], a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t);
+  }
+  function tieniLeSvolte(punti, tolleranza) {
+    if (punti.length < 3) return punti.slice();
+    var tieni = new Array(punti.length);
+    tieni[0] = tieni[punti.length - 1] = true;
+    var pile = [[0, punti.length - 1]];
+    while (pile.length) {
+      var t = pile.pop(), da = t[0], a = t[1];
+      var peggio = 0, dove = -1;
+      for (var i = da + 1; i < a; i++) {
+        var q = quantoSiScosta(punti[da], punti[i], punti[a]);
+        if (q > peggio) { peggio = q; dove = i; }
+      }
+      if (dove > 0 && peggio > tolleranza) {
+        tieni[dove] = true;
+        pile.push([da, dove]); pile.push([dove, a]);
+      }
+    }
+    var fuori = [];
+    for (var j = 0; j < punti.length; j++) if (tieni[j]) fuori.push(punti[j]);
+    return fuori;
+  }
+
   function perMandare(percorso) {
     if (!percorso) return '';
     var p = percorso.punti || [];
     var magri = [];
-    var ultimo = null;
-    for (var i = 0; i < p.length; i++) {
-      if (!ultimo || i === p.length - 1 || dist(ultimo[0], ultimo[1], p[i][0], p[i][1]) > 15) {
-        magri.push([Math.round(p[i][0] * 100000), Math.round(p[i][1] * 100000)]);
-        ultimo = p[i];
-      }
+    var tolleranze = [5, 8, 12], scelti = p;
+    for (var t = 0; t < tolleranze.length; t++) {
+      scelti = tieniLeSvolte(p, tolleranze[t]);
+      /* una stima veloce: ogni punto costa una decina di caratteri in
+         differenze, e il base64 ne aggiunge un terzo */
+      if (scelti.length * 10 * 1.34 < LINK_MAX) break;
+    }
+    for (var i = 0; i < scelti.length; i++) {
+      magri.push([Math.round(scelti[i][0] * 100000), Math.round(scelti[i][1] * 100000)]);
     }
     /* differenze invece di numeri interi: un punto a quindici metri dal
        precedente sta in tre cifre invece che in sette */

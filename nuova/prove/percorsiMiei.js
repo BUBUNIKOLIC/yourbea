@@ -297,6 +297,90 @@ prova('il nome detto dopo, quando lo chiediamo, si tiene come e', () => {
   if (!w.p.trova('dentista')) guasto('col nome dato dopo non lo ritrova piu');
 });
 
+/* ==================== MANDARE UN PERCORSO A QUALCUNO ====================
+   «Rendi agevole creare un percorso e condividerlo» (Vince, 21/10). Il
+   codice c'era dal 21 e non aveva una prova: il 22/10, misurandolo, un
+   percorso di due chilometri faceva un indirizzo WhatsApp di 3.400
+   caratteri e uno di cinque chilometri 8.000 — WhatsApp e Safari a quelle
+   lunghezze l'indirizzo lo tagliano, e il percorso parte e non arriva. */
+
+/* una camminata per la citta: dritto, gira, dritto, gira */
+function perLaCitta(metriTot) {
+  const punti = [];
+  let lat = 41.9028, lon = 12.4964, dir = 0;
+  const g = 6 / 111320;
+  for (let d = 0; d < metriTot; d += 6) {
+    if (d % 300 < 6) dir = (dir + 1) % 4;
+    if (dir === 0) lat += g; else if (dir === 1) lon += g * 1.34;
+    else if (dir === 2) lat -= g; else lon -= g * 1.34;
+    punti.push([lat, lon]);
+  }
+  return { nome: 'dal medico', metri: metriTot, punti,
+           segni: [{ da: 120, n: 'il semaforo' }, { da: metriTot - 20, n: 'il portone' }] };
+}
+/* quanto un punto e lontano dalla linea del percorso rifatto */
+function scartoDa(punti, q) {
+  let m = 1e9;
+  for (let i = 0; i < punti.length - 1; i++) {
+    const a = punti[i], b = punti[i + 1];
+    const L = dist(a[0], a[1], b[0], b[1]);
+    let t = 0;
+    if (L > 0.5) {
+      t = (((q[0] - a[0]) * (b[0] - a[0])) + ((q[1] - a[1]) * (b[1] - a[1]) * 0.56)) /
+          (((b[0] - a[0]) * (b[0] - a[0])) + ((b[1] - a[1]) * (b[1] - a[1]) * 0.56));
+      t = Math.max(0, Math.min(1, t));
+    }
+    m = Math.min(m, dist(q[0], q[1], a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t));
+  }
+  return m;
+}
+
+prova('IL PERCORSO MANDATO STA IN UN INDIRIZZO CHE WhatsApp apre davvero', () => {
+  const w = mondo();
+  for (const km of [0.5, 1, 2, 5]) {
+    const p = perLaCitta(km * 1000);
+    const dati = w.p.perMandare(p);
+    const b64 = Buffer.from(dati, 'utf8').toString('base64');
+    const link = 'https://bubunikolic.github.io/yourbea/nuova/?p=' + encodeURIComponent(b64);
+    const wa = 'https://wa.me/393331234567?text=' +
+               encodeURIComponent('Il percorso per andare dal medico, da Yourbea. Apri questo link: ' + link);
+    if (wa.length > 2000) guasto(km + ' km fa un indirizzo di ' + wa.length + ' caratteri: WhatsApp lo taglia');
+    else if (km === 5) console.log('      → cinque chilometri in ' + wa.length + ' caratteri');
+  }
+});
+
+prova('E LA FORMA RESTA QUELLA CAMMINATA: nessuno si sente «fuori percorso»', () => {
+  /* buttare i punti per accorciare il link taglia le curve, e chi segue il
+     percorso si sente dire «ti sei allontanato» stando sul marciapiede
+     giusto: fuori strada e a trenta metri. */
+  const w = mondo();
+  const p = perLaCitta(2000);
+  const rifatto = w.p.daUnLink(w.p.perMandare(p));
+  if (!rifatto) { guasto('il percorso non si e rifatto dal link'); return; }
+  let peggio = 0;
+  for (const q of p.punti) peggio = Math.max(peggio, scartoDa(rifatto.punti, q));
+  if (peggio > 15) guasto('la linea rifatta si scosta di ' + Math.round(peggio) + ' metri: fuori strada e a 30');
+  else console.log('      → al massimo ' + Math.round(peggio) + ' metri dalla strada camminata');
+});
+
+prova('IL NOME E I SEGNI ARRIVANO DALL ALTRA PARTE', () => {
+  const w = mondo();
+  const p = perLaCitta(1000);
+  const rifatto = w.p.daUnLink(w.p.perMandare(p));
+  if (!rifatto) { guasto('niente percorso dal link'); return; }
+  if (rifatto.nome !== 'dal medico') guasto('il nome si e perso: ' + rifatto.nome);
+  if ((rifatto.segni || []).length !== 2) guasto('i segni erano 2, ne sono arrivati ' + (rifatto.segni || []).length);
+  else if (rifatto.segni[0].n !== 'il semaforo') guasto('il primo segno e cambiato: ' + rifatto.segni[0].n);
+  if (!rifatto.daAltri) guasto('non si vede che e di un altro');
+});
+
+prova('UN LINK ROTTO NON FA ESPLODERE NIENTE', () => {
+  const w = mondo();
+  for (const brutto of ['', 'abc', '{}', '{"v":2}', '{"v":1,"l":[]}', '{"v":1,"l":[[1,2]]}']) {
+    if (w.p.daUnLink(brutto)) guasto('ha accettato un link rotto: ' + brutto);
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei percorsi suoi');

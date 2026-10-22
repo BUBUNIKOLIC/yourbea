@@ -1751,8 +1751,18 @@
     if (d.tipo === 'cenno') return modo === 'servizi'
       ? 'Dimmi «ancora» se vuoi sapere cos\u2019\u00e8.'
       : 'Fermati dieci secondi e te lo racconto. Oppure dimmi «ancora».';
-    if (d.tipo === 'scheda') return 'Dimmi «ancora» per sapere cosa guardare.';
-    if (d.tipo === 'cosa-vedere') return 'Dimmi «ancora» per l\'approfondimento.';
+    /* NON SI PROMETTE QUELLO CHE NON C'E'. La riga scritta diceva sempre
+       «Dimmi "ancora" per sapere cosa guardare», e poi «ancora» rispondeva
+       «Di questo ti ho detto tutto»: nei dati veri il campo «cosa vedere»
+       non ce l'ha NESSUNO dei 20.836 luoghi d'Italia, e l'approfondimento
+       nemmeno. Una promessa che l'app non puo' mantenere, scritta
+       ventimila volte. Adesso la riga guarda cosa c'e' davvero. */
+    if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere') {
+      var l = d.luogo || {};
+      if (d.tipo === 'scheda' && l.i) return 'Dimmi «ancora» per sapere cosa guardare.';
+      if (l.a) return 'Dimmi «ancora» per l\'approfondimento.';
+      return 'Di questo ti ho detto tutto.';
+    }
     if (d.tipo === 'approfondimento') return 'Di questo ti ho detto tutto.';
     /* la passeggiata: a che punto siamo, e i tre comandi, scritti perché chi
        accompagna li possa leggere invece di indovinarli */
