@@ -57,6 +57,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   private let acquisti = Acquisti()
   private var ultimaScritta = Date(timeIntervalSince1970: 0)
   private var vuoleAscoltare = false
+  private var ultimaRiconferma: TimeInterval = 0
   private var ultimaPosizione: CLLocation?
   private var battito: Timer?
   private var ultimoParlato = ""
@@ -714,6 +715,11 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
         self.scrivi("audio interrotto (telefonata, sveglia o altra app)")
         return
       }
+      /* la stessa ragione di sopra: se la ripresa arriva a raffica e'
+         il nostro microfono, non una telefonata finita. */
+      let adesso = Date().timeIntervalSince1970
+      if adesso - self.ultimaRiconferma < 1.0 { return }
+      self.ultimaRiconferma = adesso
       self.scrivi("audio: interruzione finita, riprendo")
       try? AVAudioSession.sharedInstance().setActive(true)
       if self.vuoleAscoltare { self.apriMicrofono() }
@@ -740,10 +746,32 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       self.allaPagina("window.YBaltraRadio && window.YBaltraRadio(\(devoTacere ? "true" : "false"))")
     }
 
+    /* ============================================================
+       NON RICONFERMARE LA SESSIONE A OGNI RESPIRO
+       Dal quaderno del 21/10, Termini-casa: 171 interruzioni e 296
+       riconferme in venti minuti, e la voce che si troncava dopo poche
+       sillabe. La causa e' qui: si riattivava la sessione a OGNI cambio
+       di uscita, e i cambi di uscita li facciamo noi — ogni volta che il
+       microfono si apre o si chiude, l'audio passa da riproduzione a
+       registrazione e torna indietro. Mentre l'app parlava, il microfono
+       riapriva, la sessione si riattivava, e la frase moriva.
+       Adesso si riconferma SOLO quando l'uscita e' cambiata davvero:
+       cuffie infilate o sfilate, bluetooth che si attacca o si stacca.
+       Tutto il resto — i cambi che facciamo noi — si lascia stare. */
     c.addObserver(forName: AVAudioSession.routeChangeNotification,
-                  object: s, queue: .main) { [weak self] _ in
+                  object: s, queue: .main) { [weak self] n in
+      guard let self = self else { return }
+      let grezzo = (n.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt) ?? 0
+      let motivo = AVAudioSession.RouteChangeReason(rawValue: grezzo) ?? .unknown
+      guard motivo == .oldDeviceUnavailable || motivo == .newDeviceAvailable else {
+        return                      // l'abbiamo fatto noi: non si tocca niente
+      }
+      /* e nemmeno due volte di fila nello stesso secondo */
+      let adesso = Date().timeIntervalSince1970
+      if adesso - self.ultimaRiconferma < 1.0 { return }
+      self.ultimaRiconferma = adesso
       try? AVAudioSession.sharedInstance().setActive(true)
-      self?.scrivi("audio: cambiata l'uscita, sessione riconfermata")
+      self.scrivi("audio: cuffie o bluetooth cambiati, sessione riconfermata")
     }
   }
 
