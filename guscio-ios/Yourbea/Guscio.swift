@@ -510,6 +510,16 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
       else if a.cycling { come = "bici" }
       else if a.automotive { come = "mezzo" }
       else if a.stationary { come = "fermo" }
+      /* «BOH» NON E' UNA RISPOSTA, ED E' MEGLIO TACERE.
+         CoreMotion manda un aggiornamento anche quando non ha capito
+         niente, e con nessuna bandiera alzata: sul telefono di Vince,
+         fermo sulla scrivania, usciva «fermo» e «boh» alternati ogni
+         secondo. Mandarlo alla pagina farebbe danno — un «boh» arrivato
+         un attimo dopo un «cammina» buono lo cancellerebbe, e si
+         tornerebbe a indovinare dalla velocita' proprio mentre il
+         telefono lo sapeva. Quando non sa, si lascia l'ultima cosa
+         vera: scade da sola dopo un minuto e mezzo. */
+      if come == "boh" { return }
       let sicuro = a.confidence != .low
       let riga = come + (sicuro ? "" : "?")
       if riga == self.ultimaAttivita { return }

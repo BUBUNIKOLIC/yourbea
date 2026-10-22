@@ -53,6 +53,12 @@ targets:
         # dire la cosa vera: Apple rifiuta le spiegazioni generiche, e una
         # frase generica non convince nemmeno la persona a dire sì.
         NSCameraUsageDescription: "Per leggere ad alta voce quello che hai davanti: cartelli delle strade, numeri dell'autobus, citofoni, menu ed etichette. La fotocamera si accende solo quando dici «leggi», la fotografia resta nel telefono e non viene salvata."
+        # IL PASSOMETRO. Senza questa riga iOS AMMAZZA l'app nell'istante in
+        # cui chiede l'attivita', e non lo scrivi nel log: parte, scrive la
+        # prima riga e sparisce. Il 22/10 l'avevo messa solo in
+        # Yourbea/Info.plist, e xcodegen la riscrive da qui: non e' mai
+        # arrivata nel pacchetto, e il telefono di Vince e' rimasto senza app.
+        NSMotionUsageDescription: "Per capire se stai camminando o sei su un mezzo: Yourbea ti dice le cose giuste in un modo diverso a piedi e in autobus. Lo legge dal contapassi del telefono, non dal GPS."
         NSMicrophoneUsageDescription: "Per capire quando dici «dove sono», «approfondisci» o «portami a»."
         NSSpeechRecognitionUsageDescription: "Quello che dici viene trascritto per capire la richiesta: «dove sono», «approfondisci», «portami a via Roma»."
         ITSAppUsesNonExemptEncryption: false
