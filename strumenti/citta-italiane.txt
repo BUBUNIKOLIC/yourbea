@@ -52,3 +52,11 @@ anzio                  12.53   12.70   41.39   41.51
 venafro                13.98   14.13   41.43   41.55
 isernia                14.16   14.31   41.54   41.65
 campobasso             14.58   14.74   41.50   41.62
+
+# AGGIUNTE IL 21/10/2026. Mancavano proprio le citta' dove camminano i
+# provatori: Roma (1926 luoghi, 1444 schede), Napoli (866/792) e Parma
+# (232/141). I riquadri sono misurati sui nostri dati, non a occhio.
+# Modena non c'e': nei quadretti non abbiamo ancora niente di Modena.
+roma                  12.44   12.53   41.88   41.92
+napoli                14.23   14.29   40.83   40.87
+parma                 10.30   10.35   44.78   44.82

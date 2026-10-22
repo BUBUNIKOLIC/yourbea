@@ -182,13 +182,15 @@ def titoliNelRiquadro(lo1, lo2, la1, la2, giu=0):
     raggio = max(10, min(10000, raggio))        # l'API accetta da 10 a 10.000 metri
     url = ('https://it.wikipedia.org/w/api.php?action=query&format=json&list=geosearch'
            '&gscoord=%.5f%%7C%.5f&gsradius=%d&gslimit=%d' % (mezLa, mezLo, raggio, TETTO))
-    # UN RESPIRO E MEZZO FRA UNA RICHIESTA E L'ALTRA. Cinquecento voci
-    # per volta sono una domanda cara, e un riquadro denso si taglia in
-    # quattro e poi in sedici: a raffica Wikipedia risponde 429 e ci fa
-    # aspettare cinquanta secondi — molto piu' del respiro che chiedeva.
-    time.sleep(1.5)
+    # TRE SECONDI DI RESPIRO, E SI TAGLIA AL MASSIMO UNA VOLTA.
+    # Cinquecento voci per volta sono una domanda cara: tagliando il
+    # riquadro in quattro e poi in sedici, a raffica, il 22/10 Wikipedia
+    # ci ha fatto aspettare cinquanta secondi per richiesta — molto piu'
+    # di quello che avremmo risparmiato. Meglio perdere qualche voce nel
+    # centro di Roma che restare fermi un'ora.
+    time.sleep(3)
     voci = chiedi(url).get('query', {}).get('geosearch', [])
-    if len(voci) >= TETTO and giu < 3:
+    if len(voci) >= TETTO and giu < 1:
         # tetto toccato: si taglia in quattro e si rifa, se no qui si perde roba
         fuori, visti = [], set()
         for (a1, a2) in ((la1, mezLa), (mezLa, la2)):
@@ -207,6 +209,49 @@ def titoliNelRiquadro(lo1, lo2, la1, la2, giu=0):
             continue
         fuori.append({'n': v['title'], 'art': v['title'],
                       'lat': round(v['lat'], 5), 'lon': round(v['lon'], 5)})
+    return fuori
+
+def nostriDaArricchire(lo1, lo2, la1, la2):
+    """I NOMI LI ABBIAMO GIA' NOI, E SONO QUELLI CHE CI SERVONO.
+
+       Due strade morte prima di questa. **Wikidata** (`query.wikidata.org`)
+       ci ha tenuti fuori due ore col 429. **geosearch** di Wikipedia
+       risponde in mezzo secondo ma a cinquecento voci per volta e' una
+       domanda cara: un riquadro denso si taglia in sedici, e a raffica
+       Wikipedia fa aspettare cinquanta secondi per richiesta. In tutt'e
+       due i casi si chiedeva *quali luoghi ci sono qui* — una domanda a
+       cui noi sappiamo gia' rispondere: in `dati/cultura/` ci sono 20.836
+       luoghi con nome e coordinate.
+       Quindi si chiede l'unica cosa che non abbiamo, l'articolo, e si
+       chiede PER NOME: `titles=` e' la richiesta piu' economica che
+       l'API abbia, cinquanta per volta, e nella stessa risposta arrivano
+       le coordinate della voce. Su un campione di quaranta nostri nomi,
+       trenta hanno un articolo: il 75%, in tre secondi.
+
+       E il nome da solo non basta mai: dentro un riquadro da undici
+       chilometri ci stanno due «chiesa di San Giuseppe». Le coordinate
+       che tornano con il testo decidono; senza, la voce si butta."""
+    fuori = []
+    la, lo = int(round(la1 * 100)), int(round(lo1 * 100))
+    for a in range(la, la + 10):
+        for o in range(lo, lo + 10):
+            g = os.path.join(DATI, '%04d_%04d.json' % (a, o))
+            if not os.path.exists(g):
+                continue
+            try:
+                d = json.load(open(g, encoding='utf-8'))
+            except Exception:
+                continue
+            v = d if isinstance(d, list) else list(d.values())[0]
+            for x in v:
+                if not isinstance(x, dict) or not x.get('n'):
+                    continue
+                if x.get('h') or x.get('l') or x.get('mat') or x.get('frm'):
+                    if x.get('d'):
+                        continue        # questo e' gia' a posto
+                fuori.append({'n': x['n'], 'art': x['n'],
+                              'lat': x['lat'], 'lon': x['lon'],
+                              'haScheda': bool(x.get('d'))})
     return fuori
 
 # QUELLO CHE NON E' FATTO DI NIENTE. Una piazza non e' «di mattoni e
@@ -368,12 +413,14 @@ def dalTestoPieno(testo, nome='', tipo=''):
     return fuori
 
 def testiPieni(titoli):
-    """il WIKITESTO, cinquanta per volta (vedi la spiegazione in cima)"""
+    """il WIKITESTO E LE COORDINATE, cinquanta per volta (vedi la
+       spiegazione in cima). Torna {titolo: (testo, lat, lon)}."""
     fuori = {}
     for i in range(0, len(titoli), 50):
         mucchio = titoli[i:i + 50]
-        url = ('https://it.wikipedia.org/w/api.php?action=query&format=json&prop=revisions'
-               '&rvprop=content&rvslots=main&redirects=1&titles=' + urllib.parse.quote('|'.join(mucchio)))
+        url = ('https://it.wikipedia.org/w/api.php?action=query&format=json'
+               '&prop=revisions|coordinates&rvprop=content&rvslots=main&colimit=50'
+               '&redirects=1&titles=' + urllib.parse.quote('|'.join(mucchio)))
         try:
             d = chiedi(url)['query']
         except Exception:
@@ -382,13 +429,18 @@ def testiPieni(titoli):
         perTitolo = {}
         for p in d.get('pages', {}).values():
             try:
-                perTitolo[p['title']] = p['revisions'][0]['slots']['main']['*']
+                testo = p['revisions'][0]['slots']['main']['*']
             except (KeyError, IndexError):
-                pass
+                continue
+            # LE COORDINATE ARRIVANO INSIEME AL TESTO, e costano zero: e'
+            # quello che permette di chiedere per nome senza prendere la
+            # chiesa omonima di un altro paese.
+            co = (p.get('coordinates') or [{}])[0]
+            perTitolo[p['title']] = (testo, co.get('lat'), co.get('lon'))
         for t in mucchio:
-            testo = perTitolo.get(rimandi.get(t, t), '')
-            if testo:
-                fuori[t] = testo
+            roba = perTitolo.get(rimandi.get(t, t))
+            if roba:
+                fuori[t] = roba
         time.sleep(1.5)          # non si martella Wikipedia
     return fuori
 
@@ -438,22 +490,76 @@ def stessoNomeEVicino(a, b):
     return abs(a['lat'] - b['lat']) < 0.018 and abs(a['lon'] - b['lon']) < 0.024
 
 def faiLaCitta(nome, lo1, lo2, la1, la2):
-    print('  %s: chiedo a Wikipedia...' % nome, flush=True)
-    schede = titoliNelRiquadro(lo1, lo2, la1, la2)
-    print('    %d voci con un articolo' % len(schede), flush=True)
+    nostri = nostriDaArricchire(lo1, lo2, la1, la2)
+    if not nostri:
+        return (0, 0, 0, 0)
+    # DUE STRADE, PERCHE' NESSUNA DELLE DUE BASTA DA SOLA.
+    # I NOSTRI NOMI sono la richiesta piu' economica che l'API abbia, ma
+    # trovano l'articolo solo per un terzo dei luoghi rimasti indietro —
+    # sono rimasti indietro proprio perche' sono i piu' oscuri. E chiesti
+    # per nome portano dentro le pagine-elenco e le voci sulle persone:
+    # «chiesa di Sant'Anna» dava la voce su SANT'ANNA, la madre di Maria.
+    # LA MAPPA (geosearch) li trova tutti e li da' gia' con le coordinate,
+    # ma e' una domanda cara e a raffica Wikipedia ci chiude fuori.
+    # Si fanno tutt'e due, e si uniscono: chi arriva dalla mappa porta con
+    # se' la prova di dove sta, chi arriva dal nome la deve passare.
+    schede = list(nostri)
+    visti = set(x['art'] for x in nostri)
+    try:
+        for x in titoliNelRiquadro(lo1, lo2, la1, la2):
+            if x['art'] not in visti:
+                visti.add(x['art'])
+                schede.append(x)
+    except Exception as e:
+        print('    la mappa non risponde (%s): si va coi nomi nostri' % e, flush=True)
+    print('  %s: %d da arricchire, %d voci sulla mappa' % (nome, len(nostri), len(schede) - len(nostri)), flush=True)
     if not schede:
         return (0, 0, 0, 0)
     testi = testiPieni([x['art'] for x in schede])
-    print('    %d wikitesti presi' % len(testi), flush=True)
-    schede2 = testiPuliti([x['art'] for x in schede])
-    print('    %d schede in prosa prese' % len(schede2), flush=True)
+    print('    %d articoli trovati' % len(testi), flush=True)
+    if not testi:
+        return (0, 0, 0, 0)
+    # LA PROSA PULITA SERVE SOLO A CHI NON HA UNA SCHEDA. Chiederla per
+    # tutti era un terzo delle richieste buttato: sono gia' a posto.
+    senzaScheda = set()
+    for x in nostri:
+        if not x.get('haScheda'):
+            senzaScheda.add(x['art'])
+    daChiedere = [t for t in testi if t in senzaScheda]
+    schede2 = testiPuliti(daChiedere) if daChiedere else {}
+    print('    %d schede in prosa prese (ne mancavano %d)' % (len(schede2), len(daChiedere)), flush=True)
 
     perQuadretto = {}
+    lontani = 0
     for x in schede:
-        t = testi.get(x['art'])
-        if not t:
+        roba = testi.get(x['art'])
+        if not roba:
+            continue
+        (t, laVoce, loVoce) = roba
+        # LA PROVA CHE E' PROPRIO QUESTA, E NON BASTA IL NOME.
+        # Chiedendo per nome, senza questa prova, il 22/10 su Lucca sono
+        # entrate quattro schede e tutte e quattro erano false:
+        #   «Monumento a Vittorio Emanuele II» -> la pagina che ELENCA i
+        #     monumenti di Ferrara, Firenze, Milano...
+        #   «chiesa di Sant'Anna» -> la voce su SANT'ANNA, la madre di
+        #     Maria: «considerata dalla tradizione cristiana la moglie di
+        #     Gioacchino». Letta a uno fermo davanti alla chiesa.
+        #   «Piazza San Francesco» -> un altro elenco
+        #   «Monte San Quirico» -> rimandava alla voce su LUCCA, e la
+        #     descrizione del comune finiva addosso alla frazione.
+        # Le pagine-elenco e le voci sulle persone non hanno coordinate:
+        # quindi senza coordinate non si prende niente. E devono essere
+        # QUESTE coordinate, a un paio di centinaia di metri: la voce su
+        # Lucca ha le sue, e sono dentro al riquadro.
+        if laVoce is None or loVoce is None:
+            lontani += 1
+            continue
+        if abs(laVoce - x['lat']) > 0.0015 or abs(loVoce - x['lon']) > 0.002:
+            lontani += 1
             continue
         perQuadretto.setdefault(quadretto(x['lat'], x['lon']), []).append((x, t))
+    if lontani:
+        print('    %d voci buttate: senza coordinate, o di un altro posto' % lontani, flush=True)
 
     toccati = conH = conMat = conFrm = 0
     nuoveSchede = [0]
