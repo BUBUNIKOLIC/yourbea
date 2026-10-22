@@ -39,11 +39,19 @@ class ServizioCammino : Service() {
   override fun onStartCommand(i: Intent?, bandiere: Int, id: Int): Int {
     val apri = PendingIntent.getActivity(this, 0, Intent(this, Guscio::class.java),
       PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    /* IL TASTO PER CHIUDERLA. La sorella di Vince, il 22/10, non ha
+       trovato il modo di chiudere l'app e l'ha disinstallata. Una
+       notifica fissa senza una via d'uscita e' una trappola: qui c'e'. */
+    val chiudi = PendingIntent.getActivity(this, 1,
+      Intent(this, Guscio::class.java).setAction("it.vdmdata.urbea.CHIUDI")
+        .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+      PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     val avviso: Notification = Notification.Builder(this, CANALE)
       .setContentTitle(getString(R.string.cammino_titolo))
       .setContentText(getString(R.string.cammino_testo))
       .setSmallIcon(android.R.drawable.ic_menu_mylocation)
       .setContentIntent(apri)
+      .addAction(Notification.Action.Builder(null, "Chiudi Yourbea", chiudi).build())
       .setOngoing(true)
       .build()
     if (Build.VERSION.SDK_INT >= 34) {

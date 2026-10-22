@@ -51,6 +51,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import androidx.activity.OnBackPressedCallback
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -214,6 +215,10 @@ class Guscio : AppCompatActivity() {
     chiediIPermessi()
     pagina.loadUrl(INDIRIZZO)
     guardaLaProssimita()
+    ilTastoIndietroEsce()
+    /* e se l'app era gia' chiusa e la si riapre dal tasto «Chiudi» della
+       notifica, onNewIntent non viene chiamato: va guardato anche qui. */
+    guardaSeDevoChiudere(intent)
     guardaIPassi()
   }
 
@@ -702,6 +707,21 @@ class Guscio : AppCompatActivity() {
     } catch (e: Exception) {}
   }
 
+  /* «CHIUDI» DALLA NOTIFICA. Un'app che tiene una notifica fissa deve
+     dire anche come la si spegne, se no l'unico modo che uno trova e'
+     disinstallarla — ed e' successo. */
+  private fun guardaSeDevoChiudere(i: Intent?) {
+    if (i?.action == "it.vdmdata.urbea.CHIUDI") {
+      try { stopService(Intent(this, ServizioCammino::class.java)) } catch (e: Exception) {}
+      finishAndRemoveTask()
+    }
+  }
+
+  override fun onNewIntent(i: Intent) {
+    super.onNewIntent(i)
+    guardaSeDevoChiudere(i)
+  }
+
   override fun onDestroy() {
     chiudiIlMicrofono()
     battito?.let { aMano.removeCallbacks(it) }
@@ -710,8 +730,30 @@ class Guscio : AppCompatActivity() {
     super.onDestroy()
   }
 
-  override fun onBackPressed() {
-    if (pagina.canGoBack()) pagina.goBack() else super.onBackPressed()
+  /* ============================================================
+     IL TASTO INDIETRO DEVE USCIRE, NON TORNARE INDIETRO
+     22/10 sera, la sorella di Vince: «l'ha dovuta disinstallare
+     immediatamente, non era prevista la chiusura — usciva e si
+     riavviava». Non era un guasto misterioso: il tasto indietro faceva
+     `pagina.goBack()`, cioe' tornava indietro NELLA PAGINA. E la pagina
+     e' una sola, con dentro la sua storia: tornare indietro la riportava
+     alla porta, «utilita' o turismo». Da fuori sembra che l'app si sia
+     chiusa e riaperta. E non si usciva mai, perche' una pagina da cui
+     tornare c'era sempre.
+     L'app e' UNA schermata: non ha pagine da sfogliare, e il tasto
+     indietro deve fare quello che fa dovunque — mandarla via.
+     Si usa il dispatcher di AndroidX e non `onBackPressed()`, che da
+     Android 13 non viene piu' chiamato quando si punta a un targetSdk
+     recente: era meta' del motivo per cui il tasto sembrava morto. */
+  private fun ilTastoIndietroEsce() {
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        /* in sottofondo, non chiusa: se sta accompagnando qualcuno per
+           strada, spegnerla di colpo e' peggio che lasciarla aperta. Si
+           chiude davvero dalla notifica, o togliendola dai recenti. */
+        moveTaskToBack(true)
+      }
+    })
   }
 }
 
