@@ -365,6 +365,101 @@ function PercorsiMiei(opzioni) {
     return fuori;
   }
 
+  /* ============================================================
+     IL PERCORSO COME FILE GPX
+     «Mano a mano che i non vedenti mettono i propri riferimenti sara'
+     possibile arricchire la mappa generale e non avere mappe obsolete»
+     (Vince, 21/10). Il link in base64 funziona, ma si apre solo con
+     Yourbea: un percorso camminato resta chiuso qui dentro.
+     Il GPX e' il formato che leggono tutti — OpenStreetMap, Komoot,
+     Garmin, e Microsoft Soundscape, che i suoi percorsi li scambia
+     proprio cosi' (`Data/Authored Activities/`). Un percorso camminato
+     da un non vedente, con scritto dov'e' il gradino e dov'e'
+     l'attraversamento, e' un dato che vale: esce di qui in un file che
+     chiunque puo' aprire, e non ci serve nessun server.
+     La traccia va in <trk> (dove si cammina) e i segni in <wpt> (quello
+     che c'e' lungo la strada): e' la divisione che fa il GPX, ed e'
+     anche la nostra. */
+  function xml(t) {
+    return String(t === undefined || t === null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+  function comeGpx(percorso) {
+    if (!percorso) return '';
+    var p = percorso.punti || [];
+    if (p.length < 2) return '';
+    var nome = percorso.nome || 'percorso';
+    var r = [];
+    r.push('<?xml version="1.0" encoding="UTF-8"?>');
+    r.push('<gpx version="1.1" creator="Yourbea" xmlns="http://www.topografix.com/GPX/1/1">');
+    r.push('  <metadata><name>' + xml(nome) + '</name>' +
+           '<desc>Percorso camminato con Yourbea, ' + Math.round(percorso.metri || 0) + ' metri.</desc>' +
+           '<time>' + new Date(percorso.quando || ora()).toISOString() + '</time></metadata>');
+    /* i segni prima, perche' sono la parte che un altro programma legge
+       e mostra: «qui c'e' un gradino» su una mappa e' un puntino. */
+    (percorso.segni || []).forEach(function (sg) {
+      var dove = (sg.lat !== undefined && sg.lon !== undefined)
+        ? [sg.lat, sg.lon] : puntoA(p, sg.da || 0);
+      if (!dove) return;
+      r.push('  <wpt lat="' + dove[0].toFixed(6) + '" lon="' + dove[1].toFixed(6) + '">');
+      r.push('    <name>' + xml(sg.n || 'segno') + '</name>');
+      r.push('    <desc>A ' + Math.round(sg.da || 0) + ' metri dalla partenza.</desc>');
+      r.push('  </wpt>');
+    });
+    r.push('  <trk><name>' + xml(nome) + '</name><trkseg>');
+    for (var i = 0; i < p.length; i++) {
+      r.push('    <trkpt lat="' + Number(p[i][0]).toFixed(6) + '" lon="' + Number(p[i][1]).toFixed(6) + '"/>');
+    }
+    r.push('  </trkseg></trk>');
+    r.push('</gpx>');
+    return r.join('\n');
+  }
+
+  /* E UN GPX CHE ARRIVA DA FUORI diventa un percorso nostro: cosi' un
+     giro segnato dal comune, o da un'altra app, si cammina con Yourbea. */
+  function daGpx(testo) {
+    var t = String(testo || '');
+    if (t.indexOf('<gpx') < 0) return null;
+    function senzaMarcature(x) {
+      return String(x).replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+    }
+    var punti = [], m;
+    var trk = /<trkpt[^>]*\blat="(-?[\d.]+)"[^>]*\blon="(-?[\d.]+)"/g;
+    while ((m = trk.exec(t))) punti.push([parseFloat(m[1]), parseFloat(m[2])]);
+    if (punti.length < 2) {
+      /* qualche programma scrive <rtept> invece di <trkpt>: e' la stessa cosa */
+      var rte = /<rtept[^>]*\blat="(-?[\d.]+)"[^>]*\blon="(-?[\d.]+)"/g;
+      while ((m = rte.exec(t))) punti.push([parseFloat(m[1]), parseFloat(m[2])]);
+    }
+    if (punti.length < 2) return null;
+    var nome = '';
+    var nm = /<metadata>[\s\S]*?<name>([\s\S]*?)<\/name>/.exec(t) ||
+             /<trk>[\s\S]*?<name>([\s\S]*?)<\/name>/.exec(t);
+    if (nm) nome = senzaMarcature(nm[1]).trim().slice(0, 60);
+    var segni = [];
+    var wpt = /<wpt[^>]*\blat="(-?[\d.]+)"[^>]*\blon="(-?[\d.]+)"[^>]*>([\s\S]*?)<\/wpt>/g;
+    while ((m = wpt.exec(t))) {
+      var n2 = /<name>([\s\S]*?)<\/name>/.exec(m[3]);
+      segni.push({ lat: parseFloat(m[1]), lon: parseFloat(m[2]),
+                   n: n2 ? senzaMarcature(n2[1]).trim().slice(0, 80) : 'segno',
+                   da: quantoPrima(punti, parseFloat(m[1]), parseFloat(m[2])) });
+    }
+    return { nome: nome, punti: punti, metri: Math.round(lungo(punti)),
+             quando: ora(), daAltri: true, segni: segni };
+  }
+  /* a che metro del percorso sta un puntino: il contrario di puntoA() */
+  function quantoPrima(punti, la, lo) {
+    var fatti = 0, meglio = 0, quanto = 1e9;
+    for (var i = 0; i < punti.length; i++) {
+      if (i) fatti += dist(punti[i - 1][0], punti[i - 1][1], punti[i][0], punti[i][1]);
+      var d = dist(la, lo, punti[i][0], punti[i][1]);
+      if (d < quanto) { quanto = d; meglio = fatti; }
+    }
+    return Math.round(meglio);
+  }
+
   function perMandare(percorso) {
     if (!percorso) return '';
     var p = percorso.punti || [];
@@ -557,6 +652,7 @@ function PercorsiMiei(opzioni) {
            segna: segna, finisci: finisci, trova: trova, segui: segui,
            passoSuPercorso: passoSuPercorso, smetti: smetti, sto: sto,
            perMandare: perMandare, daUnLink: daUnLink, aggiungi: aggiungi,
+           comeGpx: comeGpx, daGpx: daGpx,
            carica: carica, elenco: elenco, perSalvare: perSalvare, butta: butta,
            aPosto: aPosto, dallaVoce: dallaVoce, soloIlNome: nudo };
 }

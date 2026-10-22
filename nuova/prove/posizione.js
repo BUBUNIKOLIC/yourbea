@@ -169,6 +169,64 @@ prova('camminare a lungo NON e un salto', () => {
   if (m.p.leggi().saltato) guasto('ha scambiato una camminata per un salto');
 });
 
+/* ==================== IL PASSOMETRO ====================
+   «Che capisca davvero se cammino» (Vince, 22/10). La soglia sulla
+   velocita' sbagliava nei due sensi; adesso comanda il passometro del
+   telefono, e la velocita' resta solo come rete. */
+
+/* dieci metri al secondo, trentasei all ora: un autobus, non un salto
+   del GPS — un salto lo butterebbe e la velocita tornerebbe a zero */
+function inAutobus(w) {
+  let lat = 41.9;
+  for (let i = 0; i < 5; i++) {
+    w.p.dalGuscio(lat, 12.49, 10);
+    w.passano(1000);
+    lat += 10 / 111320;
+  }
+  w.p.dalGuscio(lat, 12.49, 10);
+}
+
+prova('IL PASSOMETRO COMANDA: dice cammina, e il GPS puo dire quello che vuole', () => {
+  const w = mondo();
+  inAutobus(w);
+  w.p.comeMiMuovo('cammina', true);
+  if (w.p.leggi().aPiedi !== true) guasto('col passometro che dice cammina crede ancora al GPS');
+});
+
+prova('FERMO E CAMMINARE sono tutt e due «a piedi»', () => {
+  const w = mondo();
+  w.p.comeMiMuovo('fermo', true);
+  if (w.p.leggi().aPiedi !== true) guasto('fermo a un semaforo lo mette su un mezzo');
+});
+
+prova('IN MACCHINA, anche da fermo nel traffico, non sei a piedi', () => {
+  const w = mondo();
+  w.p.dalGuscio(41.9, 12.49, 10);
+  w.p.comeMiMuovo('mezzo', true);
+  if (w.p.leggi().aPiedi !== false) guasto('in macchina crede che tu stia camminando');
+});
+
+prova('SE IL TELEFONO NON E SICURO, decide la velocita come prima', () => {
+  const w = mondo();
+  inAutobus(w);
+  w.p.comeMiMuovo('cammina', false);        // ma il telefono non ci crede
+  if (w.p.leggi().aPiedi !== false) guasto('si fida di una lettura che il telefono stesso dice incerta');
+});
+
+prova('SE IL PASSOMETRO TACE PER UN MINUTO E MEZZO, scade', () => {
+  const w = mondo();
+  w.p.comeMiMuovo('mezzo', true);
+  if (w.p.leggi().aPiedi !== false) guasto('non ha preso l attivita');
+  w.passano(100000);
+  if (w.p.leggi().aPiedi !== true) guasto('un attivita vecchia di due minuti comanda ancora');
+});
+
+prova('SENZA GUSCIO non cambia niente: comanda la velocita', () => {
+  const w = mondo();
+  inAutobus(w);
+  if (w.p.leggi().aPiedi !== false) guasto('senza passometro non guarda piu nemmeno la velocita');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');

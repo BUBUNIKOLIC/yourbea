@@ -160,6 +160,30 @@
   /* suonaIlFaro(): un battito, messo da quella parte. Più sei in rotta,
      più il battito è chiaro e fitto: è il modo in cui si capisce di
      essere girati bene senza che nessuno lo dica. */
+  /* ============================================================
+     LA BACCHETTA: QUANDO SEI GIRATO BENE, LA MANO LO SENTE
+     Il faro suona da sempre, e piu' sei in rotta piu' batte fitto. Ma
+     per strada il suono lo copre un autobus, e chi non vede tiene
+     l'orecchio occupato dal traffico: e' l'organo che gli serve per non
+     farsi male, e noi ci parliamo sopra. La mano invece e' libera.
+     Microsoft Soundscape lo fa cosi' (`Haptics/HapticWandBeacon`): il
+     telefono diventa una bacchetta, e vibra quando lo punti verso la
+     meta. Non dice niente, non ruba l'udito: o vibra o non vibra.
+     Qui si vibra SOLO in rotta — dentro i trenta gradi — perche' il
+     senso e' tutto li': giri su te stesso e la mano ti dice quando
+     fermarti. Una vibrazione continua non direbbe niente.
+     Su iPhone dentro la WKWebView `navigator.vibrate` non esiste: la fa
+     il guscio (window.urbeaVibra). Su Android la fa la pagina. Dove non
+     c'e' ne' l'uno ne' l'altro non succede niente e il suono resta. */
+  function vibra(forza) {
+    try {
+      if (window.urbeaVibra) { window.urbeaVibra(String(forza || 'piano')); return; }
+      if (navigator.vibrate) {
+        navigator.vibrate(forza === 'arrivato' ? [60, 70, 60] : (forza === 'forte' ? 45 : 18));
+      }
+    } catch (e) {}
+  }
+
   function suonaIlFaro(d) {
     var a = accendiIlSuono();
     if (!a) return;
@@ -168,6 +192,8 @@
     var ogni = d.inRotta ? 0.45 : 1.1;        // in rotta batte più spesso
     if (adesso - a.ultimo < ogni) return;
     a.ultimo = adesso;
+    /* e la mano, insieme al suono: solo quando sei girato bene */
+    if (d.inRotta) vibra(d.ciSei ? 'forte' : 'piano');
 
     /* dove sta, rispetto a chi ascolta: a sinistra x negativo, davanti z
        negativo. Il panner fa il resto. */
@@ -247,6 +273,47 @@
     voce.parla('Questo telefono non sa condividere.', { livello: voce.GUIDA, ancheSeUguale: true });
   }
 
+  /* ============================================================
+     IL PERCORSO COME FILE, PER CHI NON HA YOURBEA
+     «Mano a mano che i non vedenti mettono i propri riferimenti sara'
+     possibile arricchire la mappa generale» (Vince, 21/10). Il link
+     che si manda su WhatsApp e' la via facile e resta quella; ma si
+     apre solo con Yourbea, e un percorso camminato — con scritto dove
+     sta il gradino e dove l'attraversamento — e' un dato che vale
+     anche fuori di qui. Il GPX lo legge chiunque: OpenStreetMap, il
+     comune, un'altra app. Esce come file, e non serve nessun server.
+     Si dice «salva il percorso come file». */
+  function percorsoComeFile(percorso) {
+    var testo = miei.comeGpx(percorso);
+    if (!testo) {
+      voce.parla('Questo percorso è troppo corto per salvarlo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    var comeSiChiama = (percorso.nome || 'percorso').replace(/[^\w\sàèéìòù-]/gi, '').trim() || 'percorso';
+    var file = comeSiChiama.replace(/\s+/g, '-').toLowerCase() + '.gpx';
+    try {
+      var b = new Blob([testo], { type: 'application/gpx+xml' });
+      /* se il telefono sa condividere un file, si condivide: su iPhone
+         finisce in «Salva su File» o dentro un messaggio, e la griglia
+         qui ci sta — e' una cosa che si fa una volta, non camminando. */
+      var f2 = (typeof File !== 'undefined') ? new File([b], file, { type: 'application/gpx+xml' }) : null;
+      if (f2 && navigator.canShare && navigator.canShare({ files: [f2] })) {
+        navigator.share({ files: [f2], title: comeSiChiama }).catch(function () {});
+        voce.parla('Il percorso è un file: scegli dove metterlo.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return;
+      }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = file;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      voce.parla('Salvato: ' + file + '. È un file GPX, lo apre qualunque mappa.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+    } catch (e) {
+      diario('GPX: non riesco a salvare — ' + e.message);
+      voce.parla('Non sono riuscito a salvare il file.', { livello: voce.GUIDA, ancheSeUguale: true });
+    }
+  }
+
   /* e quando ne arriva uno: si chiede, non si prende di nascosto. */
   (function percorsoInArrivo() {
     var q = null;
@@ -295,6 +362,9 @@
   });
   // la porta che il guscio dell'iPhone chiama
   window.urbeaPosizione = function (lat, lon, prec) { posizione.dalGuscio(lat, lon, prec); };
+  /* il passometro del telefono: fermo, cammina, corre, bici, mezzo. Vale
+     piu' della velocita' del GPS, e da sottoterra arriva lo stesso. */
+  window.urbeaAttivita = function (come, sicuro) { posizione.comeMiMuovo(come, sicuro); };
 
   /* ============================================================
      COM'E' MESSO IL TELEFONO: VOICEOVER E IL TESTO GRANDE
@@ -1728,6 +1798,11 @@
        con un'occhiata. Si dice solo dopo le schede lunghe, non dopo i
        cenni, e solo se nel frattempo non è arrivato niente di più
        importante: se l'app sta già dicendo una svolta, questa si butta. */
+    /* UNA SVOLTA SI SENTE ANCHE CON LA MANO. La voce dice «fra venti
+       passi gira a destra»; se un camion la copre, la vibrazione no. */
+    if (d.tipo === 'svolta' || d.tipo === 'arrivato' || d.tipo === 'percorso-arrivato') {
+      vibra(d.tipo === 'svolta' ? 'forte' : 'arrivato');
+    }
     if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') {
       var viaOra = ultimaVia;        // il nome, non il numero
       if (viaOra) {
@@ -1890,7 +1965,10 @@
       var df = faro.dove({ lat: s.lat, lon: s.lon }, s.direzione, s.direzioneBuona);
       if (df) suonaIlFaro(df);
       var pf = faro.passo({ lat: s.lat, lon: s.lon }, s.direzione, s.direzioneBuona);
-      if (pf) { if (pf.tipo === 'faro-arrivato') spegniIlSuono(); dillo(pf); }
+      if (pf) {
+        if (pf.tipo === 'faro-arrivato') { spegniIlSuono(); vibra('arrivato'); }
+        dillo(pf);
+      }
     }
 
     /* I PERCORSI SUOI: si registra camminando, o si segue quello che ha
@@ -2418,6 +2496,26 @@
     /* l'abbonamento, a voce: chi non vede non cerca un tasto */
     if (ha('abbonamento', 'quanto costa', 'devo pagare', 'quanto manca all abbonamento')) {
       diciAbbonamento(); return true;
+    }
+    /* «salva il percorso come file»: il GPX, per portarlo fuori di qui */
+    if (/^(?:salva|esporta|scarica)\b.*\b(?:file|gpx|mappa)\b/.test(t) ||
+        /^(?:il percorso come file|percorso come file|esporta il percorso|esporta percorso)$/.test(t)) {
+      var quali = miei.elenco();
+      var quale = null;
+      if (quali.length === 1) quale = miei.trova(quali[0].nome);
+      else {
+        var dettoDentro = miei.dallaVoce(t);
+        if (dettoDentro && dettoDentro.cosa === 'manda') quale = miei.trova(dettoDentro.nome);
+        if (!quale && miei.sto()) quale = miei.sto();
+      }
+      if (!quale) {
+        voce.parla(quali.length
+          ? ('Quale? Hai: ' + quali.map(function (x) { return x.nome || 'uno senza nome'; }).join(', ') + '.')
+          : 'Non hai ancora nessun percorso tuo.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      percorsoComeFile(quale);
+      return true;
     }
     if (ha('compra', 'comprare', 'prendi l abbonamento', 'voglio abbonarmi')) {
       if (window.urbeaCompra) { window.urbeaCompra(); }

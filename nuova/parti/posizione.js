@@ -44,12 +44,14 @@ function Posizione(opzioni) {
   var FERMO_PER = o.fermoPer || 10000;
   var PASSO_BUONO = o.passoBuono || 5;      // oltre cinque metri la direzione è credibile
   var VERSO_VALE = o.versoVale || 20000;    // e vale per venti secondi
+  var ATTIVITA_VALE = o.attivitaVale || 90000;   // il passometro, se tace, scade
 
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
     velocita: null, ultimoQuando: 0, saltato: false,
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
+    attivita: null, attivitaQuando: 0, attivitaSicura: false,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
   };
   var ascoltatori = [];
@@ -84,12 +86,48 @@ function Posizione(opzioni) {
          i dodici si e' su qualcosa con le ruote. Senza misura si suppone
          di si': meglio parlare a chi e' in macchina che tacere a chi
          cammina. */
-      aPiedi: stato.velocita === null || stato.velocita < 3.4,
+      /* LO DICE IL PASSOMETRO, NON IL SATELLITE.
+         La soglia sulla velocita' sbaglia nei due sensi: un non vedente
+         che va piano col bastone, o fermo in galleria col GPS che salta,
+         risultava su un mezzo; e una lettura sballata di cinquanta metri
+         vale 180 all'ora anche da seduto. Il telefono i passi li conta
+         col passometro, e sottoterra funziona uguale (e' la strada di
+         Microsoft Soundscape). Quando il guscio lo manda comanda lui;
+         se tace per un minuto e mezzo, o non c'e', si torna alla
+         velocita' — meglio la misura grezza che nessuna. */
+      aPiedi: comeTiMuovi(),
+      /* e si dice anche COME, perche' «fermo» non e' «cammina»: a chi sta
+         fermo si puo' raccontare, a chi e' su un mezzo no. */
+      attivita: attivitaFresca() ? stato.attivita : null,
       direzione: stato.direzione, direzioneBuona: direzioneBuona(),
       fermo: stato.fermo, fermoDa: stato.fermo ? ora() - stato.fermoDa : 0,
       comeVa: stato.comeVa
     };
   }
+  function attivitaFresca() {
+    return !!stato.attivita && (ora() - stato.attivitaQuando) < ATTIVITA_VALE;
+  }
+  function comeTiMuovi() {
+    if (attivitaFresca() && stato.attivitaSicura) {
+      /* «boh» non e' una risposta: il telefono dice che non lo sa, e
+         allora decide la velocita' come prima. */
+      if (stato.attivita === 'cammina' || stato.attivita === 'corre' ||
+          stato.attivita === 'fermo') return true;
+      if (stato.attivita === 'bici' || stato.attivita === 'mezzo') return false;
+    }
+    return stato.velocita === null || stato.velocita < 3.4;
+  }
+  /* dalGuscio, ma per il modo di muoversi: lo chiama window.urbeaAttivita */
+  function comeMiMuovo(come, sicuro) {
+    var c = String(come || '');
+    if (c !== stato.attivita || !!sicuro !== stato.attivitaSicura) {
+      diario('PASSOMETRO: ' + c + (sicuro ? '' : ' (incerto)'));
+    }
+    stato.attivita = c;
+    stato.attivitaSicura = !!sicuro;
+    stato.attivitaQuando = ora();
+  }
+
   function direzioneBuona() {
     return stato.direzioneQuando > 0 && (ora() - stato.direzioneQuando) < VERSO_VALE;
   }
@@ -249,6 +287,7 @@ function Posizione(opzioni) {
   }
 
   return {
+    comeMiMuovo: comeMiMuovo,
     comincia: comincia, dalGuscio: dalGuscio, leggi: leggi,
     quando: function (f) { ascoltatori.push(f); },
     vigila: vigila,

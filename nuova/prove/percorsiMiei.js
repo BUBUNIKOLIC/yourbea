@@ -381,6 +381,68 @@ prova('UN LINK ROTTO NON FA ESPLODERE NIENTE', () => {
   }
 });
 
+/* ==================== IL PERCORSO COME FILE GPX ====================
+   Perche' un percorso camminato da un non vedente, con dentro dov e il
+   gradino, vale anche fuori da Yourbea. */
+
+prova('IL GPX ESCE BENE, e lo rilegge chi lo ha scritto', () => {
+  const w = mondo();
+  const p = { nome: 'dal medico', metri: 240, quando: 1000000,
+              punti: perLaCitta(240).punti,
+              segni: [{ da: 60, n: 'il gradino alto' }, { da: 180, n: "l'attraversamento" }] };
+  const g = w.p.comeGpx(p);
+  if (!/^<\?xml/.test(g)) return guasto('non comincia come un XML');
+  if (!/<gpx version="1.1"/.test(g)) return guasto('non dice di essere GPX 1.1');
+  if ((g.match(/<trkpt /g) || []).length !== p.punti.length) guasto('i punti della traccia non ci sono tutti');
+  if ((g.match(/<wpt /g) || []).length !== 2) guasto('i segni non sono diventati waypoint');
+  const r = w.p.daGpx(g);
+  if (!r) return guasto('non si rilegge');
+  if (r.nome !== 'dal medico') guasto('il nome si e perso: ' + r.nome);
+  if (r.punti.length !== p.punti.length) guasto('i punti riletti sono ' + r.punti.length);
+  if ((r.segni || []).length !== 2) guasto('i segni riletti sono ' + (r.segni || []).length);
+  console.log('      → ' + g.split('\n').length + ' righe, ' + r.punti.length + ' punti, 2 segni');
+});
+
+prova('L APOSTROFO NON ROMPE IL FILE', () => {
+  const w = mondo();
+  const p = { nome: "dall'edicola & ritorno", metri: 240, punti: perLaCitta(240).punti,
+              segni: [{ da: 60, n: '<il "gradino">' }] };
+  const g = w.p.comeGpx(p);
+  const nomi = (g.match(/<name>[\s\S]*?<\/name>/g) || []).join(' ');
+  if (/['"&<>]/.test(nomi.replace(/&(?:amp|lt|gt|quot|apos);/g, '').replace(/<\/?name>/g, ''))) {
+    guasto('marcature crude dentro il nome: ' + nomi);
+  }
+  const r = w.p.daGpx(g);
+  if (!r || r.nome !== "dall'edicola & ritorno") guasto('il nome torna sbagliato: ' + (r && r.nome));
+  if (!r.segni.length || r.segni[0].n !== '<il "gradino">') guasto('il segno torna sbagliato: ' + (r && r.segni[0] && r.segni[0].n));
+});
+
+prova('UN GPX DI UN ALTRO PROGRAMMA si cammina lo stesso', () => {
+  const w = mondo();
+  const fuori = ['<?xml version="1.0"?>',
+    '<gpx version="1.1" creator="Komoot" xmlns="http://www.topografix.com/GPX/1/1">',
+    '<metadata><name>Giro del centro</name></metadata>',
+    '<wpt lat="41.9005" lon="12.4900"><name>la fontana</name></wpt>',
+    '<trk><trkseg>',
+    '<trkpt lat="41.9000" lon="12.4900"></trkpt>',
+    '<trkpt lat="41.9010" lon="12.4900"></trkpt>',
+    '<trkpt lat="41.9010" lon="12.4920"></trkpt>',
+    '</trkseg></trk></gpx>'].join('\n');
+  const r = w.p.daGpx(fuori);
+  if (!r) return guasto('un GPX normale non lo legge');
+  if (r.nome !== 'Giro del centro') guasto('nome: ' + r.nome);
+  if (r.punti.length !== 3) guasto('punti: ' + r.punti.length);
+  if (!r.daAltri) guasto('non si vede che e di un altro');
+  if (!r.metri) guasto('non ha contato i metri');
+});
+
+prova('QUELLO CHE NON E UN GPX non diventa un percorso', () => {
+  const w = mondo();
+  for (const brutto of ['', 'ciao', '<gpx></gpx>', '<gpx><trkpt lat="41.9" lon="12.4"/></gpx>']) {
+    if (w.p.daGpx(brutto)) guasto('accettato: ' + brutto.slice(0, 40));
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dei percorsi suoi');
