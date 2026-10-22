@@ -20,6 +20,8 @@
     Il guscio apre queste porte alla pagina, e niente altro:
        window.urbeaHaPosizione    c'è il GPS nativo
        window.urbeaPosizione()    il guscio la chiama a ogni passo
+       window.urbeaAttivita()     fermo/cammina/corre/bici/mezzo, dal passometro
+       window.urbeaVibra()        la pagina chiede un colpo alla mano
        window.urbeaAscolta()      apri il microfono, una frase
        window.urbeaChiudiAscolto()
        window.urbeaComando()      il guscio la chiama con la frase capita
@@ -37,6 +39,7 @@
 import UIKit
 import WebKit
 import CoreLocation
+import CoreMotion
 import AVFoundation
 import Speech
 import Contacts
@@ -49,6 +52,8 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
 
   private var pagina: WKWebView!
   private let gps = CLLocationManager()
+  private let passometro = CMMotionActivityManager()
+  private var ultimaAttivita = ""
   private let riconoscitore = SFSpeechRecognizer(locale: Locale(identifier: "it-IT"))
   private var motore: AVAudioEngine?
   private var richiesta: SFSpeechAudioBufferRecognitionRequest?
@@ -167,6 +172,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaSaComprare = true;
   window.urbeaCompra = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'compra' }); };
   window.urbeaRipristina = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'ripristina' }); };
+  window.urbeaVibra = function (forza) { webkit.messageHandlers.guscio.postMessage({ cosa: 'vibra', forza: String(forza || 'piano') }); };
   """
 
   /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
@@ -224,7 +230,29 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
         let come = await self.acquisti.ripristina()
         self.allaPagina("window.urbeaEsitoAcquisto && window.urbeaEsitoAcquisto(" + Schermo.inJS(come) + ")")
       }
+    case "vibra": colpoAllaMano((d["forza"] as? String) ?? "piano")
     default: break
+    }
+  }
+
+  /* ============================================================
+     IL COLPO ALLA MANO
+     `navigator.vibrate` dentro una WKWebView su iPhone non esiste: la
+     pagina lo chiama e non succede niente. Lo fa il guscio.
+     Serve per il faro — il telefono diventa una bacchetta e vibra quando
+     lo punti verso la meta, come in Microsoft Soundscape — e per le
+     svolte. Per strada il suono lo copre un autobus, e l'udito di chi non
+     vede e' gia' occupato a tenerlo vivo: la mano no.
+     I generatori si creano al volo e non si tengono: tenuti, dopo qualche
+     minuto iOS li addormenta e il colpo non arriva piu'. */
+  private func colpoAllaMano(_ forza: String) {
+    switch forza {
+    case "arrivato":
+      UINotificationFeedbackGenerator().notificationOccurred(.success)
+    case "forte":
+      let g = UIImpactFeedbackGenerator(style: .medium); g.prepare(); g.impactOccurred()
+    default:
+      let g = UIImpactFeedbackGenerator(style: .light); g.prepare(); g.impactOccurred()
     }
   }
 
@@ -437,6 +465,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     gps.pausesLocationUpdatesAutomatically = false
     gps.requestWhenInUseAuthorization()
     gps.startUpdatingLocation()
+    preparaPassometro()
     /* IL BATTITO. iOS manda una posizione nuova solo quando ti SPOSTI di
        cinque metri: fermo in casa il guscio taceva, e la pagina — che dopo
        cinque secondi di silenzio si arrende e chiede al browser — finiva a
@@ -446,6 +475,47 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
     battito = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
       guard let self = self, let p = self.ultimaPosizione else { return }
       self.mandaPosizione(p)
+    }
+  }
+
+  /* ============================================================
+     COME SI CAPISCE CHE STAI CAMMINANDO
+     Fino al 22/10 lo decideva la pagina da sola, con una soglia secca
+     sulla velocita' del GPS: sotto i 12 all'ora cammini, sopra no. E'
+     una misura sbagliata nei due sensi. Un non vedente che va piano col
+     bastone, fermo a un semaforo, o dentro una galleria dove il satellite
+     salta, risulta su un mezzo; e il GPS che sbanda di cinquanta metri in
+     un secondo vale 180 all'ora anche se sei seduto su una panchina.
+     Il telefono questa cosa la sa gia', e la sa meglio: `CMMotionActivity`
+     nasce dal PASSOMETRO, non dal satellite — se i passi li fai li conta,
+     e sotto terra funziona uguale. E' la stessa strada che prende
+     Microsoft Soundscape (`Sensors/Motion/MotionActivityContext`).
+     Qui si manda alla pagina una parola sola e quanto ci si crede. La
+     pagina decide: se la parola e' fresca comanda lei, se no si torna
+     alla velocita' come prima — un telefono vecchio o un permesso negato
+     non devono lasciare l'app senza niente. */
+  private func preparaPassometro() {
+    guard CMMotionActivityManager.isActivityAvailable() else {
+      scrivi("passometro: questo telefono non ce l'ha")
+      return
+    }
+    passometro.startActivityUpdates(to: .main) { [weak self] a in
+      guard let self = self, let a = a else { return }
+      /* le attivita' di iOS non si escludono fra loro (puoi essere
+         «in macchina» e «fermo» insieme, al semaforo): si sceglie una
+         parola sola, nell'ordine che conta per noi. */
+      var come = "boh"
+      if a.walking { come = "cammina" }
+      else if a.running { come = "corre" }
+      else if a.cycling { come = "bici" }
+      else if a.automotive { come = "mezzo" }
+      else if a.stationary { come = "fermo" }
+      let sicuro = a.confidence != .low
+      let riga = come + (sicuro ? "" : "?")
+      if riga == self.ultimaAttivita { return }
+      self.ultimaAttivita = riga
+      self.scrivi("passometro: " + riga)
+      self.allaPagina("window.urbeaAttivita && window.urbeaAttivita(\"\(come)\", \(sicuro ? "true" : "false"))")
     }
   }
 
