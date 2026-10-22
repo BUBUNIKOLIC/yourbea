@@ -174,24 +174,36 @@ prova('I CAMPI NUOVI ARRIVANO FINO IN FONDO, passando dal filtro vero', () => {
   if (avevaPrima && !haAdesso) guasto('i campi si sono persi per strada: ' + posto.luogo.n);
 });
 
-prova('IN MACCHINA non si tace: si guarda piu lontano e si dice meno', () => {
-  /* Questa prova diceva il contrario fino al 22/10 mattina — «in macchina i
-     monumenti tacciono, e non e un guasto» — e fissava nel banco il difetto
-     che Vince aveva appena trovato camminando da Termini a casa: venti
-     minuti di silenzio in Turismo. La regola giusta e quella di Microsoft
-     Soundscape: in macchina il filtro non spegne, allarga. */
+prova('IN MACCHINA I MONUMENTI TACCIONO, ed e la regola', () => {
+  /* Provato nei due sensi il 22/10 — aperto a 1.200 metri, poi stretto a
+     150 — e richiuso: «deve essere tarata sul camminare sempre, scooter
+     taxi e auto non serve» (Vince, dopo la corsa in scooter, dove a 950
+     metri gli ha annunciato la cattedrale mentre entrava nel palazzetto).
+     Ma le strade e le fermate su un mezzo servono, e restano. */
   const aChiServe = AChiServe();
-  if (!aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: true })) {
-    guasto('in macchina il Turismo tace di nuovo');
+  if (aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: true })) {
+    guasto('in macchina annuncia di nuovo i monumenti');
   }
   if (!aChiServe.serve('strada', 'cultura', { aPiedi: false, preciso: true })) {
     guasto('ma le strade in macchina si devono dire');
   }
-  /* e senza sapere dove sei non si annuncia niente lo stesso: la regola
-     della precisione non l ha scalzata nessuno */
-  if (aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: false })) {
-    guasto('annuncia monumenti senza sapere dove sei');
+  if (!aChiServe.serve('fermata', 'servizi', { aPiedi: false, preciso: true })) {
+    guasto('e le fermate servono proprio li');
   }
+});
+
+prova('E IL LUOGO NON SI BRUCIA: sceso dal mezzo, te lo ritrovi', () => {
+  /* prima il cenno veniva prodotto e segnato come detto, e poi buttato
+     dalla regola: un posto perso in silenzio. */
+  const a = App('cultura');
+  const g = unQuadrettoConUnGrande(a.racconto);
+  if (!g) { guasto('niente punti di riferimento nei dati'); return; }
+  a.caricaQuadretto(g.quadretto);
+  const qui = { lat: g.luogo.lat - 0.001, lon: g.luogo.lon, direzione: 0 };
+  if (a.passo(qui, false)) { guasto('in movimento ha parlato'); return; }
+  const d = a.passo(qui, true);
+  if (!d) guasto('e a piedi, subito dopo, non lo dice piu: bruciato in silenzio');
+  else console.log('      → ' + d.testo);
 });
 
 prova('L ELENCO DEI POSTI INTORNO resta mezzo chilometro, sempre', () => {
@@ -236,32 +248,36 @@ prova('IL RANGO ESISTE DAVVERO NEI DATI, non solo nelle prove inventate', () => 
   else console.log('      → ' + g.luogo.n + ' (' + g.luogo.t + ')');
 });
 
-prova('IN MACCHINA, davanti a un punto di riferimento VERO, l app parla', () => {
-  /* la prova che il 21/10 sarebbe fallita: venti minuti da Termini a casa
-     senza una parola. Qui si va in macchina, con dati veri, e si pretende
-     di sentire qualcosa. */
-  const a = App('cultura');
-  const g = unQuadrettoConUnGrande(a.racconto);
-  if (!g) { guasto('niente punti di riferimento nei dati'); return; }
-  a.caricaQuadretto(g.quadretto);
-  const qui = { lat: g.luogo.lat - 0.001, lon: g.luogo.lon, direzione: 0 };   // ~110 metri: ci passi davanti
-  const d = a.passo(qui, false);
-  if (!d) { guasto('in macchina tace anche passandoci davanti: ' + g.luogo.n); return; }
-  if (/passi/.test(d.testo)) guasto('in macchina conta i passi: ' + d.testo);
-  console.log('      → ' + d.testo);
+prova('IN MACCHINA I MONUMENTI TACCIONO, ed e la regola', () => {
+  /* Provato nei due sensi il 22/10 — aperto a 1.200 metri, poi stretto a
+     150 — e richiuso: «deve essere tarata sul camminare sempre, scooter
+     taxi e auto non serve» (Vince, dopo la corsa in scooter, dove a 950
+     metri gli ha annunciato la cattedrale mentre entrava nel palazzetto).
+     Ma le strade e le fermate su un mezzo servono, e restano. */
+  const aChiServe = AChiServe();
+  if (aChiServe.serve('cenno', 'cultura', { aPiedi: false, preciso: true })) {
+    guasto('in macchina annuncia di nuovo i monumenti');
+  }
+  if (!aChiServe.serve('strada', 'cultura', { aPiedi: false, preciso: true })) {
+    guasto('ma le strade in macchina si devono dire');
+  }
+  if (!aChiServe.serve('fermata', 'servizi', { aPiedi: false, preciso: true })) {
+    guasto('e le fermate servono proprio li');
+  }
 });
 
-prova('IN MACCHINA non diventa una radio: uno ogni tre quarti di minuto', () => {
+prova('E IL LUOGO NON SI BRUCIA: sceso dal mezzo, te lo ritrovi', () => {
+  /* prima il cenno veniva prodotto e segnato come detto, e poi buttato
+     dalla regola: un posto perso in silenzio. */
   const a = App('cultura');
   const g = unQuadrettoConUnGrande(a.racconto);
   if (!g) { guasto('niente punti di riferimento nei dati'); return; }
   a.caricaQuadretto(g.quadretto);
   const qui = { lat: g.luogo.lat - 0.001, lon: g.luogo.lon, direzione: 0 };
-  if (!a.passo(qui, false)) { guasto('la prima non e uscita'); return; }
-  a.passano(6000);
-  if (a.passo(qui, false)) guasto('sei secondi dopo ne dice un altro: e una radio');
-  a.passano(50000);
-  a.passo(qui, false);                 // dopo il freno puo riparlare (se c e altro)
+  if (a.passo(qui, false)) { guasto('in movimento ha parlato'); return; }
+  const d = a.passo(qui, true);
+  if (!d) guasto('e a piedi, subito dopo, non lo dice piu: bruciato in silenzio');
+  else console.log('      → ' + d.testo);
 });
 
 prova('UN NOME UGUALE LONTANO non cancella un monumento (1.790 persi il 21/10)', () => {

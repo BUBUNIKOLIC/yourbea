@@ -120,7 +120,18 @@ function Passaggi(opzioni) {
      Qui si guarda davanti — un cono stretto, quaranta gradi — fino a
      trentacinque metri, e si dice in passi. Il nome resta per dopo:
      quello che serve subito è quanto manca e cos'è. */
-  var DAVANTI = o.davanti || 35;        // metri: oltre, non serve ancora
+  /* QUANTO PRIMA SI DICE UN ATTRAVERSAMENTO.
+     Erano 35 metri, cioe' quasi cinquanta passi, e il 22/10 Vince l'ha
+     sentito in strada: «non dire a quaranta passi trovi attraversamento
+     pedonale». Quaranta passi sono mezzo minuto: li conti, ti distrai, e
+     quando ci arrivi non te ne ricordi piu'. E nel frattempo il marciapiede
+     puo' girare.
+     Ma toglierlo no: «dovrebbe esserci, sennò un non vedente attraversa e
+     viene investito». Quindi si dice piu' tardi, non meno: quindici metri
+     sono venti passi, un quarto di minuto a passo d'uomo — il tempo di
+     rallentare e cercare il bordo, senza perdere il conto. E quando ci sei
+     sopra lo ridice `prossimo()`, che e' l'avviso che conta. */
+  var DAVANTI = o.davanti || 15;        // metri: prima e' troppo presto
   var CONO = o.cono || 40;              // gradi: dev'essere davvero davanti
   var PASSO = 0.75;
 

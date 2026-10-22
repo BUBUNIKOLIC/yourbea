@@ -45,6 +45,7 @@ function Posizione(opzioni) {
   var PASSO_BUONO = o.passoBuono || 5;      // oltre cinque metri la direzione è credibile
   var VERSO_VALE = o.versoVale || 20000;    // e vale per venti secondi
   var ATTIVITA_VALE = o.attivitaVale || 90000;   // il passometro, se tace, scade
+  var CORSA_VALE = o.corsaVale || 120000;        // e quanto forte andavi, due minuti
 
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
@@ -52,6 +53,7 @@ function Posizione(opzioni) {
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
     attivita: null, attivitaQuando: 0, attivitaSicura: false,
+    velocitaAlta: 0, velocitaAltaQuando: 0,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
   };
   var ascoltatori = [];
@@ -115,6 +117,8 @@ function Posizione(opzioni) {
           stato.attivita === 'fermo') return true;
       if (stato.attivita === 'bici' || stato.attivita === 'mezzo') return false;
     }
+    /* e prima di dire «cammina», si guarda se poco fa correva */
+    if (stato.velocitaAlta && (ora() - stato.velocitaAltaQuando) < CORSA_VALE) return false;
     return stato.velocita === null || stato.velocita < 3.4;
   }
   /* dalGuscio, ma per il modo di muoversi: lo chiama window.urbeaAttivita */
@@ -197,6 +201,26 @@ function Posizione(opzioni) {
         var adesso = passo / (passatoDa / 1000);              // metri al secondo
         stato.velocita = stato.velocita === null ? adesso
                                                  : (stato.velocita * 0.7 + adesso * 0.3);
+        /* FERMO AL SEMAFORO NON VUOL DIRE A PIEDI.
+           Dal quaderno vero di Vince, 22/10, in scooter: alle 15:10:54
+           andava a 53 all'ora, alle 15:11:09 l'app gli diceva «fra 20
+           passi, un attraversamento senza semaforo». In mezzo c'e' un
+           semaforo rosso: appena ci si ferma il guscio ribatte la stessa
+           posizione ogni tre secondi, la media mobile legge zero, e in
+           una quindicina di secondi la velocita' scende sotto i dodici
+           all'ora. Da li' in poi, per l'app, sei uno che cammina — e
+           ricominciano gli attraversamenti contati in passi, cioe'
+           proprio il «eravamo in autostrada e dava gli incroci» del
+           19/10, arrivato per un'altra strada.
+           Quindi si tiene da parte quanto forte si andava: chi faceva
+           cinquanta all'ora un minuto fa non e' diventato un pedone
+           perche' si e' fermato al rosso. Due minuti, e poi decade. */
+        if (adesso > 3.4) {
+          stato.velocitaAlta = Math.max(stato.velocitaAlta, adesso);
+          stato.velocitaAltaQuando = quando;
+        } else if (quando - stato.velocitaAltaQuando > CORSA_VALE) {
+          stato.velocitaAlta = 0;
+        }
       }
       stato.ultimoQuando = quando;
       // REGOLA 4: la direzione si crede solo se ci si è mossi davvero

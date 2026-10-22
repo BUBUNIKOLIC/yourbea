@@ -78,14 +78,13 @@ function AChiServe() {
     'lati':              [ true,    true,    false,       false ],
     'passaggio':         [ true,    true,    false,       false ],
     'incrocio':          [ true,    true,    false,       false ],
-    /* IL CENNO REGGE IL MOVIMENTO, MA NON DA SOLO. Fino al 21/10 era
-       false, e il risultato e' stato venti minuti di silenzio da Termini
-       a casa: la regola buttava via l'unica cosa che in macchina si puo'
-       ancora dire. Adesso passa, perche' chi lo produce (parti/racconto)
-       in movimento tiene solo i luoghi grandi e guarda sei volte piu'
-       lontano — la regola di Microsoft Soundscape. Il filtro vero sta
-       li', non qui: qui si direbbe si' o no a tutto. */
-    'cenno':             [ true,    true,    true,        false ],
+    /* IL CENNO NON REGGE IL MOVIMENTO. Provato nei due sensi il 22/10 —
+       prima aperto a 1.200 metri come fa Soundscape in macchina, poi
+       stretto a 150 — e richiuso: «deve essere tarata sul camminare
+       sempre, scooter taxi e auto non serve» (Vince, dopo la corsa in
+       scooter). La storia di un palazzo la ascolti stando davanti al
+       palazzo. */
+    'cenno':             [ true,    true,    false,       false ],
     'superato':          [ true,    true,    false,       false ],
     /* COM'E' FATTA NON E' STORIA DELL'ARTE. «Alta come un palazzo di
        dodici piani, larga ottantacinque passi, di marmo» e' cos'hai

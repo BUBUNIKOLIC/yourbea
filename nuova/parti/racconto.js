@@ -48,8 +48,6 @@ function Racconto(opzioni) {
   var detti = {};            // nome -> {quando, lat, lon}
   var gradino = {};          // nome -> quanti gradini ho già detto
   var inCorso = null;        // il luogo di cui sto raccontando
-  var ultimoInCorsa = 0;     // l'ultima cosa detta mentre si va in macchina
-  var IN_CORSA_OGNI = o.inCorsaOgni || 45000;
 
   /* ---------- PRIMA COS'HAI DAVANTI, POI LA STORIA ----------
      «Non basta leggere la pagina Wikipedia: serve un'audiodescrizione
@@ -147,33 +145,25 @@ function Racconto(opzioni) {
       }
     }
 
-    /* 2. IL CENNO DEL PROSSIMO LUOGO NON ANCORA DETTO — CAMMINANDO, E
-       ANCHE IN MOVIMENTO, MA NON ALLO STESSO MODO.
-       «Turismo non ha mai parlato» (Vince, 21/10, da Termini a casa). Il
-       quaderno del telefono dava fino a 77 km/h e decine di righe «REGOLA:
-       cenno non va in cultura (non a piedi)»: la regola del movimento
-       buttava via tutto, e il silenzio durava venti minuti. Tacere non era
-       la risposta, e non lo e' nemmeno spiegare perche' si tace.
-       Lo risolve in una riga sola Microsoft Soundscape (sorgente aperto,
-       licenza MIT), l'app per non vedenti di Microsoft: in macchina NON
-       tace — guarda SEI VOLTE PIU' LONTANO e dice SOLO le cose grandi
-       (`CalloutRangeContext.automotive`, moltiplicatore 6, piu' il filtro
-       che tiene solo i landmark e le fermate). Ed e' giusto: a cinquanta
-       all'ora il problema non e' che la basilica non interessa, e' che a
-       duecentoquaranta metri la annunci quando ci sei gia' passato.
-       Quindi in movimento: raggio per sei, solo i luoghi di rango 2 in su,
-       le distanze in metri e non in passi (i passi li capisci perche' li
-       fai, e seduto non ne fai nessuno), e niente «dietro di te hai
-       superato» — a quella velocita' e' gia' perso. */
-    var aPiedi = situazione.aPiedi !== false;
-    /* E NON PIU' DI UNO OGNI TRE QUARTI DI MINUTO. Camminando il respiro
-       di app.js basta, perche' i posti si presentano a passo d'uomo. In
-       macchina no: a cinquanta all'ora, con un chilometro e due di
-       raggio, nel centro di Roma ce ne sono settantotto a portata, e
-       senza un freno uscirebbero uno ogni sei secondi — cioe' una radio
-       che elenca. Quarantacinque secondi sono circa seicento metri: il
-       tempo di sentirlo e di passarci davanti. */
-    if (!aPiedi && ora() - ultimoInCorsa < IN_CORSA_OGNI) return null;
+    /* 2. IL CENNO DEL PROSSIMO LUOGO — SOLO CAMMINANDO.
+       «Deve essere tarata sul camminare sempre. Scooter, taxi e auto non
+       serve» (Vince, 22/10, dopo averla provata in scooter). E prima:
+       «turismo e' storia, arte, architettura». Sono la stessa frase
+       detta due volte: il Turismo e' una cosa che si fa a piedi, perche'
+       la storia di un palazzo la ascolti stando davanti al palazzo. Da
+       un mezzo non ci sei davanti: ci passi accanto, e un attimo dopo sei
+       altrove.
+       Ci ho provato due volte in un giorno — prima sei volte piu'
+       lontano come fa Soundscape in macchina, poi stretto a 150 metri —
+       e il quaderno della sua corsa in scooter dice che avevo torto tutte
+       e due: alle 15:13 «sulla sinistra, a 950 metri, cattedrale di San
+       Marco», mentre lui entrava nel palazzetto dall'altra parte.
+       QUI NON SI CONSUMA NIENTE: il luogo non si segna come detto, cosi'
+       quando scendi e cammini te lo ritrovi. Prima il cenno veniva
+       prodotto, segnato, e buttato dalla regola piu' in la': un posto
+       bruciato in silenzio, che sceso dall'autobus non te lo diceva piu'
+       nessuno. */
+    if (situazione.aPiedi === false) return null;
     for (var i = 0; i < intorno.length; i++) {
       var o = intorno[i], p = o.p;
       /* il modo va passato: senza, in Turismo passavano anche i luoghi
@@ -181,7 +171,6 @@ function Racconto(opzioni) {
          puo' raccontare */
       if (!daRaccontare(p, modo)) continue;     // qui si raccontano i luoghi
       if (giaDetto(p, qui)) continue;
-      if (!aPiedi && rango(p) < 3) continue;    // in corsa, solo i punti di riferimento
       /* QUELLO CHE TI SEI GIÀ LASCIATO DIETRO. «E hai passato questo
          monumento altrettanto importante… se non lo è, dietro di te hai
          superato» (Vince, 16/10). Camminando si passa accanto a una chiesa
@@ -191,13 +180,11 @@ function Racconto(opzioni) {
          conta meno è una riga sola, e solo finché è a portata di mano. */
       var dietro = Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150);
       if (dietro) {
-        if (!aPiedi) continue;                  // in corsa, quello che è dietro è già perso
         if (situazione.direzioneBuona === false) continue;   // senza bussola «dietro» è una bugia
         if (rango(p) >= 2 ? o.m > 120 : o.m > 45) continue;
       }
-      if (o.m > soglia(p, modo, aPiedi)) continue;
+      if (o.m > raggio(p, modo)) continue;
       detti[p.n] = { quando: ora(), lat: qui.lat, lon: qui.lon };
-      if (!aPiedi) ultimoInCorsa = ora();
       inCorso = p;
       gradino[p.n] = 0;
       /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
@@ -215,7 +202,7 @@ function Racconto(opzioni) {
                  testo: 'Dietro di te hai superato ' + p.n + '.' };
       }
       return { tipo: 'cenno', luogo: p, livello: liv, dietro: dietro,
-               rel: o.rel, metri: Math.round(o.m), aPiedi: aPiedi,
+               rel: o.rel, metri: Math.round(o.m),
                direzioneBuona: situazione.direzioneBuona !== false,
                cardinale: situazione.cardinale || null,
                /* senza sapere come sei girato, «sulla destra» sarebbe una
@@ -226,7 +213,7 @@ function Racconto(opzioni) {
                testo: dietro
                  ? ('Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.')
                  : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
-                    quanto(o.m, aPiedi) + ', ' + p.n + '.') };
+                    metri(o.m) + ', ' + p.n + '.') };
     }
     return null;
   }
@@ -367,29 +354,11 @@ function Racconto(opzioni) {
     var r = rango(p);
     return r >= 3 ? Math.round(base * 1.7) : (r === 2 ? Math.round(base * 1.3) : base);
   }
-  /* FIN DOVE SI GUARDA QUANDO NON CAMMINI, e perche' si e' stretto.
-     Il 22/10 l'avevo aperto a mille e duecento metri: sei volte il
-     raggio, come fa Microsoft Soundscape in macchina. Vince l'ha provata
-     in scooter la sera stessa: «sono entrato nel palazzetto e mi diceva
-     che a 900 passi c'era la chiesa di San Marco». La cattedrale era a
-     seicento metri buoni, e lui stava entrando da un'altra parte.
-     L'errore non era il moltiplicatore, era l'idea: a Soundscape
-     quel raggio serve per ANNUNCIARE IN ANTICIPO qualcosa verso cui stai
-     andando. Chi gira in citta' per i fatti suoi non sta andando da
-     nessuna parte in particolare, e una cosa a seicento metri non la
-     incontra mai: la sente e basta.
-     «Non spegnerli, ma stringi: solo quelli molto vicini» (Vince).
-     Centocinquanta metri: a trenta all'ora sono venti secondi, cioe'
-     glielo si dice mentre ci passa davanti — non mentre e' da un'altra
-     parte. E restano solo i luoghi di rango 3, uno ogni 45 secondi.
-     E l'elenco dei posti intorno torna a mezzo chilometro per tutti:
-     allargarlo serviva solo a questo, e intanto allargava anche le
-     altre parti che lo usano. */
-  var MOLTO_VICINO = 150;         // in movimento, e basta
+  /* FIN DOVE SI GUARDA. Mezzo chilometro, e sta scritto qui dentro — non
+     in app.js — perche' chi raccoglie i posti intorno deve guardare
+     esattamente fin dove guarda il racconto: scritto in due posti, al
+     primo ritocco si scolla. E' gia' successo coi gradini. */
   function finDove() { return 500; }
-  function soglia(p, modo, aPiedi) {
-    return aPiedi === false ? MOLTO_VICINO : raggio(p, modo);
-  }
   /* QUATTRO PAROLE, NON SETTE. «In Utilità metti avanti, dietro, destra,
      sinistra. Non nord» (Vince, 16/10). «Proprio a destra» e «indietro a
      destra» sembrano precise e invece fanno fermare a pensare: chi

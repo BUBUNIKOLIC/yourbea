@@ -227,6 +227,36 @@ prova('SENZA GUSCIO non cambia niente: comanda la velocita', () => {
   if (w.p.leggi().aPiedi !== false) guasto('senza passometro non guarda piu nemmeno la velocita');
 });
 
+prova('FERMO AL SEMAFORO IN SCOOTER non vuol dire a piedi', () => {
+  /* Dal quaderno vero del 22/10: alle 15:10:54 andava a 53 all'ora, alle
+     15:11:09 l app gli diceva «fra 20 passi, un attraversamento». In
+     mezzo, un semaforo rosso: fermandosi il guscio ribatte la stessa
+     posizione ogni tre secondi, la media mobile legge zero, e in quindici
+     secondi la velocita scende sotto i dodici all ora. */
+  const w = mondo();
+  inAutobus(w);                                  // 36 all ora
+  if (w.p.leggi().aPiedi !== false) { guasto('non ha capito che correva'); return; }
+  // adesso il rosso: la stessa posizione ribattuta
+  const s = w.p.leggi();
+  for (let i = 0; i < 10; i++) { w.passano(3000); w.p.dalGuscio(s.lat, s.lon, 10); }
+  if (w.p.leggi().aPiedi !== false) guasto('fermo al rosso, dopo mezzo minuto lo crede a piedi');
+});
+
+prova('MA DOPO DUE MINUTI FERMO, sei sceso: torni a piedi', () => {
+  const w = mondo();
+  inAutobus(w);
+  const s = w.p.leggi();
+  for (let i = 0; i < 50; i++) { w.passano(3000); w.p.dalGuscio(s.lat, s.lon, 10); }
+  if (w.p.leggi().aPiedi !== true) guasto('due minuti e mezzo fermo e ti crede ancora in scooter');
+});
+
+prova('E IL PASSOMETRO BATTE LA MEMORIA DELLA CORSA', () => {
+  const w = mondo();
+  inAutobus(w);
+  w.p.comeMiMuovo('cammina', true);
+  if (w.p.leggi().aPiedi !== true) guasto('sceso dall autobus, il telefono dice che cammina e non gli crede');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');
