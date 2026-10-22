@@ -426,6 +426,13 @@ def dalTestoPieno(testo, nome='', tipo=''):
     frm, visti2 = [], set()
     for x in ([] if aperto else FORMA.findall(incipit)):
         k = x.lower()
+        # «navata» e «navate» sono la stessa cosa: uscivano tutt'e due in
+        # 123 luoghi, e l'app diceva «ha una navata, un'abside e delle
+        # navate». Una forma sola per volta.
+        if k == 'navata' and 'navate' in visti2:
+            continue
+        if k == 'navate' and 'navata' in visti2:
+            continue
         if k in DI_CHIESA and not sacro:
             continue            # un museo non ha le navate
         if k not in visti2:
