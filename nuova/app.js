@@ -365,6 +365,38 @@
   /* il passometro del telefono: fermo, cammina, corre, bici, mezzo. Vale
      piu' della velocita' del GPS, e da sottoterra arriva lo stesso. */
   window.urbeaAttivita = function (come, sicuro) { posizione.comeMiMuovo(come, sicuro); };
+  /* ============================================================
+     QUANTO E' LUNGO IL TUO PASSO, misurato e non supposto
+     L'app conta tutto in passi, e usava 75 centimetri: la media di una
+     popolazione, che non e' il passo di nessuno. Cambia con l'altezza,
+     con la fretta, e chi cammina col bastone lo fa piu' corto. A sedici
+     passi da una porta, fra 0,60 e 0,80 ci sono quattro metri — cioe' la
+     porta sbagliata, e chi non vede ci va a sbattere.
+     Non si chiede niente a nessuno: si misura mentre registra un
+     percorso, cosa che fa gia'. Il GPS da' i metri, il telefono i passi,
+     e la falcata e' la divisione. Si dice una volta sola, e resta. */
+  var passiOra = 0, passiAllInizio = null;
+  window.urbeaPassi = function (n) { passiOra = Number(n) || 0; };
+  try {
+    var p0 = Number(localStorage.getItem('yourbea2-passo') || 0);
+    if (p0 && laDistanza.metti(p0)) diario('IL TUO PASSO: ' + p0 + ' m (misurato prima d\'ora)');
+  } catch (e) {}
+  function cominciaAMisurareIlPasso() {
+    passiAllInizio = passiOra;
+  }
+  function finisciDiMisurareIlPasso(metri) {
+    if (passiAllInizio === null) return;
+    var fatti = passiOra - passiAllInizio;
+    passiAllInizio = null;
+    if (laDistanza.eMisurato()) return;        // si misura una volta sola
+    var l = laDistanza.regola(metri, fatti);
+    if (!l) { diario('IL TUO PASSO: non misurabile (' + Math.round(metri) + ' m, ' + fatti + ' passi)'); return; }
+    try { localStorage.setItem('yourbea2-passo', String(l)); } catch (e) {}
+    diario('IL TUO PASSO: ' + l + ' m (' + Math.round(metri) + ' m in ' + fatti + ' passi)');
+    voce.parla('E ho misurato il tuo passo: ' + Math.round(l * 100) +
+               ' centimetri. Da adesso quando ti dico «a venti passi» sono i tuoi.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+  }
 
   /* ============================================================
      COM'E' MESSO IL TELEFONO: VOICEOVER E IL TESTO GRANDE
@@ -2383,6 +2415,7 @@
                    { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
+      cominciaAMisurareIlPasso();
       dilloSubito(miei.comincia(pv.nome, { lat: sp0.lat, lon: sp0.lon }));
       return true;
     }
@@ -2397,6 +2430,7 @@
       var fine = miei.finisci();
       salvaIMiei();
       dilloSubito(fine);
+      if (fine && fine.percorso) finisciDiMisurareIlPasso(fine.percorso.metri || 0);
       /* IL NOME SI CHIEDE ALLA FINE, non all'inizio. «Crea percorso» e
          basta registrava un percorso senza nome: trova() non lo trovava
          piu' e l'elenco lo diceva vuoto. Chiederlo alla partenza vuol
@@ -2515,6 +2549,25 @@
         return true;
       }
       percorsoComeFile(quale);
+      return true;
+    }
+    /* «quanto e' lungo il mio passo» — e «rimisura il mio passo», che lo
+       butta e lo rifa al prossimo percorso: uno cambia scarpe, si rompe
+       una gamba, o lo ha misurato una volta di corsa. */
+    if (/\b(il mio passo|quanto .*(lungo|misura).*passo|la mia falcata)\b/.test(t) &&
+        !/rimisura|misura di nuovo|rifai/.test(t)) {
+      voce.parla(laDistanza.eMisurato()
+        ? ('Il tuo passo è ' + Math.round(laDistanza.quantoEIlPasso() * 100) + ' centimetri, misurato camminando.')
+        : 'Il tuo passo non l\'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.',
+        { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+    if (/\b(rimisura|misura di nuovo|rifai la misura)\b.*\bpass/.test(t) ||
+        /\bmisura(mi)? il (mio )?passo\b/.test(t)) {
+      try { localStorage.removeItem('yourbea2-passo'); } catch (e) {}
+      laDistanza.dimentica();
+      voce.parla('Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
     if (ha('compra', 'comprare', 'prendi l abbonamento', 'voglio abbonarmi')) {

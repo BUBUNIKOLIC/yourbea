@@ -81,6 +81,47 @@ prova('la forma nuda serve dentro un altra frase', () => {
   if (!/^a /.test(d.passi(30))) guasto('«passi» deve avere l articolo: ' + d.passi(30));
 });
 
+/* ==================== IL PASSO SUO, NON LA MEDIA ====================
+   «Registrare e regolare il pedometro» (Vince, 22/10). A sedici passi da
+   una porta, fra 0,60 e 0,80 ci sono quattro metri: la porta sbagliata. */
+
+prova('IL PASSO SI MISURA camminando, e cambia quello che si sente', () => {
+  const d = Distanza({});
+  if (d.eMisurato()) return guasto('nasce gia misurato');
+  const prima = d.passi(12);
+  if (!d.regola(100, 160)) return guasto('cento metri in centosessanta passi non li accetta');
+  if (d.quantoEIlPasso() !== 0.63) guasto('falcata sbagliata: ' + d.quantoEIlPasso());
+  if (d.passi(12) === prima) guasto('la frase non cambia: ' + d.passi(12));
+  console.log('      → ' + prima + ' diventa ' + d.passi(12));
+});
+
+prova('UNA MISURA ASSURDA SI BUTTA: meglio la media che una bugia', () => {
+  const d = Distanza({});
+  if (d.regola(100, 40)) guasto('due metri e mezzo a passo: accettati');
+  if (d.regola(100, 500)) guasto('venti centimetri a passo: accettati');
+  if (d.regola(10, 20)) guasto('dieci metri sono troppo pochi per misurare');
+  if (d.regola(100, 20)) guasto('venti passi sono troppo pochi per misurare');
+  if (d.eMisurato()) guasto('dopo quattro rifiuti si crede misurato');
+  if (d.quantoEIlPasso() !== 0.75) guasto('la media si e mossa lo stesso');
+});
+
+prova('SI PUO DIMENTICARE, per rimisurarlo', () => {
+  const d = Distanza({});
+  d.regola(100, 160);
+  d.dimentica();
+  if (d.eMisurato() || d.quantoEIlPasso() !== 0.75) guasto('non torna alla media');
+  if (!d.regola(120, 150)) guasto('e poi non si lascia rimisurare');
+  if (d.quantoEIlPasso() !== 0.8) guasto('la seconda misura non ha preso: ' + d.quantoEIlPasso());
+});
+
+prova('UN PASSO MISURATO SI PUO RIMETTERE da una volta all altra', () => {
+  const d = Distanza({});
+  if (!d.metti(0.68)) return guasto('non accetta una falcata buona');
+  if (d.quantoEIlPasso() !== 0.68 || !d.eMisurato()) guasto('non l ha presa');
+  if (d.metti(2)) guasto('accetta due metri a passo');
+  if (d.metti(0)) guasto('accetta zero');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della distanza');

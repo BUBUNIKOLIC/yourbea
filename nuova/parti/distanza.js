@@ -30,7 +30,39 @@
 
 function Distanza(opzioni) {
   var o = opzioni || {};
+  /* QUANTO E' LUNGO UN PASSO — e perche' non e' 75 centimetri.
+     Settantacinque e' la media di una popolazione, e non e' il passo di
+     nessuno in particolare: cambia con l'altezza, con la fretta, e chi
+     cammina col bastone fa il passo piu' corto di chi vede. A sedici
+     passi da una porta la differenza fra 0,60 e 0,80 sono quattro metri:
+     la porta sbagliata.
+     Quindi si misura: si cammina un pezzo, il telefono conta i passi, il
+     GPS conta i metri, e il passo e' la divisione. `regola()`.
+     Finche' non l'ha misurato resta la media, che e' meglio di niente. */
   var PASSO = o.passo || 0.75;         // un passo, in metri
+  var MISURATO = false;
+  function regola(metri, passi) {
+    var m = Number(metri) || 0, p = Number(passi) || 0;
+    if (p < 30 || m < 20) return null;         // troppo poco per misurare
+    var l = m / p;
+    /* un passo umano sta fra mezzo metro e un metro: fuori di li' e'
+       il GPS che ha sbandato o il contapassi che ha contato i sobbalzi
+       dello scooter, e una misura sbagliata e' peggio della media. */
+    if (l < 0.45 || l > 1.05) return null;
+    PASSO = Math.round(l * 100) / 100;
+    MISURATO = true;
+    return PASSO;
+  }
+  /* e si puo' dimenticare: uno cambia scarpe, o l'ha misurato una volta
+     camminando di fretta. Si torna alla media e si rimisura. */
+  function dimentica() { PASSO = o.passo || 0.75; MISURATO = false; }
+  function quantoEIlPasso() { return PASSO; }
+  function eMisurato() { return MISURATO; }
+  function metti(l) {
+    var v = Number(l) || 0;
+    if (v < 0.45 || v > 1.05) return false;
+    PASSO = v; MISURATO = true; return true;
+  }
 
   /* quanti(): il numero di passi, arrotondato come merita la distanza. */
   function quanti(metri) {
@@ -72,7 +104,9 @@ function Distanza(opzioni) {
     return 'a ' + Math.max(50, Math.round(v / 50) * 50) + ' metri';
   }
 
-  return { passi: passi, nudi: nudi, quanti: quanti, inMetri: inMetri };
+  return { passi: passi, nudi: nudi, quanti: quanti, inMetri: inMetri,
+           regola: regola, metti: metti, dimentica: dimentica,
+           quantoEIlPasso: quantoEIlPasso, eMisurato: eMisurato };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Distanza;
