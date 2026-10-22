@@ -369,6 +369,16 @@ def dalTestoPieno(testo, nome='', tipo=''):
     for campo, chiave in (('altezza', 'h'), ('larghezza', 'l'), ('lunghezza', 'p')):
         if campo in scheda:
             v = numero(scheda[campo])
+            # UN EDIFICIO NON E' LARGO DUE METRI. Il 22/10 sera, riguardando
+            # i dati: 69 luoghi con una larghezza fra 2 e 3,2 metri — «il
+            # palazzo del Quirinale, largo 2,6 metri», «la cappella Sistina,
+            # larga 3». Sono i «250px» e i «300px» del riquadro, letti come
+            # centimetri, scritti prima che il filtro sul px esistesse. Il
+            # filtro adesso c'e', ma la soglia e' la rete sotto: larghezza e
+            # lunghezza sotto i quattro metri non si scrivono. L'altezza no:
+            # un sepolcro alto due metri e settanta esiste davvero.
+            if v and chiave in ('l', 'p') and v < 4:
+                v = None
             if v:
                 fuori[chiave] = v
     if 'materiale' in scheda:
@@ -506,19 +516,71 @@ def testiPuliti(titoli):
 def quadretto(lat, lon):
     return '%04d_%04d' % (int(lat * 100), int(lon * 100))
 
-def vicini(a, b):
-    return abs(a['lat'] - b['lat']) < 0.0006 and abs(a['lon'] - b['lon']) < 0.0006
+import unicodedata
+
+# LE PAROLE CHE NON DISTINGUONO NIENTE. «Chiesa» ce l'hanno tutte le
+# chiese: se conta come parola in comune, la chiesa di Sant'Antonio e la
+# chiesa di Santa Rita diventano lo stesso posto — ed e' esattamente
+# l'errore che stiamo chiudendo. Contano solo i nomi propri: Antonio,
+# Rita, Greppi.
+PAROLINE = set(('di del della dello dei degli delle da a al alla il lo la i gli le '
+                'un uno una e ed in su con per '
+                'chiesa chiesetta cappella basilica cattedrale duomo santuario '
+                'oratorio pieve abbazia monastero convento collegiata tempio '
+                'palazzo palazzina casa villa castello torre porta ponte '
+                'fontana piazza piazzale largo corso viale strada via vicolo '
+                'museo teatro cinema stadio parco giardino cimitero '
+                'santa santo sant san santi sante beata beato madonna maria '
+                'monumento edificio complesso antica antico vecchia vecchio '
+                'nuova nuovo grande piccola piccolo italiano italiana').split())
+
+def nudo(t):
+    t = unicodedata.normalize("NFD", (t or "").lower())
+    t = "".join(c for c in t if unicodedata.category(c) != "Mn")
+    return [w for w in re.sub(r"[^a-z0-9 ]", " ", t).split()
+            if len(w) > 3 and w not in PAROLINE]
+
+def siChiamanoUguale(a, b):
+    """basta una parola forte in comune: «chiesa di San Rocco» e «Chiesa
+       di San Rocco (Trani)» sono lo stesso posto, «chiesa di San Rocco» e
+       «Palazzo Greppi» no."""
+    x, y = set(nudo(a)), set(nudo(b))
+    if not x or not y:
+        return False
+    return bool(x & y)
+
+def stessoPosto(x, y):
+    """E' PROPRIO QUESTO, O E' IL SUO VICINO DI CASA?
+
+       Il 22/10 sera, ricontrollando: **360 schede su 12.381 parlavano di
+       un'altra cosa**. Alla «fontana» di Roma era attaccato
+       l'Auditorium Parco della Musica; alla «chiesa di Sant'Antonio
+       Abate» la chiesa di Santa Rita; a «chiesa di Santa Maria della
+       Pieta'» la voce che spiega cosa vuol dire «priore». Venti prese a
+       caso, venti sbagliate.
+       La causa e' qui: bastavano le COORDINATE, sessantacinque metri. In
+       un centro storico, dentro sessantacinque metri ci stanno una
+       chiesa, un palazzo e una fontana — e la voce finiva su quello
+       sbagliato. Le coordinate dicono DOVE, non CHE COSA.
+       Adesso servono tutt'e due: o sei a quindici metri (e allora e' lo
+       stesso punto segnato due volte), oppure sei entro sessantacinque
+       metri **e il nome ha una parola in comune**."""
+    dlat = abs(x["lat"] - y["lat"])
+    dlon = abs(x["lon"] - y["lon"])
+    if dlat < 0.00014 and dlon < 0.00018:        # ~15 metri: e' lo stesso punto
+        return True
+    if dlat < 0.0006 and dlon < 0.0006:          # ~65 metri: serve anche il nome
+        return siChiamanoUguale(x.get("n"), y.get("n"))
+    return False
 
 def stessoNomeEVicino(a, b):
-    """IL NOME VALE SOLO DA VICINO. Dentro un riquadro da undici chilometri
-       ci stanno due «chiesa di San Giuseppe», e prendendo l'articolo per
-       nome si attaccava la descrizione di una all'altra: e' lo stesso
-       sbaglio che il 21/10 aveva fatto sparire 1.790 monumenti. Entro due
-       chilometri e' la stessa cosa segnata due volte; piu' in la' e' un
+    """IL NOME UGUALE VALE SOLO DA VICINO. Dentro un riquadro da undici
+       chilometri ci stanno due «chiesa di San Giuseppe»: entro due
+       chilometri e' la stessa cosa segnata due volte, piu' in la' e' un
        altro posto che si chiama uguale."""
-    if a['n'] != b.get('n'):
+    if a["n"] != b.get("n"):
         return False
-    return abs(a['lat'] - b['lat']) < 0.018 and abs(a['lon'] - b['lon']) < 0.024
+    return abs(a["lat"] - b["lat"]) < 0.018 and abs(a["lon"] - b["lon"]) < 0.024
 
 def faiLaCitta(nome, lo1, lo2, la1, la2):
     nostri = nostriDaArricchire(lo1, lo2, la1, la2)
@@ -602,7 +664,7 @@ def faiLaCitta(nome, lo1, lo2, la1, la2):
         lista = dati if isinstance(dati, list) else list(dati.values())[0]
         for (x, testo) in elenco:
             for y in lista:
-                if vicini(x, y) or stessoNomeEVicino(x, y):
+                if stessoPosto(x, y) or stessoNomeEVicino(x, y):
                     roba = dalTestoPieno(testo, x['n'], y.get('t', ''))
                     # LA SCHEDA A CHI NON CE L'HA. Non si tocca quella che
                     # c'e' gia': si riempie solo il vuoto. 9.224 luoghi su
