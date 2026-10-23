@@ -143,7 +143,7 @@ body[data-testo="enorme"]{--base:26px}
 
 .barra{
   position:fixed;left:0;right:0;bottom:0;z-index:50;
-  display:flex;gap:12px;align-items:center;
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
   padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
   background:linear-gradient(180deg, rgba(6,9,13,0), rgba(6,9,13,.92) 38%);
   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
@@ -393,4 +393,36 @@ body[data-modo="turismo"][data-parla="si"] .dice{border-color:rgba(91,227,255,.4
     0%,100%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(91,227,255,.1)}
     50%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 30px rgba(91,227,255,.18), 0 0 0 1px rgba(91,227,255,.34)}
   }
+}
+
+/* IL CAMPO DOVE SI SCRIVE. Sta nella barra, fra il microfono e il SOS, e
+   si vede solo in Turismo. Prende lo spazio che avanza: i tasti tondi
+   restano tondi, lui si allarga. */
+#scrivi{
+  display:none;
+  /* UNA RIGA SUA, SOPRA I TASTI. Messo in fila con gli altri, su un
+     telefono da 375 punti il campo rubava lo spazio ai tasti tondi: il
+     SOS passava da 72 punti a 35, meta'. Il SOS non si stringe per far
+     posto a una tastiera. Allora la barra va a capo e il campo si prende
+     tutta la riga di sopra (order:-1), dove ci sta davvero. */
+  flex:1 0 100%;order:-1;min-width:0;
+  min-height:var(--tasto);
+  padding:0 14px;border-radius:14px;
+  border:1px solid var(--filo);
+  background:var(--carta);color:var(--inchiostro);
+  font-size:16px;                      /* sotto i 16 iOS ingrandisce la pagina */
+}
+#scrivi::placeholder{color:var(--inchiostro);opacity:.45}
+body[data-modo="turismo"] #scrivi{display:block}
+
+/* LA BARRA IN TURISMO E' PIU' ALTA DI UNA RIGA. Tutto quello che le sta
+   sopra va alzato della stessa misura, sennò ci finisce sotto: è il
+   difetto che Dario aveva trovato col cassetto a Napoli («ci clicco sopra
+   e non apre nulla» — si apriva, stava sotto la barra). Qui il cassetto
+   finiva sopra il campo dove si scrive, e la fine del testo pure. */
+body[data-modo="turismo"] .cassetto{
+  bottom:calc(env(safe-area-inset-bottom,0px) + var(--tasto) * 2 + 38px);
+}
+body[data-modo="turismo"]{
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 128px + var(--tasto) + 12px);
 }

@@ -3120,6 +3120,29 @@
     var b = this;
     setTimeout(function () { b.classList.remove('ascolta'); }, 6000);
   });
+  /* SCRITTO O DETTO, È LO STESSO COMANDO. «In turismo si può scrivere o
+     parlare» (Vince, 23/10). Passa da comando(), la stessa porta del
+     microfono: se domani nasce un comando nuovo, nasce per tutt'e due —
+     due elenchi separati si scollano, e quello scritto resta indietro.
+     E come quando si preme il microfono, quello che l'app sta dicendo si
+     ferma: chi scrive vuole una risposta adesso, non in coda. */
+  if (el('scrivi')) {
+    el('scrivi').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var t = this.value.trim();
+      this.value = '';
+      if (!t) return;
+      voce.ferma();
+      /* QUELLO CHE SI SCRIVE È SEMPRE PER NOI. comando() tace quando la
+         frase non sembra rivolta all'app — serve a non rispondere a chi
+         parla con un amico accanto. Ma una frase scritta nel campo non
+         può essere di nessun altro: se non si capisce, si dice. */
+      if (!comando(t)) {
+        voce.parla('Questa non l\'ho capita. Se vuoi, dimmi «comandi» e ti dico cosa so fare.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      }
+    });
+  }
   el('sos').addEventListener('click', function () { dilloSubito(emergenza.scelte()); });
   function apriCassetto(aperto) {
     el('cassetto').classList.toggle('aperto', aperto !== false);

@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=121">
-<link rel="stylesheet" href="stile.css?v=121">
+<link rel="stylesheet" href="mappa/leaflet.css?v=122">
+<link rel="stylesheet" href="stile.css?v=122">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -130,39 +130,49 @@
 <nav class="barra" aria-label="Comandi">
   <button class="tasto vai" id="avvia">Avvia</button>
   <button class="tasto tondo" id="parla" aria-label="Parla: dimmi un comando"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  <!-- SCRIVERE AL POSTO DI PARLARE. «In turismo si può scrivere o
+       parlare» (Vince, 23/10). In mezzo a una piazza piena il
+       riconoscimento del parlato sbaglia, e chi vede può scrivere più in
+       fretta di quanto parli. Stesse parole, stessa porta: finisce in
+       comando(), quella che ascolta anche il microfono — così non
+       esistono due elenchi di comandi che si scollano.
+       Solo in Turismo: in Utilità cammina chi non vede, e una tastiera
+       non è una cosa che si usa camminando col bastone. -->
+  <input id="scrivi" type="text" enterkeyhint="go" autocomplete="off"
+         aria-label="Scrivi un comando" placeholder="scrivi…">
   <button class="tasto tondo sos" id="sos" aria-label="Aiuto"><span aria-hidden="true">SOS</span></button>
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/faro.js?v=121"></script>
-<script src="parti/percorsiMiei.js?v=121"></script>
-<script src="parti/fermate.js?v=121"></script>
-<script src="parti/aChiServe.js?v=121"></script>
-<script src="parti/paesaggio.js?v=121"></script>
-<script src="parti/modi.js?v=121"></script>
-<script src="parti/pronuncia.js?v=121"></script>
-<script src="parti/voce.js?v=121"></script>
-<script src="parti/distanza.js?v=121"></script>
-<script src="parti/descrizione.js?v=121"></script>
-<script src="parti/racconto.js?v=121"></script>
-<script src="parti/clip.js?v=121"></script>
-<script src="parti/aggancio.js?v=121"></script>
-<script src="parti/posizione.js?v=121"></script>
-<script src="parti/intorno.js?v=121"></script>
-<script src="parti/emergenza.js?v=121"></script>
-<script src="parti/pulizia.js?v=121"></script>
-<script src="parti/dettatura.js?v=121"></script>
-<script src="parti/guida.js?v=121"></script>
-<script src="parti/lettura.js?v=121"></script>
-<script src="parti/passeggiata.js?v=121"></script>
-<script src="parti/musica.js?v=121"></script>
-<script src="mappa/leaflet.js?v=121"></script>
-<script src="parti/negozi.js?v=121"></script>
-<script src="parti/passaggi.js?v=121"></script>
-<script src="parti/incroci.js?v=121"></script>
-<script src="parti/scena.js?v=121"></script>
-<script src="parti/mappa.js?v=121"></script>
-<script src="app.js?v=121"></script>
+<script src="parti/faro.js?v=122"></script>
+<script src="parti/percorsiMiei.js?v=122"></script>
+<script src="parti/fermate.js?v=122"></script>
+<script src="parti/aChiServe.js?v=122"></script>
+<script src="parti/paesaggio.js?v=122"></script>
+<script src="parti/modi.js?v=122"></script>
+<script src="parti/pronuncia.js?v=122"></script>
+<script src="parti/voce.js?v=122"></script>
+<script src="parti/distanza.js?v=122"></script>
+<script src="parti/descrizione.js?v=122"></script>
+<script src="parti/racconto.js?v=122"></script>
+<script src="parti/clip.js?v=122"></script>
+<script src="parti/aggancio.js?v=122"></script>
+<script src="parti/posizione.js?v=122"></script>
+<script src="parti/intorno.js?v=122"></script>
+<script src="parti/emergenza.js?v=122"></script>
+<script src="parti/pulizia.js?v=122"></script>
+<script src="parti/dettatura.js?v=122"></script>
+<script src="parti/guida.js?v=122"></script>
+<script src="parti/lettura.js?v=122"></script>
+<script src="parti/passeggiata.js?v=122"></script>
+<script src="parti/musica.js?v=122"></script>
+<script src="mappa/leaflet.js?v=122"></script>
+<script src="parti/negozi.js?v=122"></script>
+<script src="parti/passaggi.js?v=122"></script>
+<script src="parti/incroci.js?v=122"></script>
+<script src="parti/scena.js?v=122"></script>
+<script src="parti/mappa.js?v=122"></script>
+<script src="app.js?v=122"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -261,7 +271,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=121", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=122", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

@@ -247,6 +247,26 @@ prova('i percorsi tuoi si possono trovare senza sapere la formula', () => {
   if (!/crea percorso/.test(app)) guasto('il tasto non fa partire la registrazione');
 });
 
+/* SCRIVERE AL POSTO DI PARLARE (Vince, 23/10). Tre cose: che il campo ci
+   sia, che finisca nella STESSA porta del microfono (due elenchi di
+   comandi si scollano, e quello scritto resta indietro), e che non
+   compaia in Utilita', dove cammina chi non vede. */
+prova('in Turismo si puo scrivere, e lo scritto passa dalla stessa porta', () => {
+  if (!/id="scrivi"/.test(html)) guasto('manca il campo dove si scrive');
+  if (!/el\('scrivi'\)\.addEventListener/.test(app)) guasto('il campo c e ma non lo ascolta nessuno');
+  const pezzo = app.slice(app.indexOf("el('scrivi').addEventListener"),
+                          app.indexOf("el('scrivi').addEventListener") + 900);
+  if (!/comando\(t\)/.test(pezzo)) guasto('lo scritto non passa da comando(): si scollera dal microfono');
+  if (!/body\[data-modo="turismo"\]\s*#scrivi\{[^}]*display:\s*block/.test(css))
+    guasto('non si accende in Turismo');
+  if (!/#scrivi\{[^}]*display:\s*none/.test(css))
+    guasto('si vede anche in Utilita');
+  /* sotto i 16px iOS ingrandisce la pagina da solo quando ci si scrive
+     dentro, e l'app resta zoomata: il tasto SOS finisce fuori schermo. */
+  const m = css.slice(css.indexOf('#scrivi{')).match(/font-size:\s*(\d+)px/);
+  if (!m || Number(m[1]) < 16) guasto('font-size sotto i 16px: iOS ingrandisce la pagina');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pagina');
