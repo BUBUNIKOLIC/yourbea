@@ -47,8 +47,8 @@ android {
        Play Console rifiuta il caricamento. Quel 7 dice anche un'altra
        cosa: di build ce ne sono state parecchie, quindi un'inserzione sul
        Play Store potrebbe esserci gia'. */
-    versionCode = 12
-    versionName = "1.5.3"
+    versionCode = 13
+    versionName = "1.6.0"
   }
 
   buildTypes {

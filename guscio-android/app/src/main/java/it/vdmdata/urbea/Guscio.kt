@@ -9,6 +9,7 @@
       window.urbeaAttivita()     fermo/cammina/mezzo, dal contapassi
       window.urbeaVibra()        un colpo alla mano: il faro e le svolte
       window.urbeaPassi()        quanti passi hai fatto da quando e' aperta
+      window.urbeaChiudi()       «chiudi» detto a voce: chiude l'app
       window.urbeaAscolta()      apri il microfono
       window.urbeaChiudiAscolto()
       window.urbeaComando()      il guscio la chiama con la frase capita
@@ -272,6 +273,7 @@ class Guscio : AppCompatActivity() {
       window.urbeaCompra = function () { try { guscioAndroid.compra(); } catch (e) {} };
       window.urbeaRipristina = function () { try { guscioAndroid.ripristina(); } catch (e) {} };
       window.urbeaVibra = function (f) { try { guscioAndroid.vibra(String(f || 'piano')); } catch (e) {} };
+      window.urbeaChiudi = function () { try { guscioAndroid.chiudi(); } catch (e) {} };
       /* urbeaSaLeggere resta SPENTA: la lettura dei cartelli su iPhone la fa
          Vision, dentro il sistema e gratis. Su Android servirebbe ML Kit, e
          non l'abbiamo ancora messo: la pagina si accorge da se' che non c'e'
@@ -302,6 +304,13 @@ class Guscio : AppCompatActivity() {
     @JavascriptInterface fun compra() { aMano.post { acquisti.compra() } }
     @JavascriptInterface fun ripristina() { aMano.post { acquisti.guarda() } }
     @JavascriptInterface fun vibra(forza: String) { aMano.post { colpoAllaMano(forza) } }
+    /* «chiudi» detto a voce: qui si chiude davvero, servizio compreso */
+    @JavascriptInterface fun chiudi() {
+      aMano.post {
+        try { stopService(Intent(this@Guscio, ServizioCammino::class.java)) } catch (e: Exception) {}
+        finishAndRemoveTask()
+      }
+    }
   }
 
   // ============================================================
@@ -454,7 +463,15 @@ class Guscio : AppCompatActivity() {
       private var vicinoPrima = true
       override fun onSensorChanged(e: SensorEvent?) {
         val v = (e?.values?.firstOrNull() ?: 99f) < 5f
-        if (v && !vicinoPrima) { scrivi("prossimita': telefono alla bocca, apro il microfono"); apriAscolto() }
+        if (v && !vicinoPrima) {
+          scrivi("prossimita': telefono alla bocca, apro il microfono")
+          /* IL SEGNO DI RITORNO. Chi non vede porta il telefono alla bocca
+             «come segno che devo parlare» (Vince, 23/10) e poi non ha modo
+             di sapere se l'app lo sta ascoltando: lo schermo e' contro la
+             guancia. Un colpo alla mano lo dice, e non lo copre l'autobus. */
+          colpoAllaMano("leggero")
+          apriAscolto()
+        }
         vicinoPrima = v
       }
       override fun onAccuracyChanged(s: Sensor?, a: Int) {}

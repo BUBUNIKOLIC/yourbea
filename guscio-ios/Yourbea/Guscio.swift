@@ -23,6 +23,7 @@
        window.urbeaAttivita()     fermo/cammina/corre/bici/mezzo, dal passometro
        window.urbeaVibra()        la pagina chiede un colpo alla mano
        window.urbeaPassi()        quanti passi hai fatto da quando e' aperta
+       window.urbeaChiudi()       «chiudi» detto a voce: spegne tutto
        window.urbeaAscolta()      apri il microfono, una frase
        window.urbeaChiudiAscolto()
        window.urbeaComando()      il guscio la chiama con la frase capita
@@ -177,6 +178,7 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
   window.urbeaCompra = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'compra' }); };
   window.urbeaRipristina = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'ripristina' }); };
   window.urbeaVibra = function (forza) { webkit.messageHandlers.guscio.postMessage({ cosa: 'vibra', forza: String(forza || 'piano') }); };
+  window.urbeaChiudi = function () { webkit.messageHandlers.guscio.postMessage({ cosa: 'chiudi' }); };
   """
 
   /* TELEFONATE E MESSAGGI. Una WKWebView non apre da sé tel: e sms:, li
@@ -235,8 +237,29 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
         self.allaPagina("window.urbeaEsitoAcquisto && window.urbeaEsitoAcquisto(" + Schermo.inJS(come) + ")")
       }
     case "vibra": colpoAllaMano((d["forza"] as? String) ?? "piano")
+    case "chiudi": spegniTutto()
     default: break
     }
+  }
+
+  /* ============================================================
+     «CHIUDI», DETTO A VOCE
+     Su iPhone un'app non puo' terminarsi da sola: Apple non lo permette,
+     e chiamare exit() e' il modo piu' rapido per farsi rifiutare dallo
+     Store. Quindi si fa l'unica cosa onesta: si spegne tutto quello che
+     consuma e che parla — microfono, posizione, voce, audio — e si dice
+     cosa resta da fare a mano. Da fuori la differenza non si sente:
+     l'app tace, non segue piu' niente, non scalda il telefono. */
+  private func spegniTutto() {
+    chiudiMicrofono()
+    battito?.invalidate(); battito = nil
+    battitoAttivita?.invalidate(); battitoAttivita = nil
+    gps.stopUpdatingLocation()
+    passometro.stopActivityUpdates()
+    contapassi.stopUpdates()
+    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    scrivi("chiusa a voce: spento tutto")
+    allaPagina("window.YBchiusa && window.YBchiusa()")
   }
 
   /* ============================================================
@@ -309,7 +332,15 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
      niente da TROVARE con un dito su un vetro liscio.
      Il microfono continuo resta: questo e' il modo di dire «adesso parlo
      io» quando intorno c'e' rumore e l'ascolto continuo non basta. */
-  private var vicinoAllaFaccia = false
+  /* SI PARTE DA «VICINO», non da «lontano». «Sennò ce l'ho in tasca e mi
+     descrive la realtà circostante» (Vince, 23/10): in tasca il sensore
+     dice «vicino» tutto il giorno, e partendo da «lontano» quel primo
+     «vicino» era per noi il gesto — microfono aperto da solo, a tradimento,
+     mentre l'app sta raccontando. Sull'Android era già così dal 21/10;
+     qui era rimasto «false». Partendo da «vicino» il gesto va guadagnato:
+     prima il telefono si deve vedere LONTANO — tirato fuori, in mano — e
+     solo il passaggio dopo vale. In tasca non succede mai. */
+  private var vicinoAllaFaccia = true
 
   /* ============================================================
      PERCHÉ L'APP È SPARITA
@@ -380,6 +411,12 @@ final class Schermo: UIViewController, WKNavigationDelegate, WKScriptMessageHand
           /* si zittisce: se sta parlando, uno che avvicina il telefono
              vuole interromperla, non sovrapporsi */
           self.allaPagina("window.YBzitta && window.YBzitta()")
+          /* IL SEGNO DI RITORNO. Chi non vede porta il telefono alla bocca
+             «come segno che devo parlare» (Vince, 23/10) e poi non ha modo
+             di sapere se l'app lo sta ascoltando: lo schermo e' contro la
+             guancia e la voce si e' appena zittita. Un colpo alla mano lo
+             dice, e non lo copre l'autobus. */
+          self.colpoAllaMano("leggero")
           self.vuoleAscoltare = true
           self.apriMicrofono()
         } else {
