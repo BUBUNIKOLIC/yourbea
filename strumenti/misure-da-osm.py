@@ -284,7 +284,13 @@ def faiIlRiquadro(nome, la1, la2, lo1, lo2):
 
 
 def riquadriNostri():
-    """solo dove abbiamo luoghi a cui manca qualcosa"""
+    """solo dove abbiamo luoghi a cui manca qualcosa.
+       RIQUADRI GRANDI, non piccoli. Con riquadri da cinque chilometri
+       venivano 427 richieste e quattordici ore: Overpass ci mette lo
+       stesso tempo per un riquadro piccolo e per uno grande — il costo
+       e' la richiesta, non l'area. Uno da venti chilometri (tutta Roma)
+       torna 17.000 edifici in 38 secondi. Cosi' sono una cinquantina di
+       richieste, e si finisce in un'ora."""
     import collections
     zone = collections.Counter()
     for g in sorted(os.listdir(DATI)):
@@ -300,9 +306,9 @@ def riquadriNostri():
                 continue
             if x.get('h') or x.get('pi') or x.get('mat') or x.get('frm'):
                 continue
-            zone[(int(x['lat'] * 20), int(x['lon'] * 20))] += 1
-    return [('%d_%d (%d luoghi)' % (a, o, n), a / 20.0, a / 20.0 + 0.05,
-             o / 20.0, o / 20.0 + 0.05)
+            zone[(int(x['lat'] * 5), int(x['lon'] * 5))] += 1
+    return [('%d_%d (%d luoghi)' % (a, o, n), a / 5.0, a / 5.0 + 0.2,
+             o / 5.0, o / 5.0 + 0.2)
             for ((a, o), n) in sorted(zone.items(), key=lambda t: -t[1])]
 
 
