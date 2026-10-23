@@ -96,7 +96,11 @@ function AChiServe() {
     'scheda':            [ false,   true,    true,        true  ],
     'cosa-vedere':       [ false,   true,    true,        true  ],
     'approfondimento':   [ false,   true,    true,        true  ],
-    'passeggiata':       [ false,   true,    true,        false ]
+    'passeggiata':       [ false,   true,    true,        false ],
+    /* «Qui c'è il percorso Bernini»: una proposta da visita. Non in
+       Utilità, non in movimento, e MAI senza precisione — offrire un
+       percorso che non è dove dici è peggio che tacere. */
+    'percorso-qui':      [ false,   true,    false,       false ]
   };
 
 

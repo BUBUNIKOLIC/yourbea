@@ -680,6 +680,119 @@ prova('una tappa che non si cammina dice come arrivarci', () => {
 });
 
 
+/* ============================================================
+   QUI C'E' UN PERCORSO
+   «Quando camminando mi avvicino a un percorso potremmo dire: qui c'e' il
+   percorso Bernini o Borromini», e «secondo me i percorsi devono essere
+   legati alla posizione» (Vince, 23/10).
+   ============================================================ */
+function giroDiProva() {
+  return [{ id: 'roma-bernini', tema: 'arte', citta: 'Roma', n: 'Bernini a Roma',
+            metri: 900, t: [
+    { n: 'Fontana dei Quattro Fiumi', la: 41.8992, lo: 12.4731 },
+    { n: 'Sant Andrea al Quirinale', la: 41.9008, lo: 12.4890 },
+    { n: 'Palazzo Barberini', la: 41.9036, lo: 12.4895 }
+  ] }];
+}
+function conIlGiro(adesso) {
+  const g = giroDiProva();
+  const pa = Passeggiata({ dist, verso, ora: () => adesso });
+  const luoghi = g[0].t.map((t) => ({ n: t.n, lat: t.la, lon: t.lo, k: 1, d: 'Una scheda.' }));
+  pa.conDati(g, luoghi);
+  return pa;
+}
+
+prova('sopra al percorso lo offre, e chiede', () => {
+  const pa = conIlGiro(1000000);
+  const d = pa.quiCeIlPercorso({ lat: 41.8992, lon: 12.4731 }, 1000000);
+  if (!d) { guasto('non ha offerto niente stando sulla prima tappa'); return; }
+  if (!/Bernini/.test(d.testo)) guasto('non dice quale: ' + d.testo);
+  if (!/vuoi seguire questo o continuare/i.test(d.testo)) guasto('non chiede: ' + d.testo);
+  if (d.livello !== 'cenno') guasto('livello sbagliato: ' + d.livello);
+  console.log('      → ' + d.testo);
+});
+
+/* LA COSA CHIESTA IL 23/10: legati alla posizione. In mezzo al giro, a
+   duecento metri dalla partenza ma addosso alla seconda tappa, il percorso
+   c'e' lo stesso — e comincia() parte da li', non torna indietro. */
+prova('a meta strada lo offre lo stesso', () => {
+  const pa = conIlGiro(1000000);
+  const qui = { lat: 41.9008, lon: 12.4890, direzione: 0, direzioneBuona: true };
+  const lontanoDallaPrima = dist(qui.lat, qui.lon, 41.8992, 12.4731);
+  if (lontanoDallaPrima < 400) { guasto('la prova non prova niente: la partenza e vicina'); return; }
+  const d = pa.quiCeIlPercorso(qui, 1000000);
+  if (!d) { guasto('a ' + Math.round(lontanoDallaPrima) + ' m dalla partenza non lo offre'); return; }
+  const p = pa.comincia(d.quale, qui);
+  if (!/Tappa 2/.test(p.testo)) guasto('non parte dalla tappa dove sei: ' + p.testo);
+  console.log('      → a ' + Math.round(lontanoDallaPrima) + ' m dalla partenza, parte dalla 2');
+});
+
+prova('lontano dal percorso non dice niente', () => {
+  const pa = conIlGiro(1000000);
+  if (pa.quiCeIlPercorso({ lat: 41.9200, lon: 12.5100 }, 1000000)) guasto('offre un giro a due chilometri');
+});
+
+prova('lo offre una volta sola', () => {
+  const pa = conIlGiro(1000000);
+  const qui = { lat: 41.8992, lon: 12.4731 };
+  if (!pa.quiCeIlPercorso(qui, 1000000)) { guasto('la prima volta non lo offre'); return; }
+  if (pa.quiCeIlPercorso(qui, 1000000 + 3600000)) guasto('lo rioffre dopo un ora: diventa un venditore');
+});
+
+prova('non ne offre due di fila', () => {
+  const g = giroDiProva();
+  g.push({ id: 'roma-borromini', tema: 'arte', citta: 'Roma', n: 'Borromini a Roma',
+           metri: 800, t: [{ n: 'Sant Ivo alla Sapienza', la: 41.8985, lo: 12.4740 },
+                           { n: 'Sant Agnese in Agone', la: 41.8989, lo: 12.4722 }] });
+  const pa = Passeggiata({ dist, verso, ora: () => 1000000 });
+  const luoghi = [];
+  g.forEach((x) => x.t.forEach((t) => luoghi.push({ n: t.n, lat: t.la, lon: t.lo, k: 1, d: 'Una scheda.' })));
+  pa.conDati(g, luoghi);
+  const qui = { lat: 41.8990, lon: 12.4735 };
+  if (!pa.quiCeIlPercorso(qui, 1000000)) { guasto('il primo non esce'); return; }
+  if (pa.quiCeIlPercorso(qui, 1000000 + 60000)) guasto('un minuto dopo ne offre un altro');
+  if (!pa.quiCeIlPercorso(qui, 1000000 + 400000)) guasto('dopo sette minuti il secondo deve poter uscire');
+});
+
+prova('mentre ne fai una non ne offre altre', () => {
+  const pa = conIlGiro(1000000);
+  pa.comincia('roma-bernini', { lat: 41.8992, lon: 12.4731, direzione: 0, direzioneBuona: true });
+  if (pa.quiCeIlPercorso({ lat: 41.8992, lon: 12.4731 }, 1000000)) guasto('offre un giro mentre ne stai facendo uno');
+});
+
+prova('«si» dopo la domanda comincia quel percorso', () => {
+  const pa = conIlGiro(1000000);
+  const qui = { lat: 41.8992, lon: 12.4731, direzione: 0, direzioneBuona: true };
+  pa.quiCeIlPercorso(qui, 1000000);
+  const r = pa.dallaVoce('si', 1000000 + 4000);
+  if (!r || r.cosa !== 'comincia') { guasto('«si» non l ha capito: ' + JSON.stringify(r)); return; }
+  const p = pa.comincia(r.nome, qui);
+  if (!pa.inCorso()) guasto('non e partita: ' + p.testo);
+});
+
+/* «Continua» durante una passeggiata vuol dire «raccontami di piu». Subito
+   dopo la domanda vuol dire «no grazie»: e la domanda che cambia la
+   parola, e per questo la risposta si guarda PRIMA di tutto il resto. */
+prova('«continuo» dopo la domanda vuol dire no', () => {
+  const pa = conIlGiro(1000000);
+  const qui = { lat: 41.8992, lon: 12.4731 };
+  pa.quiCeIlPercorso(qui, 1000000);
+  const r = pa.dallaVoce('continuo', 1000000 + 3000);
+  if (!r || r.cosa !== 'continuo') { guasto('non l ha capito come un no: ' + JSON.stringify(r)); return; }
+  if (pa.inCorso()) guasto('e partita lo stesso');
+});
+
+prova('«si» senza domanda non comincia niente', () => {
+  const pa = conIlGiro(1000000);
+  if (pa.dallaVoce('si', 1000000)) guasto('un «si» qualunque fa partire una passeggiata');
+});
+
+prova('la risposta scade', () => {
+  const pa = conIlGiro(1000000);
+  pa.quiCeIlPercorso({ lat: 41.8992, lon: 12.4731 }, 1000000);
+  if (pa.dallaVoce('si', 1000000 + 600000)) guasto('un «si» dieci minuti dopo fa ancora partire il giro');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove delle passeggiate');

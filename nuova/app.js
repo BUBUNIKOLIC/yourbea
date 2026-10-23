@@ -1550,6 +1550,7 @@
     if (d.tipo === 'strada' || d.tipo === 'dove') return 'Dove sei';
     if (d.tipo === 'chiama-contatto' || d.tipo === 'avvisa' || d.tipo === 'chi-e') return 'Aiuto';
     if (d.tipo === 'lascio' || d.tipo === 'avanti' || d.tipo === 'niente') return 'Yourbea';
+    if (d.tipo === 'percorso-qui') return 'Un percorso, qui';
     return el('cosa').textContent;
   }
 
@@ -1901,6 +1902,7 @@
   }
   function gradinoScritto(d) {
     if (d.tipo === 'aCosaServe') return 'Dimmi «ancora» se vuoi che te lo racconti.';
+    if (d.tipo === 'percorso-qui') return 'Dimmi «sì» per seguirlo, «continuo» per tirare dritto.';
     if (d.tipo === 'cenno') return modo === 'servizi'
       ? 'Dimmi «ancora» se vuoi sapere cos\u2019\u00e8.'
       : 'Fermati dieci secondi e te lo racconto. Oppure dimmi «ancora».';
@@ -2290,6 +2292,16 @@
       var f = passeggiata.filo(dove, Date.now());
       if (f) dillo(f);
       return;
+    }
+    /* QUI C'È UN PERCORSO. «Quando camminando mi avvicino a un percorso
+       potremmo dire: qui c'è il percorso Bernini o Borromini», e «secondo
+       me i percorsi devono essere legati alla posizione» (Vince, 23/10).
+       Solo in Turismo e solo a piedi: le regole di quando si offre e di
+       quante volte stanno in parti/passeggiata.js. Esce come cenno, quindi
+       una svolta o un'emergenza gli passano sopra. */
+    if (modo === 'cultura' && s.aPiedi !== false) {
+      var off = passeggiata.quiCeIlPercorso({ lat: s.lat, lon: s.lon }, Date.now());
+      if (off) { dillo(off); return; }
     }
     // e il racconto
     /* COME TI MUOVI DECIDE COSA SENTI: senza questo il racconto credeva
@@ -2702,12 +2714,19 @@
        è una cosa e «facciamo una passeggiata» è un'altra, e prima di
        «ancora» e «avanti», che durante una passeggiata vogliono dire la
        tappa, non il luogo che ti capita accanto. */
-    var pq = passeggiata.dallaVoce(t);
+    var pq = passeggiata.dallaVoce(t, Date.now());
     if (pq) {
       var sp = posizione.leggi();
       if (!sp.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return true; }
       var dovesono = { lat: sp.lat, lon: sp.lon, direzione: sp.direzione, direzioneBuona: sp.direzioneBuona };
       if (pq.cosa === 'elenco') { dillo(passeggiata.elenco(dovesono)); return true; }
+      /* «continuo»: ha detto di no al percorso offerto. Non si insiste e
+         non si fa una predica: si conferma in tre parole e si torna a
+         camminare. Il giro non verrà più offerto in questa sessione. */
+      if (pq.cosa === 'continuo') {
+        voce.parla('Va bene, continuiamo.', { livello: voce.CENNO, ancheSeUguale: true });
+        return true;
+      }
       dillo(passeggiata.comincia(pq.quale !== undefined ? pq.quale : pq.nome, dovesono));
       /* I QUADRETTI DEL GIRO, PRESI SUBITO. «O i percorsi principali»
          (Vince, 16/10): quando si comincia una passeggiata si sa già dove

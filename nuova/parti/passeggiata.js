@@ -135,6 +135,83 @@ function Passeggiata(opzioni) {
     return quante ? ord.slice(0, quante) : ord;
   }
 
+  /* ============================================================
+     «QUI C'E' IL PERCORSO BERNINI»
+     «Quando camminando mi avvicino a un percorso potremmo dire: qui c'e'
+     il percorso Bernini o Borromini» (Vince, 23/10).
+     I 137 giri c'erano e bisognava chiederli. Ma un turista che passa
+     davanti all'inizio di una passeggiata non sa che esiste: non puo'
+     chiedere una cosa di cui non sa il nome. Glielo si dice.
+     LE REGOLE, perche' non diventi un venditore ambulante:
+     1. IL PERCORSO STA IN UN POSTO, non a un punto di partenza: «secondo
+        me i percorsi devono essere legati alla posizione» (Vince, 23/10).
+        Si misura sulla tappa PIÙ VICINA, così chi lo incrocia a metà
+        strada se lo sente offrire — e comincia() lo fa già partire da lì.
+        Centocinquanta metri: oltre, non ci sei sopra.
+     2. UNA VOLTA SOLA. Ogni giro si offre una volta per sessione: se uno
+        ha detto di no camminando, non glielo si ripete ogni due minuti.
+     3. UNA OGNI CINQUE MINUTI, e mai mentre ne sta gia' facendo una.
+     4. SOLO A PIEDI E SOLO IN TURISMO: e' una cosa da visita.
+     5. SI CHIEDE, NON SI ANNUNCIA: «vuoi seguire questo o continuare?».
+        Chi cammina sta già andando da qualche parte; buttargli addosso una
+        passeggiata senza chiedere gliela fa spegnere. */
+  var offerte = {};
+  var ultimaOfferta = 0;
+  var inAttesa = null;                      // l'offerta appena fatta, in attesa di sì o no
+  var VICINO = o.vicinoPercorso || 150;
+  var FRA_UNA_E_L_ALTRA = o.fraUnOfferta || 300000;
+  var RISPOSTA_VALE = 90000;
+
+  function quiCeIlPercorso(qui, quando) {
+    if (in_corso) return null;
+    if (!qui || typeof qui.lat !== 'number') return null;
+    var adesso = quando || ora();
+    if (adesso - ultimaOfferta < FRA_UNA_E_L_ALTRA) return null;
+    var meglio = null;
+    for (var i = 0; i < tutte.length; i++) {
+      var pa = tutte[i];
+      if (!pa.tappe || !pa.tappe.length) continue;
+      if (offerte[pa.id]) continue;
+      /* REGOLA 1: la tappa PIÙ VICINA, non la prima. */
+      var dm = Infinity;
+      for (var j = 0; j < pa.tappe.length; j++) {
+        var d = dist(qui.lat, qui.lon, pa.tappe[j].lat, pa.tappe[j].lon);
+        if (d < dm) dm = d;
+      }
+      if (dm > VICINO) continue;
+      if (!meglio || dm < meglio.m) meglio = { pa: pa, m: dm };
+    }
+    if (!meglio) return null;
+    offerte[meglio.pa.id] = true;
+    ultimaOfferta = adesso;
+    proposte = [meglio.pa.id];
+    inAttesa = { id: meglio.pa.id, quando: adesso };
+    return { tipo: 'percorso-qui', livello: 'cenno', quale: meglio.pa.id,
+             /* «qui c'è il percorso Bernini o Borromini»: la parola di
+                Vince è «percorso», e nessuno dei 137 nomi veri comincia con
+                «passeggiata» — sono titoli, e vanno fra virgolette. */
+             testo: 'Qui c\u2019\u00e8 il percorso \u00ab' + meglio.pa.n + '\u00bb. ' +
+                    'Vuoi seguire questo o continuare?' };
+  }
+
+  /* rispostaAllOfferta(): «sì», «seguiamo», «continuo». Dopo la domanda una
+     parola sola basta, e vale per un minuto e mezzo: passato quello, «sì»
+     non è più una risposta a niente. */
+  function rispostaAllOfferta(t, quando) {
+    if (!inAttesa) return null;
+    if ((quando || ora()) - inAttesa.quando > RISPOSTA_VALE) { inAttesa = null; return null; }
+    if (/\b(?:continuo|continuiamo|continua|dopo|magari dopo|lascia stare|niente|no grazie|no)\b/.test(t)) {
+      var q = inAttesa; inAttesa = null;
+      return { cosa: 'continuo', quale: q.id };
+    }
+    if (/\b(?:si|certo|va bene|volentieri|questo|seguiamo|seguilo|segui|lo seguo|facciamolo|ok)\b/.test(t)) {
+      var q2 = inAttesa; inAttesa = null;
+      return { cosa: 'comincia', nomeId: q2.id };
+    }
+    return null;
+  }
+
+
   /* elenco(): «che passeggiate ci sono». Tre, non dieci: un elenco parlato
      più lungo di tre non si tiene a mente.
      E SOLO QUELLE DOVE SEI. Provandola a Parma, dove di passeggiate ce n'è
@@ -397,9 +474,15 @@ function Passeggiata(opzioni) {
 
   /* dallaVoce(): cosa ha chiesto l'utente. Restituisce la richiesta, non la
      risposta: chi la riceve decide. */
-  function dallaVoce(testo) {
+  function dallaVoce(testo, quando) {
     var t = pulisci(testo);
     if (!t) return null;
+    /* PRIMA DI TUTTO LA RISPOSTA ALLA DOMANDA. Se ho appena chiesto «vuoi
+       seguire questo o continuare?», «continua» vuol dire «no grazie», non
+       «raccontami di più»; e «sì» da solo non vuol dire niente altrove. */
+    var r = rispostaAllOfferta(t, quando);
+    if (r) return r.cosa === 'comincia' ? { cosa: 'comincia', nome: r.quale || r.nomeId }
+                                        : { cosa: 'continuo' };
     /* ZITTIRE NON È LASCIARE. «Ferma», «basta», «stop» lasciano il giro —
        l'ha chiesto Vince così. Ma «zitto», «silenzio», «taci» vogliono dire
        soltanto «non parlare adesso»: chi li dice sta ancora facendo la
@@ -473,6 +556,7 @@ function Passeggiata(opzioni) {
     conDati: conDati, vicine: vicine, elenco: elenco, comincia: comincia,
     passo: passo, filo: filo, avanti: avanti, ancora: ancora, ferma: ferma, dallaVoce: dallaVoce,
     quanto: quanto, dove: dove,
+    quiCeIlPercorso: quiCeIlPercorso, rispostaAllOfferta: rispostaAllOfferta,
     inCorso: function () { return in_corso; },
     /* tutte le tappe del giro in corso: servono a chi scarica i dati per
        prenderseli PRIMA, mentre la rete c'è ancora */
