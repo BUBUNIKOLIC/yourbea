@@ -342,6 +342,82 @@ def pezziCheDescrivono(wikitesto):
             fuori.append(pezzi[i + 1])
     return '\n'.join(fuori)
 
+# ============================================================
+# L'APPROFONDIMENTO: LA STORIA, TAGLIATA DOVE SMETTE DI ESSERE RACCONTO
+# 23/10. I 950 luoghi curati a mano hanno un approfondimento scritto —
+# «sul campanile l'orologio e' fermo alle tre del mattino: l'ora in cui
+# la lava arrivo'» — e quello Wikipedia non lo da'. Ma la sezione
+# «Storia» degli articoli, misurata su un campione, ce l'ha il 46% delle
+# voci, e l'inizio regge: «al centro dell'antico foro della citta'
+# romana si insedio' nell'VIII secolo una chiesa, documentata per la
+# prima volta nel 795».
+# Il guaio e' la coda, che scivola nel gergo: «l'articolazione plastica
+# della facciata risulta essere piu' greve, specie nei conci sovrapposti
+# agli stipiti scanalati». A voce, a chi non vede, quella e' rumore.
+# Quindi: si prendono le prime frasi intere, si taglia a punto fermo
+# sotto i 700 caratteri, e si smette appena compare una parola da
+# manuale di storia dell'arte.
+GERGO = re.compile(r'\b(articolazion|plastic\w*\s+della|conci|stipiti|scanalat|'
+                   r'paraste|lesene|modanatur|cornicion|timpan|metope|triglif|'
+                   r'bugnato|marcapiano|archivolt|strombatur|ghimberg|'
+                   r'attribuibil|ascrivibil|coeva|coevo|ibidem|op\. cit)\b', re.I)
+
+def laStoria(wikitesto):
+    """le prime frasi della sezione «Storia», e nient'altro"""
+    pulito = viaIlCodice(wikitesto)
+    pezzi = re.split(r'\n==+\s*([^=\n]+?)\s*==+', pulito)
+    testo = ''
+    for i in range(1, len(pezzi) - 1, 2):
+        if re.match(r'^\s*(storia|cenni storici|vicende|origini)\s*$', pezzi[i].strip(), re.I):
+            testo = pezzi[i + 1]
+            break
+    testo = ' '.join(testo.split())
+    if len(testo) < 150:
+        return ''
+    fuori = []
+    quanto = 0
+    for frase in re.split(r'(?<=[.!?])\s+', testo):
+        if GERGO.search(frase):
+            break
+        if quanto + len(frase) > 700:
+            break
+        fuori.append(frase.strip())
+        quanto += len(frase)
+        if quanto > 420:            # tre o quattro frasi bastano
+            break
+    fatto = ' '.join(fuori).strip()
+    return fatto if len(fatto) >= 150 else ''
+
+
+def cosaGuardare(wikitesto):
+    """«Cosa vedere»: le prime frasi di Interno, Opere, Descrizione —
+       quello che uno, stando li', puo' farsi raccontare."""
+    pulito = viaIlCodice(wikitesto)
+    pezzi = re.split(r'\n==+\s*([^=\n]+?)\s*==+', pulito)
+    testo = ''
+    for i in range(1, len(pezzi) - 1, 2):
+        if re.match(r'^\s*(interno|interni|opere|opere d\'arte|descrizione interna|'
+                    r'l\'interno|apparato decorativo|decorazione)', pezzi[i].strip(), re.I):
+            testo = pezzi[i + 1]
+            break
+    testo = ' '.join(testo.split())
+    if len(testo) < 150:
+        return ''
+    fuori = []
+    quanto = 0
+    for frase in re.split(r'(?<=[.!?])\s+', testo):
+        if GERGO.search(frase):
+            break
+        if quanto + len(frase) > 500:
+            break
+        fuori.append(frase.strip())
+        quanto += len(frase)
+        if quanto > 300:
+            break
+    fatto = ' '.join(fuori).strip()
+    return fatto if len(fatto) >= 150 else ''
+
+
 def soloIncipit(wikitesto):
     """L'INCIPIT PARLA DEL SOGGETTO; il resto dell'articolo parla d'altro —
        la storia della citta', le opere dentro, la contrada. Pescando da
@@ -656,6 +732,7 @@ def faiLaCitta(nome, lo1, lo2, la1, la2):
 
     toccati = conH = conMat = conFrm = 0
     nuoveSchede = [0]
+    nuoveStorie = [0]
     for q, elenco in perQuadretto.items():
         f = os.path.join(DATI, q + '.json')
         if not os.path.exists(f):
@@ -674,6 +751,16 @@ def faiLaCitta(nome, lo1, lo2, la1, la2):
                         if nuova and len(nuova) > 40:
                             y['d'] = nuova
                             nuoveSchede[0] += 1
+                    # L'APPROFONDIMENTO E IL «COSA VEDERE», dove non ci sono
+                    if not y.get('a'):
+                        st = laStoria(testo)
+                        if st:
+                            y['a'] = st
+                            nuoveStorie[0] += 1
+                    if not y.get('i'):
+                        iv = cosaGuardare(testo)
+                        if iv:
+                            y['i'] = iv
                     # via i campi vecchi: se adesso un dato non c'e' piu',
                     # non deve restare quello sbagliato di prima
                     for k in ('h', 'l', 'p', 'mat', 'frm'):
@@ -687,7 +774,7 @@ def faiLaCitta(nome, lo1, lo2, la1, la2):
                     conFrm += 1 if 'frm' in roba else 0
                     break
         json.dump(dati, open(f, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    print('    schede nuove scritte: %d' % nuoveSchede[0], flush=True)
+    print('    schede nuove %d, approfondimenti nuovi %d' % (nuoveSchede[0], nuoveStorie[0]), flush=True)
     return (toccati, conH, conMat, conFrm)
 
 def tuttaItalia():
