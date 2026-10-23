@@ -75,6 +75,22 @@ prova('APP.JS NON CHIAMA NIENTE CHE NON ESISTA', () => {
   }
 });
 
+prova('NESSUNA PROVA REGISTRATA DOPO CHI LA DEVE ESEGUIRE', () => {
+  /* 23/10: ho aggiunto tre prove a prove/voce.js e sembravano passare.
+     Non giravano: in quel file le prove si RACCOLGONO in una lista e si
+     eseguono tutte in fondo, e le mie erano finite dopo il ciclo che le
+     esegue. Registrate e mai provate — che e peggio di non averle. */
+  const dir = path.join(__dirname);
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.js')) continue;
+    const s = fs.readFileSync(path.join(dir, f), 'utf8');
+    const m = /^\(async \(\) => \{/m.exec(s);
+    if (!m) continue;
+    const dopo = (s.slice(m.index).match(/^prova\(/gm) || []).length;
+    if (dopo) guasto(f + ': ' + dopo + ' prove registrate dopo il ciclo che le esegue — non girano');
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove delle chiamate');

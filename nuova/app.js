@@ -1532,7 +1532,8 @@
     if (!hoLaParola) return;
     laStradaVienePrima(d);
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
-    voce.parla(d.testo, { livello: liv, ancheSeUguale: true, rifai: rifaiLaDistanza(d, d.testo) });
+    voce.parla(d.testo, { livello: liv, ancheSeUguale: true, avviso: !!d.avviso,
+                          rifai: rifaiLaDistanza(d, d.testo) });
     mostra({ titolo: titoloDi(d), testo: d.testo, gradino: '' });
     alLettore(d.testo, true);        // la voce la sta gia dicendo
     esegui(d.mosse);

@@ -336,13 +336,30 @@ function MotoreVoce(opzioni) {
       return true;
     }
 
-    // REGOLA 4: più importante interrompe; pari o meno importante aspetta;
-    // solo un cenno, che è ripetibile, si butta se non c'è posto
-    if (livello > livelloInCorso) {
-      var interrotta = null;
-      if (livelloInCorso >= GUIDA && ultimoTesto) interrotta = null;  // le guide non si riprendono
+    /* REGOLA 4, RIFATTA IL 23/10: UNA FRASE NON SI TAGLIA A META'.
+       «La app non si deve bloccare o balbettare con la voce» (Vince).
+       Il balbettio non veniva solo dalla musica: era scritto qui. Una
+       frase piu' importante zittiva quella in corso a meta' parola, e
+       chi ascolta non sente «e' arrivata una cosa piu' urgente»: sente
+       l'app che si inceppa. E una frase troncata, a chi non vede, e'
+       un'informazione persa — non sa nemmeno cosa si e' perso.
+       Adesso si taglia SOLO per quello che riguarda i piedi: un avviso
+       (uno scalino, un attraversamento) e l'emergenza. Tutto il resto —
+       una strada, un monumento, una risposta — aspetta che la frase in
+       corso finisca, e passa davanti agli altri in coda. Al massimo
+       sono tre secondi. */
+    var puoTagliare = (livello >= EMERGENZA) || !!p.avviso;
+    if (livello > livelloInCorso && puoTagliare) {
       zittisci();
       avvia({ testo: testo, clip: clip, livello: livello, uguale: daConfrontare });
+      return true;
+    }
+    if (livello > livelloInCorso) {
+      /* non taglia, ma non si mette in fondo: parla appena l'altra finisce */
+      coda.unshift({ testo: testo, clip: clip, livello: livello, valida: valida,
+                     rifai: rifai, uguale: daConfrontare });
+      if (coda.length > CODA_MAX) coda.length = CODA_MAX;
+      diario('APPENA FINISCE (' + livello + '): ' + String(testo).slice(0, 40));
       return true;
     }
     for (var i = 0; i < coda.length; i++) {

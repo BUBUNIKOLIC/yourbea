@@ -206,7 +206,9 @@ prova('UNA VOCE SOLA: un annuncio importante interrompe senza accavallarsi (la s
   const m = Mondo(); m.clipEsistenti = new Set(['racconto', 'avviso']);
   m.motore.parla('Il racconto lungo di un monumento.', { clip: ['racconto'], livello: m.motore.CENNO });
   m.passano(50);
-  m.motore.parla('Attraversamento qui intorno.', { clip: ['avviso'], livello: m.motore.GUIDA });
+  /* un attraversamento E un avviso: quello taglia, ed e giusto cosi — e
+     l unica cosa che puo interrompere una frase a meta */
+  m.motore.parla('Attraversamento qui intorno.', { clip: ['avviso'], livello: m.motore.GUIDA, avviso: true });
   await respira();
   m.passano(50);
   if (m.suonando > 1) guasto('due clip insieme');
@@ -456,6 +458,43 @@ prova('senza coda, «rifai» vale lo stesso', () => {
   if (!/a 12 passi/.test(m.sistema.join(' | '))) guasto('subito non lo usa: ' + m.sistema.join(' | '));
 });
 
+  
+/* LA FRASE VESTITA RESTA UN DOPPIONE. Da quando parti/modi.js cambia la
+   parolina davanti, la stessa frase arriva scritta in due modi: se il
+   confronto guardasse il testo intero tornerebbe il difetto di via Marconi,
+   ripetuta perché nel paragone c'era un pezzo che cambiava. */
+
+prova('UNA FRASE NON SI TAGLIA A META: aspetta che finisca', () => {
+  /* «La app non si deve bloccare o balbettare con la voce» (Vince,
+     23/10, regola 2). Il balbettio non era solo la musica: una frase
+     piu importante zittiva quella in corso a meta parola. Chi ascolta
+     non sente «e arrivata una cosa urgente»: sente l app che si inceppa.
+     Adesso taglia solo un avviso o l emergenza. */
+  const m = Mondo(); m.clipEsistenti = new Set(['racconto', 'strada']);
+  m.motore.parla('Il racconto lungo di un monumento.', { clip: ['racconto'], livello: m.motore.CENNO });
+  m.passano(50);
+  const detto = m.motore.parla('Sei in via Roma.', { clip: ['strada'], livello: m.motore.GUIDA });
+  if (!detto) return guasto('la strada e stata buttata');
+  if (!m.motore.inCoda().length) guasto('non l ha messa in coda: ha tagliato la frase in corso');
+});
+
+prova('MA UN AVVISO TAGLIA SEMPRE: sono i piedi', () => {
+  const m = Mondo(); m.clipEsistenti = new Set(['racconto', 'scalini']);
+  m.motore.parla('Il racconto lungo di un monumento.', { clip: ['racconto'], livello: m.motore.CENNO });
+  m.passano(50);
+  m.motore.parla('Tre scalini.', { clip: ['scalini'], livello: m.motore.GUIDA, avviso: true });
+  if (m.motore.inCoda().length) guasto('un avviso e finito in coda invece di tagliare');
+});
+
+prova('E L EMERGENZA TAGLIA ANCHE SENZA BANDIERINA', () => {
+  const m = Mondo(); m.clipEsistenti = new Set(['racconto', 'aiuto']);
+  m.motore.parla('Il racconto lungo di un monumento.', { clip: ['racconto'], livello: m.motore.CENNO });
+  m.passano(50);
+  m.motore.parla('Chiamo il tuo contatto.', { clip: ['aiuto'], livello: m.motore.EMERGENZA });
+  if (m.motore.inCoda().length) guasto('l emergenza ha aspettato il turno');
+});
+
+
 (async () => {
   for (const p of prove) {
     errori = [];
@@ -463,12 +502,6 @@ prova('senza coda, «rifai» vale lo stesso', () => {
     if (errori.length) { console.log('NO  ' + p.nome); errori.forEach((e) => console.log('      ' + e)); fatti.push(false); }
     else { console.log('SI  ' + p.nome); fatti.push(true); }
   }
-  
-/* LA FRASE VESTITA RESTA UN DOPPIONE. Da quando parti/modi.js cambia la
-   parolina davanti, la stessa frase arriva scritta in due modi: se il
-   confronto guardasse il testo intero tornerebbe il difetto di via Marconi,
-   ripetuta perché nel paragone c'era un pezzo che cambiava. */
-
 const passate = fatti.filter(Boolean).length;
   console.log('');
   console.log(passate + '/' + fatti.length + ' prove del motore nuovo');
