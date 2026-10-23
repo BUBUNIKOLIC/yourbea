@@ -534,6 +534,66 @@ prova('due vie DIVERSE non si mediano: sarebbe un punto in mezzo al niente', () 
   if (s && s.aPezzi) guasto('ha mediato due vie diverse: ' + JSON.stringify(s));
 });
 
+/* ============================================================
+   «CHIEDI AIUTO»
+   «Che deve chiamare i soccorsi, e dice la posizione in cui si è» —
+   «per i non vedenti la descrizione del luogo in cui si è» (Vince,
+   23/10).
+   ============================================================ */
+const INTORNO = ['Farmacia Comunale sulla destra, a 40 metri',
+                 'Tabaccheria dritto davanti, a 20 metri',
+                 'Basilica di San Marco sulla sinistra, a 90 metri'];
+const DOVE_PIENO = { via: 'Via Fabio Filzi', civico: '12', citta: 'Latina',
+                     lat: 41.4665, lon: 12.9086, accanto: INTORNO };
+
+prova('«chiedi aiuto» chiama i soccorsi', () => {
+  const e = Emergenza({});
+  const d = e.comando('chiedi aiuto', DOVE_PIENO);
+  if (!d) { guasto('non l ha capito'); return; }
+  if (d.numero !== '112') guasto('non chiama il 112: ' + JSON.stringify(d));
+  if (!d.annullabile) guasto('parte senza i cinque secondi per annullare');
+  console.log('      → ' + d.testo);
+});
+
+prova('e dice dove sei, e cosa hai intorno', () => {
+  const e = Emergenza({});
+  const d = e.comando('chiedi aiuto', DOVE_PIENO);
+  if (!/Via Fabio Filzi 12, Latina/.test(d.testo)) guasto('non dice la via: ' + d.testo);
+  if (!/Farmacia/.test(d.testo)) guasto('non dice cosa hai intorno: ' + d.testo);
+  /* e la via viene prima delle cose intorno: all operatore serve quella */
+  if (d.testo.indexOf('Via Fabio Filzi') > d.testo.indexOf('Farmacia')) {
+    guasto('dice prima i negozi e poi la via');
+  }
+});
+
+/* SE LA VIA NON SI SA si dicono i numeri: una centrale operativa ci
+   lavora tutti i giorni, il silenzio no. */
+prova('senza la via, i soccorsi hanno le coordinate', () => {
+  const e = Emergenza({});
+  const d = e.comando('chiedi aiuto', { lat: 41.4665, lon: 12.9086, accanto: [] });
+  if (!/41 virgola 46650/.test(d.testo)) guasto('non le dice: ' + d.testo);
+});
+
+/* IL 112 NON PARTE DI SOPPIATTO (Dario, Napoli: «per poco non ho
+   chiamato il 112»). Il microfono sente le conversazioni tutto il
+   giorno: «aiuto» dentro una frase non può far partire una chiamata. */
+prova('«aiuto» dentro una frase non chiama nessuno', () => {
+  const e = Emergenza({});
+  ['ho bisogno di un aiuto per capire', 'mi serve aiuto col telefono',
+   'chiedi aiuto a tuo fratello', 'aiuto che bello'].forEach((t) => {
+    const d = e.comando(t, DOVE_PIENO);
+    if (d && d.numero === '112') guasto('«' + t + '» ha chiamato il 112');
+  });
+});
+
+prova('«aiuto» da solo resta il menu, non la chiamata', () => {
+  const e = Emergenza({});
+  const d = e.comando('aiuto', DOVE_PIENO);
+  if (!d) { guasto('non risponde niente'); return; }
+  if (d.numero === '112') guasto('chiama il 112 su «aiuto» secco');
+  if (d.tipo !== 'scelte') guasto('doveva essere il menu: ' + d.tipo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');

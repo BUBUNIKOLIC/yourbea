@@ -151,6 +151,26 @@ prova('ma non in macchina, e non quando non sappiamo dove sei', () => {
   }
 });
 
+/* «È inutile mettere il meccanico, l'autosalone e queste cose: meglio
+   mettere negozi di utilità. Commissariato. Polizia. Tabaccaio. Poste.
+   Bar. Ristoranti» (Vince, 23/10). */
+prova('quello che serve a chi cammina, e quello che no', () => {
+  const a = AChiServe();
+  ['commissariato', 'polizia', 'tabaccaio', 'poste', 'bar', 'ristorante',
+   'farmacia', 'supermercato', 'fermata'].forEach((x) => {
+    if (!a.utileAPiedi(x)) guasto(x + ' non conta niente, e invece serve');
+  });
+  ['officina', 'concessionario', 'autolavaggio', 'gommista',
+   'distributore'].forEach((x) => {
+    if (a.utileAPiedi(x)) guasto(x + ' e roba da macchina, non deve pesare');
+    if (!a.daMacchina(x)) guasto(x + ' non e riconosciuta come roba da macchina');
+  });
+  /* e quando le cose vanno male, quelli pesano di piu di una gelateria */
+  if (!(a.utileAPiedi('commissariato') > a.utileAPiedi('gelateria'))) {
+    guasto('il commissariato non batte la gelateria');
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della regola');

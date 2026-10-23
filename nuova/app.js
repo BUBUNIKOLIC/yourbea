@@ -668,6 +668,73 @@
 
   /* ---------- quello che c'è intorno, pronto per il racconto ---------- */
   var SERVIZI = { punti: [], aree: [], alberi: [] };
+  /* cosaHoIntorno(): com'è fatto il posto dove sei, in tre cose.
+     «Per i non vedenti la descrizione del luogo in cui si è» — «è
+     inutile mettere il meccanico, l'autosalone e queste cose: meglio
+     mettere negozi di utilità. Commissariato. Polizia. Tabaccaio. Poste.
+     Bar. Ristoranti» (Vince, 23/10).
+     Si pesca da tutt'e due le parti — i monumenti, che orientano e si
+     vedono da lontano, e i negozi, che sono quelli di cui si dice il
+     nome al telefono — e si ordina per quanto serve a chi cammina,
+     non per distanza: una farmacia a ottanta metri vale più di un
+     concessionario a dieci. Le cose da macchina non entrano. */
+  function conCosaE(p) {
+    var n = String(p.nome || '').trim();
+    var c = String(p.cosa || '').trim();
+    if (!n) return c;
+    if (!c) return n;
+    return n.toLowerCase().indexOf(c.toLowerCase()) >= 0 ? n : (n + ', ' + c);
+  }
+
+  function cosaHoIntorno(quanti) {
+    var s = posizione.leggi();
+    if (!s.pronto) return [];
+    var qui = { lat: s.lat, lon: s.lon };
+    var roba = [];
+    vicini().forEach(function (o) {
+      if (!o.p || !o.p.n) return;
+      if (aChiServe.daMacchina(o.p.t)) return;
+      roba.push({ nome: o.p.n, m: o.m, rel: o.rel,
+                  peso: Math.max(2, aChiServe.utileAPiedi(o.p.t)) });
+    });
+    (SERVIZI.punti || []).forEach(function (p) {
+      if (!p.servizio || p.cosa === 'attraversamento') return;
+      var peso = aChiServe.utileAPiedi(p.cosa);
+      if (!peso || aChiServe.daMacchina(p.cosa)) return;
+      var m = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (m > 220) return;
+      /* IL NOME NON BASTA, SERVE COSA È. A Fontana di Trevi la prova ha
+         detto «Ruggeri Massimo sulla destra, a 130 metri»: a un operatore
+         del 112 quel nome non dice niente, e a chi non vede nemmeno. Si
+         dice tutt'e due — «Ruggeri Massimo, tabaccheria» — tranne quando
+         il nome già lo contiene («Farmacia Pesci»). */
+      roba.push({ nome: conCosaE(p), m: m, peso: peso, cosa: String(p.cosa || '').toLowerCase(),
+                  rel: ((posizione.verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180 });
+    });
+    /* QUANTO SERVE, MENO QUANTO E' LONTANO. Solo per peso, alla prova a
+       Fontana di Trevi, usciva l'alimentari a 130 metri prima del bar a
+       20: per descrivere un posto conta anche averci davanti la cosa.
+       Cento metri valgono un gradino di utilità. */
+    roba.forEach(function (x) { x.punti = x.peso - x.m / 100; });
+    roba.sort(function (a, b) { return b.punti - a.punti; });
+    /* UNO PER TIPO. Alla prova a Fontana di Trevi sono usciti due
+       alimentari di fila: due negozi uguali dicono meno di un negozio e
+       un bar, perché descrivere un posto vuol dire dire com'è fatto. */
+    var visti = {}, tipi = {}, fuori = [];
+    for (var i = 0; i < roba.length && fuori.length < (quanti || 3); i++) {
+      var k = String(roba[i].nome).toLowerCase();
+      if (visti[k]) continue;
+      if (roba[i].cosa && tipi[roba[i].cosa]) continue;
+      visti[k] = 1;
+      if (roba[i].cosa) tipi[roba[i].cosa] = 1;
+      /* «bar, sulla destra» comincia la frase in minuscolo: i punti senza
+         nome proprio portano solo il tipo, ed è un nome comune. */
+      fuori.push(roba[i].nome.charAt(0).toUpperCase() + roba[i].nome.slice(1) + ', ' +
+                 (s.direzioneBuona ? versoParole(roba[i]) : ('a ' + Math.round(roba[i].m / 10) * 10 + ' metri')));
+    }
+    return fuori;
+  }
+
   function vicini() {
     var s = posizione.leggi();
     if (!s.pronto) return [];
@@ -2607,8 +2674,15 @@
     }
     // l'emergenza viene prima di tutto
     var s0 = posizione.leggi();
-    var dove0 = { via: ultimaStrada, lat: s0.lat, lon: s0.lon };
-    var em = emergenza.comando(t, ultimaStrada ? dove0 : null);
+    /* SEMPRE, anche senza la via. Prima si passava `null` quando la strada
+       non si sapeva, e così si buttavano via anche le coordinate: a chi
+       chiama i soccorsi resta meglio dire due numeri che niente.
+       E con quello che ha intorno: «per i non vedenti la descrizione del
+       luogo in cui si è» (Vince, 23/10). All'operatore del 112 «davanti
+       alla basilica, accanto alla fontana» dice più di un civico, e chi
+       non vede non può guardarsi intorno per rispondere. */
+    var dove0 = { via: ultimaStrada, lat: s0.lat, lon: s0.lon, accanto: cosaHoIntorno() };
+    var em = emergenza.comando(t, dove0);
     if (em) {
       if (em.tipo === 'cerca') { portamiA(em.cosa); dilloSubito(em); return true; }
       /* chiede di avvisare qualcuno di cui non ho il numero: lo dico e apro

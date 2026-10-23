@@ -174,8 +174,38 @@ function AChiServe() {
   };
   function daMacchina(cosa) { return !!ROBA_DA_MACCHINA[String(cosa || '').toLowerCase()]; }
 
+  /* ============================================================
+     QUELLO CHE SERVE A CHI CAMMINA
+     «È inutile mettere il meccanico, l'autosalone e queste cose: meglio
+     mettere negozi di utilità. Commissariato. Polizia. Tabaccaio»
+     (Vince, 23/10, parlando di come si descrive a un non vedente il
+     posto dove si trova).
+     ROBA_DA_MACCHINA dice cosa togliere; questa dice cosa METTERE, e
+     non è la stessa domanda. Un posto si descrive con le cose per cui
+     uno ci entra davvero — il pane, le medicine, il caffè, i
+     francobolli — e con quelle che servono quando le cose vanno male.
+     Chi non è in elenco non è escluso: viene dopo. */
+  var UTILI_A_PIEDI = {
+    /* quando le cose vanno male */
+    commissariato: 5, polizia: 5, carabinieri: 5, 'pronto soccorso': 5,
+    ospedale: 5, 'vigili del fuoco': 5, 'guardia medica': 5,
+    /* tutti i giorni */
+    farmacia: 4, tabaccheria: 4, tabaccaio: 4, supermercato: 4,
+    alimentari: 4, panetteria: 4, forno: 4, 'ufficio postale': 4,
+    posta: 4, poste: 4, 'poste italiane': 4, banca: 3, bancomat: 3, edicola: 3, bar: 3,
+    macelleria: 3, fruttivendolo: 3, pescheria: 3, 'generi alimentari': 4,
+    ferramenta: 2, lavanderia: 2, parrucchiere: 2, ottico: 3,
+    cartoleria: 2, libreria: 2, ristorante: 2, pizzeria: 2, gelateria: 2,
+    /* dove si prende qualcosa per andare via */
+    fermata: 4, 'fermata dell autobus': 4, stazione: 5, metropolitana: 5,
+    taxi: 3, bagno: 3, 'bagno pubblico': 3
+  };
+  function utileAPiedi(cosa) {
+    return UTILI_A_PIEDI[String(cosa || '').toLowerCase()] || 0;
+  }
+
   return { serve: serve, quantoConta: quantoConta, daMacchina: daMacchina,
-           REGOLA: REGOLA };
+           utileAPiedi: utileAPiedi, REGOLA: REGOLA };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AChiServe;

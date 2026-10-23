@@ -48,10 +48,45 @@ function Emergenza(opzioni) {
      telefono: si annuncia, si conta fino a cinque, e in quei cinque
      secondi basta dire «annulla» o premere qualsiasi cosa. Chi ha bisogno
      aspetta cinque secondi; chi non ne ha bisogno li ha per fermarla. */
-  function chiama112() {
+  /* doveSei(): la posizione DETTA, non solo mandata.
+     «[Chiedi aiuto] deve chiamare i soccorsi, e dice la posizione in cui
+     si è» (Vince, 23/10). L'AML manda il punto alla centrale da sé, ma
+     l'operatore la prima cosa che chiede è «dove si trova?» — e chi non
+     vede non può guardarsi intorno per rispondere. Gliela si dice prima,
+     mentre il telefono squilla: così la ripete e basta.
+     E SE LA VIA NON SI SA, si dicono i numeri. Sono brutti da dire, ma
+     una centrale operativa ci lavora tutti i giorni, e il silenzio no. */
+  function doveSei(dove) {
+    if (!dove) return '';
+    if (dove.via) {
+      return 'Sei in ' + dove.via + (dove.civico ? ' ' + dove.civico : '') +
+             (dove.citta ? ', ' + dove.citta : '') + '.';
+    }
+    if (typeof dove.lat === 'number' && typeof dove.lon === 'number') {
+      return 'La via non la so. Le tue coordinate sono: latitudine ' +
+             dove.lat.toFixed(5).replace('.', ' virgola ') + ', longitudine ' +
+             dove.lon.toFixed(5).replace('.', ' virgola ') + '.';
+    }
+    return '';
+  }
+
+  /* comeEFatto(): cosa c'è intorno, per dirlo all'operatore. Chi non vede
+     non può guardarsi intorno quando glielo chiedono, e «davanti alla
+     farmacia, accanto al tabaccaio» porta un'ambulanza più in fretta di
+     un civico che sul portone magari non c'è. */
+  function comeEFatto(dove) {
+    var a = (dove && dove.accanto) || [];
+    if (!a.length) return '';
+    return 'Intorno a te: ' + a.join('. ') + '.';
+  }
+
+  function chiama112(dove) {
+    var qui = doveSei(dove);
     return {
       tipo: 'chiama', numero: '112', livello: 'emergenza', subito: true, annullabile: true,
-      testo: 'Chiamo il 112 fra cinque secondi. Se non vuoi, dì: annulla. ' +
+      dove: qui,
+      testo: (qui ? qui + ' ' : '') + (comeEFatto(dove) ? comeEFatto(dove) + ' ' : '') +
+             'Chiamo il 112 fra cinque secondi. Se non vuoi, dì: annulla. ' +
              'La tua posizione parte insieme alla chiamata: non devi spiegare dove sei.',
       mosse: [{ cosa: 'chiama', numero: '112', fraMillisecondi: 5000 }]
     };
@@ -172,7 +207,17 @@ function Emergenza(opzioni) {
       for (var i = 0; i < arguments.length; i++) if (t.indexOf(arguments[i]) >= 0) return true;
       return false;
     }
-    if (ha('112', 'chiama i soccorsi', 'ambulanza', 'numero di emergenza', 'chiama il 118')) return chiama112();
+    /* «CHIEDI AIUTO» CHIAMA I SOCCORSI. Fin qui «aiuto» apriva un menu
+       — «dì: chiama il 112, oppure commissariato...» — e chi sta male
+       doveva ascoltare un elenco e poi dire un'altra frase. «Chiedi
+       aiuto» è già la decisione: si chiama, e si dice dov'è.
+       Ma la frase dev'ESSERE il comando. «Aiuto» da solo no: il
+       microfono sta aperto tutto il giorno e sente le conversazioni —
+       Dario, a Napoli: «per poco non ho chiamato il 112». Quello
+       resta il menu, e i cinque secondi per dire «annulla» restano. */
+    if (/^(?:chiedi|chiedimi|chiama|chiamami|voglio|mi serve)\s+(?:i\s+|il\s+|un\s+|l\s+)?(?:aiuto|soccorso|soccorsi|aiutami)$/.test(t) ||
+        t === 'chiedi aiuto' || t === 'aiutami') return chiama112(dove);
+    if (ha('112', 'chiama i soccorsi', 'ambulanza', 'numero di emergenza', 'chiama il 118')) return chiama112(dove);
     if (ha('mi hanno rubato', 'mi hanno derubato', 'mi hanno scippato', 'furto', 'borseggio',
            'ho perso il portafoglio', 'rubato il telefono', 'scippo')) return derubato(dove);
     if (ha('commissariato', 'polizia', 'carabinieri')) return cerca('commissariato');
@@ -205,7 +250,7 @@ function Emergenza(opzioni) {
   }
 
   return {
-    scelte: scelte, chiama112: chiama112, derubato: derubato,
+    scelte: scelte, chiama112: chiama112, derubato: derubato, doveSei: doveSei, comeEFatto: comeEFatto,
     avvisaContatto: avvisaContatto, chiamaContatto: chiamaContatto, cerca: cerca, comando: comando,
     numeroWhatsApp: numeroWhatsApp, numeroTelefono: numeroTelefono,
     conContatto: function (c) { contatto = c; },
