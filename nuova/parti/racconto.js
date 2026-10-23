@@ -96,8 +96,14 @@ function Racconto(opzioni) {
     var v = detti[p.n];
     if (!v) return false;
     if (ora() - v.quando < RIDILLO_DOPO) return true;
-    // te ne sei andato e sei tornato: si può ridire
-    return dist(qui.lat, qui.lon, v.lat, v.lon) < 200;
+    /* TE NE SEI ANDATO E SEI TORNATO: si puo' ridire. Ma «andato» vuol
+       dire andato davvero. Camminando su viale di Trastevere l'app ha
+       detto «Palazzo degli Esami» al metro 60 e di nuovo al metro 300,
+       la seconda volta «dietro di te»: duecentoquaranta metri piu' in
+       la' ma sempre la stessa strada, e sentirsi ridire una cosa che
+       hai gia' passato e' il modo piu' veloce per spegnere l'app.
+       Mezzo chilometro, che e' anche fin dove guarda il racconto. */
+    return dist(qui.lat, qui.lon, v.lat, v.lon) < 500;
   }
 
   /* QUELLO CHE STAVI GUARDANDO, SE TE NE VAI, NON LO GUARDI PIU'.
@@ -137,7 +143,14 @@ function Racconto(opzioni) {
     var qui = situazione.qui;                    // {lat,lon,direzione}
     var intorno = situazione.intorno || [];      // [{p, m, rel}] già ordinati
     var modo = situazione.modo || 'tutto';       // 'servizi' | 'cultura' | 'tutto'
-    var fermo = dove(qui);
+    /* FERMO LO SA LA POSIZIONE, non noi: lei ha il contapassi, noi solo
+       il GPS — e col GPS «fermo» scattava mentre si camminava, perche'
+       in cinque secondi un uomo non esce da un cerchio di dodici metri.
+       Se la posizione non lo dice (un telefono senza contapassi) si
+       torna a guardarlo da qui. */
+    var fermo = (typeof situazione.fermo === 'boolean') ? situazione.fermo : dove(qui);
+    if (situazione.fermo === false) { fermoLat = qui.lat; fermoLon = qui.lon; fermoDa = ora(); }
+    if (typeof situazione.fermo === 'boolean') lasciaQuelloLontano(qui);
 
     // 1. SE SONO FERMO DAVANTI A QUALCOSA: si scende di gradino
     if (fermo) {
@@ -194,57 +207,75 @@ function Racconto(opzioni) {
        bruciato in silenzio, che sceso dall'autobus non te lo diceva piu'
        nessuno. */
     if (situazione.aPiedi === false) return null;
+    /* L'ARIA FRA UNA COSA E L'ALTRA.
+       La camminata vera ai Fori, provata il 23/10: CINQUANTA frasi in
+       cinquecento metri, una ogni dieci passi — «Tempio di Augusto»,
+       «Basilica Sempronia», «Basilica Giulia», «Foro Romano», «Lacus
+       Curtius»... Nessuno ascolta un elenco cosi': si spegne l'app.
+       Dove i monumenti sono tanti non se ne dicono di piu': se ne dice
+       UNO, il migliore, e poi si cammina. Quaranta metri o mezzo minuto,
+       quello che viene prima. */
+    var adesso = ora();
+    if (!situazione.chiesto && ultimoCenno.quando &&
+        (adesso - ultimoCenno.quando) < FRA_UN_CENNO_E_L_ALTRO &&
+        fraPunti(qui, ultimoCenno) < QUANTO_CAMMINI_PRIMA) return null;
+
+    /* E SI DICE IL MIGLIORE, NON IL PRIMO CHE CAPITA. L'elenco arriva
+       ordinato per distanza, e prendendo il primo che passa la regola
+       usciva il muretto davanti al Colosseo. Fra quelli che si possono
+       dire si sceglie: prima quanto conta, poi quanto e' vicino. */
+    var candidati = [];
     for (var i = 0; i < intorno.length; i++) {
       var o = intorno[i], p = o.p;
       /* il modo va passato: senza, in Turismo passavano anche i luoghi
          senza scheda — un cenno per una cosa che poi, fermandosi, non si
          puo' raccontare */
-      if (!daRaccontare(p, modo)) continue;     // qui si raccontano i luoghi
+      if (!daRaccontare(p, modo)) continue;
       if (giaDetto(p, qui)) continue;
       /* QUELLO CHE TI SEI GIÀ LASCIATO DIETRO. «E hai passato questo
          monumento altrettanto importante… se non lo è, dietro di te hai
          superato» (Vince, 16/10). Camminando si passa accanto a una chiesa
          senza accorgersene, e un secondo dopo è alle spalle: tacere vuol
-         dire fargliela perdere per sempre. Si dice in due modi: quello che
-         conta si racconta come gli altri, dicendo che è dietro; quello che
-         conta meno è una riga sola, e solo finché è a portata di mano. */
+         dire fargliela perdere per sempre. */
       var dietro = Math.abs(o.rel) > (modo === 'cultura' ? 170 : 150);
       if (dietro) {
         if (situazione.direzioneBuona === false) continue;   // senza bussola «dietro» è una bugia
         if (rango(p) >= 2 ? o.m > 120 : o.m > 45) continue;
       }
       if (o.m > raggio(p, modo)) continue;
-      detti[p.n] = { quando: ora(), lat: qui.lat, lon: qui.lon };
-      inCorso = p; inCorsoDove = { lat: qui.lat, lon: qui.lon };
-      gradino[p.n] = 0;
-      /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
-         non essere gettato. Era il difetto di Gabri a Parma. */
-      var liv = (modo === 'servizi' && rango(p) >= 2) ? 'guida' : 'cenno';
-      /* si restituiscono anche i pezzi — da che parte, quanti metri — perché
-         le clip incise sono pezzi: «sulla destra» + «a 80 metri» + il nome.
-         Chi riceve questa risposta non deve ricalcolarli, se no il testo e
-         l'audio si disallineano. */
-      if (dietro && rango(p) < 2) {
-        /* uno minore, già superato: una riga e si va avanti — non si fa
-           tornare indietro nessuno per una cosa che non lo merita */
-        return { tipo: 'superato', luogo: p, livello: 'cenno',
-                 rel: o.rel, metri: Math.round(o.m), direzioneBuona: true,
-                 testo: 'Dietro di te hai superato ' + p.n + '.' };
-      }
-      return { tipo: 'cenno', luogo: p, livello: liv, dietro: dietro,
-               rel: o.rel, metri: Math.round(o.m),
-               direzioneBuona: situazione.direzioneBuona !== false,
-               cardinale: situazione.cardinale || null,
-               /* senza sapere come sei girato, «sulla destra» sarebbe una
-                  bugia e «a nord» non dice niente: restano i metri */
-               /* «e a pochi passi hai…»: prima dove, poi quanto, poi cosa.
-                  Dietro si dice con parole sue, se no sembra un posto
-                  nuovo invece di uno che ti sei perso. */
-               testo: dietro
-                 ? ('Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.')
-                 : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
-                    metri(o.m) + ', ' + p.n + '.') };
+      candidati.push({ o: o, p: p, dietro: dietro, punti: quantoVale(p, o, modo) });
     }
+    if (!candidati.length) return null;
+    candidati.sort(function (a, b) { return b.punti - a.punti; });
+    var scelto = candidati[0];
+    var o = scelto.o, p = scelto.p, dietro = scelto.dietro;
+
+    detti[p.n] = { quando: adesso, lat: qui.lat, lon: qui.lon };
+    ultimoCenno = { quando: adesso, lat: qui.lat, lon: qui.lon };
+    inCorso = p; inCorsoDove = { lat: qui.lat, lon: qui.lon };
+    gradino[p.n] = 0;
+    /* In Utilità un luogo importante è GUIDA: deve aspettare il suo turno,
+       non essere gettato. Era il difetto di Gabri a Parma. */
+    var liv = (modo === 'servizi' && rango(p) >= 2) ? 'guida' : 'cenno';
+    if (dietro && rango(p) < 2) {
+      /* uno minore, già superato: una riga e si va avanti — non si fa
+         tornare indietro nessuno per una cosa che non lo merita */
+      return { tipo: 'superato', luogo: p, livello: 'cenno',
+               rel: o.rel, metri: Math.round(o.m), direzioneBuona: true,
+               cardinale: situazione.cardinale || null,
+               testo: 'Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.' };
+    }
+    return { tipo: 'cenno', luogo: p, livello: liv,
+             rel: o.rel, metri: Math.round(o.m),
+             direzioneBuona: situazione.direzioneBuona !== false,
+             cardinale: situazione.cardinale || null,
+             /* «e a pochi passi hai…»: prima dove, poi quanto, poi cosa.
+                Dietro si dice con parole sue, se no sembra un posto nuovo
+                invece di uno che ti sei perso. */
+             testo: dietro
+               ? ('Hai appena passato ' + p.n + ', ' + metri(o.m) + ' dietro di te.')
+               : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
+                  metri(o.m) + ', ' + p.n + '.') };
     return null;
   }
 
@@ -262,6 +293,43 @@ function Racconto(opzioni) {
   /* quello che si e' gia' detto stando fermi: in Utilita' non si ripete
      «qui c'e' lo stadio» ogni dieci secondi */
   var fermiDetti = {};
+
+  /* L'ARIA FRA UNA COSA E L'ALTRA, e quanto vale quello che si dice.
+     La camminata vera ai Fori (nuova/prove/camminata.js) diceva
+     CINQUANTA frasi in cinquecento metri. Ora se ne dice UNA, la
+     migliore, e poi si cammina. */
+  var ultimoCenno = { quando: 0, lat: 0, lon: 0 };
+  var FRA_UN_CENNO_E_L_ALTRO = o.fraUnCenno || 45000;      // mezzo minuto buono
+  var QUANTO_CAMMINI_PRIMA = o.quantoCammini || 60;        // o sessanta metri
+
+  /* QUANTO C'E' FRA DUE PUNTI, dati come oggetti.
+     Si chiamava `dist` come quella che c'e' gia' — che prende quattro
+     numeri — e la copriva: `dove()`, che decide se sei fermo, le passava
+     quattro numeri e si ritrovava `a.lat` di un numero. Da allora
+     rispondeva sempre «lontanissimo», e la guardia che doveva mettere
+     l'aria fra un monumento e l'altro non scattava mai. Due funzioni
+     diverse non possono chiamarsi uguale. */
+  function fraPunti(a, b) {
+    if (!a || !b || !a.lat || !b.lat) return 1e9;
+    return dist(a.lat, a.lon, b.lat, b.lon);
+  }
+
+  /* quantoVale(): fra tutti quelli che si potrebbero dire, QUALE.
+     Prima quanto conta — un duomo batte un muretto — poi quanto e'
+     vicino, e quello che hai davanti batte quello che hai di lato.
+     Prendendo il primo dell'elenco (che e' il piu' vicino e basta)
+     camminando ai Fori usciva «Lacus Curtius» mentre avevi il Foro
+     Romano davanti. */
+  function quantoVale(p, o2, modo) {
+    var punti = rango(p) * 100;
+    punti -= o2.m;                                   // ogni metro toglie un punto
+    if (Math.abs(o2.rel) <= 45) punti += 60;         // ce l'hai davanti
+    else if (Math.abs(o2.rel) > 135) punti -= 80;    // te lo sei lasciato dietro
+    if (p.d) punti += 40;                            // ha qualcosa da dire
+    if (p.i || p.a || p.cf) punti += 30;
+    if (modo === 'cultura' && p.senzaScheda) punti -= 200;
+    return punti;
+  }
 
   /* conArticolo(): «lo stadio Diego Armando Maradona», «la chiesa di San
      Vitale». Il tipo davanti al nome, perche' il nome da solo non dice a
@@ -323,7 +391,38 @@ function Racconto(opzioni) {
     return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(w) ? 'lo ' : 'il ';
   }
 
+  /* QUELLO DENTRO CUI SEI GIA'. Camminando ai Fori l'app ha detto
+     «sulla sinistra, a 70 passi, Roma»: Roma non e' una cosa che passi,
+     e' il posto dove sei. Lo stesso per il quartiere, la frazione, il
+     rione. Si dicono quando si arriva (ed e' un'altra funzione), non
+     mentre ci cammini dentro. */
+  var CI_SEI_DENTRO = {
+    'comune italiano': 1, 'comune': 1, 'quartiere': 1, 'frazione': 1,
+    'rione': 1, 'insediamento umano': 1, 'città': 1, 'citta': 1,
+    'zona': 1, 'municipio di roma': 1, 'circoscrizione': 1,
+    'località': 1, 'contrada': 1, 'regione storica': 1, 'città antica': 1
+  };
+
+  /* E IL POSTO NON SI ANNUNCIA DA SOLO. Ai Fori l'app diceva «sulla
+     sinistra, a 45 passi, Roma»: l'articolo «Roma» di Wikipedia ha le
+     coordinate sul Foro e nei dati e' un «sito archeologico», quindi
+     nessun elenco di tipi lo prende. Ma sappiamo in che comune sta
+     ogni luogo: se un luogo si chiama come il comune dove sei, non e'
+     una cosa che passi — e' il posto dove sei. */
+  function siChiamaComeIlPosto(p) {
+    if (!p || !p.n || !p.c) return false;
+    function osso(t) {
+      return String(t).toLowerCase()
+        .replace(/[àá]/g, 'a').replace(/[èé]/g, 'e').replace(/[ìí]/g, 'i')
+        .replace(/[òó]/g, 'o').replace(/[ùú]/g, 'u')
+        .replace(/\([^)]*\)/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+    }
+    return osso(p.n) === osso(p.c);
+  }
+
   function daRaccontare(p, modo) {
+    if (p && CI_SEI_DENTRO[String(p.t || '').toLowerCase()]) return false;
+    if (siChiamaComeIlPosto(p)) return false;
     if (!p || !(p.k >= 1)) return false;
     /* in TURISMO un luogo senza scheda non si racconta: «Qui c'è lo
        stadio» a chi e' uscito per vedere l'arte e' rumore. In UTILITA'
@@ -478,6 +577,10 @@ function Racconto(opzioni) {
 
   function salta() {
     if (inCorso) { detti[inCorso.n] = { quando: ora(), lat: fermoLat, lon: fermoLon }; inCorso = null; }
+    /* CHI CHIEDE «VAI OLTRE» VUOLE IL PROSSIMO ADESSO. L'aria fra un
+       monumento e l'altro serve a non riempire chi non ha chiesto
+       niente; a chi chiede non si fa aspettare mezzo minuto. */
+    ultimoCenno = { quando: 0, lat: 0, lon: 0 };
     return { tipo: 'avanti', livello: 'guida', testo: 'Andiamo avanti.' };
   }
 

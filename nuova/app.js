@@ -474,7 +474,13 @@
      percorso, cosa che fa gia'. Il GPS da' i metri, il telefono i passi,
      e la falcata e' la divisione. Si dice una volta sola, e resta. */
   var passiOra = 0, passiAllInizio = null;
-  window.urbeaPassi = function (n) { passiOra = Number(n) || 0; };
+  window.urbeaPassi = function (n) {
+    passiOra = Number(n) || 0;
+    /* e i passi dicono anche se sei FERMO: il GPS da solo non lo sa —
+       camminando resta dentro il suo cerchio e l'app credeva che ti
+       fossi fermato davanti a ogni monumento. */
+    try { posizione.quantiPassi(passiOra); } catch (e) {}
+  };
   try {
     var p0 = Number(localStorage.getItem('yourbea2-passo') || 0);
     if (p0 && laDistanza.metti(p0)) diario('IL TUO PASSO: ' + p0 + ' m (misurato prima d\'ora)');
@@ -2555,6 +2561,8 @@
     var d = racconto.prossimo({ qui: { lat: s.lat, lon: s.lon }, intorno: lista, modo: modo,
                                 direzioneBuona: s.direzioneBuona,
                                 aPiedi: s.aPiedi,
+                                /* fermo lo decide il contapassi, non il GPS */
+                                fermo: s.fermo,
                                 cardinale: null });
     if (d) dillo(d);
   });

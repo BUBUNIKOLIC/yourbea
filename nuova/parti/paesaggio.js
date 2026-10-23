@@ -138,6 +138,20 @@ function Paesaggio(opzioni) {
        quello che conta è a portata di passi; in macchina si guarda lontano,
        perché il vicino sfila via prima di poterlo dire e quello che resta
        fermo all'orizzonte è il paesaggio. Quattro volte piu' lontano. */
+    /* IL QUATTRO VOLTE NON VALE PER TUTTO.
+       Vince, 23/10, in via dei Corazzieri: «in Turismo mi ha indicato
+       l'Isola Tiberina, sara' a sei chilometri minimo». L'isola e'
+       segnata 5.000 metri, ma se l'app crede che tu non sia a piedi
+       moltiplica per quattro e arriva a VENTI chilometri. Da un
+       finestrino il Vesuvio a venti chilometri lo vedi davvero; un
+       isolotto no, e nemmeno un fiume o una spiaggia.
+       Il moltiplicatore resta solo per le cose che sono grandi di
+       natura: le montagne, il golfo, la costa, i parchi, i laghi. */
+    var GRANDI_DI_NATURA = {
+      'montagna': 1, 'collina': 1, 'golfo': 1, 'costa': 1, 'baia': 1,
+      'area protetta': 1, 'parco regionale': 1, 'lago': 1, 'valle': 1,
+      'passo di montagna': 1
+    };
     var quantoSiVede = (s.aPiedi === false) ? 4 : 1;
 
     /* IN CITTA' NON C'E' ORIZZONTE.
@@ -162,7 +176,8 @@ function Paesaggio(opzioni) {
       if (!p || !p.n || !eDelPaesaggio(p)) return;
       if (ora() - (detti[p.n] || 0) < RIPOSO) return;             // REGOLA 5
         var m = dist(qui.lat, qui.lon, p.lat, p.lon);
-      if (m > QUANTO_LONTANO[p.t] * quantoSiVede) return;         // REGOLA 1
+      var fattore = GRANDI_DI_NATURA[p.t] ? quantoSiVede : 1;
+      if (m > QUANTO_LONTANO[p.t] * fattore) return;              // REGOLA 1
       if (inCitta && m < VICINO_PER_UNA_CITTA) return;            // non c'e' orizzonte
       var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       var pt = { p: p, m: m, rel: rel, peso: peso(p, m) };

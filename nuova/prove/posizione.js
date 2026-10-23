@@ -257,6 +257,41 @@ prova('E IL PASSOMETRO BATTE LA MEMORIA DELLA CORSA', () => {
   if (w.p.leggi().aPiedi !== true) guasto('sceso dall autobus, il telefono dice che cammina e non gli crede');
 });
 
+/* FERMO LO DICONO I PASSI, NON IL GPS.
+   «Appena la provo fa schifo» (Vince, 23/10): camminando ai Fori l'app
+   si comportava come se si fosse fermato davanti a ogni monumento,
+   perche' in cinque secondi un uomo fa sei metri e mezzo e il cerchio
+   del «fermo» era largo dodici. */
+prova('camminando non si e fermi, anche se il GPS non se ne accorge', () => {
+  const m = mondo();
+  m.p.comincia();
+  const passo = 0.000012;          // circa 1,3 metri
+  let lat = 41.9000;
+  m.p.quantiPassi(0);
+  m.gps(lat, 12.48);
+  for (let i = 1; i <= 8; i++) {   // otto secondi di cammino
+    m.passano(1000);
+    lat += passo;
+    m.p.quantiPassi(i * 2);        // due passi al secondo
+    m.gps(lat, 12.48);
+  }
+  if (m.p.leggi().fermo) guasto('dice che sei fermo mentre cammini');
+});
+
+prova('fermo davvero: i passi non cambiano', () => {
+  const m = mondo();
+  m.p.comincia();
+  m.p.quantiPassi(100);
+  m.gps(41.9, 12.48);
+  for (let i = 1; i <= 8; i++) {
+    m.passano(1000);
+    m.p.quantiPassi(100);          // fermo: nessun passo nuovo
+    /* e il GPS salta di qualche metro, come fa davvero stando fermi */
+    m.gps(41.9 + (i % 2 ? 0.00005 : -0.00005), 12.48);
+  }
+  if (!m.p.leggi().fermo) guasto('non si accorge che sei fermo');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');

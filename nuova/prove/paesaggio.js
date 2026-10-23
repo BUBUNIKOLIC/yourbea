@@ -219,6 +219,29 @@ prova('fuori citta il golfo vicino si dice come prima', () => {
   if (!d || !/golfo/.test(d.testo)) guasto('non lo dice: ' + (d ? d.testo : 'niente'));
 });
 
+/* «In via dei Corazzieri mi ha indicato l'Isola Tiberina, sara' a sei
+   chilometri minimo» (Vince, 23/10). Sei chilometri: ci arrivava perche'
+   l'app credeva che non fosse a piedi e moltiplicava per quattro. */
+prova('un isolotto a sei chilometri non si dice, nemmeno in macchina', () => {
+  const { p } = mondo();
+  const isola = { n: 'Isola Tiberina', t: 'isola', lat: 41.8905, lon: 12.4777 };
+  const qui = { lat: 41.8360, lon: 12.4790 };     // sei chilometri a sud
+  const d = p.intorno({ qui: qui, direzione: 0, direzioneBuona: true,
+                        luoghi: [isola], aPiedi: false });
+  if (d) guasto('lo dice lo stesso: ' + d.testo);
+});
+
+/* ma il Vesuvio dall'autostrada, a venti chilometri, si vede: e' una
+   montagna, ed e' per questo che il moltiplicatore esiste. */
+prova('una montagna lontana dal finestrino si dice ancora', () => {
+  const { p } = mondo();
+  const vesuvio = { n: 'Vesuvio', t: 'montagna', lat: 40.8220, lon: 14.4260 };
+  const qui = { lat: 40.9000, lon: 14.2500 };   // sedici chilometri
+  const d = p.intorno({ qui: qui, direzione: 120, direzioneBuona: true,
+                        luoghi: [vesuvio], aPiedi: false });
+  if (!d || !/Vesuvio/.test(d.testo)) guasto('non lo dice: ' + (d ? d.testo : 'niente'));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del paesaggio');

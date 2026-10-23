@@ -58,6 +58,9 @@ function Posizione(opzioni) {
     velocita: null, ultimoQuando: 0, saltato: false,
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
+    /* i passi contati dal telefono: li manda il guscio, e sono l'unica
+       cosa che sa davvero se stai camminando */
+    passi: null, passiPrima: null, passiCambiati: 0, passiQuando: 0,
     attivita: null, attivitaQuando: 0, attivitaSicura: false,
     viaAgganciata: null,
     velocitaAlta: 0, velocitaAltaQuando: 0,
@@ -254,13 +257,36 @@ function Posizione(opzioni) {
         stato.direzione = verso(prima.lat, prima.lon, lat, lon);
         stato.direzioneQuando = ora();
       }
-      // REGOLA 5: fermo è restare dentro un cerchio piccolo per dieci secondi
-      if (!stato.ancora || dist(stato.ancora.lat, stato.ancora.lon, lat, lon) > FERMO_RAGGIO) {
+      /* REGOLA 5: FERMO LO DICONO I PASSI, NON IL GPS.
+         Era «restare dentro un cerchio di dodici metri per cinque
+         secondi». Ma chi cammina fa 1,3 metri al secondo: in cinque
+         secondi ne fa sei e mezzo, cioe' RESTA DENTRO IL CERCHIO. Per
+         l'app eri fermo mentre camminavi, e si metteva a raccontarti la
+         scheda del monumento come se ti fossi fermato davanti.
+         E' il difetto che ha fatto dire a Vince «appena la provo fa
+         schifo»: camminando ai Fori sentiva una frase ogni dieci passi.
+         Il cerchio non si puo' nemmeno stringere: fermo sul posto il
+         GPS salta di otto metri da solo, e non diremmo mai «fermo».
+         Il contapassi invece non sbaglia: se non fai passi sei fermo, e
+         se li fai no. Il GPS resta solo per i telefoni che il
+         contapassi non ce l'hanno. */
+      var passiAdesso = stato.passi;
+      if (typeof passiAdesso === 'number' && stato.passiQuando) {
+        if (passiAdesso !== stato.passiPrima) {
+          stato.passiPrima = passiAdesso;
+          stato.passiCambiati = ora();
+          stato.fermo = false;
+          stato.fermoDa = ora();
+        } else if (ora() - (stato.passiCambiati || 0) >= FERMO_PER) {
+          if (!stato.fermo) diario('FERMO: non fa passi da ' + Math.round(FERMO_PER / 1000) + ' s');
+          stato.fermo = true;
+        }
+      } else if (!stato.ancora || dist(stato.ancora.lat, stato.ancora.lon, lat, lon) > FERMO_RAGGIO) {
         stato.ancora = { lat: lat, lon: lon };
         stato.fermoDa = ora();
         stato.fermo = false;
       } else if (ora() - stato.fermoDa >= FERMO_PER) {
-        if (!stato.fermo) diario('FERMO da dieci secondi');
+        if (!stato.fermo) diario('FERMO da dieci secondi (senza contapassi)');
         stato.fermo = true;
       }
       if (passo > PASSO_BUONO) stato.ultimoPunto = { lat: lat, lon: lon };
@@ -270,6 +296,17 @@ function Posizione(opzioni) {
       stato.fermoDa = ora();
     }
     avvisa('posizione');
+  }
+
+  /* quantiPassi(): il contapassi del telefono. Il guscio lo manda ogni
+     volta che cambia; se questo telefono non ce l'ha, non chiama mai e
+     il «fermo» resta quello del GPS. */
+  function quantiPassi(n) {
+    var v = Number(n);
+    if (!isFinite(v)) return;
+    stato.passi = v;
+    stato.passiQuando = ora();
+    if (stato.passiPrima === null) { stato.passiPrima = v; stato.passiCambiati = ora(); }
   }
 
   function problema(quale) {
@@ -337,6 +374,7 @@ function Posizione(opzioni) {
   }
 
   return {
+    quantiPassi: quantiPassi,
     comeMiMuovo: comeMiMuovo,
     comincia: comincia, dalGuscio: dalGuscio, leggi: leggi,
     quando: function (f) { ascoltatori.push(f); },
