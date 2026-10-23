@@ -79,7 +79,8 @@ function Racconto(opzioni) {
        dirla) la farebbe girare a vuoto. */
     var f = o.descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
                                   altezza: p.h, piani: p.pi, larghezza: p.l,
-                                  materiali: p.mat, forme: p.frm });
+                                  materiali: p.mat, forme: p.frm,
+                                  catalogo: p.cf });
     fatteCosi[p.n] = (f && f.testo) || '';
     return fatteCosi[p.n];
   }

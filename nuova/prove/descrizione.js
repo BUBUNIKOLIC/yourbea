@@ -224,6 +224,48 @@ prova('la frase comincia con la maiuscola anche senza «davanti a te»', () => {
   console.log('      → ' + f.testo);
 });
 
+/* ============================================================
+   IL CATALOGO DEL MINISTERO
+   Le misure di Wikipedia ce l'ha il 2,6% dei luoghi: senza, questo
+   gradino spariva. ArCo la descrizione ce l'ha scritta.
+   ============================================================ */
+const CATALOGO = 'Edificio di forma rettangolare con muri perimetrali in mattoni; ' +
+  'copertura con tetto a quattro falde e capriate. Volte a crociera al piano terra. ' +
+  'Infissi in legno con vetri semplici. Scala interna in pietra.';
+
+prova('senza misure parla il catalogo', () => {
+  const r = d().frase({ n: 'Villa Buratti', t: 'villa', dove: 'destra', metri: 40,
+                      catalogo: CATALOGO });
+  if (!r) { guasto('non dice niente, e il catalogo ce l era'); return; }
+  if (!/mattoni/.test(r.testo)) guasto('non usa il catalogo: ' + r.testo);
+  console.log('      \u2192 ' + r.testo);
+});
+
+/* UNA SCHEDA DI CATALOGO VA AVANTI PER RIGHE: i solai, gli infissi, le
+   scale. A chi cammina servono le prime due cose. */
+prova('del catalogo si dicono due frasi, non tutto', () => {
+  const r = d().frase({ n: 'Villa Buratti', t: 'villa', dove: 'destra', metri: 40,
+                      catalogo: CATALOGO });
+  if (/infissi/i.test(r.testo)) guasto('dice tutto fino agli infissi: ' + r.testo);
+  if (r.testo.length > 360) guasto('lunga ' + r.testo.length + ' caratteri');
+});
+
+/* O LE MISURE O IL CATALOGO: due descrizioni della stessa cosa una
+   dietro l'altra si contraddicono. Le misure vincono, perche' sono in
+   piani e in passi — come le vuole chi cammina. */
+prova('se le misure ci sono, il catalogo tace', () => {
+  const r = d().frase({ n: 'Villa Buratti', t: 'villa', dove: 'destra', metri: 40,
+                      altezza: 18, materiali: ['mattoni'], catalogo: CATALOGO });
+  if (/capriate|crociera/.test(r.testo)) guasto('li mescola: ' + r.testo);
+  if (!/piani/.test(r.testo)) guasto('ha perso le misure: ' + r.testo);
+});
+
+prova('senza niente, niente frase', () => {
+  if (d().frase({ n: 'Villa Buratti', t: 'villa', dove: 'destra', metri: 40 })) {
+    guasto('inventa una frase senza avere niente da dire');
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della descrizione orientativa');

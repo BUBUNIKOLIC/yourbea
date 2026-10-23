@@ -172,6 +172,22 @@ function Descrizione(opzioni) {
     return '';
   }
 
+  /* primeDueFrasi(): del catalogo si dice l'inizio, non tutto. Una
+     scheda di catalogo puo' andare avanti per righe — i solai, le
+     volte, gli infissi — e a chi cammina servono le prime due cose:
+     che forma ha e di cosa e' fatta. Il resto lo sente chi si ferma. */
+  function primeDueFrasi(t) {
+    var pezzi = String(t || '').split(/(?<=[.!?])\s+/);
+    var fuori = '', n = 0;
+    for (var i = 0; i < pezzi.length && n < 2; i++) {
+      if (!pezzi[i].trim()) continue;
+      if ((fuori + ' ' + pezzi[i]).length > 260 && fuori) break;
+      fuori = fuori ? (fuori + ' ' + pezzi[i].trim()) : pezzi[i].trim();
+      n++;
+    }
+    return fuori;
+  }
+
   /* frase(): mette tutto in fila, e salta quello che non sa. REGOLA 6:
      ogni pezzo che manca sparisce, non diventa un «forse». */
   function frase(x) {
@@ -230,6 +246,26 @@ function Descrizione(opzioni) {
        ne' forma resterebbe «la Chiesa X.» — il nome che l'utente ha gia'
        sentito nel cenno — e si porterebbe via un gradino per non dire
        niente. Meglio passare subito alla storia. */
+    /* IL CATALOGO DEL MINISTERO, QUANDO LE MISURE NON CI SONO.
+       Le misure di Wikipedia ce l'hanno pochi luoghi, e senza quelle
+       questo gradino spariva: sono il 97% dei casi. ArCo — il Catalogo
+       generale dei beni culturali — la descrizione ce l'ha gia' scritta,
+       da chi c'e' stato davanti: «edificio di forma rettangolare con
+       muri perimetrali in mattoni, copertura a tetto a quattro falde».
+       Quando non abbiamo niente di nostro, parla lui.
+       Non si mescolano: o le misure (che sono in piani e in passi, come
+       le vuole chi cammina) o la scheda del catalogo. Due descrizioni
+       della stessa cosa, una dietro l'altra, si contraddicono. */
+    if (!seconda.length && !fo && x.catalogo) {
+      var dalCatalogo = primeDueFrasi(x.catalogo);
+      if (dalCatalogo) {
+        var t0 = (pezzi.join('') || cosa);
+        t0 = t0.charAt(0).toUpperCase() + t0.slice(1);
+        return { tipo: 'scheda-orientativa', livello: 'cenno',
+                 testo: t0 + '. ' + dalCatalogo,
+                 ancora: x.storia ? String(x.storia).trim() : '' };
+      }
+    }
     if (!seconda.length && !fo) return null;
     var testo = pezzi.join('');
     /* LA MAIUSCOLA. Senza l'apertura («Davanti a te…») la frase parte
@@ -250,7 +286,7 @@ function Descrizione(opzioni) {
     };
   }
 
-  return { frase: frase, inPiani: inPiani, passi: passi, larga: larga, femminile: femminile,
+  return { frase: frase, primeDueFrasi: primeDueFrasi, inPiani: inPiani, passi: passi, larga: larga, femminile: femminile,
            materiale: materiale, forma: forma };
 }
 

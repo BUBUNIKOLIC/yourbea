@@ -38,6 +38,43 @@ function paroleProprie(t) {
     .filter((w) => w.length > 3 && !GENERICHE.has(w));
 }
 
+/* LO STESSO NOME SCRITTO IN DUE MODI. Provando la regola su tutta
+   Italia sono saltati fuori tre casi che NON sono errori:
+     «Palazzo San Giuliano»  e la scheda dice «palazzo Sangiuliano»
+     «Archimedeion»          e la scheda dice «Arkimedeion»
+   Wikipedia e il nostro archivio scrivono lo stesso nome staccato o
+   attaccato, con la k o con il ch. Una parola conta come trovata anche
+   se sta DENTRO una parola della scheda, o se differisce di un paio di
+   lettere — e la lunghezza minima tiene fuori le coincidenze. */
+function nominato(parola, parole) {
+  if (parole.includes(parola)) return true;
+  for (const w of parole) {
+    if (w.includes(parola) || parola.includes(w)) {
+      if (Math.min(w.length, parola.length) >= 5) return true;
+    }
+    if (parola.length >= 7 && Math.abs(w.length - parola.length) <= 2 &&
+        distanza(w, parola) <= 2) return true;
+  }
+  return false;
+}
+
+/* la distanza di Levenshtein, cortissima: serve solo a dire «e' la
+   stessa parola scritta un po' diversa». */
+function distanza(a, b) {
+  const riga = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prec = riga[0];
+    riga[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = riga[j];
+      riga[j] = Math.min(riga[j] + 1, riga[j - 1] + 1,
+                         prec + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prec = tmp;
+    }
+  }
+  return riga[b.length];
+}
+
 function tuttiILuoghi() {
   const dir = path.join(__dirname, '..', 'dati', 'cultura');
   const fuori = [];
@@ -66,8 +103,8 @@ prova('LA SCHEDA PARLA DEL POSTO, non di un altro', () => {
     if (!p.d || !p.n) continue;
     const forti = paroleProprie(p.n);
     if (!forti.length) continue;
-    const corpo = ' ' + paroleProprie(p.d).join(' ') + ' ';
-    if (!forti.some((w) => corpo.includes(' ' + w + ' '))) {
+    const corpo = paroleProprie(p.d);
+    if (!forti.some((w) => nominato(w, corpo))) {
       guasto(p.n + ' -> ' + String(p.d).slice(0, 70));
     }
   }
@@ -84,8 +121,49 @@ prova('NESSUN EDIFICIO E LARGO DUE METRI', () => {
 });
 
 prova('NIENTE MARCATURE DI WIKIPEDIA DENTRO LE SCHEDE', () => {
+  /* e adesso in TUTT'E TRE i testi, non solo nella scheda: dal 23/10
+     «cosa vedere» e l'approfondimento arrivano dallo stesso wikitesto. */
   for (const p of LUOGHI) {
-    if (p.d && /\{\{|\[\[|<ref|\bpx\b|\|\s*\w+\s*=/.test(p.d)) guasto(p.n + ' -> ' + String(p.d).slice(0, 60));
+    for (const k of ['d', 'i', 'a']) {
+      if (p[k] && /\{\{|\[\[|<ref|\bpx\b|\|\s*\w+\s*=/.test(p[k])) {
+        guasto(p.n + ' (' + k + ') -> ' + String(p[k]).slice(0, 60));
+      }
+    }
+  }
+});
+
+prova('NIENTE ENTITA HTML, NE SPAZI PRIMA DELLA VIRGOLA', () => {
+  /* «987&nbsp;m s.l.m.» letto a voce diventa «e commerciale n b s p»;
+     «la Magna Grecia ; risultava» è una pausa in mezzo al niente. */
+  for (const p of LUOGHI) {
+    for (const k of ['d', 'i', 'a']) {
+      const t = p[k];
+      if (!t) continue;
+      if (/&[a-z]+;|&#\d+;/.test(t)) guasto(p.n + ' (' + k + ') ha un entita: ' + t.slice(0, 60));
+      if (/\s[,.;:]/.test(t)) guasto(p.n + ' (' + k + ') ha uno spazio prima della punteggiatura');
+      if (/(^|\.\s)\s*\?/.test(t)) guasto(p.n + ' (' + k + ') comincia una frase con un punto interrogativo');
+      if (/:\s*$/.test(t)) guasto(p.n + ' (' + k + ') finisce con due punti che non portano da nessuna parte');
+    }
+  }
+});
+
+prova('COSA VEDERE E L APPROFONDIMENTO PARLANO DEL POSTO', () => {
+  /* la stessa regola della scheda: un testo che non nomina mai il posto
+     è quasi sempre il testo di un altro posto. */
+  for (const p of LUOGHI) {
+    if (!p.n) continue;
+    const forti = paroleProprie(p.n);
+    if (!forti.length) continue;
+    for (const k of ['i', 'a']) {
+      if (!p[k]) continue;
+      /* qui si guarda anche la scheda: «cosa vedere» parla dell'interno
+         e puo' non ripetere il nome, ma se non lo nomina ne' lui ne' la
+         scheda da cui viene, qualcosa non torna. */
+      const corpo = paroleProprie(p[k] + ' ' + (p.d || ''));
+      if (!forti.some((w) => nominato(w, corpo))) {
+        guasto(p.n + ' (' + k + ') -> ' + String(p[k]).slice(0, 70));
+      }
+    }
   }
 });
 

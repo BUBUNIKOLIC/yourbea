@@ -1,1 +1,1 @@
-[{"n":"Piazzale Damiano Chiesa","t":"piazza","lat":45.48433,"lon":9.15615},{"n":"Piazzale Stefano Türr","t":"piazza","lat":45.48394,"lon":9.15261},{"n":"chiesa di Sant’Ildefonso","t":"chiesa","lat":45.48436,"lon":9.15493,"arch":["Carlo De Carli"],"senzaScheda":true}]
+[{"n":"Piazzale Damiano Chiesa","t":"piazza","lat":45.48433,"lon":9.15615,"c":"Milano"},{"n":"Piazzale Stefano Türr","t":"piazza","lat":45.48394,"lon":9.15261,"c":"Milano"},{"n":"chiesa di Sant’Ildefonso","t":"chiesa","lat":45.48436,"lon":9.15493,"arch":["Carlo De Carli"],"senzaScheda":true,"c":"Milano"}]
