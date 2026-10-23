@@ -67,16 +67,21 @@ prova('lo stesso luogo non si annuncia due volte', () => {
   if (due && due.tipo === 'cenno') guasto('ha ripetuto il cenno dello stesso luogo');
 });
 
-prova('FERMI DIECI SECONDI: parte la scheda (il contratto di Vince)', () => {
+prova('FERMI CINQUE SECONDI: parte la scheda (il contratto di Vince)', () => {
+  /* Erano dieci dal 16/10, quando il problema era l opposto: partiva a
+     ogni sosta al semaforo. «Ti fermi 5 secondi sennò è lenta» (Vince,
+     23/10): dieci secondi davanti a una chiesa sono tanti, uno si ferma,
+     non succede niente e riparte. Da allora è arrivato il passometro,
+     che sa se stai camminando davvero. */
   const m = mondo();
   m.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 80, 30]]), modo: 'cultura' });
-  // resto fermo: nove secondi non bastano
-  m.passano(9000);
+  // resto fermo: quattro secondi non bastano
+  m.passano(4000);
   let d = m.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 80, 30]]), modo: 'cultura' });
-  if (d && d.tipo === 'scheda') guasto('ha approfondito dopo nove secondi, non dieci');
+  if (d && d.tipo === 'scheda') guasto('ha approfondito dopo quattro secondi');
   m.passano(1500);
   d = m.r.prossimo({ qui: QUI, intorno: intorno([[PALAZZO, 80, 30]]), modo: 'cultura' });
-  if (!d || d.tipo !== 'scheda') guasto('fermo da dieci secondi e non parte la scheda: ' + (d && d.tipo));
+  if (!d || d.tipo !== 'scheda') guasto('fermo da cinque secondi e non parte la scheda: ' + (d && d.tipo));
   if (!/Palazzo dei Mercanti/.test(d.testo)) guasto('la scheda non è quella del luogo');
 });
 

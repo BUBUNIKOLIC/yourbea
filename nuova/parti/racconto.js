@@ -32,7 +32,14 @@
 function Racconto(opzioni) {
   var o = opzioni || {};
   var ora = o.ora || function () { return Date.now(); };
-  var FERMO_PER = o.fermoPer || 10000;      // dieci secondi, come ha detto Vince
+  /* CINQUE SECONDI, NON DIECI. «Ti fermi 5 secondi sennò è lenta»
+     (Vince, 23/10). Dieci secondi davanti a una chiesa sono tanti: uno
+     si ferma, non succede niente, e riparte prima che l'app apra bocca.
+     Erano dieci dal 16/10, quando il problema era l'opposto — partiva
+     a ogni sosta al semaforo — ma da allora e' arrivato il passometro,
+     che sa se stai camminando, e il cerchio del fermo e' di dodici
+     metri: cinque secondi adesso reggono. */
+  var FERMO_PER = o.fermoPer || 5000;
   var FERMO_RAGGIO = o.fermoRaggio || 12;   // entro dodici metri si è «fermi»
   var RIDILLO_DOPO = o.ridilloDopo || 90000;
   var dist = o.dist || function (a, b, c, d) {

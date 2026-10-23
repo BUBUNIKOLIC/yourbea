@@ -46,7 +46,8 @@ function Posizione(opzioni) {
   var diario = o.diario || function () {};
   var RIPIEGO_DOPO = o.ripiegoDopo || 5000;
   var FERMO_RAGGIO = o.fermoRaggio || 12;
-  var FERMO_PER = o.fermoPer || 10000;
+  /* cinque secondi, non dieci: vedi parti/racconto.js */
+  var FERMO_PER = o.fermoPer || 5000;
   var PASSO_BUONO = o.passoBuono || 5;      // oltre cinque metri la direzione è credibile
   var VERSO_VALE = o.versoVale || 20000;    // e vale per venti secondi
   var ATTIVITA_VALE = o.attivitaVale || 90000;   // il passometro, se tace, scade
