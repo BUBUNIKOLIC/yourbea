@@ -266,6 +266,25 @@ prova('senza niente, niente frase', () => {
   }
 });
 
+/* LA PIANTA, dal catalogo del Ministero (23/10). Chi vede la capisce in
+   un'occhiata; chi non vede non puo' ricostruirla camminandoci intorno. */
+prova('la pianta si dice, e con la preposizione giusta', () => {
+  const a = d().frase({ n: 'Palazzo Montalto', t: 'palazzo', dove: 'destra',
+                        metri: 30, materiali: ['pietra'], pianta: 'a elle' });
+  if (!/pianta a elle/.test(a.testo)) guasto('non la dice: ' + a.testo);
+  if (/a pianta a elle/.test(a.testo)) guasto('due preposizioni: ' + a.testo);
+  const b = d().frase({ n: 'Villa Reimann', t: 'villa', dove: 'destra',
+                        metri: 30, materiali: ['pietra'], pianta: 'rettangolare' });
+  if (!/a pianta rettangolare/.test(b.testo)) guasto('manca la preposizione: ' + b.testo);
+  console.log('      \u2192 ' + a.testo);
+});
+
+prova('senza pianta non cambia niente', () => {
+  const r = d().frase({ n: 'Villa Reimann', t: 'villa', dove: 'destra',
+                        metri: 30, materiali: ['pietra'] });
+  if (/pianta/.test(r.testo)) guasto('se la inventa: ' + r.testo);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della descrizione orientativa');

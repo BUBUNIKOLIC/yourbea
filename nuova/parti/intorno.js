@@ -376,6 +376,41 @@ function Intorno(opzioni) {
     }
     return pts;
   }
+  /* inItaliano(): QUELLO CHE VALHALLA NON TRADUCE.
+     Nelle istruzioni italiane restano pezzi d'inglese, e la voce li
+     legge: «Svolta a sinistra su the crosswalk», «Take the stairs».
+     A chi non vede «take the stairs» non dice che ci sono dei gradini.
+     E «la passerella» e' la parola di Valhalla per un pezzo di strada
+     pedonale senza nome: detta cosi' sembra un ponte sospeso. */
+  var INGLESE = [
+    [/\bTake the stairs\b/gi, 'Ci sono dei gradini'],
+    [/\bTake the escalator\b/gi, 'C\'è una scala mobile'],
+    [/\bTake the elevator\b/gi, 'C\'è un ascensore'],
+    [/\bthe crosswalk\b/gi, 'l\'attraversamento'],
+    [/\bthe stairs\b/gi, 'i gradini'],
+    [/\bthe sidewalk\b/gi, 'il marciapiede'],
+    [/\bthe footpath\b/gi, 'il sentiero'],
+    [/\bthe path\b/gi, 'il sentiero'],
+    [/\bthe walkway\b/gi, 'il passaggio'],
+    [/\bthe alley\b/gi, 'il vicolo'],
+    [/\bthe parking aisle\b/gi, 'il parcheggio'],
+    /* «sulla passerella» e' la traduzione di Valhalla per footway: a
+       piedi, in citta', quello e' il marciapiede. */
+    [/\bsulla passerella\b/gi, 'sul marciapiede'],
+    [/\bla passerella\b/gi, 'il marciapiede'],
+    [/\bsu the\b/gi, 'su'],
+    /* «su l'attraversamento» non si dice: l'articolo davanti a vocale
+       si lega alla preposizione. Scritto si legge, detto a voce no. */
+    [/\bsu l'/gi, "sull'"],
+    [/\bsu il\b/gi, 'sul'],
+    [/\bsu la\b/gi, 'sulla'],
+    [/\bsu i\b/gi, 'sui']
+  ];
+  function inItaliano(t) {
+    for (var i = 0; i < INGLESE.length; i++) t = t.replace(INGLESE[i][0], INGLESE[i][1]);
+    return t;
+  }
+
   function percorso(da, a) {
     var corpo = {
       locations: [{ lat: da.lat, lon: da.lon }, { lat: a.lat, lon: a.lon }],
@@ -398,11 +433,26 @@ function Intorno(opzioni) {
            della Repubblica», che è l'unica parte che si può eseguire. */
         testo = testo.replace(/\s+verso\s+(?:nord|sud|est|ovest)(?:[- ](?:est|ovest))?/gi, '');
         if (!testo) return;
+        testo = inItaliano(testo);
         var metri = Math.round((m.length || 0) * 1000);
         if (m.type === 4 || m.type === 5 || m.type === 6) return;      // l'arrivo lo dice l'app
         if (k && metri < 20 && /rimanere su|mantieni/i.test(testo)) return;
+        /* LE SVOLTE DI OTTO METRI NON SONO SVOLTE.
+           Provato il percorso che ha fatto Vince a Trastevere il 23/10:
+           «Svolta a destra sulla passerella» per OTTO metri, e subito
+           dopo a sinistra. Non e' una svolta: e' lo scivolo del
+           marciapiede, o le due meta' di un attraversamento, che in
+           OpenStreetMap sono pezzi di strada a se'. Lui ha sentito
+           «gira a destra» e doveva andare dritto.
+           Sotto i quindici metri una svolta su un pezzo senza nome si
+           butta: la direzione vera e' quella del pezzo dopo. I gradini
+           no — quelli si dicono sempre, perche' chi non vede ci
+           inciampa. */
+        var senzaNome = /\b(?:passerella|marciapiede|attraversamento|sentiero|il percorso)\b/i.test(testo);
+        var gradini = /gradin|scalin|scala/i.test(testo);
+        if (k && metri < 15 && senzaNome && !gradini) return;
         if (svolte.length && svolte[svolte.length - 1].testo === testo) return;  // Valhalla la spezza in due
-        svolte.push({ lat: pt[0], lon: pt[1], testo: testo, metri: metri });
+        svolte.push({ lat: pt[0], lon: pt[1], testo: testo, metri: metri, avviso: gradini });
       });
       if (!svolte.length) return null;
       diario('PERCORSO: ' + svolte.length + ' svolte, ' + Math.round((leg.summary && leg.summary.length || 0) * 1000) + ' m');

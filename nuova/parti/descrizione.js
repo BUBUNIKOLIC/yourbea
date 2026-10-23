@@ -172,6 +172,15 @@ function Descrizione(opzioni) {
     return '';
   }
 
+  /* pianta(): «a croce» si dice «a pianta a croce», «rettangolare» si
+     dice «a pianta rettangolare». La preposizione la porta gia' il
+     valore quando serve, e metterla due volte suona come un inciampo. */
+  function pianta(p) {
+    var t = String(p || '').trim();
+    if (!t) return '';
+    return /^a /.test(t) ? ('pianta ' + t) : ('a pianta ' + t);
+  }
+
   /* primeDueFrasi(): del catalogo si dice l'inizio, non tutto. Una
      scheda di catalogo puo' andare avanti per righe — i solai, le
      volte, gli infissi — e a chi cammina servono le prime due cose:
@@ -242,6 +251,12 @@ function Descrizione(opzioni) {
     var lar = larga(x.larghezza, fem);
     if (lar) seconda.push(lar);
     if (mat) seconda.push(mat);
+    /* LA PIANTA, dal catalogo del Ministero. «A pianta rettangolare», «a
+       pianta a croce»: e' la cosa che chi vede capisce in un'occhiata e
+       chi non vede non puo' ricostruire camminandoci intorno. Si dice
+       dopo il materiale, che e' la cosa che toccheresti per prima. */
+    var pia = pianta(x.pianta);
+    if (pia) seconda.push(pia);
     /* NIENTE DA DIRE, NIENTE FRASE. Senza altezza, larghezza, materiale
        ne' forma resterebbe «la Chiesa X.» — il nome che l'utente ha gia'
        sentito nel cenno — e si porterebbe via un gradino per non dire
@@ -286,7 +301,7 @@ function Descrizione(opzioni) {
     };
   }
 
-  return { frase: frase, primeDueFrasi: primeDueFrasi, inPiani: inPiani, passi: passi, larga: larga, femminile: femminile,
+  return { frase: frase, primeDueFrasi: primeDueFrasi, pianta: pianta, inPiani: inPiani, passi: passi, larga: larga, femminile: femminile,
            materiale: materiale, forma: forma };
 }
 

@@ -80,7 +80,7 @@ function Racconto(opzioni) {
     var f = o.descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
                                   altezza: p.h, piani: p.pi, larghezza: p.l,
                                   materiali: p.mat, forme: p.frm,
-                                  catalogo: p.cf });
+                                  catalogo: p.cf, pianta: p.pl });
     fatteCosi[p.n] = (f && f.testo) || '';
     return fatteCosi[p.n];
   }
@@ -372,7 +372,13 @@ function Racconto(opzioni) {
     return false;
   }
   function rango(p) {
-    if (p.r) return p.r;                         // rango già calcolato dai dati
+    /* IL RANGO STA IN `k`, ED E' LO STESSO DI daRaccontare().
+       Qui si leggeva `r`, che nei dati non c'e' in nessuno dei 20.836
+       luoghi: due nomi per la stessa cosa, e questa meta' non vedeva
+       quello che l'altra usava per decidere se parlare. Risultato: il
+       raggio restava quello minimo anche per un duomo. */
+    if (p.r) return p.r;
+    if (p.k >= 1) return Math.min(3, p.k);
     var quanto = (p.d || '').length;
     if ((p.h || 0) >= 30 || (p.pi || 0) >= 10) return 3;              // alto cosi', lo vedi comunque
     if (tipoNotevole(p) && quanto >= 400) return 3;

@@ -505,6 +505,42 @@ prova('MA A VENTI METRI RESTA QUELLO CHE STAI GUARDANDO', () => {
   if (!m.r.ancora()) guasto('e «ancora» non dice piu niente');
 });
 
+/* ============================================================
+   IL RANGO: UN CAMPO SOLO, NON DUE
+   Vince, 23/10, tornando dal medico: «passavo davanti ai monumenti e
+   non mi diceva nulla». La causa: daRaccontare() guardava `k` e nei
+   20.836 luoghi d'Italia `k` non c'era in nessuno; e rango() guardava
+   `r`, che non c'e' in nessuno nemmeno adesso.
+   ============================================================ */
+prova('un luogo col rango nei dati si racconta', () => {
+  const r = Racconto({ distanza: LADISTANZA });
+  const p = { n: 'Duomo di Siracusa', t: 'duomo', lat: 37.0590, lon: 15.2936,
+              k: 3, d: 'Il duomo di Siracusa ingloba un tempio dorico.' };
+  const qui = { lat: 37.0592, lon: 15.2936, direzione: 0, direzioneBuona: true };
+  const d = r.prossimo({ qui: qui, intorno: [{ p: p, m: 22, rel: 0 }],
+                         modo: 'servizi', direzioneBuona: true, aPiedi: true });
+  if (!d) { guasto('un duomo a ventidue passi e non dice niente'); return; }
+  if (!/Duomo/.test(d.testo)) guasto('dice altro: ' + d.testo);
+  console.log('      \u2192 ' + d.testo);
+});
+
+/* IL RAGGIO SEGUE IL RANGO, e il rango sta in `k`. Un duomo si dice da
+   piu' lontano di una casa: se rango() non legge `k`, resta il raggio
+   minimo per tutti e i monumenti importanti passano inosservati. */
+prova('il raggio di un luogo importante e piu largo', () => {
+  const grande = { n: 'Duomo di Prova', t: 'duomo', lat: 44.0, lon: 11.0, k: 3,
+                   d: 'Una scheda.' };
+  const piccolo = { n: 'Casa Prova', t: 'casa', lat: 44.0, lon: 11.0, k: 1,
+                    d: 'Una scheda.' };
+  const qui = { lat: 44.0, lon: 11.0, direzione: 0, direzioneBuona: true };
+  const a = Racconto({ distanza: LADISTANZA }).prossimo({ qui: qui, intorno: [{ p: grande, m: 230, rel: 0 }],
+                           modo: 'servizi', direzioneBuona: true, aPiedi: true });
+  const b = Racconto({ distanza: LADISTANZA }).prossimo({ qui: qui, intorno: [{ p: piccolo, m: 230, rel: 0 }],
+                           modo: 'servizi', direzioneBuona: true, aPiedi: true });
+  if (!a) guasto('il duomo a 230 metri non si dice');
+  if (b) guasto('la casa a 230 metri si dice, e non dovrebbe');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del racconto');
