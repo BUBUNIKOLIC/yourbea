@@ -214,6 +214,56 @@ prova('non ripete la stessa frase di fila', () => {
   }
 });
 
+/* ============================================================
+   E IL TURISMO: FERMARSI DAVANTI A UN MONUMENTO
+   «Io turista cammino, la app rileva la posizione precisa e mi dice i
+   monumenti che incontro; se mi fermo davanti a un monumento mi
+   racconta architettura, arte e storia» (Vince, 23/10).
+   Camminare lo prova la camminata qui sopra. Questa prova il FERMARSI:
+   cinque secondi davanti a una chiesa, e poi «ancora», «ancora»,
+   «ancora» — i gradini, fino a che finisce.
+   ============================================================ */
+prova('fermandosi davanti a un monumento lo racconta, un gradino per volta', () => {
+  const descrizione = Descrizione({ distanza: LADISTANZA, conArticolo: (p) => (p.n || '') });
+  let adesso = 1700000000000;
+  const racconto = Racconto({ descrizione, distanza: LADISTANZA, ora: () => adesso });
+  /* un luogo vero, coi testi veri dell'archivio */
+  const LUOGHI = luoghiIntorno(41.8992, 12.4731);
+  const ricco = LUOGHI.filter((p) => p.d && p.a && p.k >= 2)
+    .sort((a, b) => (b.d.length + b.a.length) - (a.d.length + a.a.length))[0];
+  if (!ricco) { guasto('nei dati non c e un luogo con scheda e approfondimento'); return; }
+  const qui0 = { lat: ricco.lat + 0.0002, lon: ricco.lon, direzione: 180, direzioneBuona: true };
+  const intorno = [{ p: ricco, m: dist(qui0.lat, qui0.lon, ricco.lat, ricco.lon), rel: 0 }];
+  console.log('      ' + ricco.n + ' (' + ricco.t + ')');
+
+  /* arrivo camminando: il cenno */
+  const cenno = racconto.prossimo({ qui: qui0, intorno, modo: 'cultura',
+                                    direzioneBuona: true, aPiedi: true, fermo: false });
+  if (!cenno) { guasto('arrivandoci davanti non dice niente'); return; }
+  console.log('      1. ' + cenno.testo.slice(0, 100));
+
+  /* mi fermo cinque secondi */
+  adesso += 6000;
+  const gradini = [];
+  for (let i = 0; i < 5; i++) {
+    adesso += 2000;
+    const d = racconto.prossimo({ qui: qui0, intorno, modo: 'cultura',
+                                  direzioneBuona: true, aPiedi: true, fermo: true });
+    if (!d) continue;
+    if (d.tipo === 'finito') break;
+    gradini.push(d);
+    console.log('      ' + (gradini.length + 1) + '. [' + d.tipo + '] ' + d.testo.slice(0, 100));
+  }
+  if (gradini.length < 2) guasto('fermandosi dice solo ' + gradini.length + ' cose');
+  const tipi = gradini.map((g) => g.tipo);
+  if (tipi.indexOf('scheda') < 0 && tipi.indexOf('scheda-orientativa') < 0) {
+    guasto('non dice mai cos e: ' + tipi.join(', '));
+  }
+  if (tipi.indexOf('approfondimento') < 0 && tipi.indexOf('cosa-vedere') < 0) {
+    guasto('non arriva mai alla storia: ' + tipi.join(', '));
+  }
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della camminata');

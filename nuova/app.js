@@ -3155,14 +3155,34 @@
       }, 1600);
       return true;
     }
+    /* COSA SO FARE — e perche' sono due elenchi.
+       «Poi non ho trovato il comando per creare il percorso» (Vince,
+       23/10). Il comando c'era, e risponde a dieci modi di dirlo: non
+       c'era nell'elenco. Una funzione che l'app non nomina non esiste
+       per chi non vede lo schermo.
+       Ma un elenco di trenta comandi detto tutto d'un fiato non si
+       ricorda: si dicono prima quelli di tutti i giorni, e si dice
+       che ce n'e' un secondo gruppo. Chi ne ha bisogno lo chiede. */
+    if (ha('altri comandi', 'altro', 'cos altro sai fare', 'i percorsi')) {
+      voce.parla('I tuoi posti: dì «registra casa», oppure «registra il medico», e me lo segno dove sei. ' +
+                 'Poi «portami dal medico», e «che posti ho» per sentirli tutti. ' +
+                 'E «fai il percorso casa medico», per sapere la strada fra due dei tuoi posti. ' +
+                 'I percorsi camminati: dì «crea percorso» e cammina, e io me lo imparo; ' +
+                 'quando passi in un punto che conta dimmi «segna qui» e cosa c\'è. Alla fine, «ho finito». ' +
+                 'Poi «che percorsi ho», «seguimi il percorso del medico», «manda il percorso». ' +
+                 'In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima». ' +
+                 'E «solo monumenti», oppure «dimmi tutto».',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
     if (ha('aiuto')) {
-      voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Solo monumenti, oppure dimmi tutto. Ferma. ' +
+      voce.parla('Puoi dire: dove sono. Cosa c\'è qui intorno. Ancora, per saperne di più. Avanti. Ferma. ' +
+                 'Portami a, e un indirizzo; oppure portami a casa. ' +
                  'Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell\'autobus. ' +
-                 'Passeggiate, e ti dico i giri a tappe che ci sono qui: poi «comincia la prima». ' +
+                 'Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. ' +
+                 'Avvisa, e il nome del tuo contatto. ' +
                  'Musica, per accenderla o spegnerla. ' +
-                 'Portami a, e un indirizzo. Portami a casa. Avvisa, e il nome del tuo contatto. ' +
-                 'E per registrare: mi chiamo, e il tuo nome. Casa mia è, e la via. ' +
-                 'Il mio contatto è, il nome, e poi il numero.',
+                 'Per i tuoi posti e i percorsi, dimmi: altri comandi.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }

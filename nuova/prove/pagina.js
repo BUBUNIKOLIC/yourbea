@@ -267,6 +267,32 @@ prova('in Turismo si puo scrivere, e lo scritto passa dalla stessa porta', () =>
   if (!m || Number(m[1]) < 16) guasto('font-size sotto i 16px: iOS ingrandisce la pagina');
 });
 
+/* UNA FUNZIONE CHE L'APP NON NOMINA NON ESISTE, per chi non vede lo
+   schermo. «Non ho trovato il comando per creare il percorso» (Vince,
+   23/10): il comando c'era e rispondeva a dieci modi di dirlo, ma
+   nell'elenco dei comandi non c'era. */
+prova('l elenco dei comandi nomina tutto quello che l app sa fare', () => {
+  const i = app.indexOf("if (ha('aiuto'))");
+  if (i < 0) { guasto('non trovo l elenco dei comandi'); return; }
+  const elenco = app.slice(i, i + 2500);
+  /* queste sono le cose che l'app sa fare: se ne aggiungiamo una e non
+     la diciamo, nessuno la trovera' mai. */
+  const devonoEsserci = [
+    'dove sono', 'portami a', 'leggi', 'chiedi aiuto', 'avvisa',
+    'altri comandi'
+  ];
+  devonoEsserci.forEach((c) => {
+    if (elenco.toLowerCase().indexOf(c) < 0) guasto('«' + c + '» non e nell elenco');
+  });
+  const j = app.indexOf("if (ha('altri comandi'");
+  if (j < 0) { guasto('manca il secondo elenco'); return; }
+  const secondo = app.slice(j, j + 2500);
+  ['registra casa', 'crea percorso', 'fai il percorso', 'che posti ho',
+   'passeggiate', 'segna qui'].forEach((c) => {
+    if (secondo.toLowerCase().indexOf(c) < 0) guasto('«' + c + '» non e nel secondo elenco');
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pagina');
