@@ -3135,6 +3135,35 @@
     scriviTastoPercorso();
   });
   scriviTastoPercorso();
+
+  /* IL TASTO DELLE PASSEGGIATE. «Nella modalita' turismo deve essere
+     agevole sceglierli» (Vince, 23/10). I 137 giri c'erano gia' e si
+     potevano avere solo sapendo la parola: «passeggiate». E' lo stesso
+     difetto di «crea percorso» — una funzione che esiste solo come
+     formula da sapere a memoria non esiste per chi non vede.
+     Il tasto dice l'elenco e poi si sceglie a voce, «comincia la
+     prima», oppure si ripreme: il secondo tocco comincia la prima,
+     perche' chi ha premuto una volta ha gia' detto che vuole andare. */
+  var elencoDetto = 0;
+  function scriviTastoPasseggiate() {
+    try {
+      var t = el('passeggiate');
+      if (!t) return;
+      t.hidden = (modo !== 'cultura');
+      t.textContent = passeggiata.inCorso() ? 'Ferma la passeggiata'
+        : (Date.now() - elencoDetto < 30000 ? 'Comincia la prima' : 'Passeggiate qui');
+    } catch (e) {}
+  }
+  if (el('passeggiate')) {
+    el('passeggiate').addEventListener('click', function () {
+      if (passeggiata.inCorso()) { comando('ferma'); elencoDetto = 0; }
+      else if (Date.now() - elencoDetto < 30000) { comando('comincia la prima'); elencoDetto = 0; }
+      else { comando('passeggiate'); elencoDetto = Date.now(); }
+      scriviTastoPasseggiate();
+    });
+    setInterval(scriviTastoPasseggiate, 1500);
+    scriviTastoPasseggiate();
+  }
   setInterval(scriviTastoPercorso, 2000);
   scriviTastoCosaSentire();
   scriviTastoMusica();
