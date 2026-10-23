@@ -175,6 +175,50 @@ prova('REGOLA 7 — e si parla piu spesso, perche il panorama cambia', () => {
     guasto('a piedi dopo cinque minuti e troppo presto');
 });
 
+/* IN CITTA' NON C'E' ORIZZONTE (Vince, 23/10: «mi diceva in lontananza
+   Isola Tiberina»). L'isola e' lunga trecento metri e sta fra i palazzi:
+   era un'«isola», e le isole le guardavamo fino a cinque chilometri. */
+function cittaIntorno(lat, lon, quanti) {
+  const fuori = [];
+  for (let i = 0; i < quanti; i++) {
+    fuori.push({ n: 'palazzo ' + i, t: 'palazzo',
+                 lat: lat + (i % 7) * 0.0004, lon: lon + (i % 5) * 0.0004 });
+  }
+  return fuori;
+}
+
+prova('in citta un isolotto a un chilometro e mezzo non si dice', () => {
+  const p = Paesaggio({ dist, verso });
+  const isola = { n: 'Isola Tiberina', t: 'isola', lat: 41.8905, lon: 12.4777 };
+  const qui = { lat: 41.9009, lon: 12.4833 };    // fontana di Trevi
+  const luoghi = cittaIntorno(qui.lat, qui.lon, 40).concat([isola]);
+  const d = p.intorno({ qui: qui, direzione: 200, direzioneBuona: true,
+                        luoghi: luoghi, aPiedi: true });
+  if (d && /Tiberina/.test(d.testo)) guasto('lo dice lo stesso: ' + d.testo);
+});
+
+/* ma il Vesuvio da Napoli si vede eccome: dieci chilometri, e in citta' */
+prova('in citta una montagna lontana si dice', () => {
+  const p = Paesaggio({ dist, verso });
+  const qui = { lat: 40.8518, lon: 14.2681 };
+  const vesuvio = { n: 'Vesuvio', t: 'montagna', lat: 40.8220, lon: 14.4260 };
+  const luoghi = cittaIntorno(qui.lat, qui.lon, 40).concat([vesuvio]);
+  const d = p.intorno({ qui: qui, direzione: 100, direzioneBuona: true,
+                        luoghi: luoghi, aPiedi: false });
+  if (!d || !/Vesuvio/.test(d.testo)) guasto('non lo dice: ' + (d ? d.testo : 'niente'));
+  console.log('      \u2192 ' + d.testo);
+});
+
+/* e fuori citta' la regola non cambia niente: a Vietri il golfo e' li' */
+prova('fuori citta il golfo vicino si dice come prima', () => {
+  const p = Paesaggio({ dist, verso });
+  const qui = { lat: 40.6700, lon: 14.7280 };
+  const golfo = { n: 'Salerno', t: 'golfo', lat: 40.6600, lon: 14.7400 };
+  const d = p.intorno({ qui: qui, direzione: 130, direzioneBuona: true,
+                        luoghi: [golfo], aPiedi: true });
+  if (!d || !/golfo/.test(d.testo)) guasto('non lo dice: ' + (d ? d.testo : 'niente'));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove del paesaggio');

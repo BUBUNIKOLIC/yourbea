@@ -139,12 +139,31 @@ function Paesaggio(opzioni) {
        perché il vicino sfila via prima di poterlo dire e quello che resta
        fermo all'orizzonte è il paesaggio. Quattro volte piu' lontano. */
     var quantoSiVede = (s.aPiedi === false) ? 4 : 1;
+
+    /* IN CITTA' NON C'E' ORIZZONTE.
+       Vince, 23/10, in strada: «mi diceva in lontananza Isola Tiberina».
+       L'Isola Tiberina e' lunga trecento metri e sta in mezzo ai palazzi:
+       per noi era un'«isola», e le isole si vedono da cinque chilometri
+       perche' la regola e' fatta per Capri vista dalla costa.
+       La differenza non sta nel tipo: sta in DOVE SEI. In mezzo ai
+       palazzi non vedi niente a un chilometro, e quello che si vede
+       davvero — il Vesuvio da Napoli, le montagne dalla valle — e' molto
+       piu' lontano di cosi'. Quanto sei in citta' lo sappiamo senza
+       chiederlo a nessuno: e' quanta roba abbiamo intorno. */
+    var DENSO = 25, VICINO_PER_UNA_CITTA = 2000;
+    var quanti = 0;
+    (s.luoghi || []).forEach(function (p) {
+      if (p && p.lat && dist(qui.lat, qui.lon, p.lat, p.lon) < 500) quanti++;
+    });
+    var inCitta = quanti >= DENSO;
+
     var avanti = null, lato = null;
     (s.luoghi || []).forEach(function (p) {
       if (!p || !p.n || !eDelPaesaggio(p)) return;
       if (ora() - (detti[p.n] || 0) < RIPOSO) return;             // REGOLA 5
         var m = dist(qui.lat, qui.lon, p.lat, p.lon);
       if (m > QUANTO_LONTANO[p.t] * quantoSiVede) return;         // REGOLA 1
+      if (inCitta && m < VICINO_PER_UNA_CITTA) return;            // non c'e' orizzonte
       var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       var pt = { p: p, m: m, rel: rel, peso: peso(p, m) };
       if (Math.abs(rel) <= 45) {
