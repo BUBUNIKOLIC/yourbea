@@ -343,79 +343,107 @@ def pezziCheDescrivono(wikitesto):
     return '\n'.join(fuori)
 
 # ============================================================
-# L'APPROFONDIMENTO: LA STORIA, TAGLIATA DOVE SMETTE DI ESSERE RACCONTO
-# 23/10. I 950 luoghi curati a mano hanno un approfondimento scritto —
-# «sul campanile l'orologio e' fermo alle tre del mattino: l'ora in cui
-# la lava arrivo'» — e quello Wikipedia non lo da'. Ma la sezione
-# «Storia» degli articoli, misurata su un campione, ce l'ha il 46% delle
-# voci, e l'inizio regge: «al centro dell'antico foro della citta'
-# romana si insedio' nell'VIII secolo una chiesa, documentata per la
-# prima volta nel 795».
-# Il guaio e' la coda, che scivola nel gergo: «l'articolazione plastica
-# della facciata risulta essere piu' greve, specie nei conci sovrapposti
-# agli stipiti scanalati». A voce, a chi non vede, quella e' rumore.
-# Quindi: si prendono le prime frasi intere, si taglia a punto fermo
-# sotto i 700 caratteri, e si smette appena compare una parola da
-# manuale di storia dell'arte.
-GERGO = re.compile(r'\b(articolazion|plastic\w*\s+della|conci|stipiti|scanalat|'
-                   r'paraste|lesene|modanatur|cornicion|timpan|metope|triglif|'
-                   r'bugnato|marcapiano|archivolt|strombatur|ghimberg|'
-                   r'attribuibil|ascrivibil|coeva|coevo|ibidem|op\. cit)\b', re.I)
+# L'APPROFONDIMENTO DEVE ESSERE FATTO BENE E DEVE ESSERE INTERESSANTE
+# (Vince, 23/10). E' il criterio, e il primo tentativo non lo passava:
+# «realizzata nel 1960 su progetto dell'architetto Paolo Portoghesi, la
+# sede dell'Inpdap di Lucca sorge fuori le mura» e' giusto e non e' una
+# scheda, e' una voce di catalogo.
+#
+# COSA RENDE INTERESSANTI QUELLE SCRITTE A MANO. Guardate le 577 sue:
+#   «quadrifronte, cioe' con quattro facciate uguali e quattro fornici,
+#    costruito nel Quarto secolo nel Foro Boario: non un arco di trionfo
+#    ma una copertura per i mercanti, che si riparavano sotto»
+#   «sul campanile l'orologio e' fermo alle tre del mattino: l'ora in cui
+#    la lava arrivo'»
+# Non evitano i termini tecnici — «lesene corinzie», «volta a botte
+# cassettonata» ci sono — li SPIEGANO. E hanno sempre due cose: una
+# QUANTITA' che si immagina, e un PERCHE' o un FATTO. Una data e un nome
+# di architetto, da soli, non sono niente.
+#
+# Quindi non si taglia piu' sul gergo (buttava via proprio le frasi
+# buone): si da' un punteggio alle frasi e si tiene la scheda solo se
+# arriva a tre. Meglio nessun approfondimento che uno da catalogo.
+VALE = [
+    # un fatto che e' successo
+    (3, re.compile(r'\b(incendi|terremot|croll|eruzion|lava|bombardament|'
+                   r'assedi|peste|alluvion|saccheggi|distrutt|rasa al suolo|'
+                   r'ricostruit|riedificat|sepolt|sommers)\w*', re.I)),
+    # qualcuno che fa o vuole qualcosa, e le storie
+    (3, re.compile(r'\b(leggenda|si racconta|si narra|miracol|voto|ex voto|'
+                   r'dono|donazion|volle|fece costruire|commission[oò]|'
+                   r'fond[oò]|ospit[oò]|vi mor[iì]|vi nacque|vi visse)\w*', re.I)),
+    # una spiegazione: il «cioe'» che rende leggibile un termine tecnico
+    (3, re.compile(r'(\bcio[eè]\b|\bossia\b|\bvale a dire\b|\bnon .{3,40}\bma\b|'
+                   r'\bda qui\b|\bper via d|\bper questo\b|\bil che\b)', re.I)),
+    # il primo, il piu' grande, l'unico
+    (2, re.compile(r'\b(il pi[uù]|la pi[uù]|uno dei pi[uù]|una delle pi[uù]|'
+                   r'il primo|la prima|l.unic\w|il solo|la sola|'
+                   r'il pi[uù] antic|rarissim|unico esempio)\w*', re.I)),
+    # una quantita' che si immagina
+    (2, re.compile(r'\b\d{1,4}\s*(metri|piani|navate|arcate|colonne|gradini|'
+                   r'campane|stanze|sale|pezzi|opere|posti|chilometri|'
+                   r'metri quadrati|tonnellate)\b', re.I)),
+]
+NON_VALE = re.compile(r'\b(e. situat\w|sorge in|si trova in via|ubicat\w|'
+                      r'fa parte del|nel tessuto urbano|espansione edilizia|'
+                      r'inpdap|inps|sede degli uffici|ente|archivio fu acquistat|'
+                      r'il progetto architettonico viene elaborato)\b', re.I)
 
-def laStoria(wikitesto):
-    """le prime frasi della sezione «Storia», e nient'altro"""
+
+def quantoVale(frase):
+    p = 0
+    for peso, quale in VALE:
+        if quale.search(frase):
+            p += peso
+    if NON_VALE.search(frase):
+        p -= 3
+    return p
+
+
+def pezzoDiTesto(wikitesto, titoli, quanto, minimo):
+    """le frasi migliori di una sezione, nell'ordine in cui stanno scritte"""
     pulito = viaIlCodice(wikitesto)
     pezzi = re.split(r'\n==+\s*([^=\n]+?)\s*==+', pulito)
     testo = ''
     for i in range(1, len(pezzi) - 1, 2):
-        if re.match(r'^\s*(storia|cenni storici|vicende|origini)\s*$', pezzi[i].strip(), re.I):
+        if titoli.match(pezzi[i].strip()):
             testo = pezzi[i + 1]
             break
     testo = ' '.join(testo.split())
     if len(testo) < 150:
         return ''
-    fuori = []
-    quanto = 0
-    for frase in re.split(r'(?<=[.!?])\s+', testo):
-        if GERGO.search(frase):
+    frasi = [f.strip() for f in re.split(r'(?<=[.!?])\s+', testo) if 40 < len(f) < 400]
+    if not frasi:
+        return ''
+    # il punteggio di tutta la scheda: se non arriva a tre, non si scrive
+    punti = sum(quantoVale(f) for f in frasi[:8])
+    if punti < minimo:
+        return ''
+    fuori, lungo = [], 0
+    for f in frasi:
+        if quantoVale(f) < 0:
+            continue                      # il catalogo si salta, non ferma tutto
+        if lungo + len(f) > quanto:
             break
-        if quanto + len(frase) > 700:
-            break
-        fuori.append(frase.strip())
-        quanto += len(frase)
-        if quanto > 420:            # tre o quattro frasi bastano
+        fuori.append(f)
+        lungo += len(f)
+        if lungo > quanto * 0.6:
             break
     fatto = ' '.join(fuori).strip()
     return fatto if len(fatto) >= 150 else ''
+
+
+STORIA = re.compile(r'^(storia|cenni storici|vicende|origini)\s*$', re.I)
+DENTRO = re.compile(r'^(interno|interni|opere|opere d.arte|l.interno|'
+                    r'apparato decorativo|decorazione|descrizione)', re.I)
+
+
+def laStoria(wikitesto):
+    return pezzoDiTesto(wikitesto, STORIA, 700, 3)
 
 
 def cosaGuardare(wikitesto):
-    """«Cosa vedere»: le prime frasi di Interno, Opere, Descrizione —
-       quello che uno, stando li', puo' farsi raccontare."""
-    pulito = viaIlCodice(wikitesto)
-    pezzi = re.split(r'\n==+\s*([^=\n]+?)\s*==+', pulito)
-    testo = ''
-    for i in range(1, len(pezzi) - 1, 2):
-        if re.match(r'^\s*(interno|interni|opere|opere d\'arte|descrizione interna|'
-                    r'l\'interno|apparato decorativo|decorazione)', pezzi[i].strip(), re.I):
-            testo = pezzi[i + 1]
-            break
-    testo = ' '.join(testo.split())
-    if len(testo) < 150:
-        return ''
-    fuori = []
-    quanto = 0
-    for frase in re.split(r'(?<=[.!?])\s+', testo):
-        if GERGO.search(frase):
-            break
-        if quanto + len(frase) > 500:
-            break
-        fuori.append(frase.strip())
-        quanto += len(frase)
-        if quanto > 300:
-            break
-    fatto = ' '.join(fuori).strip()
-    return fatto if len(fatto) >= 150 else ''
+    return pezzoDiTesto(wikitesto, DENTRO, 500, 2)
 
 
 def soloIncipit(wikitesto):
@@ -643,11 +671,15 @@ def stessoPosto(x, y):
        metri **e il nome ha una parola in comune**."""
     dlat = abs(x["lat"] - y["lat"])
     dlon = abs(x["lon"] - y["lon"])
-    if dlat < 0.00014 and dlon < 0.00018:        # ~15 metri: e' lo stesso punto
-        return True
-    if dlat < 0.0006 and dlon < 0.0006:          # ~65 metri: serve anche il nome
-        return siChiamanoUguale(x.get("n"), y.get("n"))
-    return False
+    if dlat > 0.0006 or dlon > 0.0006:           # oltre una sessantina di metri: no
+        return False
+    # E IL NOME DEVE COMBACIARE SEMPRE, anche a dieci metri.
+    # 23/10: «Palazzo delle Scuole Palatine» si era preso la scheda della
+    # «Loggia degli Osii». Sono tutt'e due in piazza dei Mercanti a
+    # Milano, a pochi metri uno dall'altra — e in una piazza italiana due
+    # monumenti diversi a dieci metri sono la norma, non l'eccezione.
+    # La distanza da sola non ha mai dimostrato niente.
+    return siChiamanoUguale(x.get("n"), y.get("n"))
 
 def stessoNomeEVicino(a, b):
     """IL NOME UGUALE VALE SOLO DA VICINO. Dentro un riquadro da undici
