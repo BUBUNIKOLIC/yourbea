@@ -36,6 +36,7 @@ function Guida(opzioni) {
   var SONO_STATO_VICINO = o.sonoStatoVicino || 60;
   var MI_STO_ALLONTANANDO = o.miStoAllontanando || 25;
   var SALTA_AVANTI = o.saltaAvanti || 50;
+  var VICINO_COL_MOTORE = o.vicinoColMotore || 12;
   var piuVicinoMai = null, quandoMisurata = -1;
   var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
   var ARRIVATO = o.arrivato || 22;
@@ -379,7 +380,15 @@ function Guida(opzioni) {
       var pr = avanzamento.prossima();
       prossima = pr ? pr.quale : svolte.length;
       if (pr) {
-        if (pr.manca < VICINO_SVOLTA) {
+        /* COL MOTORE SI PUO' ASPETTARE DI ESSERCI DAVVERO.
+           I venticinque metri servivano al conto vecchio: il cerchio
+           doveva essere largo o non lo toccavi mai, e «Adesso: gira a
+           destra» poteva arrivare trenta metri prima dell'angolo — a
+           chi non vede vuol dire girare contro un muro.
+           Con la proiezione sulla linea, se superi la svolta se ne
+           accorge da solo: quindi il cerchio si puo' stringere, e
+           «adesso» vuol dire adesso. */
+        if (pr.manca < VICINO_COL_MOTORE) {
           ultimoAvviso = adesso;
           avanzamento.dove(qui.lat, qui.lon);
           /* si segna come detta spostando l'indice: la prossima volta
