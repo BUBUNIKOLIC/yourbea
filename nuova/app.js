@@ -338,6 +338,91 @@
     try { localStorage.setItem('yourbea2-percorsi-miei', JSON.stringify(miei.perSalvare())); } catch (e) {}
   }
 
+  /* ============================================================
+     I POSTI MIEI — «ogni non vedente puo' registrare i suoi riferimenti»
+     Le parole e le regole stanno in parti/postiMiei.js, con 24 prove.
+     Qui si attaccano alla voce, alla posizione e a WhatsApp.
+     ============================================================ */
+  var posti = PostiMiei({
+    dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
+    aPosto: miei.aPosto, nudo: miei.soloIlNome
+  });
+  try { posti.carica(JSON.parse(localStorage.getItem('yourbea2-posti-miei') || '[]')); } catch (e) {}
+  function salvaIPosti() {
+    try { localStorage.setItem('yourbea2-posti-miei', JSON.stringify(posti.perSalvare())); } catch (e) {}
+  }
+
+  /* I RIFERIMENTI CHE ARRIVANO DA UN ALTRO. Come i percorsi: si chiede,
+     non si prendono di nascosto. */
+  (function riferimentiInArrivo() {
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('r'); } catch (e) {}
+    if (!q) return;
+    var dati = null;
+    try { dati = decodeURIComponent(escape(atob(q))); } catch (e) { return; }
+    var da = '';
+    try { da = new URLSearchParams(location.search).get('da') || ''; } catch (e) {}
+    var arrivati = posti.daUnLink(dati, da);
+    if (!arrivati) { diario('RIFERIMENTI RICEVUTI: non si leggono'); return; }
+    diario('RIFERIMENTI RICEVUTI: ' + arrivati.length + (da ? ' da ' + da : ''));
+    setTimeout(function () {
+      inAttesaDi = { da: Date.now(), cosa: 'riferimenti-arrivati', roba: arrivati };
+      voce.parla('Ti hanno mandato ' + arrivati.length +
+                 (arrivati.length === 1 ? ' riferimento' : ' riferimenti') +
+                 (da ? ' da ' + da : '') + ': ' +
+                 arrivati.slice(0, 4).map(function (x) { return x.n; }).join(', ') +
+                 (arrivati.length > 4 ? ' e altri' : '') +
+                 '. Li tengo? Dimmi s\u00ec o no.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+    }, 3500);
+  })();
+
+  /* mandaIRiferimenti(): gli stessi binari del percorso — un link che si
+     apre e basta, senza conto e senza rete. «In attesa di avere un server
+     che faccia quello» (Vince, 23/10): quando il server ci sarà, questa
+     resta la via che funziona anche senza. */
+  function mandaIRiferimenti(aChi) {
+    if (!posti.quanti()) {
+      voce.parla('Non hai ancora segnato nessun riferimento.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    var dati = posti.perMandare();
+    var chiave = '';
+    try { chiave = btoa(unescape(encodeURIComponent(dati))); } catch (e) { chiave = ''; }
+    if (!chiave) {
+      voce.parla('Non sono riuscito a preparare i riferimenti.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    var link = location.origin + location.pathname + '?r=' + encodeURIComponent(chiave) +
+               (ioSonoIo ? '&da=' + encodeURIComponent(ioSonoIo) : '');
+    var frase = 'I miei riferimenti da Yourbea: ' + posti.quanti() +
+                ' punti segnati camminando. Apri questo link e ce li hai anche tu:';
+    diario('MANDO I RIFERIMENTI: ' + posti.quanti() + ', ' + link.length + ' caratteri' +
+           (aChi ? ', a ' + aChi : ''));
+    if (aChi) {
+      var suo = contatto && somigliano(contatto.nome, aChi) ? contatto : null;
+      if (suo && suo.telefono) {
+        voce.parla('Mando a ' + suo.nome + ' i tuoi riferimenti. Apro WhatsApp col messaggio gi\u00e0 scritto: premi invia.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        esegui([{ cosa: 'messaggio', numero: suo.telefono, testo: frase + ' ' + link }]);
+        return;
+      }
+    }
+    if (navigator.share) {
+      navigator.share({ title: 'Riferimenti Yourbea', text: frase, url: link }).catch(function () {});
+      voce.parla('Scegli a chi mandarli.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(frase + ' ' + link).then(function () {
+        voce.parla('I riferimenti sono negli appunti: incollali dove vuoi.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+      });
+      return;
+    }
+    voce.parla('Questo telefono non sa condividere.', { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+
   var fermate = Fermate({ distanza: laDistanza, dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                               verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
@@ -1257,6 +1342,23 @@
       return true;
     }
 
+    /* E LO STESSO PER I RIFERIMENTI CHE TI HANNO MANDATO. */
+    if (inAttesaDi && inAttesaDi.cosa === 'riferimenti-arrivati') {
+      var roba = inAttesaDi.roba;
+      inAttesaDi = null;
+      if (/^(si|si grazie|va bene|certo|tienili|li tengo|ok)$/.test(normalizza(t))) {
+        var esito = posti.unisci(roba);
+        salvaIPosti();
+        voce.parla('Tenuti' + (esito.messi.length ? ': ' + esito.messi.length : '') +
+                   (esito.gia ? ', e ' + esito.gia + ' li avevi gi\u00e0' : '') +
+                   '. Dimmi «che posti ho» per sentirli.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      voce.parla('Va bene, non li tengo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+
     /* HO CHIESTO COME SI CHIAMA IL PERCORSO, e lui risponde. Due parole:
        «il medico», «da mia sorella». Se invece di rispondere chiede una
        cosa, vince la cosa — il percorso resta senza nome e si puo'
@@ -1610,6 +1712,41 @@
     portamiA(casa, true);
   }
 
+  /* ilPercorsoFra(): «fai il percorso casa medico».
+     NON E' «portami a»: qui non si parte da dove sei. Uno lo chiede la
+     sera prima, seduto, per sapere quanto è lunga e quante svolte ha; e
+     per poterla mandare a un altro. Valhalla sa fare la strada fra due
+     punti qualunque, quindi non serve essere lì.
+     Il risultato diventa un percorso suo, con un nome: così si può
+     seguire quando ci sarà, e mandare su WhatsApp con quello che c'è
+     già. */
+  function ilPercorsoFra(da, a) {
+    voce.parla('Calcolo la strada da ' + da.n + ' a ' + a.n + ', un momento.',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+    intorno.percorso({ lat: da.lat, lon: da.lon }, { lat: a.lat, lon: a.lon }).then(function (p) {
+      if (!p || !p.svolte || !p.svolte.length) {
+        voce.parla('Questa strada non sono riuscito a calcolarla. Riprova fra poco.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return;
+      }
+      var nome = da.n + ' – ' + a.n;
+      var suo = { nome: nome, punti: p.linea || [], metri: p.metri, quando: Date.now(),
+                  segni: p.svolte.map(function (sv) {
+                    return { lat: sv.lat, lon: sv.lon, da: 0, n: sv.testo };
+                  }) };
+      if (miei.aggiungi(suo)) salvaIMiei();
+      diario('PERCORSO FRA: ' + nome + ', ' + p.metri + ' m, ' + p.svolte.length + ' svolte');
+      /* i passi, non i metri: è la regola 6 della guida, e questi sono i
+         passi suoi se ha misurato il passo. */
+      voce.parla('Da ' + da.n + ' a ' + a.n + ': ' + laDistanza.passi(p.metri) + ', ' +
+                 p.svolte.length + (p.svolte.length === 1 ? ' svolta' : ' svolte') +
+                 '. L\'ho tenuta col nome «' + nome + '»: dimmi «segui ' + nome +
+                 '» quando sei alla partenza, oppure «manda il percorso» per darla a qualcuno.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      percorsoDaMandare = suo;
+    });
+  }
+
   /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
      nostri, poi fra i servizi, poi fra gli indirizzi — e la citta' detta
      dall'utente vince sempre (il difetto che portava a Cisterna di Latina). */
@@ -1631,6 +1768,16 @@
     var cerca = pulita.toLowerCase();
     diario('PORTAMI A: ' + cerca);
     voce.parla("Cerco l'indirizzo, un momento.", { livello: voce.GUIDA, ancheSeUguale: true });
+
+    /* 0. UN POSTO SUO. Viene prima di tutto: l'ha segnato lui stando
+       davanti alla porta, e non c'è geocodificatore che possa fare
+       meglio — è la lezione dei 400 metri del 20/10. */
+    var suo0 = posti.trova(cerca);
+    if (suo0) {
+      diario('PORTAMI A: è un posto suo, ' + suo0.n);
+      partiVerso({ n: suo0.n, lat: suo0.lat, lon: suo0.lon }, qui);
+      return;
+    }
 
     // 1. un luogo nostro col nome che somiglia
     var mio = null, dmin = Infinity;
@@ -2279,6 +2426,37 @@
       }
       return;
     }
+    /* I RIFERIMENTI SUOI, PRIMA DI TUTTO IL RESTO.
+       «Durante il percorso è possibile registrare scivolo, percorso
+       tattile, ostacolo, panchina, ritrovo, bar» (Vince, 23/10). Un
+       ostacolo che uno si è segnato lui vale più di qualunque cosa
+       abbiamo nei dati: l'ha messo lì perché ci ha sbattuto. Quindi
+       passa prima della passeggiata e prima del racconto, e se è un
+       pericolo esce come avviso — che vuol dire anche che non lo ferma
+       il respiro né il «solo monumenti».
+       Solo a piedi e solo con la posizione buona: le regole stanno in
+       parti/aChiServe.js come per tutto il resto. */
+    /* LA REGOLA SI GUARDA PRIMA DI CHIEDERE, non dopo. quiVicino() si
+       segna che l'ha detto, e se poi la regola lo butta (non a piedi,
+       posizione incerta) quel riferimento resta zitto per due minuti
+       senza che nessuno l'abbia sentito. Provandolo nell'app: «REGOLA:
+       mio-posto non va in servizi (non a piedi)», e la panchina non si
+       è più fatta sentire. */
+    if (aPiedi && preciso && hoLaParola && !staAspettando()) {
+      var rif = posti.quiVicino({ lat: s.lat, lon: s.lon }, Date.now());
+      if (rif) diario('MIO: ' + rif.posto.n + ' a ' + Math.round(rif.metri) + ' m');
+      /* SEMPRE dilloSubito, anche per la panchina. quiVicino() si segna
+         che l'ha detto e poi tace due minuti su quel riferimento: se
+         intanto dillo() lo butta — il respiro, «solo monumenti», una
+         domanda in sospeso — quel riferimento resta muto senza che
+         nessuno l'abbia sentito. Provandolo nell'app è successo due
+         volte: «REGOLA: mio-posto non va in servizi» e «ZITTO: sto
+         aspettando una risposta», e lo scivolo non si è mai fatto
+         sentire. E poi il respiro serve a limitare le NOSTRE chiacchiere:
+         questi punti li ha messi lui, uno per uno, apposta. */
+      if (rif) { dilloSubito(rif); return; }
+    }
+
     /* SE SI STA FACENDO UNA PASSEGGIATA, PARLA LA PASSEGGIATA. Una tappa per
        volta: se intanto parlasse anche il racconto, al Battistero si
        sentirebbero due voci dire due cose diverse sullo stesso luogo. La
@@ -2453,6 +2631,66 @@
                        direzione: posizione.leggi().direzione, direzioneBuona: posizione.leggi().direzioneBuona });
       return true;
     }
+    /* QUESTO VIENE PRIMA DI dalDettato E DI miei.dallaVoce, e non è
+       un vezzo: provandolo nell'app vera, «registra casa» finiva nel
+       giro dei contatti («Casa. Adesso dimmi il suo numero») e «fai il
+       percorso casa medico» faceva partire la registrazione di un
+       percorso camminato chiamato «casa medico». Chi arriva prima
+       vince, e questi comandi sono più stretti degli altri due. */
+    /* I POSTI MIEI. «Registra casa», «registra medico», «fai il percorso
+       casa medico». Vengono PRIMA di «portami a»: «portami dal medico»
+       deve trovare il punto che ha segnato lui, non un medico qualunque
+       su OpenStreetMap a tre isolati. */
+    var pq0 = posti.dallaVoce(grezzo);
+    if (pq0) {
+      var sp0 = posizione.leggi();
+      if (pq0.cosa === 'registra') {
+        /* DURANTE UNA PASSEGGIATA REGISTRATA IL SEGNO VA SUL PERCORSO.
+           «Durante il percorso è possibile registrare scivolo, percorso
+           tattile, ostacolo, panchina» (Vince, 23/10): mentre si registra
+           un percorso quei punti sono parte di quel percorso, e li tiene
+           percorsiMiei. Fuori, sono riferimenti tuoi e basta. */
+        if (miei.staRegistrando() && sp0.pronto) {
+          var sg = miei.segna({ lat: sp0.lat, lon: sp0.lon }, pq0.nome);
+          if (sg) { salvaIMiei(); dilloSubito(sg); return true; }
+        }
+        var d0 = posti.registra(pq0.nome, sp0.pronto
+          ? { lat: sp0.lat, lon: sp0.lon, prec: sp0.prec } : null);
+        if (d0.tipo === 'posto-segnato') {
+          salvaIPosti();
+          /* casa resta casa: «portami a casa» e il tasto grande guardano
+             casaPunto, e non si spacca in due la stessa cosa. */
+          if (/^casa( mia)?$/i.test(pq0.nome)) {
+            casaPunto = { lat: sp0.lat, lon: sp0.lon };
+            try { localStorage.setItem('yourbea2-casa-punto', JSON.stringify(casaPunto)); } catch (e) {}
+          }
+        }
+        /* una RISPOSTA a un comando non si filtra mai: dillo() la
+           passa per il respiro e per la regola di chi serve, e al
+           banco nell'app vera «registra casa» restava muta. */
+        dilloSubito(d0);
+        return true;
+      }
+      if (pq0.cosa === 'elenco-posti') { dilloSubito(posti.elenco(sp0.pronto ? { lat: sp0.lat, lon: sp0.lon } : null)); return true; }
+      if (pq0.cosa === 'butta') {
+        var via = posti.butta(pq0.nome);
+        salvaIPosti();
+        voce.parla(via ? ('Tolto: ' + via.n + '.') : 'Quello non ce l\'ho.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      if (pq0.cosa === 'percorso-fra-chi') {
+        voce.parla('Non so quali sono. Dimmi «che posti ho» e te li elenco.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      if (pq0.cosa === 'percorso-fra') { ilPercorsoFra(pq0.da, pq0.a); return true; }
+    }
+    if (ha('manda i riferimenti', 'manda i miei riferimenti', 'manda i posti', 'manda i miei posti')) {
+      mandaIRiferimenti(null);
+      return true;
+    }
+
     if (dalDettato(t, grezzo)) return true;
     /* LEGGERE: prima di «portami a» e delle passeggiate, perché «leggi il
        cartello» non è un posto dove andare; e prima di «intorno», perché

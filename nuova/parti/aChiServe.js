@@ -100,7 +100,14 @@ function AChiServe() {
     /* «Qui c'è il percorso Bernini»: una proposta da visita. Non in
        Utilità, non in movimento, e MAI senza precisione — offrire un
        percorso che non è dove dici è peggio che tacere. */
-    'percorso-qui':      [ false,   true,    false,       false ]
+    'percorso-qui':      [ false,   true,    false,       false ],
+    /* I RIFERIMENTI SUOI. Valgono in tutt'e due i modi — li ha messi
+       lui, e non è roba nostra da filtrare. Non in movimento (un
+       ostacolo a piedi è una cosa, in auto è rumore) e mai senza
+       precisione: dire «attento, scalino» nel posto sbagliato è
+       peggio che tacere, perché chi non vede si ferma davvero. */
+    'mio-avviso':        [ true,    true,    false,       false ],
+    'mio-posto':         [ true,    true,    false,       false ]
   };
 
 
