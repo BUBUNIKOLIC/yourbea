@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.." || exit 1
 echo
 echo "========= LA NUOVA YOURBEA ========="
 mal=0
-for p in insieme distanza faro descrizione percorsiMiei fermate aChiServe paesaggio modi pronuncia voce racconto posizione intorno clip emergenza-guida mappa dettatura scena incroci passaggi negozi passeggiata musica lettura pulizia pagina dati chiamate; do
+for p in insieme aggancio distanza faro descrizione percorsiMiei fermate aChiServe paesaggio modi pronuncia voce racconto posizione intorno clip emergenza-guida mappa dettatura scena incroci passaggi negozi passeggiata musica lettura pulizia pagina dati chiamate; do
   echo
   echo "— $p —"
   node nuova/prove/$p.js || mal=1

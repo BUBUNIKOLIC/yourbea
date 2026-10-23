@@ -341,8 +341,21 @@
   var fermate = Fermate({ distanza: laDistanza, dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var paesaggio = Paesaggio({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                               verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); } });
+  var agganciatore = Aggancio({ dist: function (a, b, c, d) {
+    var R = 6371000, P = Math.PI / 180;
+    var x = (c - a) * P, y = (d - b) * P;
+    var h = Math.sin(x / 2) * Math.sin(x / 2) +
+            Math.cos(a * P) * Math.cos(c * P) * Math.sin(y / 2) * Math.sin(y / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  } });
   var posizione = Posizione({
     geo: navigator.geolocation || null,
+    /* le vie le abbiamo gia' scaricate per gli incroci: servono anche a
+       posare la lettura del GPS dove uno cammina davvero */
+    aggancia: function (lat, lon, prec, aPiedi) {
+      return agganciatore.aggancia({ lat: lat, lon: lon, prec: prec, aPiedi: aPiedi },
+                                   SERVIZI.vie || []);
+    },
     /* si legge OGNI VOLTA, non una volta sola: il guscio dell'iPhone inietta
        la sua bandierina quando vuole, e leggendola al volo della partenza
        l'app credeva di essere nel browser e annunciava «non ho il permesso»

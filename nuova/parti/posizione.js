@@ -37,6 +37,11 @@ function Posizione(opzioni) {
   var fraPoco = o.fraPoco || function (f, ms) { return setTimeout(f, ms); };
   var annulla = o.annulla || function (id) { clearTimeout(id); };
   var geo = o.geo || null;                  // navigator.geolocation, o finto
+  /* chi sa dove passano le strade: se c'e', ogni lettura si posa sulla
+     via piu' probabile prima di essere usata. Le regole stanno in
+     parti/aggancio.js — e sono quattro, tutte per non far sembrare
+     sicura una lettura che non lo e'. */
+  var aggancia = o.aggancia || null;
   var guscio = o.guscio || null;            // { haPosizione:bool } — l'app iPhone
   var diario = o.diario || function () {};
   var RIPIEGO_DOPO = o.ripiegoDopo || 5000;
@@ -53,6 +58,7 @@ function Posizione(opzioni) {
     direzione: 0, direzioneBuona: false, direzioneQuando: 0,
     fermo: false, fermoDa: 0, ultimoPunto: null, ancora: null,
     attivita: null, attivitaQuando: 0, attivitaSicura: false,
+    viaAgganciata: null,
     velocitaAlta: 0, velocitaAltaQuando: 0,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
   };
@@ -101,6 +107,7 @@ function Posizione(opzioni) {
       /* e si dice anche COME, perche' «fermo» non e' «cammina»: a chi sta
          fermo si puo' raccontare, a chi e' su un mezzo no. */
       attivita: attivitaFresca() ? stato.attivita : null,
+      viaAgganciata: stato.viaAgganciata,
       direzione: stato.direzione, direzioneBuona: direzioneBuona(),
       fermo: stato.fermo, fermoDa: stato.fermo ? ora() - stato.fermoDa : 0,
       comeVa: stato.comeVa
@@ -139,6 +146,24 @@ function Posizione(opzioni) {
   /* arriva(): il cuore. Una posizione nuova, da qualunque porta venga. */
   function arriva(lat, lon, prec) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
+    /* PRIMA DI TUTTO, LA SI POSA SULLA STRADA. «La APP deve avere una
+       posizione precisa» (Vince, 23/10, regola 1). Tredici metri di
+       errore, in una via stretta, vuol dire stare dentro il palazzo di
+       fronte — e l'errore che conta e' quello di LATO: dieci metri
+       avanti sono «fra trenta passi» invece di venti, dieci metri di
+       lato sono l'altro marciapiede. Si aggancia qui, in un posto solo,
+       cosi' tutto quello che viene dopo — la strada, i passaggi, i
+       monumenti, il faro — lavora sul punto buono. */
+    if (aggancia) {
+      var posato = aggancia(lat, lon, prec, comeTiMuovi());
+      if (posato) {
+        lat = posato.lat; lon = posato.lon;
+        stato.viaAgganciata = posato.via || null;
+        if (posato.spostato >= 5) diario('AGGANCIO: spostata di ' + posato.spostato + ' m su ' + (posato.via || 'una via'));
+      } else {
+        stato.viaAgganciata = null;
+      }
+    }
     /* ============================================================
        LE LETTURE IMPOSSIBILI SI BUTTANO
        «Migliora il posizionamento» (Vince, 20/10). Fra i palazzi il GPS
