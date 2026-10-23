@@ -292,6 +292,159 @@ prova('fermo davvero: i passi non cambiano', () => {
   if (!m.p.leggi().fermo) guasto('non si accorge che sei fermo');
 });
 
+/* ============================================================
+   IL FILTRO: IL PUNTO NON DEVE BALLARE
+   «Trova il modo per essere preciso» (Vince, 23/10). Fermi in mezzo
+   alla strada il GPS sposta il punto di cinque o dieci metri a ogni
+   lettura, e la stessa porta diventava «a 30 passi», poi «a 45».
+   ============================================================ */
+function metri(la1, lo1, la2, lo2) {
+  const R = 6371000, r = Math.PI / 180;
+  const x = (la2 - la1) * r, y = (lo2 - lo1) * r * Math.cos((la1 + la2) / 2 * r);
+  return Math.sqrt(x * x + y * y) * R;
+}
+
+prova('fermi, il punto non balla piu di due metri', () => {
+  const m = mondo();
+  m.p.comincia();
+  const VERO = [41.9000, 12.4800];
+  /* dieci letture con l'errore vero di un telefono fra i palazzi */
+  const sbalzi = [[0, 0], [8, -5], [-7, 6], [10, 3], [-4, -9],
+                  [6, 7], [-9, -2], [3, 8], [-5, 4], [7, -6]];
+  let massimo = 0;
+  sbalzi.forEach(([dx, dy], i) => {
+    m.passano(1000);
+    m.gps(VERO[0] + dy * 0.000009, VERO[1] + dx * 0.000012, 12);
+    const s = m.p.leggi();
+    if (i >= 3) massimo = Math.max(massimo, metri(VERO[0], VERO[1], s.lat, s.lon));
+  });
+  if (massimo > 4) guasto('il punto balla fino a ' + Math.round(massimo) + ' metri');
+  console.log('      \u2192 dopo il filtro resta entro ' + massimo.toFixed(1) + ' m dal vero');
+});
+
+/* MA SE CAMMINI DAVVERO, IL PUNTO TI SEGUE. Un filtro che non si fa
+   muovere e' peggio di nessun filtro: diresti «a trenta passi» di una
+   cosa che hai gia' superato. */
+prova('camminando il punto segue, non resta indietro', () => {
+  const m = mondo();
+  m.p.comincia();
+  let la = 41.9000;
+  m.gps(la, 12.48, 8);
+  for (let i = 0; i < 20; i++) {       // venti secondi a 1,3 m/s
+    m.passano(1000);
+    la += 0.0000117;
+    m.gps(la, 12.48, 8);
+  }
+  const s = m.p.leggi();
+  const indietro = metri(la, 12.48, s.lat, s.lon);
+  if (indietro > 5) guasto('resta indietro di ' + Math.round(indietro) + ' metri');
+  console.log('      \u2192 camminando resta a ' + indietro.toFixed(1) + ' m dal vero');
+});
+
+/* E UNA LETTURA MOLTO IMPRECISA NON DEVE TRASCINARE IL PUNTO. */
+prova('una lettura a cinquanta metri d errore sposta poco', () => {
+  const m = mondo();
+  m.p.comincia();
+  for (let i = 0; i < 5; i++) { m.passano(1000); m.gps(41.9, 12.48, 6); }
+  const prima = m.p.leggi();
+  m.passano(1000);
+  m.gps(41.9 + 0.00045, 12.48, 60);     // cinquanta metri piu' in la, ±60
+  const dopo = m.p.leggi();
+  const spostato = metri(prima.lat, prima.lon, dopo.lat, dopo.lon);
+  if (spostato > 12) guasto('una lettura sgangherata lo ha spostato di ' + Math.round(spostato) + ' m');
+});
+
+/* LA DIREZIONE SU UN TRATTO, non fra due letture appiccicate.
+   Con l'errore vero del GPS, due punti a sei metri possono dare una
+   direzione sbagliata di quaranta gradi — e a chi non vede quaranta
+   gradi sono il marciapiede di fronte. */
+prova('la direzione resta ferma anche se il GPS balla', () => {
+  const m = mondo();
+  m.p.comincia();
+  let la = 41.9000;
+  const storti = [[0,0],[6,0],[-5,0],[4,0],[-6,0],[5,0],[-3,0],[7,0],[-4,0],[2,0]];
+  const direzioni = [];
+  storti.forEach(([dx], i) => {
+    m.passano(1000);
+    la += 0.0000117;                      // cammina verso NORD, 1,3 m/s
+    m.gps(la, 12.48 + dx * 0.000012, 10); // e il GPS lo sballotta di lato
+    const s = m.p.leggi();
+    if (i >= 5 && s.direzioneBuona) direzioni.push(s.direzione);
+  });
+  if (!direzioni.length) { guasto('non ha mai una direzione buona'); return; }
+  /* verso nord: zero gradi. Si accetta venti gradi di sbaglio, non
+     quaranta — con due punti sarebbero stati molti di piu'. */
+  const peggio = Math.max(...direzioni.map((g) => Math.min(Math.abs(g), Math.abs(360 - g))));
+  if (peggio > 20) guasto('la direzione sbaglia di ' + Math.round(peggio) + ' gradi');
+  console.log('      \u2192 camminando verso nord sbaglia al massimo di ' +
+              Math.round(peggio) + '\u00b0');
+});
+
+/* ============================================================
+   SOTTO IL PORTICO IL GPS SPARISCE, I PASSI NO
+   ============================================================ */
+prova('senza GPS il punto avanza coi passi', () => {
+  const m = mondo();
+  m.p.comincia();
+  let la = 41.9000, passi = 0;
+  /* prima si cammina un po' col GPS, cosi' l'app sa da che parte vai */
+  for (let i = 0; i < 12; i++) {
+    m.passano(1000);
+    la += 0.0000117;
+    passi += 2;
+    m.p.quantiPassi(passi);
+    m.gps(la, 12.48, 8);
+  }
+  const prima = m.p.leggi();
+  if (!prima.direzioneBuona) { guasto('non ha ancora una direzione'); return; }
+  /* e adesso il GPS sparisce per quindici secondi, ma i passi no */
+  for (let i = 0; i < 15; i++) {
+    m.passano(1000);
+    passi += 2;
+    m.p.quantiPassi(passi);
+  }
+  const dopo = m.p.leggi();
+  const avanti = metri(prima.lat, prima.lon, dopo.lat, dopo.lon);
+  if (avanti < 10) guasto('al buio e avanzato solo di ' + Math.round(avanti) + ' metri');
+  if (avanti > 30) guasto('al buio si e inventato ' + Math.round(avanti) + ' metri');
+  /* e deve ammettere di essere meno sicuro */
+  if (!(dopo.prec > prima.prec)) guasto('al buio non dice di essere meno preciso');
+  console.log('      \u2192 quindici secondi senza GPS: avanti ' +
+              Math.round(avanti) + ' m, precisione da \u00b1' +
+              Math.round(prima.prec) + ' a \u00b1' + Math.round(dopo.prec) + ' m');
+});
+
+prova('al buio non si va avanti all infinito', () => {
+  const m = mondo();
+  m.p.comincia();
+  let la = 41.9000, passi = 0;
+  for (let i = 0; i < 12; i++) {
+    m.passano(1000); la += 0.0000117; passi += 2;
+    m.p.quantiPassi(passi); m.gps(la, 12.48, 8);
+  }
+  const prima = m.p.leggi();
+  for (let i = 0; i < 120; i++) {      // due minuti senza GPS
+    m.passano(1000); passi += 2; m.p.quantiPassi(passi);
+  }
+  const dopo = m.p.leggi();
+  const avanti = metri(prima.lat, prima.lon, dopo.lat, dopo.lon);
+  if (avanti > 35) guasto('si e inventato ' + Math.round(avanti) + ' metri di cammino');
+});
+
+prova('fermi, i passi non fanno avanzare niente', () => {
+  const m = mondo();
+  m.p.comincia();
+  let la = 41.9000, passi = 0;
+  for (let i = 0; i < 12; i++) {
+    m.passano(1000); la += 0.0000117; passi += 2;
+    m.p.quantiPassi(passi); m.gps(la, 12.48, 8);
+  }
+  const prima = m.p.leggi();
+  for (let i = 0; i < 20; i++) { m.passano(1000); m.p.quantiPassi(passi); }  // fermo
+  const dopo = m.p.leggi();
+  if (metri(prima.lat, prima.lon, dopo.lat, dopo.lon) > 1) guasto('si muove da fermo');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');

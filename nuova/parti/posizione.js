@@ -53,6 +53,73 @@ function Posizione(opzioni) {
   var ATTIVITA_VALE = o.attivitaVale || 90000;   // il passometro, se tace, scade
   var CORSA_VALE = o.corsaVale || 120000;        // e quanto forte andavi, due minuti
 
+  /* ============================================================
+     IL FILTRO — perche' il punto non balli
+     «Trova il modo per essere preciso» (Vince, 23/10).
+     Il GPS di un telefono, fermo in mezzo alla strada, sposta il punto
+     di cinque o dieci metri a ogni lettura. Finora l'app usava ogni
+     lettura com'era: cosi' la stessa porta diventava «a 30 passi», poi
+     «a 45», poi «a 25». A chi vede non cambia niente; a chi cammina col
+     bastone cambia la porta.
+     Il filtro e' quello di Kalman, in una riga per coordinata: si tiene
+     una stima e di quanto e' incerta, e ogni lettura la corregge in
+     proporzione a quanto e' precisa. Una lettura a ±5 m sposta molto,
+     una a ±60 m quasi niente. Fra una lettura e l'altra l'incertezza
+     cresce di quanto si puo' aver camminato, cosi' il filtro non si
+     impunta se uno si muove davvero.
+     Non e' un abbellimento: e' la differenza fra una distanza che si
+     puo' dire a voce e una che balla.
+     ============================================================ */
+  var CAMMINATA = o.quantoCammino || 1.4;      // metri al secondo, il peggio
+  var filtro = null;
+  /* il filo degli ultimi punti, per prendere la direzione su un tratto
+     invece che fra due letture appiccicate */
+  var filo = [];
+  var TRATTO_DIREZIONE = o.trattoDirezione || 10;
+
+  function filtra(lat, lon, prec, quando) {
+    var p = Math.max(3, Math.min(prec || 20, 100));
+    var R = p * p;                                   // quanto sbaglia la lettura
+    if (!filtro) {
+      filtro = { lat: lat, lon: lon, vlat: 0, vlon: 0, varianza: R, quando: quando };
+      return { lat: lat, lon: lon, prec: p };
+    }
+    var dt = Math.max(0, (quando - filtro.quando) / 1000);
+    /* PRIMA SI INDOVINA DOV'E' ADESSO, POI SI CORREGGE.
+       La prima versione teneva solo la posizione, e camminando restava
+       indietro di sei metri — cioe' diceva «a trenta passi» di una cosa
+       che avevi gia' superato. Il filtro deve sapere anche QUANTO E DA
+       CHE PARTE ti stavi muovendo: con quello sposta avanti la stima di
+       suo, e la lettura serve solo a correggerla. */
+    var attesaLat = filtro.lat + filtro.vlat * dt;
+    var attesaLon = filtro.lon + filtro.vlon * dt;
+    /* fra una lettura e l'altra uno puo' aver cambiato passo o
+       direzione: e' quello che l'incertezza deve coprire. */
+    var Q = (CAMMINATA * dt) * (CAMMINATA * dt) * 0.6;
+    var varianza = filtro.varianza + Q;
+    var K = varianza / (varianza + R);               // quanto si crede alla lettura
+    /* in gradi: K e' un numero puro, e le differenze sono piccole. */
+    var nuovaLat = attesaLat + K * (lat - attesaLat);
+    var nuovaLon = attesaLon + K * (lon - attesaLon);
+    /* e la velocita' si impara piano, perche' una lettura storta non
+       deve far credere che tu sia partito di corsa. */
+    if (dt > 0.2) {
+      var vLat = (nuovaLat - filtro.lat) / dt;
+      var vLon = (nuovaLon - filtro.lon) / dt;
+      filtro.vlat = filtro.vlat * 0.4 + vLat * 0.6;
+      filtro.vlon = filtro.vlon * 0.4 + vLon * 0.6;
+    }
+    filtro.lat = nuovaLat; filtro.lon = nuovaLon;
+    filtro.varianza = (1 - K) * varianza;
+    filtro.quando = quando;
+    return { lat: nuovaLat, lon: nuovaLon, prec: Math.max(3, Math.sqrt(filtro.varianza)) };
+  }
+
+  /* e quando si salta da un'altra parte — la metro, il treno — il filtro
+     si butta: tenerlo vorrebbe dire trascinarsi dietro Roma mentre sei
+     a Milano. */
+  function scordaIlFiltro() { filtro = null; filo = []; }
+
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
     velocita: null, ultimoQuando: 0, saltato: false,
@@ -150,7 +217,14 @@ function Posizione(opzioni) {
   /* arriva(): il cuore. Una posizione nuova, da qualunque porta venga. */
   function arriva(lat, lon, prec) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
-    /* PRIMA DI TUTTO, LA SI POSA SULLA STRADA. «La APP deve avere una
+    /* IL FILTRO PRIMA DELL'AGGANCIO, e non e' indifferente: il punto che
+       balla saltava da una via all'altra, e l'aggancio ci andava dietro
+       — «sei entrato in via Roma», «sei entrato in via Costabile» in
+       mezzo minuto. Prima si ferma il ballo, poi si posa sulla via. */
+    var pulito = filtra(lat, lon, prec, ora());
+    lat = pulito.lat; lon = pulito.lon;
+    prec = Math.min(prec || pulito.prec, pulito.prec);
+    /* POI LA SI POSA SULLA STRADA. «La APP deve avere una
        posizione precisa» (Vince, 23/10, regola 1). Tredici metri di
        errore, in una via stretta, vuol dire stare dentro il palazzo di
        fronte — e l'errore che conta e' quello di LATO: dieci metri
@@ -195,6 +269,7 @@ function Posizione(opzioni) {
       buttate = 0;
     }
     if (orologioRipiego) { annulla(orologioRipiego); orologioRipiego = null; }
+    stato.alBuio = 0;                 // il GPS e' tornato: la stima coi passi finisce qui
     var prima = stato.ultimoPunto;
     stato.lat = lat; stato.lon = lon; stato.prec = prec;
     stato.pronto = true;
@@ -224,6 +299,7 @@ function Posizione(opzioni) {
       stato.saltato = (passatoDa > 45000 && passo > 300);
       if (stato.saltato) {
         stato.velocita = null;           // la vecchia non vale piu'
+        scordaIlFiltro();                // ne' la stima di dov'eri
         diario('SALTO: ' + Math.round(passo) + ' m dopo ' + Math.round(passatoDa / 1000) + ' s senza posizione');
       }
       if (passatoDa > 300 && passatoDa < 30000) {
@@ -252,8 +328,27 @@ function Posizione(opzioni) {
         }
       }
       stato.ultimoQuando = quando;
-      // REGOLA 4: la direzione si crede solo se ci si è mossi davvero
-      if (passo > PASSO_BUONO) {
+      /* REGOLA 4: LA DIREZIONE SI PRENDE SU UN TRATTO, non fra due punti.
+         Due punti vicini bastano a dire «da che parte» solo se il GPS
+         fosse esatto: con l'errore vero, due letture a sei metri l'una
+         dall'altra possono dare una direzione sbagliata di quaranta
+         gradi — e quaranta gradi, detti a chi non vede, sono il
+         marciapiede di fronte.
+         Allora si tiene il filo degli ultimi punti e si guarda da dove
+         si veniva DIECI METRI FA: su dieci metri l'errore conta molto
+         meno, e la direzione sta ferma. */
+      filo.push({ lat: lat, lon: lon, quando: quando });
+      while (filo.length > 40) filo.shift();
+      var daDove = null;
+      for (var fi = filo.length - 2; fi >= 0; fi--) {
+        if (dist(filo[fi].lat, filo[fi].lon, lat, lon) >= TRATTO_DIREZIONE) { daDove = filo[fi]; break; }
+      }
+      if (daDove) {
+        stato.direzione = verso(daDove.lat, daDove.lon, lat, lon);
+        stato.direzioneQuando = ora();
+      } else if (passo > PASSO_BUONO) {
+        /* appena partito, il filo e' corto: meglio una direzione
+           approssimata che nessuna. */
         stato.direzione = verso(prima.lat, prima.lon, lat, lon);
         stato.direzioneQuando = ora();
       }
@@ -304,9 +399,54 @@ function Posizione(opzioni) {
   function quantiPassi(n) {
     var v = Number(n);
     if (!isFinite(v)) return;
+    var primaErano = stato.passi;
     stato.passi = v;
     stato.passiQuando = ora();
     if (stato.passiPrima === null) { stato.passiPrima = v; stato.passiCambiati = ora(); }
+    if (typeof primaErano === 'number' && v > primaErano) avanzaCoiPassi(v - primaErano);
+  }
+
+  /* ============================================================
+     QUANDO IL GPS SPARISCE, CONTANO I PASSI
+     Sotto un portico, in un vicolo stretto, fra due palazzi alti: il
+     GPS non arriva per dieci, venti secondi. L'app restava ferma dov'era
+     — e un non vedente che cammina sentiva «a trenta passi» di una cosa
+     che intanto aveva superato, oppure niente.
+     Il telefono pero' i passi li conta lo stesso, e un passo sono
+     settantacinque centimetri nella direzione in cui stavi andando. Non
+     e' preciso come il GPS: dopo venti metri cosi' l'errore si vede. Ma
+     e' molto meglio di stare fermi, e appena il GPS torna la prima
+     lettura rimette tutto a posto.
+     Si fa solo A PIEDI, solo se si e' in movimento, e per non piu' di
+     una trentina di metri: oltre, si preferisce dire che non si sa.
+     ============================================================ */
+  var PASSO_METRI = o.passoMetri || 0.75;
+  var SENZA_GPS_DA = o.senzaGpsDa || 3000;
+  var AL_BUIO_AL_MASSIMO = o.alBuioAlMassimo || 30;
+
+  function avanzaCoiPassi(quanti) {
+    if (!stato.pronto || !filtro) return;
+    var adesso = ora();
+    if (adesso - (stato.ultimoQuando || 0) < SENZA_GPS_DA) return;   // il GPS c'e'
+    if (stato.aPiedi === false) return;
+    if (!direzioneBuona()) return;              // senza sapere dove guardi, non si inventa
+    var avanti = quanti * PASSO_METRI;
+    if (avanti < 0.5) return;
+    stato.alBuio = (stato.alBuio || 0) + avanti;
+    if (stato.alBuio > AL_BUIO_AL_MASSIMO) return;   // troppo: meglio fermi che inventati
+    var r = Math.PI / 180;
+    var dLat = (avanti * Math.cos(stato.direzione * r)) / 111320;
+    var dLon = (avanti * Math.sin(stato.direzione * r)) /
+               (111320 * Math.cos(stato.lat * r) || 1);
+    stato.lat += dLat; stato.lon += dLon;
+    filtro.lat += dLat; filtro.lon += dLon;
+    /* e si dice che e' una stima: l'incertezza cresce di un metro ogni
+       tre passi, perche' la direzione puo' essere cambiata. */
+    stato.prec = (stato.prec || 10) + avanti / 3;
+    filtro.varianza += (avanti / 3) * (avanti / 3);
+    diario('AL BUIO: avanti ' + Math.round(avanti) + ' m coi passi (totale ' +
+           Math.round(stato.alBuio) + ' m)');
+    avvisa('posizione');
   }
 
   function problema(quale) {

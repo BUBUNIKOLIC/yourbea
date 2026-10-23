@@ -36,6 +36,43 @@
   } catch (e) {}
   window.YB = { diario: function () { return DIARIO.join('\n'); } };
 
+  /* ============================================================
+     LA TRACCIA — perche' una camminata sbagliata si possa rifare
+     «Voglio che trovi il modo di risolvere una volta per tutte»
+     (Vince, 23/10, dopo l'ennesima prova andata male).
+     Il modo c'e' ed e' uno solo: smettere di indovinare. Il diario
+     racconta cosa l'app ha DECISO; la traccia registra cosa l'app ha
+     VISTO — ogni punto del GPS, i passi, il modo — e cosa ha DETTO.
+     Con questi due, una camminata storta si rifa' identica sul
+     computer: si vede la frase, si vede il perche', si corregge, e
+     quella camminata resta nel banco per sempre.
+     Pesa poco: un punto ogni secondo per un'ora sono 3.600 righe da
+     una quarantina di caratteri. Si tengono le ultime 5.000.
+     ============================================================ */
+  var TRACCIA = [];
+  var TRACCIA_MAX = 5000;
+  function segna(riga) {
+    TRACCIA.push(riga);
+    if (TRACCIA.length > TRACCIA_MAX) TRACCIA.shift();
+  }
+  function segnaPunto(s) {
+    if (!s || !s.pronto) return;
+    segna('P ' + Date.now() + ' ' + s.lat.toFixed(6) + ' ' + s.lon.toFixed(6) +
+          ' ' + Math.round(s.prec || 0) +
+          ' ' + (typeof s.direzione === 'number' ? Math.round(s.direzione) : '-') +
+          ' ' + (s.direzioneBuona ? 1 : 0) +
+          ' ' + (s.aPiedi === false ? 0 : 1) +
+          ' ' + (s.fermo ? 1 : 0) +
+          ' ' + (passiOra || 0));
+  }
+  function segnaDetto(tipo, testo) {
+    segna('D ' + Date.now() + ' ' + (tipo || '?') + ' ' +
+          String(testo || '').replace(/[\r\n]+/g, ' ').slice(0, 200));
+  }
+  window.YB.traccia = function () {
+    return 'Yourbea traccia v1\nmodo ' + modo + '\n' + TRACCIA.join('\n');
+  };
+
   /* ---------- la voce ---------- */
   /* la pronuncia: gli accenti scritti, che la voce rispetta. Sta qui,
      all'ultimo momento, perché il testo che si vede sullo schermo resti
@@ -1705,6 +1742,7 @@
   function dilloSubito(d) {
     if (!d) return;
     if (!hoLaParola) return;
+    segnaDetto(d.tipo, d.testo);
     laStradaVienePrima(d);
     var liv = d.livello === 'emergenza' ? voce.EMERGENZA : (d.livello === 'guida' ? voce.GUIDA : voce.CENNO);
     voce.parla(d.testo, { livello: liv, ancheSeUguale: true, avviso: !!d.avviso,
@@ -2087,6 +2125,7 @@
        perdere da sé tutto il resto. I fatti e il loro ordine non cambiano,
        quindi le clip incise restano allineate — e la clip, se c'è, la dice
        per intero lei: l'attacco va solo sul testo della voce di sistema. */
+    segnaDetto(d.tipo, d.testo);
     var detto = modi.veste(d.tipo, d.testo);
     var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo,
                                     rifai: rifaiLaDistanza(d, detto) });
@@ -2176,6 +2215,7 @@
   var ultimoAnnuncioStrada = 0;   // quando ho annunciato una strada, qualunque
   var ultimoAvvisoPrecisione = 0;
   posizione.quando(function (cosa, s) {
+    if (cosa === 'posizione') segnaPunto(s);
     if (cosa === 'problema') {
       var dice = s.comeVa === 'negata'
         ? 'Non ho il permesso di sapere dove sei: dallo nelle impostazioni del telefono, se no non posso accompagnarti.'
@@ -3607,7 +3647,9 @@
     var s = posizione.leggi();
     var capo = 'Yourbea nuova — diario\n' + (navigator.userAgent || '') +
                '\nmodo: ' + modo + ' | posizione: ' + (s.pronto ? s.lat.toFixed(5) + ',' + s.lon.toFixed(5) : 'no') + '\n\n';
-    var testo = capo + DIARIO.join('\n');
+    var testo = capo + DIARIO.join('\n') +
+                '\n\n===== TRACCIA (serve a rifare la camminata) =====\n' +
+                window.YB.traccia();
     if (navigator.share) { navigator.share({ title: 'Diario di Yourbea', text: testo }).catch(function () {}); return; }
     if (navigator.clipboard) navigator.clipboard.writeText(testo).then(function () {
       voce.parla('Il diario è negli appunti.', { livello: voce.GUIDA, ancheSeUguale: true });

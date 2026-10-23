@@ -13,3 +13,12 @@ echo
 echo "===================================="
 if [ "$mal" = 0 ]; then echo "TUTTO A POSTO."; else echo "C'E' QUALCOSA DA SISTEMARE."; fi
 echo
+
+# E LE CAMMINATE VERE. Quando Vince manda il diario di una camminata
+# andata storta, si salva in nuova/prove/camminate/ e da quel momento il
+# banco la rifa' a ogni giro: quel difetto non puo' piu' tornare.
+if ls nuova/prove/camminate/*.txt >/dev/null 2>&1; then
+  echo
+  echo "— camminate vere —"
+  node nuova/prove/rifai-la-camminata.js || mal=1
+fi
