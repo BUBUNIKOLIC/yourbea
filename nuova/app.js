@@ -475,9 +475,18 @@
     /* le vie le abbiamo gia' scaricate per gli incroci: servono anche a
        posare la lettura del GPS dove uno cammina davvero */
     aggancia: function (lat, lon, prec, aPiedi) {
+      /* se «portami a» e' accesa, il tracciato: la lettura si posa su
+         quella linea invece di cercarla fra tutte le vie (regola 5).
+         `guida` nasce piu' sotto di qui, e a quel punto esiste. */
+      var linea = (typeof guida !== 'undefined' && guida) ? guida.laLinea() : null;
       return agganciatore.aggancia({ lat: lat, lon: lon, prec: prec, aPiedi: aPiedi },
-                                   SERVIZI.vie || []);
+                                   SERVIZI.vie || [], linea);
     },
+    /* LA FALCATA VERA, quella misurata mentre registrava un percorso:
+       serve anche al motore della posizione, che coi 75 centimetri di
+       tutti sbaglia di tre metri ogni venti passi su chi ha il passo
+       corto. */
+    falcata: function () { return laDistanza.quantoEIlPasso(); },
     /* si legge OGNI VOLTA, non una volta sola: il guscio dell'iPhone inietta
        la sua bandierina quando vuole, e leggendola al volo della partenza
        l'app credeva di essere nel browser e annunciava «non ho il permesso»

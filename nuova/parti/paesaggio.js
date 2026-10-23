@@ -48,12 +48,54 @@ function Paesaggio(opzioni) {
   var FRA_UNA_E_L_ALTRA = o.fraDiLoro || 900000;   // e un quarto d'ora fra le frasi
 
   /* REGOLA 1: quanto lontano si vede una cosa, secondo cos'è. In metri. */
+  /* ISOLE, FIUMI, SPIAGGE E PORTI NON SONO PAESAGGIO, e la soglia non
+     c'entra. L'Isola Tiberina e' lunga trecento metri e sta in mezzo ai
+     palazzi: per la regola era un'«isola» come Capri. Ho provato a
+     cavarmela contando quanti luoghi hai intorno — «se sono tanti sei
+     in citta'» — e il numero sbagliato l'ha fatta passare lo stesso:
+     ventidue luoghi invece di venticinque, e l'isola e' tornata.
+     Un numero scelto a occhio non e' una regola. La regola vera e':
+     il paesaggio e' quello che vedi e non puoi raggiungere — un monte,
+     il golfo, la costa, un lago, una valle, un parco, un paese sul
+     fianco della collina. Un'isola nel fiume, una spiaggia, un porto,
+     un fiume: quelli sono POSTI, e li racconta il racconto quando ci
+     passi accanto, come tutto il resto.
+     Capri vista da Napoli ci perde. Pazienza: meglio perdere Capri che
+     dire «in lontananza l'Isola Tiberina» a uno in via dei Corazzieri. */
   var QUANTO_LONTANO = {
-    'costa': 5000, 'golfo': 5000, 'baia': 5000, 'isola': 5000, 'montagna': 5000,
+    'costa': 5000, 'golfo': 5000, 'baia': 5000, 'montagna': 5000,
     'area protetta': 5000, 'parco regionale': 5000, 'lago': 4000, 'valle': 4000,
     'collina': 3500, 'passo di montagna': 3500, 'comune italiano': 3000,
-    'frazione': 2500, 'porto': 2500, 'spiaggia': 2000, 'fiume': 1200
+    'frazione': 2500, 'isola': 5000, 'spiaggia': 2000, 'porto': 2500
   };
+
+  /* E LA DIFFERENZA FRA I DUE FRATELLI E L'ISOLA TIBERINA.
+     Gli scogli davanti a Vietri sono paesaggio: sono il motivo per cui
+     questo file esiste. L'Isola Tiberina no: e' lunga trecento metri e
+     sta in mezzo ai palazzi.
+     Togliere le isole dalla tabella faceva sparire tutt'e due. Contare
+     quanti luoghi hai intorno — «se sono tanti sei in citta'» — non e'
+     una regola: e' un numero scelto a occhio, e a Trastevere ne ha
+     contati ventidue invece di venticinque e l'isola e' passata.
+     La differenza vera e' il MARE. Un'isola, una spiaggia, un porto
+     sono paesaggio se intorno c'e' del mare: una costa, un golfo, una
+     baia. A Vietri ci sono; a Roma no — e il Tevere non e' il mare.
+     Non e' una soglia: e' quello che distingue le due cose. */
+  var VUOLE_IL_MARE = { 'isola': 1, 'spiaggia': 1, 'porto': 1 };
+  var MARE = { 'costa': 1, 'golfo': 1, 'baia': 1, 'mare': 1 };
+  /* venti chilometri: nei dati una costa o un golfo sono UN punto
+     per una cosa lunga decine di chilometri, e il punto della
+     Costiera amalfitana sta a undici chilometri da Vietri — che
+     sul mare ci sta dentro. */
+  var QUANTO_LONTANO_IL_MARE = o.quantoLontanoIlMare || 20000;
+  function cEIlMare(luoghi, qui) {
+    for (var i = 0; i < (luoghi || []).length; i++) {
+      var p = luoghi[i];
+      if (p && p.t && MARE[p.t] && p.lat &&
+          dist(qui.lat, qui.lon, p.lat, p.lon) < QUANTO_LONTANO_IL_MARE) return true;
+    }
+    return false;
+  }
 
   /* REGOLA 6: come si nomina. La parola davanti al nome, quando il nome
      non la dice già da sé. */
@@ -154,31 +196,15 @@ function Paesaggio(opzioni) {
     };
     var quantoSiVede = (s.aPiedi === false) ? 4 : 1;
 
-    /* IN CITTA' NON C'E' ORIZZONTE.
-       Vince, 23/10, in strada: «mi diceva in lontananza Isola Tiberina».
-       L'Isola Tiberina e' lunga trecento metri e sta in mezzo ai palazzi:
-       per noi era un'«isola», e le isole si vedono da cinque chilometri
-       perche' la regola e' fatta per Capri vista dalla costa.
-       La differenza non sta nel tipo: sta in DOVE SEI. In mezzo ai
-       palazzi non vedi niente a un chilometro, e quello che si vede
-       davvero — il Vesuvio da Napoli, le montagne dalla valle — e' molto
-       piu' lontano di cosi'. Quanto sei in citta' lo sappiamo senza
-       chiederlo a nessuno: e' quanta roba abbiamo intorno. */
-    var DENSO = 25, VICINO_PER_UNA_CITTA = 2000;
-    var quanti = 0;
-    (s.luoghi || []).forEach(function (p) {
-      if (p && p.lat && dist(qui.lat, qui.lon, p.lat, p.lon) < 500) quanti++;
-    });
-    var inCitta = quanti >= DENSO;
-
+    var ilMare = cEIlMare(s.luoghi, qui);
     var avanti = null, lato = null;
     (s.luoghi || []).forEach(function (p) {
       if (!p || !p.n || !eDelPaesaggio(p)) return;
       if (ora() - (detti[p.n] || 0) < RIPOSO) return;             // REGOLA 5
         var m = dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (VUOLE_IL_MARE[p.t] && !ilMare) return;
       var fattore = GRANDI_DI_NATURA[p.t] ? quantoSiVede : 1;
       if (m > QUANTO_LONTANO[p.t] * fattore) return;              // REGOLA 1
-      if (inCitta && m < VICINO_PER_UNA_CITTA) return;            // non c'e' orizzonte
       var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       var pt = { p: p, m: m, rel: rel, peso: peso(p, m) };
       if (Math.abs(rel) <= 45) {

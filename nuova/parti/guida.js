@@ -586,6 +586,10 @@ function Guida(opzioni) {
        il ponte» non si vede finche' non si guarda la frase intera. */
     puoi: puoi,
     meta: function () { return meta; },
+    /* il tracciato, perche' la posizione ci si possa posare sopra:
+       quando la guida e' accesa, sapere su quale linea stai andando vale
+       piu' di tutte le vie intorno (parti/aggancio.js, regola 5). */
+    laLinea: function () { return linea; },
     svolteRimaste: function () { return Math.max(0, svolte.length - prossima); }
   };
 }

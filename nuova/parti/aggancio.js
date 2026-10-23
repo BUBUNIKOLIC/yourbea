@@ -31,6 +31,21 @@
       strade a ogni lettura.
    4. SI AGGANCIA SOLO CHI CAMMINA. In macchina la strada e' un'altra —
       le tangenziali, i cavalcavia — e sbagliare carreggiata e' facile.
+   5. SE LA GUIDA E' ACCESA, IL PERCORSO BATTE LE VIE. «Perche' loro
+      riescono a guidare la macchina e noi neanche a camminare» (Vince,
+      23/10): perche' un navigatore non cerca la via piu' probabile fra
+      tutte, sa GIA' su quale linea stai andando, e ci posa il punto
+      sopra. Quando «portami a» e' attivo quella linea ce l'abbiamo
+      anche noi, ed e' un'informazione piu' forte di tutte le vie
+      intorno: una linea sola invece di dieci candidate.
+      Ma con una soglia piu' stretta, DODICI metri, non venticinque, e
+      il perche' e' il difetto che si eviterebbe: se si agganciasse al
+      percorso anche da venticinque metri, uno che ha sbagliato strada e
+      cammina sulla parallela verrebbe inchiodato sulla linea giusta —
+      la sua posizione sembrerebbe perfetta e la guida non si
+      accorgerebbe mai che e' fuori. Dodici metri e' sotto la mediana
+      del nostro errore (13 m): dentro, e' rumore del GPS; fuori, puo'
+      essere che tu sia andato da un'altra parte, e allora non si tocca.
 */
 
 'use strict';
@@ -40,6 +55,14 @@ function Aggancio(opzioni) {
   var QUANTO_LONTANO = o.quantoLontano || 25;     // metri: oltre, non e' la tua via
   var PRECISIONE_MINIMA = o.precisioneMinima || 40;
   var PER_CAMBIARE = o.perCambiare || 8;          // metri di vantaggio per cambiare via
+  /* REGOLA 5: quanto si puo' stare lontani dal percorso perche' sia ancora
+     rumore del GPS e non una strada sbagliata */
+  var LONTANO_DAL_PERCORSO = o.lontanoDalPercorso || 12;
+  /* ma se il telefono sbaglia SEMPRE DALLO STESSO LATO, si arriva fino a
+     trenta: vedi «il GPS che rimbalza sui palazzi», qui sotto. */
+  var LONTANO_SE_FISSO = o.lontanoSeFisso || 30;
+  var FISSO_PER = o.fissoPer || 8000;             // da quanto deve essere cosi'
+  var FISSO_ENTRO = o.fissoEntro || 7;            // e di quanto puo' variare
   var TIENE = o.tiene || 25000;                   // la via di prima vale mezzo minuto
   var ora = o.ora || function () { return Date.now(); };
   var dist = o.dist || function (a, b, c, d) {
@@ -51,6 +74,9 @@ function Aggancio(opzioni) {
   };
 
   var viaDiPrima = null, quando = 0;
+  /* quanto distavi dal percorso nelle ultime letture, per distinguere un
+     errore di lato da una strada sbagliata */
+  var lontananze = [];
 
   /* il punto piu' vicino su un segmento, e quanto dista */
   function sulSegmento(la, lo, a, b) {
@@ -74,11 +100,74 @@ function Aggancio(opzioni) {
   }
 
   /* aggancia(): la posizione agganciata, oppure null se si lascia stare.
-     s = { lat, lon, prec, aPiedi }  vie = [{ nome, punti: [[la,lo],…] }] */
-  function aggancia(s, vie) {
-    if (!s || !vie || !vie.length) return null;
+     s = { lat, lon, prec, aPiedi }  vie = [{ nome, punti: [[la,lo],…] }]
+     linea = il tracciato del «portami a», se la guida e' accesa: [[la,lo],…] */
+  function aggancia(s, vie, linea) {
+    if (!s) return null;
     if (s.aPiedi === false) return null;                       // REGOLA 4
     if (s.prec > PRECISIONE_MINIMA) return null;               // REGOLA 1
+
+    /* REGOLA 5 — il percorso, se c'e', viene prima di tutto il resto. */
+    if (linea && linea.length > 1) {
+      var sul = puntoPiuVicino(s.lat, s.lon, { punti: linea });
+      if (sul) {
+        var adesso = ora();
+        lontananze.push({ m: sul.m, t: adesso });
+        while (lontananze.length > 1 && (adesso - lontananze[0].t) > FISSO_PER * 2) {
+          lontananze.shift();
+        }
+        /* ============================================================
+           IL GPS CHE RIMBALZA SUI PALAZZI
+           (misurato il 23/10) In un vicolo il segnale arriva riflesso e
+           il punto si sposta SEMPRE DALLO STESSO LATO, di quindici o
+           venti metri: non e' rumore, e' un errore fisso. Nella misura,
+           con quindici metri di spinta e una parallela a diciotto, la
+           posizione finiva sulla via sbagliata 184 volte su 301.
+           Come si distingue da uno che ha sbagliato strada: chi ha
+           sbagliato strada si allontana SEMPRE DI PIU', chi ha il
+           segnale riflesso resta alla stessa distanza. Quindi fino a
+           trenta metri si aggancia, ma solo se quella distanza e'
+           ferma da almeno otto secondi.
+           ============================================================ */
+        var distanzaFerma = false;
+        if (sul.m > LONTANO_DAL_PERCORSO && sul.m <= LONTANO_SE_FISSO) {
+          var vecchie = lontananze.filter(function (x) { return adesso - x.t <= FISSO_PER * 2; });
+          if (vecchie.length >= 4 && (adesso - vecchie[0].t) >= FISSO_PER) {
+            var min = null, max = null;
+            vecchie.forEach(function (x) {
+              if (min === null || x.m < min) min = x.m;
+              if (max === null || x.m > max) max = x.m;
+            });
+            distanzaFerma = (max - min) <= FISSO_ENTRO;
+          }
+        }
+        if (sul.m <= LONTANO_DAL_PERCORSO || distanzaFerma) {
+          quando = adesso;
+          /* IL NOME DELLA VIA SI PRENDE DOVE SEI FINITO, non dove eri.
+             Ereditando il nome di prima, un nome sbagliato restava
+             sbagliato per tutta la camminata. */
+          var nome = viaDiPrima;
+          if (vie && vie.length) {
+            var piu = null;
+            for (var k = 0; k < vie.length; k++) {
+              var vv = vie[k];
+              if (!vv || !vv.punti || vv.punti.length < 2) continue;
+              var qq = puntoPiuVicino(sul.lat, sul.lon, vv);
+              if (qq && (!piu || qq.m < piu.m)) { piu = qq; piu.nome = vv.nome || ''; }
+            }
+            if (piu && piu.m <= QUANTO_LONTANO) nome = piu.nome;
+          }
+          viaDiPrima = nome || viaDiPrima;
+          return { lat: sul.lat, lon: sul.lon, via: viaDiPrima, sulPercorso: true,
+                   spostato: Math.round(dist(s.lat, s.lon, sul.lat, sul.lon)) };
+        }
+      }
+      /* piu' lontano di cosi', o sempre piu' lontano, non si tocca il
+         percorso: puo' essere che tu sia andato da un'altra parte, e la
+         guida deve poterlo vedere. Si prosegue con le vie. */
+    }
+
+    if (!vie || !vie.length) return null;
 
     var migliore = null, suDiPrima = null;
     for (var i = 0; i < vie.length; i++) {
@@ -106,7 +195,7 @@ function Aggancio(opzioni) {
              spostato: Math.round(dist(s.lat, s.lon, scelto.lat, scelto.lon)) };
   }
 
-  function dimentica() { viaDiPrima = null; quando = 0; }
+  function dimentica() { viaDiPrima = null; quando = 0; lontananze = []; }
   function laVia() { return viaDiPrima; }
 
   return { aggancia: aggancia, dimentica: dimentica, laVia: laVia };

@@ -30,6 +30,7 @@ function mondo(come) {
     fraPoco: (f, ms) => { const id = { quando: adesso + ms, f }; tempi.push(id); return id; },
     annulla: (id) => { const i = tempi.indexOf(id); if (i >= 0) tempi.splice(i, 1); },
     geo, guscio: c.guscio || null,
+    falcata: c.falcata || null,
     diario: (t) => avvisi.push(t)
   });
   p.quando((cosa) => avvisi.push('avviso:' + cosa));
@@ -443,6 +444,83 @@ prova('fermi, i passi non fanno avanzare niente', () => {
   for (let i = 0; i < 20; i++) { m.passano(1000); m.p.quantiPassi(passi); }  // fermo
   const dopo = m.p.leggi();
   if (metri(prima.lat, prima.lon, dopo.lat, dopo.lon) > 1) guasto('si muove da fermo');
+});
+
+/* ============================================================
+   FRA UNA LETTURA E L'ALTRA, COMANDANO I PASSI
+   Regola 1, punto 2 (23/10). «E perche' loro riescono a essere precisi
+   e guidare la macchina e noi neanche a camminare»: perche' a piedi
+   13 metri sono nove secondi di cammino, e la velocita' ricavata dalle
+   letture, quando il GPS balla, E' il ballo. Il contapassi no.
+   ============================================================ */
+
+prova('FERMO CON I PASSI FERMI: il punto non segue il GPS che sbanda', () => {
+  const m = mondo();
+  m.p.comincia();
+  /* si arriva da fermi, con il contapassi che non si muove, e il GPS
+     che salta avanti e indietro di otto metri come fa davvero */
+  m.p.quantiPassi(500);
+  m.gps(41.9000, 12.4800, 8);
+  const partenza = m.p.leggi();
+  let peggio = 0;
+  for (let i = 1; i <= 10; i++) {
+    m.passano(1000);
+    m.p.quantiPassi(500);                          // nessun passo nuovo
+    const sbanda = (i % 2 ? 0.00007 : -0.00007);   // ±8 metri
+    m.gps(41.9000 + sbanda, 12.4800 + sbanda, 8);
+    const q = m.p.leggi();
+    peggio = Math.max(peggio, metri(partenza.lat, partenza.lon, q.lat, q.lon));
+  }
+  console.log('      → dieci letture che sbandano di 8 m: il punto si e mosso al massimo di ' +
+              peggio.toFixed(1) + ' m');
+  if (peggio > 4) guasto('da fermo il punto ha ballato di ' + peggio.toFixed(1) + ' metri');
+});
+
+prova('CAMMINANDO: quanto hai avanzato lo dicono i passi, non il GPS', () => {
+  const m = mondo();
+  m.p.comincia();
+  /* dodici secondi di cammino vero verso nord, per dare una direzione
+     credibile, poi il GPS inizia a sbandare di lato mentre i passi
+     continuano regolari */
+  let la = 41.9000, passi = 0;
+  for (let i = 0; i < 12; i++) {
+    m.passano(1000); la += 0.0000126; passi += 2;    // 1,4 m al secondo
+    m.p.quantiPassi(passi); m.gps(la, 12.4800, 8);
+  }
+  const prima = m.p.leggi();
+  /* adesso dieci secondi in cui il GPS sbaglia di dieci metri di lato
+     ma i passi dicono che stai andando avanti regolare */
+  for (let i = 0; i < 10; i++) {
+    m.passano(1000); la += 0.0000126; passi += 2;
+    m.p.quantiPassi(passi);
+    m.gps(la, 12.4800 + 0.00012, 20);                // dieci metri a destra, ±20
+  }
+  const dopo = m.p.leggi();
+  const avanzato = metri(prima.lat, prima.lon, dopo.lat, dopo.lon);
+  const dovuto = 10 * 1.4;
+  console.log('      → in dieci secondi: avanzato ' + avanzato.toFixed(1) +
+              ' m, i passi dicevano ' + dovuto.toFixed(1) + ' m');
+  if (avanzato < dovuto * 0.6) guasto('e restato indietro: ' + avanzato.toFixed(1) + ' m invece di ' + dovuto);
+});
+
+prova('LA FALCATA MISURATA, non i 75 centimetri di tutti', () => {
+  /* chi cammina col bastone fa il passo corto: con 0,60 misurati,
+     venti passi al buio sono 12 metri, non 15. */
+  const m = mondo({ falcata: () => 0.60 });
+  m.p.comincia();
+  let la = 41.9000, passi = 0;
+  for (let i = 0; i < 12; i++) {
+    m.passano(1000); la += 0.0000108; passi += 2;    // 1,2 m al secondo
+    m.p.quantiPassi(passi); m.gps(la, 12.4800, 8);
+  }
+  const prima = m.p.leggi();
+  m.passano(4000);                                   // il GPS tace
+  for (let i = 0; i < 20; i++) { passi += 1; m.p.quantiPassi(passi); }
+  const dopo = m.p.leggi();
+  const avanzato = metri(prima.lat, prima.lon, dopo.lat, dopo.lon);
+  console.log('      → venti passi al buio con falcata 0,60: avanzato ' + avanzato.toFixed(1) + ' m');
+  if (avanzato > 13.5) guasto('ha usato i 75 cm invece dei 60: ' + avanzato.toFixed(1) + ' m');
+  if (avanzato < 10) guasto('non ha avanzato: ' + avanzato.toFixed(1) + ' m');
 });
 
 const passate = fatti.filter(Boolean).length;

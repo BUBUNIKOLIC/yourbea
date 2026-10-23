@@ -58,6 +58,15 @@ function prova(nome, f) {
 function luoghiIntorno(lat, lon) {
   const dir = path.join(qui, 'dati', 'cultura');
   const fuori = [];
+  /* L'APP CARICA ANCHE I 950 CURATI A MANO (dati/luoghi.json), e questa
+     prova no: guardava solo i quadretti. Quindi provava un'app diversa
+     da quella che cammina in strada — ed e' il modo migliore per non
+     trovare mai il difetto vero. */
+  try {
+    const d = JSON.parse(fs.readFileSync(path.join(qui, 'dati', 'luoghi.json'), 'utf8'));
+    const lista = Array.isArray(d) ? d : Object.values(d)[0];
+    if (Array.isArray(lista)) for (const p of lista) fuori.push(p);
+  } catch (e) { /* lo dice un'altra prova */ }
   for (let dla = -1; dla <= 1; dla++) {
     for (let dlo = -1; dlo <= 1; dlo++) {
       const q = ('0000' + Math.trunc(lat * 100 + dla)).slice(-4) + '_' +

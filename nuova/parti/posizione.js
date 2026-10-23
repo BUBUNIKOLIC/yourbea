@@ -72,6 +72,9 @@ function Posizione(opzioni) {
      ============================================================ */
   var CAMMINATA = o.quantoCammino || 1.4;      // metri al secondo, il peggio
   var filtro = null;
+  /* il contapassi all'ultima lettura: serve a sapere quanti passi hai
+     fatto DA ALLORA, cioe' quanto ti sei spostato per davvero. */
+  var passiAllaLettura = null;
   /* il filo degli ultimi punti, per prendere la direzione su un tratto
      invece che fra due letture appiccicate */
   var filo = [];
@@ -82,9 +85,34 @@ function Posizione(opzioni) {
     var R = p * p;                                   // quanto sbaglia la lettura
     if (!filtro) {
       filtro = { lat: lat, lon: lon, vlat: 0, vlon: 0, varianza: R, quando: quando };
+      /* anche il contapassi si segna QUI, non solo in fondo: senza
+         questa riga la seconda lettura non sapeva quanti passi avevi
+         fatto dalla prima, e da fermo il punto le andava dietro di
+         cinque metri (banco: «FERMO CON I PASSI FERMI»). */
+      if (typeof stato.passi === 'number') passiAllaLettura = stato.passi;
       return { lat: lat, lon: lon, prec: p };
     }
     var dt = Math.max(0, (quando - filtro.quando) / 1000);
+    /* ============================================================
+       FRA UNA LETTURA E L'ALTRA, COMANDANO I PASSI
+       (regola 1, punto 2 — 23/10)
+       Fin qui la previsione usava la velocita' ricavata dalle letture
+       stesse: quando il GPS balla, quella velocita' e' il ballo. Il
+       contapassi invece non sbaglia — se non fai passi non ti sei
+       mosso, e se li fai ti sei spostato di una falcata per passo.
+       Due casi, e cambiano entrambi quello che si crede:
+       - PASSI FERMI: la previsione non avanza di un metro, e
+         l'incertezza cresce di poco. Cosi' una lettura che sbanda,
+         mentre tu sei fermo davanti a una chiesa, non sposta il punto:
+         prima lo spostava, ed era la distanza che ballava fra «a 30
+         passi» e «a 45».
+       - PASSI CHE CRESCONO: quanto hai avanzato lo dicono loro, non il
+         GPS, e la direzione e' quella in cui stavi andando. */
+    var passiFatti = null;
+    if (typeof stato.passi === 'number' && passiAllaLettura !== null &&
+        stato.passiQuando && (quando - stato.passiQuando) < ATTIVITA_VALE) {
+      passiFatti = Math.max(0, stato.passi - passiAllaLettura);
+    }
     /* PRIMA SI INDOVINA DOV'E' ADESSO, POI SI CORREGGE.
        La prima versione teneva solo la posizione, e camminando restava
        indietro di sei metri — cioe' diceva «a trenta passi» di una cosa
@@ -96,6 +124,26 @@ function Posizione(opzioni) {
     /* fra una lettura e l'altra uno puo' aver cambiato passo o
        direzione: e' quello che l'incertezza deve coprire. */
     var Q = (CAMMINATA * dt) * (CAMMINATA * dt) * 0.6;
+    if (passiFatti === 0) {
+      /* fermo: la previsione resta dov'e', e si copre solo il
+         tremolio di chi sta in piedi, non una camminata intera. */
+      attesaLat = filtro.lat; attesaLon = filtro.lon;
+      Q = (0.3 * dt) * (0.3 * dt);
+      /* e alla lettura si crede meta': se non ti sei mosso, tutto
+         quello che cambia fra una lettura e l'altra E' rumore. Senza
+         questo, la seconda lettura da fermo spostava il punto di
+         cinque metri (banco: «FERMO CON I PASSI FERMI»). */
+      R = R * 2;
+    } else if (passiFatti > 0 && direzioneBuona() && dt > 0) {
+      var avanti = passiFatti * unPasso();
+      var r = Math.PI / 180;
+      attesaLat = filtro.lat + (avanti * Math.cos(stato.direzione * r)) / 111320;
+      attesaLon = filtro.lon + (avanti * Math.sin(stato.direzione * r)) /
+                  (111320 * Math.cos(lat * r) || 1);
+      /* i passi dicono QUANTO con precisione, la direzione meno: si
+         copre un terzo di quello che hai camminato. */
+      Q = (avanti / 3) * (avanti / 3);
+    }
     var varianza = filtro.varianza + Q;
     var K = varianza / (varianza + R);               // quanto si crede alla lettura
     /* in gradi: K e' un numero puro, e le differenze sono piccole. */
@@ -112,13 +160,16 @@ function Posizione(opzioni) {
     filtro.lat = nuovaLat; filtro.lon = nuovaLon;
     filtro.varianza = (1 - K) * varianza;
     filtro.quando = quando;
+    if (typeof stato.passi === 'number') passiAllaLettura = stato.passi;
     return { lat: nuovaLat, lon: nuovaLon, prec: Math.max(3, Math.sqrt(filtro.varianza)) };
   }
 
   /* e quando si salta da un'altra parte — la metro, il treno — il filtro
      si butta: tenerlo vorrebbe dire trascinarsi dietro Roma mentre sei
      a Milano. */
-  function scordaIlFiltro() { filtro = null; filo = []; }
+  function scordaIlFiltro() {
+    filtro = null; filo = []; passiAllaLettura = null; direzioniRecenti = [];
+  }
 
   var stato = {
     pronto: false, lat: null, lon: null, prec: null,
@@ -195,6 +246,10 @@ function Posizione(opzioni) {
           stato.attivita === 'fermo') return true;
       if (stato.attivita === 'bici' || stato.attivita === 'mezzo') return false;
     }
+    /* i passi battono la velocita' dedotta dalle letture: una lettura
+       sballata non ti fa salire in macchina (vedi «la cadenza dei passi
+       dice che sei un pedone»). */
+    if (cadenzaDaPedone()) return true;
     /* e prima di dire «cammina», si guarda se poco fa correva */
     if (stato.velocitaAlta && (ora() - stato.velocitaAltaQuando) < CORSA_VALE) return false;
     return stato.velocita === null || stato.velocita < 3.4;
@@ -210,8 +265,59 @@ function Posizione(opzioni) {
     stato.attivitaQuando = ora();
   }
 
+  /* ============================================================
+     MENTRE GIRI L'ANGOLO, LA PARTE NON SI DICE
+     «Mi diceva di andare a destra ma dovevo andare dritto» (Vince,
+     23/10, camminando). Misurato sul percorso vero di Trastevere, con
+     il nostro rumore: la direzione sbaglia di piu' di 45 gradi in 55
+     letture su 981 — e TUTTE E 55 cadono entro undici metri da una
+     svolta. Non e' il GPS: e' che la direzione si prende sullo
+     spostamento degli ultimi dieci metri, e mentre giri quei dieci
+     metri sono metA' vecchia strada e metA' nuova. Quarantacinque
+     gradi di errore sono «dritto» detto «a destra», e a chi non vede
+     e' un ordine.
+     Quindi: finche' la direzione sta cambiando, non e' buona. Si tace
+     la parte per i tre o quattro secondi della svolta, e si riprende
+     quando e' ferma. Tacere per tre secondi non ha mai fatto male a
+     nessuno; «a destra» nel posto sbagliato si'.
+     ============================================================ */
+  var direzioniRecenti = [];
+  var GIRA_SE = o.giraSe || 25;                 // gradi di ballo che vogliono dire «sto girando»
+  var GIRA_ENTRO = o.giraEntro || 6000;         // e per quanto si guarda indietro
+  function quantoGira(a, b) {
+    var d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+  }
+  function segnaLaDirezione(d) {
+    direzioniRecenti.push({ d: d, t: ora() });
+    while (direzioniRecenti.length > 1 &&
+           (ora() - direzioniRecenti[0].t) > GIRA_ENTRO * 2) {
+      direzioniRecenti.shift();
+    }
+  }
+  /* stoGirando(): si confronta la direzione del tratto lungo (dieci
+     metri, quella che l'app usa) con quella degli ultimi tre metri. Se
+     non vanno d'accordo, la strada sta cambiando sotto i piedi: siamo
+     in mezzo a una svolta, e la parte non si dice. */
+  function stoGirando() {
+    if (filo.length < 2) return false;
+    var ultimo = filo[filo.length - 1];
+    var lungo = null, corto = null;
+    for (var i = filo.length - 2; i >= 0; i--) {
+      var d = dist(filo[i].lat, filo[i].lon, ultimo.lat, ultimo.lon);
+      if (corto === null && d >= 3) corto = filo[i];
+      if (d >= TRATTO_DIREZIONE) { lungo = filo[i]; break; }
+    }
+    if (!lungo || !corto || lungo === corto) return false;
+    var a = verso(lungo.lat, lungo.lon, ultimo.lat, ultimo.lon);
+    var b = verso(corto.lat, corto.lon, ultimo.lat, ultimo.lon);
+    return quantoGira(a, b) > GIRA_SE;
+  }
+
   function direzioneBuona() {
-    return stato.direzioneQuando > 0 && (ora() - stato.direzioneQuando) < VERSO_VALE;
+    if (stato.direzioneQuando <= 0) return false;
+    if ((ora() - stato.direzioneQuando) >= VERSO_VALE) return false;
+    return !stoGirando();
   }
 
   /* arriva(): il cuore. Una posizione nuova, da qualunque porta venga. */
@@ -346,11 +452,13 @@ function Posizione(opzioni) {
       if (daDove) {
         stato.direzione = verso(daDove.lat, daDove.lon, lat, lon);
         stato.direzioneQuando = ora();
+        segnaLaDirezione(stato.direzione);
       } else if (passo > PASSO_BUONO) {
         /* appena partito, il filo e' corto: meglio una direzione
            approssimata che nessuna. */
         stato.direzione = verso(prima.lat, prima.lon, lat, lon);
         stato.direzioneQuando = ora();
+        segnaLaDirezione(stato.direzione);
       }
       /* REGOLA 5: FERMO LO DICONO I PASSI, NON IL GPS.
          Era «restare dentro un cerchio di dodici metri per cinque
@@ -393,6 +501,30 @@ function Posizione(opzioni) {
     avvisa('posizione');
   }
 
+  /* ============================================================
+     LA CADENZA DEI PASSI DICE CHE SEI UN PEDONE
+     (misurato il 23/10 sul banco) Una sola lettura sballata di otto
+     metri in un secondo sono otto metri al secondo: sopra la soglia
+     della macchina. Da li' l'app si teneva «andavi forte» per due
+     minuti — ed e' giusto per chi e' al semaforo in auto, ma a un
+     pedone spegneva l'AGGANCIO ALLA STRADA proprio nei momenti in cui
+     serve: nella misura, su 301 letture se ne agganciavano 12.
+     Il contapassi non si fa ingannare: in macchina non conta due passi
+     al secondo. Se la cadenza e' da pedone, sei un pedone — e lo si
+     guarda prima della velocita' dedotta dalle letture.
+     ============================================================ */
+  var passiStoria = [];
+  var CADENZA_SU = o.cadenzaSu || 15000;       // quanto indietro si guarda
+  function cadenzaDaPedone() {
+    if (passiStoria.length < 2) return false;
+    var primo = passiStoria[0], ultimo = passiStoria[passiStoria.length - 1];
+    var dt = (ultimo.t - primo.t) / 1000;
+    if (dt < 4) return false;
+    var cadenza = (ultimo.v - primo.v) / dt;            // passi al secondo
+    if (cadenza < 0.5 || cadenza > 3) return false;     // fermo, o non e' camminare
+    return cadenza * unPasso() < 3.4;                   // e non e' una corsa in bici
+  }
+
   /* quantiPassi(): il contapassi del telefono. Il guscio lo manda ogni
      volta che cambia; se questo telefono non ce l'ha, non chiama mai e
      il «fermo» resta quello del GPS. */
@@ -402,6 +534,10 @@ function Posizione(opzioni) {
     var primaErano = stato.passi;
     stato.passi = v;
     stato.passiQuando = ora();
+    passiStoria.push({ v: v, t: stato.passiQuando });
+    while (passiStoria.length > 1 && (stato.passiQuando - passiStoria[0].t) > CADENZA_SU) {
+      passiStoria.shift();
+    }
     if (stato.passiPrima === null) { stato.passiPrima = v; stato.passiCambiati = ora(); }
     if (typeof primaErano === 'number' && v > primaErano) avanzaCoiPassi(v - primaErano);
   }
@@ -421,6 +557,17 @@ function Posizione(opzioni) {
      una trentina di metri: oltre, si preferisce dire che non si sa.
      ============================================================ */
   var PASSO_METRI = o.passoMetri || 0.75;
+  /* LA FALCATA VERA, se e' stata misurata. L'app la misura mentre uno
+     registra un percorso (app.js, «quanto e' lungo il tuo passo»), e
+     quella misura serve anche qui: con 0,75 supposti, venti passi al
+     buio sono tre metri di errore in piu' su chi cammina col bastone
+     e fa il passo corto. */
+  var falcata = o.falcata || function () { return PASSO_METRI; };
+  function unPasso() {
+    var l = 0;
+    try { l = Number(falcata()) || 0; } catch (e) { l = 0; }
+    return (l >= 0.4 && l <= 1.1) ? l : PASSO_METRI;
+  }
   var SENZA_GPS_DA = o.senzaGpsDa || 3000;
   var AL_BUIO_AL_MASSIMO = o.alBuioAlMassimo || 30;
 
@@ -430,7 +577,7 @@ function Posizione(opzioni) {
     if (adesso - (stato.ultimoQuando || 0) < SENZA_GPS_DA) return;   // il GPS c'e'
     if (stato.aPiedi === false) return;
     if (!direzioneBuona()) return;              // senza sapere dove guardi, non si inventa
-    var avanti = quanti * PASSO_METRI;
+    var avanti = quanti * unPasso();
     if (avanti < 0.5) return;
     stato.alBuio = (stato.alBuio || 0) + avanti;
     if (stato.alBuio > AL_BUIO_AL_MASSIMO) return;   // troppo: meglio fermi che inventati
