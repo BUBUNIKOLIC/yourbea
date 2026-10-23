@@ -660,6 +660,41 @@ prova('dopo «puoi» ci va sempre l infinito', () => {
   });
 });
 
+/* LA GUIDA COL MOTORE DELL'AVANZAMENTO, che e' quello che usano tutti i
+   navigatori: la posizione si proietta sulla linea del percorso. */
+const Avanzamento = require('../parti/avanzamento.js');
+
+prova('con l avanzamento, il ponte passato di lato non torna mai piu', () => {
+  const a = Avanzamento({ dist });
+  const g = Guida({ distanza: LADISTANZA, dist, verso, avanzamento: a });
+  const da = [41.8500, 12.4700];
+  const passo = 0.00009;
+  const linea = [];
+  for (let i = 0; i <= 20; i++) linea.push([da[0] + i * passo, da[1]]);
+  const percorso = { metri: 200, linea: linea, svolte: [
+    { lat: da[0], lon: da[1], testo: 'Cammina su via del Ponte' },
+    { lat: da[0] + passo * 8, lon: da[1], testo: 'Attraversa il ponte Marconi' },
+    { lat: da[0] + passo * 16, lon: da[1], testo: 'Gira a destra su via di Casa' }
+  ] };
+  g.vaiA({ n: 'casa', lat: da[0] + passo * 20, lon: da[1] },
+         { lat: da[0], lon: da[1], direzione: 0, direzioneBuona: true }, null, percorso);
+  const lato = 0.00030;            // venticinque metri di lato
+  const dette = [];
+  for (let i = 0; i <= 20; i++) {
+    const d = g.passo({ lat: da[0] + i * passo, lon: da[1] + lato,
+                        direzione: 0, direzioneBuona: true });
+    if (d && d.testo) dette.push(Math.round(i * 10) + ' m: ' + d.testo);
+  }
+  const ponte = dette.filter((t) => /ponte Marconi/.test(t));
+  const dopo = dette.filter((t) => /via di Casa/.test(t));
+  if (!dopo.length) guasto('non arriva mai alla svolta dopo il ponte');
+  if (ponte.length > 2) guasto('dice il ponte ' + ponte.length + ' volte');
+  /* e non lo deve dire DOPO averlo passato */
+  const tardi = ponte.filter((t) => parseInt(t, 10) > 110);
+  if (tardi.length) guasto('parla del ponte quando l ha gia passato: ' + tardi[0]);
+  console.log('      \u2192 ' + dette.slice(0, 3).join(' | ').slice(0, 120));
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');

@@ -265,6 +265,14 @@ function Guida(opzioni) {
     linea = (percorso && percorso.linea && percorso.linea.length > 1) ? percorso.linea : [];
     quantoManca = dist(qui.lat, qui.lon, m.lat, m.lon);
     var dovesei = dove && dove.via ? ('Sei in ' + dove.via + (dove.civico ? ' ' + dove.civico : '') + '. ') : '';
+    if (avanzamento) {
+      avanzamento.dimentica();
+      if (linea.length > 1) {
+        avanzamento.conPercorso(linea);
+        if (percorso && percorso.svolte) avanzamento.conSvolte(percorso.svolte);
+        avanzamento.dove(qui.lat, qui.lon);
+      }
+    }
     if (percorso && percorso.svolte && percorso.svolte.length) {
       svolte = percorso.svolte;
       prossima = 1;                             // la prima si dice adesso
@@ -293,6 +301,16 @@ function Guida(opzioni) {
      cercano fra loro, se le fa dare. Senza, resta il modo vecchio — piu'
      grezzo, ma nessuno resta muto. */
   var laMisura = o.distanza || null;
+  /* L'AVANZAMENTO SUL PERCORSO — parti/avanzamento.js, 7 prove.
+     E' il motore che usano tutti i navigatori: invece di guardare
+     quanto sei lontano dal PUNTO della prossima svolta, si proietta la
+     posizione sulla LINEA del percorso e si contano i metri fatti. Da
+     quel numero escono senza casi particolari la prossima svolta,
+     quanto manca, e il fuori strada.
+     Si passa da fuori come dist e verso: se chi costruisce la guida non
+     lo da', resta il conto vecchio — che funziona, ma inciampa sulle
+     svolte passate di lato (il ponte Marconi, 23/10). */
+  var avanzamento = o.avanzamento || null;
   function passi(m) {
     return laMisura ? laMisura.nudi(m) : (Math.round(m / 0.75) + ' passi');
   }
@@ -353,6 +371,35 @@ function Guida(opzioni) {
       return { tipo: 'arrivato', livello: 'emergenza',
                testo: 'Sei arrivato: ' + n + (dove ? ', ' + dove : '') + '.' + accanto };
     }
+    /* COL MOTORE DELL'AVANZAMENTO non serve indovinare niente: la
+       prossima svolta e' la prima che sta piu' avanti di dove sei, e
+       una passata di lato resta passata perche' il numero e' cresciuto. */
+    if (avanzamento && avanzamento.quantoELungo() > 0) {
+      avanzamento.dove(qui.lat, qui.lon);
+      var pr = avanzamento.prossima();
+      prossima = pr ? pr.quale : svolte.length;
+      if (pr) {
+        if (pr.manca < VICINO_SVOLTA) {
+          ultimoAvviso = adesso;
+          avanzamento.dove(qui.lat, qui.lon);
+          /* si segna come detta spostando l'indice: la prossima volta
+             prossima() dara' quella dopo, perche' i metri sono cresciuti.
+             Qui si tiene il conto di quelle gia' annunciate. */
+          if (preavvisata !== pr.quale + 1000) {
+            preavvisata = pr.quale + 1000;
+            return { tipo: 'svolta', livello: 'guida',
+                     testo: 'Adesso: ' + minuscola(pr.svolta.testo) };
+          }
+        } else if (pr.manca < PREAVVISO && preavvisata !== pr.quale) {
+          preavvisata = pr.quale;
+          ultimoAvviso = adesso;
+          return { tipo: 'preavviso', livello: 'guida',
+                   testo: 'Mancano ' + (Math.round(pr.manca / 10) * 10) + ' metri, ' +
+                          passi(pr.manca) + '. Poi ' + puoi(pr.svolta.testo) + '.' };
+        }
+      }
+    }
+
     /* ============================================================
        UNA SVOLTA SI PASSA ANCHE SENZA PASSARCI SOPRA
        «Avevo superato il ponte Marconi e mi diceva che a 200 metri
@@ -370,7 +417,7 @@ function Guida(opzioni) {
        2. una svolta PIU' AVANTI nell'elenco e' molto piu' vicina di
           questa: sei gia' oltre, e si salta li'.
        ============================================================ */
-    if (svolte.length && prossima < svolte.length) {
+    if (!avanzamento && svolte.length && prossima < svolte.length) {
       var q0 = dist(qui.lat, qui.lon, svolte[prossima].lat, svolte[prossima].lon);
       if (piuVicinoMai === null || prossima !== quandoMisurata) {
         piuVicinoMai = q0; quandoMisurata = prossima;
@@ -393,8 +440,8 @@ function Guida(opzioni) {
         }
       }
     }
-    // REGOLA 2: la svolta quando ci sei quasi sopra
-    if (svolte.length && prossima < svolte.length) {
+    // REGOLA 2: la svolta quando ci sei quasi sopra (senza avanzamento)
+    if (!avanzamento && svolte.length && prossima < svolte.length) {
       var s = svolte[prossima];
       var quanto = dist(qui.lat, qui.lon, s.lat, s.lon);
       if (quanto < VICINO_SVOLTA) {

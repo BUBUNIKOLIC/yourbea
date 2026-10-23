@@ -1127,8 +1127,17 @@
      frasi che servono a girare. «Più parole, un linguaggio più articolato,
      potrebbe fare più compagnia» (Vince, 16/10). */
   var modi = Modi({ nome: ioSonoIo });
+  /* IL MOTORE CHE USANO TUTTI I NAVIGATORI. «Devi riprendere il motore
+     di qualsiasi navigatore open source» (Vince, 23/10): non e' il
+     calcolo della strada — quello ce l'abbiamo da Valhalla — e' il
+     conto di DOVE SEI SULLA STRADA. Si proietta la posizione sulla
+     linea e si contano i metri fatti: da li' escono la prossima
+     svolta, quanto manca e il fuori strada, senza casi particolari.
+     parti/avanzamento.js, 7 prove. */
+  var avanzamento = Avanzamento({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
   var guida = Guida({ distanza: laDistanza,  dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
+                      avanzamento: avanzamento,
                       diario: diario });
 
   /* la musica sotto il racconto: solo in Turismo e piano, con le regole in
