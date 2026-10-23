@@ -1732,6 +1732,10 @@
      ambientale si dice finché non ha una risposta — tranne l'emergenza, che
      passa sempre. E l'attesa ha una vita: se nessuno risponde entro mezzo
      minuto l'app non resta muta per sempre, riprende a raccontare. */
+  /* CHIUDERE A VOCE, e solo quando lo si intende davvero. La frase deve
+     ESSERE il comando: «chiudi», «chiudi l'app», «esci», «buonanotte».
+     «Chiudi il microfono» e «chiudi la finestra» non chiudono niente. */
+  var CHIUDI_TUTTO = /^(?:(?:chiudi|chiudete|spegni)(?:\s+(?:l[ae]?\s*|il\s+|la\s+)?(?:app|applicazione|yourbea|tutto))?|chiudiamo|chiuditi|spegniti|esci|arrivederci|buonanotte|buona notte|ciao yourbea|addio)$/;
   var ATTESA_VIVE = 30000;
 
   /* ============================================================
@@ -2326,6 +2330,16 @@
        che è scritto» — e «cartello» la frase più naturale di tutte. */
     leggi: ['leggi', 'scritto', 'cartello', 'targa', 'citofono'],
     aiuto: ['aiuto', 'comandi', 'che posso dire'],
+    /* CHIUDERE A VOCE. «La app deve aprirsi e chiudersi facilmente,
+       vocalmente ed agevolmente» (Vince, 23/10, regola 3). Il 22/10 la
+       sorella di Vince l'ha disinstallata perche' non trovava il modo di
+       uscirne. Aprirla a voce lo fa gia' il telefono — «Ehi Siri, apri
+       Yourbea» — chiuderla no, e tocca a noi. */
+    /* niente elenco di parole per questo: «chiudi» dentro una frase
+       qualunque chiuderebbe l'app. Provato al banco, «chiudi il
+       microfono» e «chiudi la finestra» la chiudevano. Serve che la
+       frase SIA il comando, non che lo contenga: la regola sta piu'
+       sotto, in CHIUDI_TUTTO. */
     /* CHE COSA VUOI SENTIRE. «Deve essere facilmente accessibile, che io
        dico solo monumenti» (Dario, 16/10). Si riconosce la parola che
        conta — «solo monumenti», «soltanto i monumenti», «niente negozi» —
@@ -2734,6 +2748,24 @@
     if (ha('negozi')) { diciINegozi(); return true; }
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
+    if (CHIUDI_TUTTO.test(t)) {
+      /* si saluta, si spegne tutto, e poi si chiude per davvero dove si
+         puo'. Su iPhone un'app non puo' terminarsi da sola: allora tace,
+         lascia andare microfono e posizione, e lo dice. */
+      voce.parla('Chiudo. A presto.', { livello: voce.GUIDA, ancheSeUguale: true });
+      setTimeout(function () {
+        try { suonaMusica({ suona: false }); } catch (e) {}
+        try { faro.spegni(); spegniIlSuono(); } catch (e) {}
+        try { miei.smetti(); } catch (e) {}
+        try { passeggiata.ferma && passeggiata.ferma(); } catch (e) {}
+        acceso = false;
+        try { voce.ferma(); } catch (e) {}
+        if (window.urbeaChiudi) { window.urbeaChiudi(); return; }
+        /* nel browser o dove non si puo' chiudere: resta ferma e muta */
+        mostra({ titolo: 'Yourbea', testo: 'Chiusa. Premi Avvia per riaprirla.', dove: '', gradino: '' });
+      }, 1600);
+      return true;
+    }
     if (ha('aiuto')) {
       voce.parla('Puoi dire: ancora. Avanti. Dove sono. Cosa c\'è qui intorno. Solo monumenti, oppure dimmi tutto. Ferma. ' +
                  'Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell\'autobus. ' +
