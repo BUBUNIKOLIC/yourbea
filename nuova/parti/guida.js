@@ -31,6 +31,12 @@ function Guida(opzioni) {
   var verso = o.verso;                         // (lat,lon,lat,lon) -> gradi
   var diario = o.diario || function () {};
   var VICINO_SVOLTA = o.vicinoSvolta || 25;
+  /* quanto bisogna essersi avvicinati perche' allontanarsi voglia dire
+     «l'ho passata», e di quanto bisogna allontanarsi */
+  var SONO_STATO_VICINO = o.sonoStatoVicino || 60;
+  var MI_STO_ALLONTANANDO = o.miStoAllontanando || 25;
+  var SALTA_AVANTI = o.saltaAvanti || 50;
+  var piuVicinoMai = null, quandoMisurata = -1;
   var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
   var ARRIVATO = o.arrivato || 22;
   var FILO = o.filo || 20000;        // non si tace mai piu' di venti secondi
@@ -255,7 +261,7 @@ function Guida(opzioni) {
 
   /* verso(): la meta è fissata. Restituisce la frase d'apertura. */
   function vaiA(m, qui, dove, percorso) {
-    meta = m; svolte = []; prossima = 0; ultimoAvviso = 0; preavvisata = -1; fuoriDa = 0;
+    meta = m; svolte = []; prossima = 0; piuVicinoMai = null; quandoMisurata = -1; ultimoAvviso = 0; preavvisata = -1; fuoriDa = 0;
     linea = (percorso && percorso.linea && percorso.linea.length > 1) ? percorso.linea : [];
     quantoManca = dist(qui.lat, qui.lon, m.lat, m.lon);
     var dovesei = dove && dove.via ? ('Sei in ' + dove.via + (dove.civico ? ' ' + dove.civico : '') + '. ') : '';
@@ -295,13 +301,31 @@ function Guida(opzioni) {
      via Rossi». E' la differenza fra un ordine e un avviso: nel preavviso
      non devi fare niente adesso, devi solo saperlo. Parole di Vince:
      «poi puoi svoltare a destra». */
+  /* puoi(): «poi PUOI svoltare a destra». Dopo «puoi» ci va l'infinito,
+     e l'elenco dei verbi era corto: le istruzioni vere ne usano molti
+     altri, e quelli che mancavano uscivano cosi' com'erano — «poi puoi
+     attraversa il ponte», «poi puoi mantieni la destra». Scritto fa
+     ridere; detto da una voce sintetica a chi non vede fa dubitare di
+     tutta la frase. */
+  var INFINITO = [
+    [/^gira a /, 'svoltare a '], [/^svolta a /, 'svoltare a '],
+    [/^svolta /, 'svoltare '], [/^gira /, 'girare '],
+    [/^continua /, 'continuare '], [/^prendi /, 'prendere '],
+    [/^cammina /, 'camminare '], [/^attraversa /, 'attraversare '],
+    [/^mantieni /, 'mantenere '], [/^tieni /, 'tenere '],
+    [/^imbocca /, 'imboccare '], [/^entra /, 'entrare '],
+    [/^esci /, 'uscire '], [/^sali /, 'salire '], [/^scendi /, 'scendere '],
+    [/^segui /, 'seguire '], [/^percorri /, 'percorrere '],
+    [/^resta /, 'restare '], [/^rimani /, 'rimanere '],
+    [/^torna /, 'tornare '], [/^fai /, 'fare '], [/^passa /, 'passare '],
+    [/^vai /, 'andare '], [/^procedi /, 'procedere '],
+    [/^svolta leggermente a /, 'svoltare leggermente a ']
+  ];
   function puoi(testo) {
     var t = minuscola(String(testo || ''));
-    t = t.replace(/^gira a /, 'puoi svoltare a ')
-         .replace(/^svolta a /, 'puoi svoltare a ')
-         .replace(/^continua /, 'puoi continuare ')
-         .replace(/^prendi /, 'puoi prendere ')
-         .replace(/^cammina /, 'puoi camminare ');
+    for (var i = 0; i < INFINITO.length; i++) {
+      if (INFINITO[i][0].test(t)) { t = t.replace(INFINITO[i][0], INFINITO[i][1]); break; }
+    }
     t = t.replace(/[.\s]+$/, '');          // il punto lo mette chi compone la frase
     return /^puoi /.test(t) ? t : ('puoi ' + t);
   }
@@ -329,12 +353,53 @@ function Guida(opzioni) {
       return { tipo: 'arrivato', livello: 'emergenza',
                testo: 'Sei arrivato: ' + n + (dove ? ', ' + dove : '') + '.' + accanto };
     }
+    /* ============================================================
+       UNA SVOLTA SI PASSA ANCHE SENZA PASSARCI SOPRA
+       «Avevo superato il ponte Marconi e mi diceva che a 200 metri
+       dovevo superare il ponte Marconi» (Vince, 23/10).
+       Era questa riga: una svolta si considerava fatta SOLO entrando
+       nei venticinque metri dal suo punto. Se ci passi di lato — un
+       marciapiede largo, un ponte preso dall'altra corsia, il GPS che
+       sbaglia di trenta metri fra i palazzi — quel cerchio non lo
+       tocchi mai. E l'app resta ferma su quella svolta per sempre,
+       ripetendola mentre la distanza CRESCE: duecento metri, trecento.
+       Chi non vede torna indietro a cercare un ponte che ha gia'
+       attraversato.
+       Due modi di accorgersene, tutt'e due necessari:
+       1. ti sei avvicinato e poi ti stai allontanando: l'hai passata;
+       2. una svolta PIU' AVANTI nell'elenco e' molto piu' vicina di
+          questa: sei gia' oltre, e si salta li'.
+       ============================================================ */
+    if (svolte.length && prossima < svolte.length) {
+      var q0 = dist(qui.lat, qui.lon, svolte[prossima].lat, svolte[prossima].lon);
+      if (piuVicinoMai === null || prossima !== quandoMisurata) {
+        piuVicinoMai = q0; quandoMisurata = prossima;
+      } else if (q0 < piuVicinoMai) {
+        piuVicinoMai = q0;
+      } else if (piuVicinoMai < SONO_STATO_VICINO && q0 - piuVicinoMai > MI_STO_ALLONTANANDO) {
+        diario('SVOLTA PASSATA: ero a ' + Math.round(piuVicinoMai) +
+               ' m, adesso a ' + Math.round(q0) + ' — vado alla prossima');
+        prossima++;
+        piuVicinoMai = null;
+      }
+      /* e se una piu' avanti e' molto piu' vicina, sei gia' oltre */
+      for (var sa = prossima + 1; sa < svolte.length; sa++) {
+        var qa = dist(qui.lat, qui.lon, svolte[sa].lat, svolte[sa].lon);
+        if (qa + SALTA_AVANTI < q0) {
+          diario('SVOLTE SALTATE: la ' + sa + ' e a ' + Math.round(qa) +
+                 ' m, la ' + prossima + ' a ' + Math.round(q0));
+          prossima = sa; piuVicinoMai = null;
+          break;
+        }
+      }
+    }
     // REGOLA 2: la svolta quando ci sei quasi sopra
     if (svolte.length && prossima < svolte.length) {
       var s = svolte[prossima];
       var quanto = dist(qui.lat, qui.lon, s.lat, s.lon);
       if (quanto < VICINO_SVOLTA) {
         prossima++;
+        piuVicinoMai = null;
         ultimoAvviso = adesso;
         return { tipo: 'svolta', livello: 'guida', testo: 'Adesso: ' + minuscola(s.testo) };
       }
@@ -461,6 +526,9 @@ function Guida(opzioni) {
     scegli: scegli, cittaNelTesto: cittaNelTesto, cittaCombacia: cittaCombacia,
     leStrade: leStrade, elencoStrade: elencoStrade,
     parolePiene: parolePiene,
+    /* esportata perche' il banco possa provarla: «poi puoi attraversa
+       il ponte» non si vede finche' non si guarda la frase intera. */
+    puoi: puoi,
     meta: function () { return meta; },
     svolteRimaste: function () { return Math.max(0, svolte.length - prossima); }
   };

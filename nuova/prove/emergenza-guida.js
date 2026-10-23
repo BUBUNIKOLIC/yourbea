@@ -594,6 +594,72 @@ prova('«aiuto» da solo resta il menu, non la chiamata', () => {
   if (d.tipo !== 'scelte') guasto('doveva essere il menu: ' + d.tipo);
 });
 
+/* ============================================================
+   IL PONTE MARCONI
+   «Avevo superato il ponte Marconi e mi diceva che a 200 metri dovevo
+   superare il ponte Marconi» (Vince, 23/10). La svolta si considerava
+   fatta solo entrando nei venticinque metri dal suo punto: passandoci
+   di lato — un ponte largo, il GPS che sbaglia fra i palazzi — quel
+   cerchio non si tocca mai, e l'app ripeteva la stessa svolta mentre
+   la distanza cresceva.
+   ============================================================ */
+function stradaDritta(g, da, a, quante) {
+  /* un percorso finto con tre svolte lungo una retta */
+  const svolte = [];
+  for (let i = 1; i <= quante; i++) {
+    svolte.push({ lat: da[0] + (a[0] - da[0]) * i / (quante + 1),
+                  lon: da[1] + (a[1] - da[1]) * i / (quante + 1),
+                  testo: 'Attraversa il ponte numero ' + i, metri: 100 });
+  }
+  return { svolte: svolte, metri: 400, linea: [] };
+}
+
+prova('una svolta passata di lato non si ripete all infinito', () => {
+  const g = Guida({ distanza: LADISTANZA, dist, verso });
+  const da = [41.8500, 12.4700], a = [41.8560, 12.4700];
+  const percorso = stradaDritta(g, da, a, 3);
+  /* si passa a quaranta metri di lato dal punto della svolta: il
+     cerchio dei venticinque non lo tocchiamo mai */
+  const lato = 0.00048;
+  g.vaiA({ n: 'casa', lat: a[0], lon: a[1] }, { lat: da[0], lon: da[1], direzione: 0, direzioneBuona: true },
+         null, percorso);
+  let detto = [];
+  for (let i = 0; i <= 20; i++) {
+    const la = da[0] + (a[0] - da[0]) * i / 20;
+    const d = g.passo({ lat: la, lon: da[1] + lato, direzione: 0, direzioneBuona: true });
+    if (d && d.testo) detto.push(d.testo);
+  }
+  /* la prima svolta non deve essere l'unica cosa che dice per tutto il
+     percorso: dopo averla passata deve parlare della seconda e terza */
+  const primo = detto.filter((t) => /ponte numero 1/.test(t)).length;
+  const altri = detto.filter((t) => /ponte numero 2|ponte numero 3/.test(t)).length;
+  if (!altri) guasto('non arriva mai alla seconda svolta: ' + JSON.stringify(detto.slice(0, 4)));
+  if (primo > 3) guasto('ripete la prima svolta ' + primo + ' volte');
+  console.log('      \u2192 ' + detto.slice(0, 3).join(' | ').slice(0, 110));
+});
+
+/* «Poi puoi ATTRAVERSA il ponte»: dopo «puoi» ci va l'infinito, e
+   l'elenco dei verbi era corto. Detto da una voce sintetica a chi non
+   vede, fa dubitare di tutta la frase. */
+prova('dopo «puoi» ci va sempre l infinito', () => {
+  const g = Guida({ distanza: LADISTANZA, dist, verso });
+  const prove = [
+    ['Attraversa il ponte Marconi', 'attraversare'],
+    ['Mantieni la destra', 'mantenere'],
+    ['Svolta a destra su via Roma', 'svoltare'],
+    ['Imbocca via Garibaldi', 'imboccare'],
+    ['Prendi le scale', 'prendere'],
+    ['Continua su viale di Trastevere', 'continuare'],
+    ['Sali le scale', 'salire'],
+    ['Esci dalla rotonda', 'uscire']
+  ];
+  prove.forEach(([dentro, atteso]) => {
+    const fuori = g.puoi ? g.puoi(dentro) : null;
+    if (!fuori) { guasto('puoi() non e esportata'); return; }
+    if (fuori.indexOf(atteso) < 0) guasto('«' + dentro + '» -> «' + fuori + '»');
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove di emergenza e guida');
