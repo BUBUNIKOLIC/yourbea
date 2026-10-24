@@ -74,9 +74,24 @@ function Aggancio(opzioni) {
   };
 
   var viaDiPrima = null, quando = 0;
+  /* per cambiare via bisogna AVER GIRATO: l'orientamento della via su cui
+     sei e l'ultima volta che ci hai camminato di traverso. */
+  var versoDiPrima = null, giratoQuando = 0;
   /* quanto distavi dal percorso nelle ultime letture, per distinguere un
      errore di lato da una strada sbagliata */
   var lontananze = [];
+
+  function quantoGira(a, b) {
+    var d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+  }
+  /* due vie sono parallele se stanno dentro venticinque gradi, contando
+     che una via nord-sud e una sud-nord sono la stessa via */
+  function parallele(a, b) {
+    if (a === null || b === null) return false;
+    var d = quantoGira(a, b);
+    return Math.min(d, 180 - d) < 25;
+  }
 
   /* il punto piu' vicino su un segmento, e quanto dista */
   function sulSegmento(la, lo, a, b) {
@@ -94,7 +109,14 @@ function Aggancio(opzioni) {
     var meglio = null;
     for (var i = 1; i < p.length; i++) {
       var q = sulSegmento(la, lo, p[i - 1], p[i]);
-      if (!meglio || q.m < meglio.m) meglio = q;
+      if (!meglio || q.m < meglio.m) {
+        meglio = q;
+        /* come e' orientata la via QUI: serve a capire se un'altra via
+           le e' parallela, cioe' se ci si puo' finire senza girare. */
+        var k = Math.cos(la * Math.PI / 180);
+        meglio.verso = (Math.atan2((p[i][1] - p[i - 1][1]) * k,
+                                   (p[i][0] - p[i - 1][0])) * 180 / Math.PI + 360) % 360;
+      }
     }
     return meglio;
   }
@@ -189,13 +211,51 @@ function Aggancio(opzioni) {
         suDiPrima.m - migliore.m < PER_CAMBIARE) {
       scelto = suDiPrima;
     }
+    /* ============================================================
+       REGOLA 6: PER CAMBIARE VIA BISOGNA AVER GIRATO
+       (24/10) Il GPS che rimbalza sui palazzi sposta il punto sempre
+       dallo stesso lato, di quindici o venti metri. Se di la' c'e' una
+       parallela — in centro ce n'e' una a ogni isolato — la posizione
+       ci finisce sopra, e misurato era 152 volte su 301.
+       Ma una cosa e' certa: a una via PARALLELA non ci si arriva
+       camminando dritto. Per cambiare strada bisogna girare. Quindi se
+       la via nuova e' parallela a quella di prima e NON abbiamo mai
+       visto la direzione girare, non e' una strada nuova: e' il GPS che
+       scivola, e si resta dove si era.
+       Se invece hai girato davvero — la direzione e' stata di traverso
+       alla tua via — allora si cambia subito, com'e' giusto.
+       Senza direzione (fermi, o appena partiti) questa regola non si
+       applica: meglio l'aggancio di prima che nessun aggancio.
+       ============================================================ */
+    if (scelto !== suDiPrima && viaDiPrima && scelto.nome !== viaDiPrima &&
+        typeof s.direzione === 'number' && s.direzioneBuona) {
+      if (parallele(scelto.verso, versoDiPrima)) {
+        var giratoDaPoco = giratoQuando && (ora() - giratoQuando) < TIENE;
+        if (!giratoDaPoco && suDiPrima && suDiPrima.m <= QUANTO_LONTANO) {
+          scelto = suDiPrima;
+        }
+      }
+    }
+    /* e si tiene il conto di quando hai camminato di traverso alla tua
+       via: e' quello che distingue una svolta da uno scivolamento. */
+    if (typeof s.direzione === 'number' && s.direzioneBuona && versoDiPrima !== null) {
+      var fuoriAsse = quantoGira(s.direzione, versoDiPrima);
+      fuoriAsse = Math.min(fuoriAsse, 180 - fuoriAsse);
+      if (fuoriAsse > 50) giratoQuando = ora();
+    }
+    if (scelto.nome !== viaDiPrima || versoDiPrima === null) {
+      versoDiPrima = (scelto.verso === undefined ? versoDiPrima : scelto.verso);
+    }
     viaDiPrima = scelto.nome || viaDiPrima;
     quando = ora();
     return { lat: scelto.lat, lon: scelto.lon, via: scelto.nome,
              spostato: Math.round(dist(s.lat, s.lon, scelto.lat, scelto.lon)) };
   }
 
-  function dimentica() { viaDiPrima = null; quando = 0; lontananze = []; }
+  function dimentica() {
+    viaDiPrima = null; quando = 0; lontananze = [];
+    versoDiPrima = null; giratoQuando = 0;
+  }
   function laVia() { return viaDiPrima; }
 
   return { aggancia: aggancia, dimentica: dimentica, laVia: laVia };

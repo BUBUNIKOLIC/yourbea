@@ -474,12 +474,13 @@
     geo: navigator.geolocation || null,
     /* le vie le abbiamo gia' scaricate per gli incroci: servono anche a
        posare la lettura del GPS dove uno cammina davvero */
-    aggancia: function (lat, lon, prec, aPiedi) {
+    aggancia: function (lat, lon, prec, aPiedi, direzione, direzioneBuona) {
       /* se «portami a» e' accesa, il tracciato: la lettura si posa su
          quella linea invece di cercarla fra tutte le vie (regola 5).
          `guida` nasce piu' sotto di qui, e a quel punto esiste. */
       var linea = (typeof guida !== 'undefined' && guida) ? guida.laLinea() : null;
-      return agganciatore.aggancia({ lat: lat, lon: lon, prec: prec, aPiedi: aPiedi },
+      return agganciatore.aggancia({ lat: lat, lon: lon, prec: prec, aPiedi: aPiedi,
+                                     direzione: direzione, direzioneBuona: direzioneBuona },
                                    SERVIZI.vie || [], linea);
     },
     /* LA FALCATA VERA, quella misurata mentre registrava un percorso:

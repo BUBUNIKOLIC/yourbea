@@ -189,6 +189,63 @@ prova('MA SE TI ALLONTANI SEMPRE DI PIU, hai sbagliato strada e non ti si agganc
   if (agganci) guasto('lo ha inchiodato al percorso mentre se ne andava: ' + agganci + ' volte');
 });
 
+/* ============================================================
+   REGOLA 6: A UNA VIA PARALLELA NON CI SI ARRIVA SENZA GIRARE
+   (24/10) «Non si puo risolvere questo problema?» Il GPS che rimbalza
+   sui palazzi sposta il punto sempre dallo stesso lato: con una
+   parallela a diciotto metri, la posizione ci finiva sopra 184 volte su
+   301. Ma per cambiare strada bisogna girare.
+   ============================================================ */
+
+prova('CAMMINANDO DRITTO non si cambia via, anche se il GPS scivola sulla parallela', () => {
+  const w = mondo();
+  const perMetro = 1 / (111320 * Math.cos(41.9 * Math.PI / 180));
+  /* si parte su via Roma, camminando verso nord (0 gradi) */
+  let la = 41.9000;
+  for (let i = 0; i < 6; i++) {
+    w.a.aggancia({ lat: la, lon: 12.4900, prec: 8, aPiedi: true, direzione: 0, direzioneBuona: true }, VIE);
+    la += 0.0000126; w.passano(1000);
+  }
+  if (w.a.laVia() !== 'via Roma') return guasto('non e partita da via Roma: ' + w.a.laVia());
+  /* adesso il GPS scivola di venti metri verso via Milano, sempre dallo
+     stesso lato, mentre la direzione resta nord: non abbiamo girato. */
+  let dove = null;
+  for (let i = 0; i < 10; i++) {
+    dove = w.a.aggancia({ lat: la, lon: 12.4900 + 20 * perMetro, prec: 8, aPiedi: true,
+                          direzione: 0, direzioneBuona: true }, VIE);
+    la += 0.0000126; w.passano(1000);
+  }
+  if (!dove) return guasto('ha smesso di agganciare');
+  console.log('      → venti metri di scivolamento, direzione sempre nord: resta su ' + dove.via);
+  if (dove.via !== 'via Roma') guasto('e scivolata su ' + dove.via + ' senza che tu avessi girato');
+});
+
+prova('MA SE GIRI DAVVERO (la direzione va di traverso) la via cambia', () => {
+  const w = mondo();
+  const perMetro = 1 / (111320 * Math.cos(41.9 * Math.PI / 180));
+  let la = 41.9000;
+  for (let i = 0; i < 6; i++) {
+    w.a.aggancia({ lat: la, lon: 12.4900, prec: 8, aPiedi: true, direzione: 0, direzioneBuona: true }, VIE);
+    la += 0.0000126; w.passano(1000);
+  }
+  /* si gira a destra: la direzione diventa est, di traverso alla via */
+  let dove = null;
+  for (let i = 0; i < 5; i++) {
+    dove = w.a.aggancia({ lat: la, lon: 12.4900 + (i * 5) * perMetro, prec: 8, aPiedi: true,
+                          direzione: 90, direzioneBuona: true }, VIE);
+    w.passano(1000);
+  }
+  /* e poi si riprende a camminare dritto, sulla via nuova */
+  for (let i = 0; i < 4; i++) {
+    dove = w.a.aggancia({ lat: la, lon: 12.49024, prec: 8, aPiedi: true,
+                          direzione: 0, direzioneBuona: true }, VIE);
+    la += 0.0000126; w.passano(1000);
+  }
+  if (!dove) return guasto('ha smesso di agganciare');
+  console.log('      → dopo aver girato di traverso: ' + dove.via);
+  if (dove.via !== 'via Milano') guasto('hai girato davvero e l app ti tiene su ' + dove.via);
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove dell\'aggancio');

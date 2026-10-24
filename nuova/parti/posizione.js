@@ -341,7 +341,10 @@ function Posizione(opzioni) {
        cosi' tutto quello che viene dopo — la strada, i passaggi, i
        monumenti, il faro — lavora sul punto buono. */
     if (aggancia) {
-      var posato = aggancia(lat, lon, prec, comeTiMuovi());
+      /* la direzione serve all'aggancio per la sua regola 6: a una via
+         parallela non ci si arriva senza girare. */
+      var posato = aggancia(lat, lon, prec, comeTiMuovi(),
+                            stato.direzione, direzioneBuona());
       if (posato) {
         lat = posato.lat; lon = posato.lon;
         stato.viaAgganciata = posato.via || null;
