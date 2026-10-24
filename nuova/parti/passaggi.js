@@ -141,6 +141,25 @@ function Passaggi(opzioni) {
     return p + ' passi';
   }
 
+  /* ============================================================
+     L'ATTRAVERSAMENTO SI DICE SEMPRE CON L'AVVERTENZA
+     «Ci deve essere sempre annuncio che la guida indica non e' precisa
+     negli attraversamenti — per non avere problemi» (Vince, 24/10).
+     Il GPS a piedi sbaglia dai dieci ai trenta metri: dire «a venti
+     passi l'attraversamento» a chi non vede e' un ordine che esegue, e
+     l'attraversamento puo' essere qualche metro piu' avanti o piu'
+     indietro. Finora la regola era non dare imperativi; adesso l'app lo
+     DICE, ogni volta che nomina un attraversamento.
+     «Secondo me non bisogna dire "non e' preciso"» — e poi: «bisogna dire
+     nell'arco di 20/30 metri prestare attenzione» (Vince, 24/10, dopo
+     aver letto il campione). La prima versione diceva «ma la posizione
+     non e' precisa»: ripetuta a ogni attraversamento spaventa e non dice
+     cosa fare. Questa da' la stessa informazione — l'attraversamento e'
+     da cercare in un tratto di strada, non in un punto — e dice la cosa
+     utile: fai attenzione.
+     ============================================================ */
+  var NON_PRECISO = o.nonPreciso || ', nell\'arco di 20 o 30 metri: presta attenzione, o chiedi a qualcuno dov\'e\'';
+
   /* comeSiChiama(): di un avviso conta cos'e' e cosa ha, non il nome. */
   function dettagli(p) {
     if (p.cosa === 'attraversamento') {
@@ -149,7 +168,7 @@ function Passaggi(opzioni) {
       else if (p.semaforo) pezzi.push('col semaforo');
       else pezzi.push('senza semaforo');
       if (p.tattile) pezzi.push('col percorso tattile');
-      return 'un attraversamento ' + pezzi.join(', ');
+      return 'un attraversamento ' + pezzi.join(', ') + NON_PRECISO;
     }
     if (p.cosa === 'scalini') {
       return (p.quanti ? p.quanti + ' scalini' : 'degli scalini') +

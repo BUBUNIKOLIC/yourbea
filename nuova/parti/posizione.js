@@ -182,6 +182,8 @@ function Posizione(opzioni) {
     attivita: null, attivitaQuando: 0, attivitaSicura: false,
     viaAgganciata: null,
     velocitaAlta: 0, velocitaAltaQuando: 0,
+    /* il corso che dice il telefono, se lo dice */
+    corsoSuo: null, corsoSuoPrec: null, corsoSuoQuando: 0,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
   };
   var ascoltatori = [];
@@ -449,7 +451,15 @@ function Posizione(opzioni) {
       for (var fi = filo.length - 2; fi >= 0; fi--) {
         if (dist(filo[fi].lat, filo[fi].lon, lat, lon) >= TRATTO_DIREZIONE) { daDove = filo[fi]; break; }
       }
-      if (daDove) {
+      /* IL CORSO DEL TELEFONO VIENE PRIMA DEL NOSTRO, se c'e' ed e'
+         fresco: lui lo fonde coi sensori, noi lo deduciamo da due punti.
+         Vale mezzo minuto come il nostro, e solo mentre ci si muove. */
+      var suo = (stato.corsoSuo !== null && (ora() - stato.corsoSuoQuando) < 3000);
+      if (suo) {
+        stato.direzione = stato.corsoSuo;
+        stato.direzioneQuando = ora();
+        segnaLaDirezione(stato.direzione);
+      } else if (daDove) {
         stato.direzione = verso(daDove.lat, daDove.lon, lat, lon);
         stato.direzioneQuando = ora();
         segnaLaDirezione(stato.direzione);
@@ -643,7 +653,35 @@ function Posizione(opzioni) {
   }
 
   /* dalGuscio(): la porta che l'app iPhone chiama. */
-  function dalGuscio(lat, lon, prec) { arriva(lat, lon, prec); }
+  /* dalGuscio(): dal telefono arriva anche quello che LUI calcola — il
+     corso (la direzione del movimento) con la sua accuratezza in gradi,
+     e la velocita'. Il corso del telefono e' fuso coi sensori, il
+     nostro e' dedotto da due punti: dove c'e' il suo, vince il suo.
+     I gusci vecchi mandano solo i primi tre numeri: allora `altro` e'
+     vuoto e tutto va come prima. */
+  function dalGuscio(lat, lon, prec, altro) {
+    if (altro) corsoDalTelefono(altro);
+    arriva(lat, lon, prec);
+  }
+
+  /* IL CORSO CHE DICE IL TELEFONO (regola 1, punto 4: al telefono si
+     chiede tutto quello che da'). iOS lo da' con `courseAccuracy` in
+     gradi, negativa quando non lo sa; Android col `bearingAccuracyDegrees`
+     del Fused Location Provider. Si crede solo se:
+       - il telefono dichiara di saperlo (accuratezza fra 0 e 25 gradi);
+       - e ci stiamo muovendo (fermi, il corso non vuol dire niente:
+         e' la regola 4 di questo file, e non cambia).
+     Quando c'e', e' meglio del nostro dedotto da due punti — che mentre
+     giri l'angolo sta in mezzo fra la vecchia strada e la nuova. */
+  var CORSO_PREC_BUONA = o.corsoPrecBuona || 25;
+  function corsoDalTelefono(a) {
+    var c = Number(a.corso), p = Number(a.corsoPrec);
+    if (!isFinite(c) || c < 0 || !isFinite(p) || p < 0 || p > CORSO_PREC_BUONA) {
+      stato.corsoSuo = null;
+      return;
+    }
+    stato.corsoSuo = c; stato.corsoSuoPrec = p; stato.corsoSuoQuando = ora();
+  }
 
   /* vigila(): se la posizione non arriva mai, qualcuno deve dirlo a voce.
      Chiama la funzione data ogni volta che lo stato è brutto da troppo. */

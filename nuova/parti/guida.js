@@ -38,6 +38,30 @@ function Guida(opzioni) {
   var SALTA_AVANTI = o.saltaAvanti || 50;
   var VICINO_COL_MOTORE = o.vicinoColMotore || 12;
   var piuVicinoMai = null, quandoMisurata = -1;
+  /* ============================================================
+     L'ATTRAVERSAMENTO SI DICE SEMPRE CON L'AVVERTENZA
+     «Ci deve essere sempre annuncio che la guida indica non e' precisa
+     negli attraversamenti — per non avere problemi» (Vince, 24/10).
+     Il percorso dice «attraversa la strada» con la precisione di
+     Valhalla, ma dove sei lo sa il GPS, che a piedi sbaglia dai dieci ai
+     trenta metri: l'attraversamento puo' essere qualche metro piu'
+     avanti o piu' indietro, e chi non vede esegue quello che sente.
+     La regola di prima era non dare imperativi; questa la dice.
+     «Secondo me non bisogna dire "non e' preciso"» — e poi: «bisogna dire
+     nell'arco di 20/30 metri prestare attenzione» (Vince, 24/10, dopo
+     aver letto il campione). La prima versione diceva «ma la posizione
+     non e' precisa»: ripetuta a ogni attraversamento spaventa e non dice
+     cosa fare. Questa da' la stessa informazione — l'attraversamento e'
+     da cercare in un tratto di strada, non in un punto — e dice la cosa
+     utile: fai attenzione.
+     ============================================================ */
+  var NON_PRECISO = o.nonPreciso || ', nell\'arco di 20 o 30 metri: presta attenzione, o chiedi a qualcuno dov\'e\'';
+  function conAvvertenza(t) {
+    var s = String(t || '');
+    if (!/attravers/i.test(s)) return s;
+    if (/non e' precisa|non è precisa/.test(s)) return s;
+    return s.replace(/[.\s]*$/, '') + NON_PRECISO + '.';
+  }
   var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
   var ARRIVATO = o.arrivato || 22;
   var FILO = o.filo || 20000;        // non si tace mai piu' di venti secondi
@@ -397,14 +421,14 @@ function Guida(opzioni) {
           if (preavvisata !== pr.quale + 1000) {
             preavvisata = pr.quale + 1000;
             return { tipo: 'svolta', livello: 'guida',
-                     testo: 'Adesso: ' + minuscola(pr.svolta.testo) };
+                     testo: conAvvertenza('Adesso: ' + minuscola(pr.svolta.testo)) };
           }
         } else if (pr.manca < PREAVVISO && preavvisata !== pr.quale) {
           preavvisata = pr.quale;
           ultimoAvviso = adesso;
           return { tipo: 'preavviso', livello: 'guida',
-                   testo: 'Mancano ' + (Math.round(pr.manca / 10) * 10) + ' metri, ' +
-                          passi(pr.manca) + '. Poi ' + puoi(pr.svolta.testo) + '.' };
+                   testo: conAvvertenza('Mancano ' + (Math.round(pr.manca / 10) * 10) + ' metri, ' +
+                          passi(pr.manca) + '. Poi ' + puoi(pr.svolta.testo) + '.') };
         }
       }
     }

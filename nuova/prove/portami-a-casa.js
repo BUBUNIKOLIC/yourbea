@@ -138,6 +138,7 @@ if (!percorso) {
    arriva alla guida e' quella che calcola il motore — non la verita'. */
 function cammina(opz) {
   const o = opz || {};
+  let corsoVero = null;
   let adesso = 1000000, seguito = null;
   const agg = Aggancio({ dist });
   const avan = Avanzamento({ dist });
@@ -166,7 +167,14 @@ function cammina(opz) {
 
   function sbagliaEMetti(la, lo) {
     const [gla, glo, prec] = sbaglia(la, lo);
-    seguito({ coords: { latitude: gla, longitude: glo, accuracy: prec } });
+    if (o.corsoDalTelefono && corsoVero !== null) {
+      /* come fa iOS: il corso fuso coi sensori, con dieci gradi di
+         errore dichiarati */
+      pos.dalGuscio(gla, glo, prec,
+                    { corso: (corsoVero + 360) % 360, corsoPrec: 10, vel: 1.4, velPrec: 1 });
+    } else {
+      seguito({ coords: { latitude: gla, longitude: glo, accuracy: prec } });
+    }
   }
   function leggi() {
     const s = pos.leggi();
@@ -181,6 +189,7 @@ function cammina(opz) {
     const lungo = dist(a0[0], a0[1], b0[0], b0[1]);
     const quanti = Math.max(1, Math.round(lungo / 1.4));    // un secondo di cammino
     const veroVerso = verso(a0[0], a0[1], b0[0], b0[1]);
+    corsoVero = veroVerso;
     for (let k = 1; k <= quanti; k++) {
       adesso += 1000;
       passi += 2;
@@ -212,6 +221,7 @@ function cammina(opz) {
 }
 
 const giro = cammina({ aggancioAlPercorso: true });
+const giroColCorso = cammina({ aggancioAlPercorso: true, corsoDalTelefono: true });
 
 console.log('');
 console.log('      percorso vero di Trastevere: ' + percorso.metri + ' metri, ' +
@@ -233,6 +243,36 @@ prova('LA PARTE E GIUSTA: non dice «a destra» a chi deve andare dritto', () =>
   if (giro.versiOltre45 > giro.versiQuanti * 0.05) {
     guasto('la parte e sbagliata in ' + giro.versiOltre45 + ' letture su ' + giro.versiQuanti);
   }
+});
+
+prova('COL CORSO DEL TELEFONO la parte sbaglia molto meno', () => {
+  /* regola 1, punto 4, e regola 5: «da casa al dottore e viceversa, con
+     estrema precisione» (Vince, 24/10). */
+  console.log('      → direzione dedotta da noi : oltre 45° in ' + giro.versiOltre45 +
+              ' letture su ' + giro.versiQuanti);
+  console.log('      → corso detto dal telefono : oltre 45° in ' + giroColCorso.versiOltre45 +
+              ' letture su ' + giroColCorso.versiQuanti);
+  if (giroColCorso.versiOltre45 > giro.versiOltre45) {
+    guasto('col corso del telefono va peggio: ' + giroColCorso.versiOltre45 + ' contro ' + giro.versiOltre45);
+  }
+  if (giroColCorso.versiOltre45 > giroColCorso.versiQuanti * 0.02) {
+    guasto('col corso del telefono sbaglia ancora in ' + giroColCorso.versiOltre45 + ' letture');
+  }
+});
+
+prova('OGNI FRASE SUGLI ATTRAVERSAMENTI PORTA L AVVERTENZA', () => {
+  /* «Ci deve essere sempre annuncio che la guida indica non e precisa
+     negli attraversamenti — per non avere problemi» (Vince, 24/10).
+     Questa prova esiste perche quella frase non possa sparire in una
+     riscrittura: il percorso di Trastevere ha tre attraversamenti. */
+  const dette = giro.dette.filter((d) => /attravers/i.test(d.testo));
+  if (!dette.length) return guasto('in questo percorso non si parla di attraversamenti: prova inutile');
+  let senza = 0;
+  dette.forEach((d) => {
+    if (!/presta attenzione/.test(d.testo)) { senza++; console.log('      MANCA: ' + d.testo); }
+  });
+  console.log('      → ' + dette.length + ' frasi parlano di attraversamenti, tutte con «presta attenzione»');
+  if (senza) guasto(senza + ' frasi parlano di attraversamento senza dire che la posizione non e precisa');
 });
 
 prova('arriva fino in fondo', () => {

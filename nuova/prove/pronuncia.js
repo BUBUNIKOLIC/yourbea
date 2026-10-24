@@ -64,6 +64,29 @@ prova('una frase senza parentesi non si tocca', () => {
   if (p.sistema(t) !== t) guasto('ha cambiato una frase pulita: ' + p.sistema(t));
 });
 
+prova('LA METRO NON SI DICE «MB»', () => {
+  /* «Anche la metro dice MB» (Vince, 24/10): nei dati della mappa la
+     linea B di Roma si chiama MB, e la voce legge la sigla come viene. */
+  const p = Pronuncia();
+  const casi = [
+    ['Ingresso della metropolitana, Piramide MB', 'metro B'],
+    ['Colosseo MB, a 30 passi', 'metro B'],
+    ['Termini MA', 'metro A'],
+    ['Conca d\'Oro MB1', 'metro B1'],
+    ['San Giovanni MC', 'metro C'],
+    ['Duomo M1', 'metro 1']
+  ];
+  casi.forEach(([dentro, atteso]) => {
+    const fuori = p.sistema(dentro);
+    if (fuori.indexOf(atteso) < 0) guasto('«' + dentro + '» → «' + fuori + '»');
+  });
+  console.log('      → ' + p.sistema('Colosseo MB, a 30 passi'));
+  /* e non si tocca quello che non c entra */
+  ['Marco', 'MBA', 'Mbappe', 'M5S'].forEach((t) => {
+    if (p.sistema(t) !== t) guasto('ha toccato «' + t + '»: ' + p.sistema(t));
+  });
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della pronuncia');

@@ -68,9 +68,24 @@ function Pronuncia(opzioni) {
       .replace(/,\s*([.!?])/g, '$1');
   }
 
+  /* ============================================================
+     LE SIGLE DELLE LINEE SI DICONO A PAROLE
+     «Anche la metro dice MB» (Vince, 24/10). Nei dati della mappa la
+     linea B della metropolitana di Roma si chiama `MB`, e una voce
+     sintetica quella sigla la legge come viene: a chi non vede non dice
+     niente. Si scrive come la direbbe una persona: «metro B».
+     Roma: MA, MB, MB1, MC. Milano: M1..M5. Solo tutta maiuscola e come
+     parola intera, cosi' non si tocca niente dentro i nomi.
+     ============================================================ */
+  function sigleDiLinea(t) {
+    return String(t)
+      .replace(/(^|[^A-Za-z0-9])M(A|B1|B|C)(?![A-Za-z0-9])/g, '$1metro $2')
+      .replace(/(^|[^A-Za-z0-9])M([1-5])(?![A-Za-z0-9])/g, '$1metro $2');
+  }
+
   function sistema(testo) {
     if (!testo) return testo;
-    return senzaParentesi(String(testo)).replace(/[A-Za-zÀ-ÿ]+/g, function (p) {
+    return sigleDiLinea(senzaParentesi(String(testo))).replace(/[A-Za-zÀ-ÿ]+/g, function (p) {
       var k = p.toLowerCase();
       var giusta = COME[k];
       if (!giusta) return p;
@@ -82,7 +97,8 @@ function Pronuncia(opzioni) {
     });
   }
 
-  return { sistema: sistema, senzaParentesi: senzaParentesi, quante: function () { return Object.keys(COME).length; } };
+  return { sistema: sistema, senzaParentesi: senzaParentesi, sigleDiLinea: sigleDiLinea,
+           quante: function () { return Object.keys(COME).length; } };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Pronuncia;

@@ -505,7 +505,13 @@
     diario: diario
   });
   // la porta che il guscio dell'iPhone chiama
-  window.urbeaPosizione = function (lat, lon, prec) { posizione.dalGuscio(lat, lon, prec); };
+  /* dal guscio arrivano anche il corso e la velocita' che calcola il
+     telefono, con la loro accuratezza: i vecchi gusci mandano solo i
+     primi tre numeri, e quelli restano undefined. */
+  window.urbeaPosizione = function (lat, lon, prec, corso, corsoPrec, vel, velPrec) {
+    posizione.dalGuscio(lat, lon, prec,
+                        { corso: corso, corsoPrec: corsoPrec, vel: vel, velPrec: velPrec });
+  };
   /* il passometro del telefono: fermo, cammina, corre, bici, mezzo. Vale
      piu' della velocita' del GPS, e da sottoterra arriva lo stesso. */
   window.urbeaAttivita = function (come, sicuro) { posizione.comeMiMuovo(come, sicuro); };

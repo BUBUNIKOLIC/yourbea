@@ -150,20 +150,51 @@ function Scena(opzioni) {
     /* IL SEMAFORO CHE SUONA viene prima di tutto il resto: è la differenza
        fra attraversare da soli e aspettare qualcuno. */
     var suonano = a.filter(function (p) { return p.suona; }).length;
+    /* L'AVVERTENZA, SEMPRE. «Ci deve essere sempre annuncio che la guida
+       indica non e' precisa negli attraversamenti — per non avere
+       problemi» (Vince, 24/10). Il GPS a piedi sbaglia dai dieci ai
+       trenta metri, e chi non vede esegue quello che sente.
+       Le parole sono le sue: «nell'arco di 20/30 metri prestare
+       attenzione... oppure chiedi dove e' l'attraversamento» — non «non
+       e' precisa», scartata dopo aver letto il campione. La seconda
+       parte non e' un riempitivo: dice l'unica cosa che funziona
+       sempre, cioe' chiedere a chi passa. Si dice «chiedi a qualcuno
+       dov'e'» e non «chiedi dov'e' l'attraversamento» perche' la parola
+       «attraversamento» sta gia' nella frase: ripeterla, a voce, fa una
+       frase che nessuno direbbe. */
     if (a.length === 1) {
       return 'un attraversamento' +
              (suonano ? ' col semaforo acustico' : (conSemaforo ? ' col semaforo' : ' senza semaforo')) +
-             (tattili ? ', col percorso tattile' : '');
+             (tattili ? ', col percorso tattile' : '') + NON_PRECISO;
     }
     if (suonano) {
       return 'una serie di attraversamenti, ' +
              (suonano === a.length ? 'tutti col semaforo acustico' : suonano + ' col semaforo acustico') +
-             (tattili ? ', e il percorso tattile' : '');
+             (tattili ? ', e il percorso tattile' : '') + NON_PRECISO;
     }
     return 'una serie di attraversamenti' +
            (conSemaforo ? (conSemaforo === a.length ? ', tutti col semaforo' : ', ' + conSemaforo + ' col semaforo') : ', nessuno col semaforo') +
-           (tattili ? ', e il percorso tattile' : '');
+           (tattili ? ', e il percorso tattile' : '') + NON_PRECISO;
   }
+
+  /* ============================================================
+     L'ATTRAVERSAMENTO SI DICE SEMPRE CON L'AVVERTENZA
+     «Ci deve essere sempre annuncio che la guida indica non e' precisa
+     negli attraversamenti — per non avere problemi» (Vince, 24/10).
+     Il GPS a piedi sbaglia dai dieci ai trenta metri: dire «a venti
+     passi l'attraversamento» a chi non vede e' un ordine che esegue, e
+     l'attraversamento puo' essere qualche metro piu' avanti o piu'
+     indietro. Finora la regola era non dare imperativi; adesso l'app lo
+     DICE, ogni volta che nomina un attraversamento.
+     «Secondo me non bisogna dire "non e' preciso"» — e poi: «bisogna dire
+     nell'arco di 20/30 metri prestare attenzione» (Vince, 24/10, dopo
+     aver letto il campione). La prima versione diceva «ma la posizione
+     non e' precisa»: ripetuta a ogni attraversamento spaventa e non dice
+     cosa fare. Questa da' la stessa informazione — l'attraversamento e'
+     da cercare in un tratto di strada, non in un punto — e dice la cosa
+     utile: fai attenzione.
+     ============================================================ */
+  var NON_PRECISO = o.nonPreciso || ', nell\'arco di 20 o 30 metri: presta attenzione, o chiedi a qualcuno dov\'e\'';
 
   function servizi(qui, punti, direzione, buona, quanti) {
     var buoni = (punti || []).filter(function (p) {

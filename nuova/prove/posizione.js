@@ -523,6 +523,60 @@ prova('LA FALCATA MISURATA, non i 75 centimetri di tutti', () => {
   if (avanzato < 10) guasto('non ha avanzato: ' + avanzato.toFixed(1) + ' m');
 });
 
+/* ============================================================
+   IL CORSO CHE DICE IL TELEFONO (regola 1, punto 4)
+   iOS calcola la direzione del movimento fondendola coi sensori e dice
+   anche quanto si fida. Il nostro corso, dedotto da due punti, mentre
+   giri l'angolo sta in mezzo fra la vecchia strada e la nuova: e' il
+   «mi diceva a destra ma dovevo andare dritto» del 23/10.
+   ============================================================ */
+
+function cammina(m, quanti, corso, corsoPrec) {
+  /* cammina verso nord sul serio, e il telefono dice quello che dice */
+  let la = 41.9000, passi = 0;
+  for (let i = 0; i < quanti; i++) {
+    m.passano(1000); la += 0.0000126; passi += 2;
+    m.p.quantiPassi(passi);
+    m.p.dalGuscio(la, 12.4800, 8,
+                  corso === undefined ? null
+                  : { corso: corso, corsoPrec: corsoPrec, vel: 1.4, velPrec: 1 });
+  }
+}
+
+prova('IL CORSO DEL TELEFONO SI USA, se il telefono dice di saperlo', () => {
+  const m = mondo({ guscio: { haPosizione: true } });
+  m.p.comincia();
+  /* il telefono dice 90 gradi (verso est) con 10 gradi di errore: noi
+     staremmo andando a nord, ma lui lo sa meglio */
+  cammina(m, 14, 90, 10);
+  const s = m.p.leggi();
+  if (!s.direzioneBuona) return guasto('non ha una direzione');
+  const sbaglia = Math.min(Math.abs(s.direzione - 90), 360 - Math.abs(s.direzione - 90));
+  console.log('      → il telefono dice 90°, l app usa ' + Math.round(s.direzione) + '°');
+  if (sbaglia > 5) guasto('ha ignorato il corso del telefono: ' + Math.round(s.direzione));
+});
+
+prova('MA SE IL TELEFONO DICE DI NON SAPERLO, si torna al nostro', () => {
+  const m = mondo({ guscio: { haPosizione: true } });
+  m.p.comincia();
+  /* accuratezza 90 gradi: vuol dire «non lo so». E -1 pure. */
+  cammina(m, 14, 90, 90);
+  const s = m.p.leggi();
+  if (!s.direzioneBuona) return guasto('non ha una direzione');
+  const vaANord = Math.min(Math.abs(s.direzione), 360 - Math.abs(s.direzione));
+  console.log('      → corso inaffidabile: l app usa il suo, ' + Math.round(s.direzione) + '°');
+  if (vaANord > 15) guasto('ha creduto a un corso che il telefono dichiara incerto');
+});
+
+prova('UN GUSCIO VECCHIO, che manda solo tre numeri, funziona come prima', () => {
+  const m = mondo({ guscio: { haPosizione: true } });
+  m.p.comincia();
+  cammina(m, 14);                      // nessun corso, come i gusci di ieri
+  const s = m.p.leggi();
+  if (!s.pronto) return guasto('non e nemmeno partita');
+  if (!s.direzioneBuona) guasto('senza il corso del telefono non ha piu una direzione');
+});
+
 const passate = fatti.filter(Boolean).length;
 console.log('');
 console.log(passate + '/' + fatti.length + ' prove della posizione');
