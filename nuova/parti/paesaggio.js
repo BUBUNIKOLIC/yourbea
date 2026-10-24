@@ -47,7 +47,50 @@ function Paesaggio(opzioni) {
   var RIPOSO = o.riposo || 600000;        // REGOLA 5: dieci minuti per ciascuno
   var FRA_UNA_E_L_ALTRA = o.fraDiLoro || 900000;   // e un quarto d'ora fra le frasi
 
-  /* REGOLA 1: quanto lontano si vede una cosa, secondo cos'è. In metri. */
+  /* ============================================================
+     REGOLA 1, RIFATTA IL 24/10: UNA REGOLA SOLA, VALIDA DAPPERTUTTO
+     «Non serve la regola singola, serve che sia valido dappertutto. Il
+     mare si fa» — e poi: «non e' l'Etna, e' la regola che deve valere
+     dappertutto» (Vince).
+     Prima c'era una TABELLA DI CLASSI: costa 5 km, montagna 5 km, isola
+     5 km... e ogni volta che una cosa finiva nella classe sbagliata si
+     aggiustava la tabella. Cosi' l'Isola Tiberina (trecento metri, in
+     mezzo ai palazzi) era un'«isola» come Capri; togliendo la classe si
+     perdeva anche Capri, cioe' il mare.
+     LA REGOLA, una sola: **una cosa si vede se e' grande rispetto a
+     quanto e' lontana.** Non e' un'opinione, e' quanto occupa
+     dell'orizzonte davanti a te:
+         grandezza / distanza  >  un ottavo
+     Capri, larga 10 km, da 15 km: 0,67 — mezzo orizzonte, si vede.
+     Il Vesuvio, largo 10 km, da 12: 0,8.
+     L'Isola Tiberina, larga 300 m, da 3 km: 0,1 — dietro i palazzi, no.
+     I Due Fratelli, larghi 200 m, da 600: 0,33 — ce li hai davanti, si.
+     La grandezza e' un dato vero, non una classe: la prende
+     `strumenti/quanto-e-grande.py` dal poligono di OpenStreetMap e la
+     scrive nel campo `gr`, in metri. Se la grandezza non c'e', la cosa
+     non si dice: meglio tacere che indovinare quanto e' grande.
+     ============================================================ */
+  var QUANTO_DELL_ORIZZONTE = o.quantoDellOrizzonte || 0.125;
+  /* PROVATO E SCARTATO (24/10): un limite «se ci sei dentro non e'
+     paesaggio» (grandezza piu' di tre volte la distanza). Sembrava
+     giusto per la Costiera amalfitana, che nei dati e' un punto a undici
+     chilometri da Vietri mentre comincia sotto i piedi — ma spegneva il
+     GOLFO di Salerno, largo trenta chilometri e a settecento metri, che
+     e' esattamente la cosa che Vince vuole sentire. Una cosa grande che
+     ti circonda la vedi comunque. Quindi niente secondo limite: resta
+     la regola sola. */
+  var SI_VEDE_AL_MASSIMO = o.siVedeAlMassimo || 30000;   // oltre, c'e' la curva della Terra e la foschia
+
+  function siVede(p, m) {
+    var gr = Number(p && p.gr);
+    if (!isFinite(gr) || gr <= 0) return false;
+    if (m > SI_VEDE_AL_MASSIMO) return false;
+    if (m < 1) return true;
+    return (gr / m) > QUANTO_DELL_ORIZZONTE;
+  }
+
+  /* la tabella di prima resta solo per dire COS'E' paesaggio (un monte
+     si, una chiesa no): quanto lontano lo decide la regola qui sopra. */
   /* ISOLE, FIUMI, SPIAGGE E PORTI NON SONO PAESAGGIO, e la soglia non
      c'entra. L'Isola Tiberina e' lunga trecento metri e sta in mezzo ai
      palazzi: per la regola era un'«isola» come Capri. Ho provato a
@@ -66,7 +109,13 @@ function Paesaggio(opzioni) {
     'costa': 5000, 'golfo': 5000, 'baia': 5000, 'montagna': 5000,
     'area protetta': 5000, 'parco regionale': 5000, 'lago': 4000, 'valle': 4000,
     'collina': 3500, 'passo di montagna': 3500, 'comune italiano': 3000,
-    'frazione': 2500, 'isola': 5000, 'spiaggia': 2000, 'porto': 2500
+    'frazione': 2500
+    /* ISOLA, SPIAGGIA, PORTO E FIUME NON STANNO QUI, e il 24/10 c'erano
+       ancora: la spiegazione sopra era stata scritta nel commento ma non
+       nel codice, e Vince l'ha sentito di nuovo — «mai piu' che a via
+       dei Corazzieri dica: in lontananza c'e' l'Isola Tiberina». Un
+       commento che dice una cosa e una tabella che ne fa un'altra e'
+       peggio di niente. */
   };
 
   /* E LA DIFFERENZA FRA I DUE FRATELLI E L'ISOLA TIBERINA.
@@ -204,7 +253,10 @@ function Paesaggio(opzioni) {
         var m = dist(qui.lat, qui.lon, p.lat, p.lon);
       if (VUOLE_IL_MARE[p.t] && !ilMare) return;
       var fattore = GRANDI_DI_NATURA[p.t] ? quantoSiVede : 1;
-      if (m > QUANTO_LONTANO[p.t] * fattore) return;              // REGOLA 1
+      /* REGOLA 1: non «la sua classe arriva a tanti metri», ma «quanto
+         occupa dell'orizzonte da qui». Il fattore resta perche' in
+         movimento si guarda piu' lontano (regola 7). */
+      if (!siVede(p, m / (fattore || 1))) return;
       var rel = ((verso(qui.lat, qui.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
       var pt = { p: p, m: m, rel: rel, peso: peso(p, m) };
       if (Math.abs(rel) <= 45) {
