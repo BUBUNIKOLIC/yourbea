@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070A0E">
+<title>Yourbea — i tuoi dati</title>
+<meta name="description" content="Che cosa fa Yourbea dei tuoi dati: dove va la posizione, cosa resta nel telefono, cosa non raccogliamo.">
+<!-- QUESTA PAGINA SERVE ANCHE AGLI STORE. Apple e Google chiedono un
+     indirizzo pubblico dove sta scritto che cosa l'app fa dei dati.
+     E' scritta guardando il codice, non a memoria: i server nominati
+     qui sotto sono quelli che `nuova/parti/*.js` chiama davvero. -->
+<style>
+  :root{ --fondo:#070A0E; --carta:#0E131A; --filo:#232C36;
+         --inchiostro:#E9E8E4; --spento:#AEB6BF; --oro:#E7C65A; --acqua:#5BE3FF; }
+  *{box-sizing:border-box}
+  html{font-size:17px}
+  body{margin:0;background:var(--fondo);color:var(--inchiostro);
+       font-family:-apple-system,system-ui,"Segoe UI",sans-serif;line-height:1.65}
+  .dentro{max-width:40em;margin:0 auto;padding:28px 20px 72px}
+  a{color:var(--acqua)}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--acqua);outline-offset:3px}
+  h1{font-family:Georgia,"Times New Roman",serif;color:var(--oro);
+     font-size:1.9rem;line-height:1.2;margin:0 0 6px}
+  h2{font-size:1.2rem;margin:34px 0 8px;color:var(--inchiostro)}
+  p,li{color:var(--spento)}
+  li{margin:6px 0}
+  .quando{color:var(--spento);font-size:.95rem;margin:0 0 24px}
+  .riquadro{background:var(--carta);border:1px solid var(--filo);
+            border-radius:16px;padding:16px 18px;margin:18px 0}
+  .riquadro p:last-child{margin-bottom:0}
+  .torna{display:inline-block;margin-top:34px;background:var(--acqua);color:#06202A;
+         text-decoration:none;font-weight:600;padding:14px 22px;border-radius:14px}
+</style>
+</head>
+<body>
+<main class="dentro">
+  <h1>I tuoi dati</h1>
+  <p class="quando">Yourbea — aggiornato il 25 ottobre 2026</p>
+
+  <div class="riquadro">
+    <p><strong>In breve:</strong> Yourbea non ti chiede il nome, non ti fa
+    fare un account e non tiene da nessuna parte dove sei stato. Il percorso
+    che fai resta dentro il telefono.</p>
+  </div>
+
+  <h2>La posizione</h2>
+  <p>Yourbea ha bisogno di sapere dove sei: è il suo mestiere. La posizione
+  arriva dal telefono e serve a dirti la via, i numeri civici, cosa hai
+  intorno e a portarti dove vuoi andare.</p>
+  <ul>
+    <li>Non la salviamo su nessun nostro server.</li>
+    <li>Non la colleghiamo a te: l'app non sa chi sei.</li>
+    <li>Il registro del tuo cammino resta <strong>nel telefono</strong>, in
+    un file che puoi cancellare disinstallando l'app.</li>
+  </ul>
+
+  <h2>Quello che esce dal telefono, e a chi</h2>
+  <p>Per alcune cose il telefono deve chiedere fuori. Quando succede, esce
+  solo il punto in cui sei (o l'indirizzo che hai chiesto), senza niente che
+  dica che sei tu:</p>
+  <ul>
+    <li><strong>photon.komoot.io</strong> e
+    <strong>nominatim.openstreetmap.org</strong>: per sapere come si chiama
+    la via dove ti trovi, e per trovare un indirizzo che hai detto.</li>
+    <li><strong>valhalla1.openstreetmap.de</strong>: per calcolare il
+    percorso a piedi quando dici «portami a».</li>
+    <li><strong>tile.openstreetmap.org</strong> e
+    <strong>api.openstreetmap.org</strong>: la mappa che si vede in Turismo e
+    i negozi e le fermate lì intorno.</li>
+    <li><strong>it.wikipedia.org</strong>: le descrizioni dei monumenti.</li>
+  </ul>
+  <p>Sono servizi aperti, di OpenStreetMap e Wikipedia. Non ricevono il tuo
+  nome perché noi non ce l'abbiamo.</p>
+
+  <h2>La voce e il microfono</h2>
+  <p>A Yourbea si parla, e il microfono resta aperto mentre la usi. Il
+  riconoscimento delle parole lo fa <strong>il telefono</strong> — su iPhone
+  è Apple, su Android è Google — con gli stessi strumenti che usi per dettare
+  un messaggio. Noi non registriamo nulla e non conserviamo nessun audio.</p>
+
+  <h2>Se sei un tester</h2>
+  <p>Chi ha un codice da tester può segnare a voce quello che trova per
+  strada: «qui c'è un attraversamento con semaforo», «qui ferma il 671».
+  Quello che segni va sul nostro server e poi nella mappa che usano tutti.
+  Di quel punto salviamo <strong>la cosa che hai detto, il punto sulla
+  strada e il tuo codice</strong> — che è una parola e un numero, non il tuo
+  nome. Serve per poter togliere una segnalazione sbagliata.</p>
+  <p>Se vuoi che un tuo punto sparisca, scrivici: si toglie.</p>
+
+  <h2>Quello che non facciamo</h2>
+  <ul>
+    <li>Niente pubblicità, niente profilazione, niente rivendita di dati.</li>
+    <li>Nessun contatore di visite che ti segue da un sito all'altro.</li>
+    <li>Nessun account, nessuna password, nessuna rubrica copiata: i numeri
+    di chi avvisare restano nel telefono.</li>
+  </ul>
+
+  <h2>I pagamenti</h2>
+  <p>Il pass per il Turismo si compra dentro l'app, e lo incassa lo store
+  (Apple o Google): la carta la vedono loro, noi mai. Se sul telefono è
+  acceso VoiceOver, il Turismo è gratis e non c'è niente da comprare.</p>
+
+  <h2>Scriverci</h2>
+  <p>Per qualunque cosa su questi dati — anche per farli cancellare — si
+  scrive a <a href="mailto:info@yourbea.it">info@yourbea.it</a>.</p>
+
+  <a class="torna" href="./">Torna a Yourbea</a>
+</main>
+</body>
+</html>

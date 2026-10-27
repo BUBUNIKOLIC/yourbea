@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080F1F">
+<title>Le segnalazioni — Yourbea</title>
+<meta name="description" content="Quello che la rete di Yourbea ha messo sulla mappa: attraversamenti, semafori acustici, percorsi tattili, fermate. Segnati camminando, da chi ci passa.">
+<link rel="icon" href="./nuova/icone/icon-192.png">
+<link rel="stylesheet" href="./nuova/mappa/leaflet.css">
+<!-- ============================================================
+     LA PAGINA DELLE SEGNALAZIONI, 26/10.
+     «Nel sito non possiamo mettere la pagina delle segnalazioni?»
+     (Vince). I punti stanno sul server dei contributi; questa pagina li
+     chiede e li scrive in italiano.
+     QUELLO CHE NON SI MOSTRA: il codice di chi ha segnato. Sul server
+     c'e' — serve a non contare due volte la stessa persona — ma qui no:
+     una pagina pubblica non deve dire chi passa di dove.
+     ============================================================ -->
+<style>
+  :root{ --fondo:#080F1F; --carta:#101A2E; --filo:#26334B;
+         --inchiostro:#F2EFE6; --spento:#B6BECF; --oro:#E3B765; --acqua:#79D8F7; }
+  *{box-sizing:border-box}
+  html{font-size:17px}
+  body{margin:0;color:var(--inchiostro);line-height:1.65;
+       font-family:-apple-system,system-ui,"Segoe UI",sans-serif;
+       background:
+         radial-gradient(90% 55% at 50% 0%, rgba(227,183,101,.12) 0%, rgba(227,183,101,0) 58%),
+         linear-gradient(180deg,#0C1628 0%, var(--fondo) 46%, #050A16 100%);
+       background-attachment:fixed}
+  .dentro{max-width:42em;margin:0 auto;padding:30px 20px 80px}
+  a{color:var(--acqua)}
+  a:focus-visible{outline:3px solid var(--acqua);outline-offset:3px}
+  h1{font-family:Georgia,"Times New Roman",serif;color:var(--oro);font-weight:400;
+     letter-spacing:.06em;font-size:1.9rem;margin:0 0 4px;
+     text-shadow:0 1px 0 rgba(0,0,0,.65), 0 -1px 0 rgba(255,236,190,.20)}
+  .sotto{color:var(--spento);margin:0 0 22px}
+  .conto{font-family:Georgia,serif;font-size:1.25rem;color:var(--inchiostro);
+         margin:0 0 18px}
+  .conto b{color:var(--oro);font-weight:400}
+  ul.punti{list-style:none;margin:0;padding:0}
+  ul.punti li{background:var(--carta);border:1px solid var(--filo);border-radius:16px;
+              padding:14px 16px;margin:10px 0}
+  .cosa{color:var(--inchiostro);font-weight:600}
+  .dove{color:var(--spento);font-size:.97rem}
+  .quando{color:var(--spento);font-size:.88rem;opacity:.8}
+  .tanti{display:inline-block;margin-left:8px;font-size:.82rem;color:var(--oro);
+         border:1px solid rgba(227,183,101,.45);border-radius:999px;padding:1px 9px}
+  /* LA MAPPA D ITALIA COI PUNTI.
+     «Magari fare una mappa d'Italia e identificare i punti in cui ci
+     sono le segnalazioni» (Vince, 26/10). Si parte dall Italia intera e
+     si scende col dito dove si vuole: ogni punto, toccato, dice cos e'.
+     Per chi non vede la mappa non esiste (aria-hidden), come nell app:
+     la stessa roba sta nell elenco qui sotto, che si legge con la voce. */
+  #italia{height:62vh;min-height:320px;border-radius:18px;overflow:hidden;
+          border:1px solid var(--filo);background:#0B1424;margin:0 0 8px}
+  .leaflet-container{background:#0B1424}
+  .leaflet-popup-content-wrapper{background:var(--carta);color:var(--inchiostro);
+     border:1px solid var(--filo);border-radius:14px}
+  .leaflet-popup-tip{background:var(--carta)}
+  .leaflet-popup-content{margin:12px 14px;line-height:1.5}
+  .leaflet-popup-content b{color:var(--oro);font-weight:600}
+  .leaflet-popup-content small{color:var(--spento)}
+  .leaflet-control-attribution{background:rgba(8,15,31,.8);color:var(--spento)}
+  .leaflet-control-attribution a{color:var(--acqua)}
+  .legenda{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 22px;padding:0;
+           list-style:none;font-size:.9rem;color:var(--spento)}
+  .legenda li{display:flex;align-items:center;gap:6px;margin:0}
+  .legenda i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  ul.punti li{cursor:pointer}
+  ul.punti li:focus-visible{outline:3px solid var(--acqua);outline-offset:2px}
+  ul.punti li.scelta{border-color:var(--oro);
+    background:linear-gradient(180deg,rgba(227,183,101,.14),rgba(227,183,101,.05));
+    box-shadow:0 0 0 1px rgba(227,183,101,.35)}
+  .vuoto{background:var(--carta);border:1px dashed var(--filo);border-radius:16px;
+         padding:20px}
+  .piede{margin-top:40px;padding-top:18px;border-top:1px solid var(--filo);
+         color:var(--spento);font-size:.95rem}
+</style>
+</head>
+<body>
+<main class="dentro">
+  <h1>Le segnalazioni</h1>
+  <p class="sotto">Quello che la rete ha messo sulla mappa, camminando.
+  Gli attraversamenti col semaforo acustico e i percorsi tattili non stanno
+  in nessuna mappa al mondo: li mette solo chi ci passa.</p>
+
+  <div id="italia" aria-hidden="true"></div>
+  <ul class="legenda" id="legenda" aria-hidden="true"></ul>
+
+  <p class="conto" id="conto">Sto guardando…</p>
+  <div id="elenco" aria-live="polite"></div>
+
+  <p class="piede">
+    <a href="./">Torna alla pagina di Yourbea</a> ·
+    <a href="./privacy.html">Che cosa facciamo dei tuoi dati</a><br>
+    Qui non si scrive chi ha segnato che cosa: si vede la segnalazione, non la persona.<br>
+    Yourbea &copy; 2026 Vincenzo Di Meglio. Tutti i diritti riservati.
+  </p>
+</main>
+<script src="./nuova/mappa/leaflet.js"></script>
+<script>
+(function leSegnalazioni() {
+  var DA = 'https://contributi-yourbea.server-contributi.workers.dev/punti';
+  var conto = document.getElementById('conto');
+  var elenco = document.getElementById('elenco');
+
+  /* i tipi come li dice l'app, e come si scrivono a una persona */
+  var NOMI = {
+    attraversamento: 'Attraversamento pedonale', semaforo: 'Semaforo',
+    tattile: 'Percorso tattile', scalini: 'Scalini', scivolo: 'Scivolo',
+    fermata: 'Fermata dell’autobus', metro: 'Metropolitana',
+    ostacolo: 'Ostacolo', albero: 'Albero', panchina: 'Panchina',
+    fontanella: 'Fontanella', bagno: 'Bagno pubblico', posto: 'Un posto',
+    tolto: 'Non c’è più'
+  };
+
+  function comeSiDice(p) {
+    var testo = p.n ? p.n : (NOMI[p.t] || p.t);
+    if (p.t === 'tolto') {
+      testo = 'Non c’è più' + (p.n ? ': ' + p.n : (p.che ? ': ' + (NOMI[p.che] || p.che).toLowerCase() : ''));
+    } else if (p.n && p.t !== 'posto') {
+      testo = (NOMI[p.t] || p.t) + ' — ' + p.n;
+    }
+    var come = [];
+    if (p.sem === 1) come.push('col semaforo');
+    if (p.sem === 0) come.push('senza semaforo');
+    if (p.ac) come.push('semaforo acustico');
+    if (p.tat) come.push('percorso tattile');
+    if (p.lin && p.lin.length === 1) come.push('passa il ' + p.lin[0]);
+    if (p.lin && p.lin.length > 1) {
+      /* due linee non sono «passa il 671, il 30»: una persona dice
+         «passano il 671 e il 30». */
+      var ultima = p.lin[p.lin.length - 1];
+      come.push('passano il ' + p.lin.slice(0, -1).join(', il ') + ' e il ' + ultima);
+    }
+    return testo + (come.length ? ' (' + come.join(', ') + ')' : '');
+  }
+
+
+  /* I COLORI: uno per famiglia, non uno per tipo. Chi guarda deve
+     distinguere in un colpo d occhio la strada (oro) dal trasporto
+     (azzurro) da quello che non c e' piu' (rosso). */
+  var COLORI = {
+    attraversamento: '#E3B765', semaforo: '#E3B765', tattile: '#E3B765',
+    scalini: '#E3B765', scivolo: '#E3B765',
+    fermata: '#79D8F7', metro: '#79D8F7',
+    posto: '#F2EFE6', albero: '#9BD17F', panchina: '#9BD17F',
+    fontanella: '#9BD17F', bagno: '#9BD17F',
+    ostacolo: '#FF9D5C', tolto: '#FF6B6B'
+  };
+  var FAMIGLIE = [
+    ['#E3B765', 'strada: attraversamenti, semafori, percorsi tattili'],
+    ['#79D8F7', 'fermate e metropolitana'],
+    ['#9BD17F', 'alberi, panchine, fontanelle, bagni'],
+    ['#F2EFE6', 'negozi e posti'],
+    ['#FF9D5C', 'ostacoli'],
+    ['#FF6B6B', 'quello che non c\u2019\u00e8 pi\u00f9']
+  ];
+
+  var LA_MAPPA = null, SEGNI = {};
+
+  function disegnaLaMappa(punti) {
+    var dove = document.getElementById('italia');
+    if (!dove || typeof L === 'undefined') { if (dove) dove.style.display = 'none'; return; }
+    /* si parte dall Italia intera: il centro e' piu' o meno l Umbria */
+    LA_MAPPA = L.map('italia', { zoomControl: true, attributionControl: true });
+    LA_MAPPA.setView([42.2, 12.6], 5);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                { maxZoom: 19, attribution: '\u00a9 OpenStreetMap' }).addTo(LA_MAPPA);
+
+    var dentro = [];
+    punti.forEach(function (p, i) {
+      if (typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
+      var colore = COLORI[p.t] || '#F2EFE6';
+      /* piu' persone hanno detto la stessa cosa: il punto pesa di piu' */
+      var raggio = p.quanti > 1 ? 7 + Math.min(p.quanti, 5) : 7;
+      /* IL BORDO SCURO. Col primo punto vero (Latina, 26/10) il cerchio
+         bianco dei «posti» spariva dentro una mappa chiara: il colore
+         dice il tipo, ma a tenerlo visibile e' il bordo scuro. */
+      var segno = L.circleMarker([p.lat, p.lon], {
+        radius: raggio, color: '#0B1424', weight: 2.5,
+        fillColor: colore, fillOpacity: .95
+      }).addTo(LA_MAPPA);
+      segno.bindPopup('<b>' + comeSiDice(p) + '</b>' +
+                      (p.via ? '<br>' + p.via : '') +
+                      (ilGiorno(p.quando) ? '<br><small>' + ilGiorno(p.quando) + '</small>' : '') +
+                      (p.quanti > 1 ? '<br><small>detto da ' + p.quanti + ' persone</small>' : ''));
+      segno.on('click', function () {
+        /* il fumetto dice cos e', e intanto la riga si accende e si fa
+           trovare: chi guarda la mappa non deve cercarla a mano */
+        accendiLaRiga(i, true);
+      });
+      SEGNI[i] = segno;
+      dentro.push([p.lat, p.lon]);
+    });
+    /* e si stringe su quello che c e' davvero, ma senza incollarsi
+       addosso a un punto solo: da li' si scende a mano */
+    if (dentro.length > 1) LA_MAPPA.fitBounds(dentro, { padding: [40, 40], maxZoom: 14 });
+    else if (dentro.length === 1) LA_MAPPA.setView(dentro[0], 15);
+
+    var legenda = document.getElementById('legenda');
+    if (legenda) {
+      FAMIGLIE.forEach(function (f) {
+        var li = document.createElement('li');
+        var pallino = document.createElement('i');
+        pallino.style.background = f[0];
+        li.appendChild(pallino);
+        li.appendChild(document.createTextNode(f[1]));
+        legenda.appendChild(li);
+      });
+    }
+  }
+
+  /* DALL ELENCO ALLA MAPPA: si tocca una riga e la mappa ci scende sopra.
+     E' il «scendere nei dettagli»: l elenco dice cosa, la mappa dove. */
+  var RIGHE = {};
+
+  function accendiLaRiga(i, portaciSopra) {
+    var li = RIGHE[i];
+    if (!li) return;
+    var prima = document.querySelector('ul.punti li.scelta');
+    if (prima && prima !== li) prima.classList.remove('scelta');
+    li.classList.add('scelta');
+    if (portaciSopra) li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function collega(li, i) {
+    RIGHE[i] = li;
+    li.tabIndex = 0;
+    function vai() {
+      var segno = SEGNI[i];
+      if (!segno || !LA_MAPPA) return;
+      LA_MAPPA.setView(segno.getLatLng(), Math.max(LA_MAPPA.getZoom(), 17), { animate: true });
+      segno.openPopup();
+      accendiLaRiga(i, false);
+      document.getElementById('italia').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    li.addEventListener('click', vai);
+    li.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); vai(); }
+    });
+  }
+
+  function ilGiorno(quando) {
+    if (!quando) return '';
+    var d = new Date(quando);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
+  }
+
+  fetch(DA).then(function (r) { return r.json(); }).then(function (roba) {
+    var punti = (roba && roba.punti) || [];
+    punti.sort(function (a, b) { return (b.quando || 0) - (a.quando || 0); });
+    if (!punti.length) {
+      var vuota = document.getElementById('italia');
+      if (vuota) vuota.style.display = 'none';
+      conto.textContent = 'Ancora nessuna segnalazione.';
+      elenco.innerHTML = '<div class="vuoto"><p>La rete è appena partita: le prime ' +
+        'segnalazioni arrivano camminando. Se vuoi camminare anche tu, ' +
+        '<a href="mailto:info@yourbea.it?subject=Yourbea%20-%20vorrei%20fare%20il%20tester">scrivici</a>' +
+        ' e ti mandiamo il tuo codice.</p></div>';
+      return;
+    }
+    conto.innerHTML = '<b>' + punti.length + '</b> ' +
+      (punti.length === 1 ? 'segnalazione sulla mappa' : 'segnalazioni sulla mappa');
+    disegnaLaMappa(punti);
+    var lista = document.createElement('ul');
+    lista.className = 'punti';
+    punti.forEach(function (p, i) {
+      var li = document.createElement('li');
+      collega(li, i);
+      var cosa = document.createElement('div');
+      cosa.className = 'cosa';
+      cosa.textContent = comeSiDice(p);
+      if (p.quanti > 1) {
+        var bollo = document.createElement('span');
+        bollo.className = 'tanti';
+        bollo.textContent = 'detto da ' + p.quanti + ' persone';
+        cosa.appendChild(bollo);
+      }
+      li.appendChild(cosa);
+      if (p.via) {
+        var dove = document.createElement('div');
+        dove.className = 'dove';
+        dove.textContent = p.via;
+        li.appendChild(dove);
+      }
+      var g = ilGiorno(p.quando);
+      if (g) {
+        var q = document.createElement('div');
+        q.className = 'quando';
+        q.textContent = g;
+        li.appendChild(q);
+      }
+      lista.appendChild(li);
+    });
+    elenco.appendChild(lista);
+  }).catch(function () {
+    conto.textContent = 'Le segnalazioni non si caricano in questo momento.';
+    elenco.innerHTML = '<div class="vuoto"><p>Riprova fra poco: il server che le ' +
+      'tiene non ha risposto.</p></div>';
+  });
+})();
+</script>
+</body>
+</html>

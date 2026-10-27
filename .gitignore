@@ -1,0 +1,37 @@
+PROGETTO.md
+.claude/
+voce/prova/
+.DS_Store
+guscio-ios/build/
+guscio-ios/*.xcodeproj/xcuserdata/
+
+# ============================================================
+# QUELLO CHE NON ESCE PIU' IN PUBBLICO — 27/10/2026
+# Il repository BUBUNIKOLIC/yourbea e' pubblico perche' serve a GitHub
+# Pages per il sito, e il sito e l'app il browser li scarica comunque.
+# Tutto il resto no: sta su BUBUNIKOLIC/yourbea-officina, privato.
+# I file restano sul Mac dove sono, cambia solo dove finiscono.
+# ============================================================
+/guscio-ios/
+/guscio-android/
+/strumenti/
+/nuova/prove/
+/server-contributi/
+
+# e la VECCHIA Yourbea, che stava alla radice fino al 15/10/2026:
+# non la usa piu' nessuno, e non ha motivo di restare leggibile.
+# Sta anche lei in yourbea-officina. (nuova/mappa resta: e' un'altra.)
+/voce/
+/luoghi/
+/lingue/
+/mappa/
+/prove/
+/prova.html
+/vecchia.html
+/PROVA-TUTTO.command
+
+# gli archivi del deposito a data certa (27/10/2026): stanno sul Mac,
+# non in un repository — sono 640 MB e GitHub li rifiuta giustamente.
+# E non devono cambiare mai piu', se no l'impronta non corrisponde.
+/impronte-*/
+*.bundle

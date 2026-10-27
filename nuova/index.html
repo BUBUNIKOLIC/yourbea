@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070A0E">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- L'INSTALLAZIONE SUL TELEFONO. Su iPhone «Aggiungi a Home» apre l'app a
+     tutto schermo solo con questi: il manifest da solo non basta, iOS lo
+     guarda per l'icona e il nome, non per il resto. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Yourbea">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<title>Yourbea — la bellezza intorno a te</title>
+<link rel="stylesheet" href="mappa/leaflet.css?v=173">
+<link rel="stylesheet" href="stile.css?v=173">
+</head>
+<body data-modo="utilita" data-testo="normale">
+
+<!-- LA PORTA: due scelte, grandi, e si possono dire a voce.
+     I nomi sono quelli scelti da Vince il 15/10: Utilità e Turismo. -->
+<section id="porta" aria-label="Come vuoi usare Yourbea">
+  <h1>YOURBEA</h1>
+  <p class="sotto">La bellezza intorno a te. Scegli come vuoi che ti accompagni.</p>
+  <button class="scelta turismo" id="scelta-turismo">
+    <b>Turismo</b>
+    <span>Ti racconta quello che hai intorno: palazzi, chiese, dettagli di strada. Con la mappa e le schede.</span>
+  </button>
+  <button class="scelta utilita" id="scelta-utilita">
+    <b>Utilità</b>
+    <span>Numeri civici, farmacie, negozi, semafori e attraversamenti. E ti porto dove devi andare. Tutto parlato: lo schermo non serve.</span>
+  </button>
+  <p class="sotto" style="margin-top:14px">Puoi anche dirlo: «utilità» oppure «turismo».</p>
+  <!-- IL TASTO PER INSTALLARE. La sorella di Vince, 16/10: «da Android non
+       faceva scaricare, solo browser». L'invito di Chrome c'era e lo
+       prendevamo (beforeinstallprompt) ma non lo mostrava nessuno: per
+       installarla bisognava trovare i tre puntini nel menu di Chrome e
+       indovinare «Installa app». Adesso e' un tasto, e compare da solo
+       soltanto quando il telefono la offre davvero. -->
+  <button class="tasto vai" id="installa" hidden style="width:100%;margin-top:14px">Installa sul telefono</button>
+</section>
+
+<header class="testa">
+  <div class="marchio">YOURBEA</div>
+  <div class="stato" id="stato">in attesa</div>
+</header>
+
+<!-- IL RIQUADRO DEL PARLATO.
+     aria-live è SPENTO di proposito: quello che c'è scritto qui l'app lo sta
+     già dicendo, e se anche il lettore di schermo lo leggesse si sentirebbero
+     due voci. Quello che l'app NON dice sta nel riquadro .muto qui sotto. -->
+<section class="dice" id="dice" aria-live="off">
+  <div class="dove" id="dove">—</div>
+  <div class="cosa" id="cosa">In attesa</div>
+  <div class="corpo attesa" id="corpo">Premi Avvia, o dimmi «partiamo».</div>
+  <div class="gradino" id="gradino"></div>
+</section>
+
+<!-- IL TASTO DI CASA. In Utilità è la cosa che si cerca più spesso e di
+     fretta: sta sotto il riquadro del parlato, largo quanto lo schermo, e
+     non si sposta mai. In Turismo non c'è: lì si gira per guardare. -->
+<!-- I DUE TASTI GRANDI. Casa solo in Utilità (in Turismo non si torna: si
+     gira). Avvisa il contatto in tutt'e due, perché un guaio capita anche
+     mentre si guarda una chiesa. -->
+<div id="casa-riga">
+  <button class="tasto vai grande" id="vai-a-casa">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.2 12 4l9 7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 10.4V19a1 1 0 0 0 1 1h3.2v-4.6h4.4V20h3.2a1 1 0 0 0 1-1v-8.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Portami a casa</span>
+  </button>
+  <button class="tasto grande leggi" id="leggi-cartello">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7.5a2 2 0 0 1 2-2h2.4l1-1.5h5.2l1 1.5H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <span>Leggi quello che hai davanti</span>
+  </button>
+  <button class="tasto grande avvisa" id="avvisa-contatto">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.3 3.6h3l1.5 3.8-2 1.4a12.5 12.5 0 0 0 6.4 6.4l1.4-2 3.8 1.5v3a2 2 0 0 1-2.2 2A17.4 17.4 0 0 1 4.3 5.8a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Chiama il mio contatto</span>
+  </button>
+  <button class="tasto grande" id="messaggio-contatto">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.5 12.2c0 3.9-3.8 7-8.5 7a9.8 9.8 0 0 1-2.6-.35L4.2 20.4l1.3-3.4A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Mandagli un messaggio</span>
+  </button>
+</div>
+
+<!-- La mappa è per chi sta accanto: fuori dal giro del lettore di schermo,
+     perché quello che conta lo dice la voce. Compare quando c'è la posizione. -->
+<div id="mappa" class="vuota" aria-hidden="true" role="presentation"></div>
+
+<section class="cassetto" id="cassetto" aria-label="Altri comandi">
+  <button class="tasto" id="testo-piu">Testo più grande</button>
+  <button class="tasto" id="musica">Musica: accesa</button>
+  <button class="tasto" id="cosa-sentire">Dico: tutto</button>
+  <!-- I PERCORSI TUOI. Esistevano solo come parola da sapere a memoria —
+       «crea percorso» — e nessuno poteva scoprirli: «non l'ho visto nelle
+       scritte» (Vince, 21/10). Era la cosa che lui stesso ha chiamato «la
+       migliore idea che ho avuto», e stava nascosta. -->
+  <button class="tasto" id="percorso">Crea un percorso</button>
+  <!-- LE PASSEGGIATE. Centotrentasette giri gia' scritti — Roma 31,
+       Napoli 22, Firenze 13 — e si potevano avere solo sapendo la parola
+       «passeggiate»: lo stesso difetto di «crea percorso», che Vince
+       aveva gia' trovato il 21/10 («non l'ho visto nelle scritte»).
+       Sta solo in Turismo: una passeggiata e' storia e arte, non e' il
+       modo di chi deve andare in farmacia. -->
+  <button class="tasto" id="passeggiate" hidden>Passeggiate qui</button>
+  <button class="tasto" id="installa-cassetto" hidden>Installa sul telefono</button>
+  <button class="tasto" id="cambia-modo">Cambia modo</button>
+  <button class="tasto" id="manda-diario">Manda il diario</button>
+  <button class="tasto" id="dimmi-dove">Dove sono</button>
+  <button class="tasto" id="chi-chiamare">Chi avvisare</button>
+  <button class="tasto" id="dove-abito">Dove abito</button>
+  <div id="riga-casa" hidden style="flex:1 1 100%">
+    <label class="et" for="casa-indirizzo">L'indirizzo di casa tua</label>
+    <input id="casa-indirizzo" type="text" autocomplete="street-address" placeholder="via e numero, e la città"
+           style="width:100%;padding:14px;margin:6px 0;border-radius:12px;border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);font-size:var(--base)">
+    <button class="tasto vai" id="casa-salva" style="width:100%">Salva</button>
+  </div>
+  <div id="riga-contatto" hidden style="flex:1 1 100%">
+    <label class="et" for="contatto-nome">Chi deve venire ad aiutarti</label>
+    <input id="contatto-nome" type="text" autocomplete="name" placeholder="nome"
+           style="width:100%;padding:14px;margin:6px 0;border-radius:12px;border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);font-size:var(--base)">
+    <label class="et" for="contatto-tel">Il suo numero</label>
+    <input id="contatto-tel" type="tel" autocomplete="tel" placeholder="numero col prefisso, +39..."
+           style="width:100%;padding:14px;margin:6px 0;border-radius:12px;border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);font-size:var(--base)">
+    <button class="tasto vai" id="contatto-salva" style="width:100%">Salva</button>
+  </div>
+</section>
+
+<div class="muto" id="muto" aria-live="polite" role="status"></div>
+
+<nav class="barra" aria-label="Comandi">
+  <button class="tasto vai" id="avvia">Avvia</button>
+  <button class="tasto tondo" id="parla" aria-label="Parla: dimmi un comando"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  <!-- SCRIVERE AL POSTO DI PARLARE. «In turismo si può scrivere o
+       parlare» (Vince, 23/10). In mezzo a una piazza piena il
+       riconoscimento del parlato sbaglia, e chi vede può scrivere più in
+       fretta di quanto parli. Stesse parole, stessa porta: finisce in
+       comando(), quella che ascolta anche il microfono — così non
+       esistono due elenchi di comandi che si scollano.
+       Solo in Turismo: in Utilità cammina chi non vede, e una tastiera
+       non è una cosa che si usa camminando col bastone. -->
+  <input id="scrivi" type="text" enterkeyhint="go" autocomplete="off"
+         aria-label="Scrivi un comando" placeholder="scrivi…">
+  <button class="tasto tondo sos" id="sos" aria-label="Aiuto"><span aria-hidden="true">SOS</span></button>
+  <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
+</nav>
+
+<script src="parti/faro.js?v=173"></script>
+<script src="parti/percorsiMiei.js?v=173"></script>
+<script src="parti/postiMiei.js?v=173"></script>
+<script src="parti/contributi.js?v=173"></script>
+<script src="parti/avanzamento.js?v=173"></script>
+<script src="parti/fermate.js?v=173"></script>
+<script src="parti/aChiServe.js?v=173"></script>
+<script src="parti/paesaggio.js?v=173"></script>
+<script src="parti/modi.js?v=173"></script>
+<script src="parti/pronuncia.js?v=173"></script>
+<script src="parti/voce.js?v=173"></script>
+<script src="parti/distanza.js?v=173"></script>
+<script src="parti/descrizione.js?v=173"></script>
+<script src="parti/racconto.js?v=173"></script>
+<script src="parti/clip.js?v=173"></script>
+<script src="parti/aggancio.js?v=173"></script>
+<script src="parti/posizione.js?v=173"></script>
+<script src="parti/intorno.js?v=173"></script>
+<script src="parti/emergenza.js?v=173"></script>
+<script src="parti/pulizia.js?v=173"></script>
+<script src="parti/dettatura.js?v=173"></script>
+<script src="parti/guida.js?v=173"></script>
+<script src="parti/lettura.js?v=173"></script>
+<script src="parti/passeggiata.js?v=173"></script>
+<script src="parti/musica.js?v=173"></script>
+<script src="mappa/leaflet.js?v=173"></script>
+<script src="parti/negozi.js?v=173"></script>
+<script src="parti/passaggi.js?v=173"></script>
+<script src="parti/incroci.js?v=173"></script>
+<script src="parti/scena.js?v=173"></script>
+<script src="parti/mappa.js?v=173"></script>
+<script src="app.js?v=173"></script>
+
+<!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
+     installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
+     altri file e lo stesso di VERSIONE in sw.js: li alza PUBBLICA.command
+     insieme, e nuova/prove/pagina.js si rifiuta di far pubblicare se non
+     coincidono. Il ?v= nell'indirizzo del service worker non e' per
+     bellezza: e' quello che garantisce che il telefono ne veda uno nuovo
+     invece di tenersi quello di prima — il difetto che il 15/10 ha fatto
+     perdere due giorni. -->
+<script>
+/* Android dice «si puo' installare» una volta sola, appena caricata la
+   pagina: chi si mette ad ascoltare dopo non sente niente. Lo si prende al
+   volo e lo si tiene da parte, cosi' si puo' vedere se il telefono la offre
+   davvero, invece di doverlo chiedere al provatore. */
+var invitoAdInstallare = null;
+addEventListener('beforeinstallprompt', function (e) {
+  /* si ferma la strisciolina di Chrome, che sparisce da sola e non torna
+     piu': l'invito ce lo teniamo noi e lo mettiamo su un tasto */
+  e.preventDefault();
+  invitoAdInstallare = e;
+  mostraIlTastoInstalla();
+});
+window.offreDiInstallarla = function () { return !!invitoAdInstallare; };
+
+function giaInstallata() {
+  try {
+    return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  } catch (e) { return false; }
+}
+/* SU IPHONE NON SI PUO' INSTALLARE DA UN TASTO, e fingere di si' e'
+   peggio che niente. «Mi compare installa sul tele ma non va» (Vince,
+   20/10, da iPhone). L'invito che Android manda — beforeinstallprompt —
+   su iOS non esiste e non esistera': Apple non lo fa. L'unica strada e'
+   Condividi → Aggiungi a Home, due tocchi che pero' nessuno trova se non
+   glieli dici. Quindi su iPhone il tasto cambia mestiere: non promette di
+   installare, spiega come si fa. */
+function eIPhone() {
+  try {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  } catch (e) { return false; }
+}
+function mostraIlTastoInstalla() {
+  var t = document.getElementById('installa');
+  var t2 = document.getElementById('installa-cassetto');
+  var si = !!invitoAdInstallare && !giaInstallata();
+  var spiegare = eIPhone() && !giaInstallata();
+  if (t) {
+    t.hidden = !(si || spiegare);
+    t.textContent = si ? 'Installa sul telefono' : 'Come si mette sulla Home';
+  }
+  if (t2) {
+    t2.hidden = !(si || spiegare);
+    t2.textContent = si ? 'Installa sul telefono' : 'Come si mette sulla Home';
+  }
+}
+window.installala = function () {
+  if (!invitoAdInstallare) {
+    /* niente invito: o siamo su iPhone, o Chrome non la offre. Si spiega,
+       a voce e sullo schermo, invece di non fare niente. */
+    var come = eIPhone()
+      ? 'Su iPhone si mette sulla Home così: tocca il tasto Condividi, quello col quadrato e la freccia in su, poi scorri e tocca «Aggiungi a Home», e infine «Aggiungi». Da quel momento Yourbea è fra le tue app: aprila da lì, non da Safari.'
+      : 'Per installarla apri questa pagina con Chrome, tocca i tre puntini in alto a destra e scegli «Installa app».';
+    try { if (window.YBdillo) window.YBdillo(come); } catch (e) {}
+    try {
+      var c = document.getElementById('corpo');
+      if (c) { c.textContent = come; c.classList.remove('attesa'); }
+      var q = document.getElementById('cosa');
+      if (q) q.textContent = 'Come si mette sulla Home';
+    } catch (e) {}
+    return;
+  }
+  invitoAdInstallare.prompt();
+  invitoAdInstallare.userChoice.then(function (r) {
+    if (r && r.outcome === 'accepted') { invitoAdInstallare = null; mostraIlTastoInstalla(); }
+  });
+};
+addEventListener('appinstalled', function () { invitoAdInstallare = null; mostraIlTastoInstalla(); });
+addEventListener('DOMContentLoaded', function () {
+  var t = document.getElementById('installa');
+  var t2 = document.getElementById('installa-cassetto');
+  if (t) t.addEventListener('click', window.installala);
+  if (t2) t2.addEventListener('click', window.installala);
+  mostraIlTastoInstalla();
+});
+
+if ('serviceWorker' in navigator) {
+  addEventListener('load', function () {
+    /* se un service worker c'era gia', al cambio si ricarica: e' cosi' che la
+       correzione arriva al provatore appena si pubblica, invece che quando
+       gli viene in mente di riavviare. Alla PRIMA installazione no, o la
+       pagina si ricaricherebbe sotto il naso a chi la apre per la prima
+       volta. Una volta sola, o sarebbe un giro senza fine. */
+    var controllavaGia = !!navigator.serviceWorker.controller;
+    var ricaricato = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
+    });
+    navigator.serviceWorker.register("sw.js?v=173", { updateViaCache: 'none' })
+      .then(function (reg) { reg.update(); })
+      .catch(function (e) {
+        /* senza cassaforte l'app funziona comunque, con la rete: non si
+           avvisa nessuno e non si butta via la pagina per questo. */
+        if (window.YB && window.YB.diario) window.YB.diario('cassaforte no: ' + e.message);
+      });
+  });
+}
+</script>
+</body>
+</html>

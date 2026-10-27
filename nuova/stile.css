@@ -1,0 +1,437 @@
+/* YOURBEA — la veste, rifatta il 16/10/2026
+   ============================================================
+   Due persone guardano questo schermo: chi non vede, che lo tocca senza
+   guardarlo, e chi gli sta accanto. Quindi niente e' decorazione pura.
+
+   LE MISURE NON SONO GUSTO:
+   - 17px di base perche' si legge camminando, e si puo' alzare a 21 e 26
+     dal cassetto («testo piu' grande»);
+   - i tasti sono alti 72 punti e larghi quanto lo schermo quando contano:
+     si premono col pollice, senza guardare, magari sotto la pioggia. Vince
+     il 16/10: «i pulsanti piu' grandi»;
+   - il riquadro del parlato e' la cosa piu' grande della pagina, perche' e'
+     quello che l'app sta dicendo;
+   - contrasto alto su fondo scuro: fuori, col sole, il grigio su grigio
+     sparisce.
+
+   E NIENTE DI QUESTO CAMBIA L'ORDINE DI LETTURA: il lettore di schermo
+   segue la pagina, non il foglio di stile. */
+
+:root{
+  --fondo:#06090D;
+  --fondo2:#0C1118;
+  --carta:rgba(20,26,34,.82);
+  --carta2:rgba(28,35,45,.9);
+  --filo:rgba(255,255,255,.12);
+  --filo2:rgba(255,255,255,.22);
+  --inchiostro:#EFEEEA;
+  --spento:#98A2AE;
+  --neon:#5BE3FF;
+  --oro:#E7C65A;
+  --rosso:#E0513F;
+  --verde:#4FD38A;
+  --tondo:20px;
+  --base:17px;
+  --tasto:72px;
+  /* la costa italiana vera, 87 punti, dai dati pubblici: sta in un posto solo */
+  --italia:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 831 1000'%3E%3Cpath d='M621.0 846.5L595.5 921.5L606.1 951.0L591.2 1000.0L537.1 964.1L501.1 953.8L402.3 905.4L412.2 856.5L495.0 865.2L567.3 854.8L621.0 846.5ZM174.2 562.7L216.7 630.3L206.7 756.3L174.5 750.3L145.6 782.1L118.8 756.9L116.0 641.9L99.8 587.4L138.8 592.2L174.2 562.7ZM398.4 33.1L499.6 57.7L492.0 104.7L508.9 145.2L452.6 131.4L395.0 165.2L398.9 212.5L390.3 239.6L413.5 288.1L479.9 336.1L515.5 414.9L594.3 491.7L649.7 491.1L667.0 512.1L647.1 531.1L710.5 565.6L762.5 594.4L823.3 644.1L830.6 661.9L817.4 696.0L778.1 651.5L716.5 635.8L686.7 697.4L737.9 732.8L729.5 782.5L699.9 788.1L662.1 869.9L632.6 877.2L632.9 848.1L647.3 797.0L662.7 776.6L635.1 721.4L613.4 673.3L584.1 661.5L563.1 620.4L517.6 603.0L487.0 564.7L434.6 558.6L379.3 515.5L314.5 453.5L266.4 398.6L244.3 304.5L209.1 293.4L151.5 261.9L118.9 274.8L77.9 319.0L48.5 326.0L56.6 284.6L18.2 272.6L0.0 198.8L24.5 169.8L3.7 134.0L6.6 107.1L37.1 127.5L71.2 123.0L110.9 90.7L123.2 105.8L156.9 102.8L172.3 64.3L224.7 76.3L255.9 60.2L261.5 21.1L304.4 34.7L312.6 16.6L382.6 0.0L398.4 33.1Z' fill='none' stroke='rgb(91,227,255)' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+
+/* ---------- «NASCOSTO» VUOL DIRE NASCOSTO ----------
+   Il 21/10, sull'Android, il tasto «Come si mette sulla Home» stava in
+   mezzo alla porta — grosso 372x290 — con hidden=true addosso: dentro
+   l'app installata, un invito a installarla. Causa: .tasto fa
+   display:inline-flex, e il foglio dell'autore batte l'[hidden] del
+   browser a parita' di peso.
+   Qui sotto c'erano tre toppe, una per elemento, scritte ogni volta dopo
+   essersi scottati (#porta, #casa-riga, #riga-casa). Questa riga le copre
+   tutte, anche quelle che scriveremo domani. */
+[hidden]{display:none !important}
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:
+    radial-gradient(1200px 760px at 50% -14%, rgba(91,227,255,.13) 0%, transparent 58%),
+    radial-gradient(900px 620px at 92% 6%, rgba(231,198,90,.09) 0%, transparent 54%),
+    linear-gradient(180deg,var(--fondo2) 0%, var(--fondo) 62%);
+  background-attachment:fixed;
+  color:var(--inchiostro);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:var(--base);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 128px);
+}
+body[data-testo="grande"]{--base:21px}
+body[data-testo="enorme"]{--base:26px}
+
+/* chi naviga col tasto o col controllo interruttori deve VEDERE dov'è */
+:focus-visible{outline:3px solid var(--neon);outline-offset:3px;border-radius:12px}
+
+/* ---------- l'insegna ---------- */
+.testa{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.marchio{
+  font-family:"Bodoni Moda",Georgia,serif;font-size:21px;letter-spacing:.2em;
+  color:var(--oro);text-shadow:0 0 26px rgba(231,198,90,.25)
+}
+.stato{
+  font-size:12px;color:var(--spento);text-align:right;max-width:58%;
+  background:rgba(255,255,255,.04);border:1px solid var(--filo);
+  padding:7px 12px;border-radius:999px
+}
+.stato b{color:var(--verde);font-weight:600}
+.stato.male b{color:var(--rosso)}
+
+/* ---------- il riquadro del parlato: la cosa più importante ---------- */
+.dice{
+  position:relative;
+  background:linear-gradient(180deg, var(--carta2), var(--carta));
+  border:1px solid var(--filo);border-radius:var(--tondo);
+  padding:22px 20px 20px;min-height:184px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden;
+}
+/* un filo d'oro in cima: si vede che è il riquadro che parla */
+.dice::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg, transparent, var(--oro), transparent);opacity:.7
+}
+.dice .dove{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);font-weight:600
+}
+.dice .cosa{
+  font-family:"Bodoni Moda",Georgia,serif;
+  font-size:calc(var(--base) * 1.85);line-height:1.15;margin:10px 0 12px;
+  letter-spacing:.01em
+}
+.dice .corpo{color:var(--inchiostro);font-size:var(--base)}
+.dice .corpo.attesa{color:var(--spento);font-style:italic}
+.dice .gradino{
+  margin-top:16px;font-size:13.5px;color:var(--spento);
+  border-top:1px solid var(--filo);padding-top:12px
+}
+.dice .gradino:empty{display:none}
+
+/* ---------- i tasti ---------- */
+.tasto{
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--filo2);color:var(--inchiostro);
+  border-radius:16px;padding:16px 18px;font-size:16px;font-weight:600;
+  min-height:60px;cursor:pointer;
+  transition:transform .08s ease, background .15s ease;
+}
+.tasto:active{transform:translateY(1px);background:rgba(255,255,255,.1)}
+.tasto.vai{background:var(--oro);border-color:var(--oro);color:#241C08;flex:1 1 auto}
+.tasto.tondo{
+  width:var(--tasto);height:var(--tasto);padding:0;font-size:27px;
+  display:grid;place-items:center;border-radius:50%
+}
+.tasto.sos{
+  background:radial-gradient(120% 120% at 50% 0%, #F0624E, #B81F10);
+  border-color:#8E1A0D;color:#fff;
+  box-shadow:0 10px 26px rgba(224,81,63,.35)
+}
+.tasto.ascolta{background:var(--neon);border-color:var(--neon);color:#04222B}
+/* i due tasti grossi: alti come il pollice, larghi quanto si può */
+.tasto.grande{
+  flex:1 1 240px;min-height:var(--tasto);
+  font-size:calc(var(--base) * 1.12);font-weight:700;border-radius:18px
+}
+
+.barra{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:linear-gradient(180deg, rgba(6,9,13,0), rgba(6,9,13,.92) 38%);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+}
+.barra .tasto.vai{min-height:var(--tasto);font-size:17px}
+
+/* IL CASSETTO STA SOPRA LA BARRA, NON NELLA PAGINA.
+   Dario, provandola a Napoli: «i tre pallini in basso a destra non riesco ad
+   aprirli: ci clicco sopra e non apre nulla». Si apriva: ma era una sezione
+   nel flusso della pagina, con la barra fissa in fondo sopra di lui — su un
+   telefono il cassetto finiva sotto la barra o sotto il bordo dello schermo,
+   e chi lo apriva non vedeva niente. Adesso e' un pannello fissato sopra la
+   barra: si apre dove si guarda, e se i tasti sono tanti scorre lui. */
+.cassetto{
+  display:none;gap:10px;flex-wrap:wrap;
+  position:fixed;left:0;right:0;z-index:60;
+  bottom:calc(env(safe-area-inset-bottom,0px) + var(--tasto) + 26px);
+  margin:0;padding:14px 16px;
+  max-height:52vh;overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  background:rgba(6,9,13,.97);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-top:1px solid var(--filo);
+  box-shadow:0 -18px 44px rgba(0,0,0,.6);
+}
+.cassetto.aperto{display:flex}
+.cassetto .tasto{flex:1 1 44%}
+.et{font-size:13px;color:var(--spento);letter-spacing:.04em}
+
+/* ---------- la porta: due scelte, e basta ---------- */
+#porta[hidden]{display:none}
+#porta{
+  position:fixed;inset:0;z-index:4000;
+  background:
+    radial-gradient(900px 600px at 50% -10%, rgba(231,198,90,.14), transparent 60%),
+    radial-gradient(800px 560px at 50% 110%, rgba(91,227,255,.12), transparent 60%),
+    var(--fondo);
+  display:flex;flex-direction:column;justify-content:center;gap:14px;
+  padding:calc(env(safe-area-inset-top,0px) + 26px) 20px calc(env(safe-area-inset-bottom,0px) + 26px);
+  overflow:auto;
+}
+#porta h1{
+  font-family:"Bodoni Moda",Georgia,serif;font-size:34px;letter-spacing:.22em;
+  color:var(--oro);margin:0 0 4px;text-shadow:0 0 36px rgba(231,198,90,.3)
+}
+#porta p.sotto{color:var(--spento);margin:0 0 10px;font-size:15.5px;max-width:34em}
+.scelta{
+  position:relative;text-align:left;width:100%;
+  background:linear-gradient(180deg, rgba(28,35,45,.92), rgba(18,23,30,.92));
+  border:1px solid var(--filo);border-radius:22px;
+  padding:22px 20px 20px 24px;color:var(--inchiostro);cursor:pointer;
+  box-shadow:0 18px 44px rgba(0,0,0,.45);
+  transition:transform .09s ease, border-color .15s ease;
+}
+.scelta:active{transform:translateY(1px)}
+/* la striscia di colore sul fianco: si capisce al volo quale è quale */
+.scelta::before{
+  content:"";position:absolute;left:0;top:14px;bottom:14px;width:5px;border-radius:0 5px 5px 0
+}
+.scelta b{display:block;font-family:"Bodoni Moda",Georgia,serif;font-size:29px;margin-bottom:8px}
+.scelta span{color:#BCC4CE;font-size:15.5px;display:block}
+.scelta.utilita{border-color:rgba(91,227,255,.4)}
+.scelta.utilita::before{background:var(--neon);box-shadow:0 0 22px rgba(91,227,255,.5)}
+.scelta.utilita b{color:var(--neon)}
+.scelta.turismo{border-color:rgba(231,198,90,.4)}
+.scelta.turismo::before{background:var(--oro);box-shadow:0 0 22px rgba(231,198,90,.45)}
+.scelta.turismo b{color:var(--oro)}
+
+/* quello che il lettore di schermo legge e nessuno vede */
+.muto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:no-preference){
+  .dice{animation:entra .28s ease both}
+  @keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+
+/* ---------- la mappa ----------
+   Non è la protagonista: sta sotto il riquadro del parlato e sparisce
+   finché non c'è una posizione. Serve a chi accompagna chi non vede, e al
+   turista che vuole vedere dov'è la cosa che l'app gli racconta. */
+#mappa{
+  /* LA MAPPA STA DENTRO I SUOI CONFINI. «Quando premo i tre puntini per
+     le impostazioni, la mappa non scompare» (Marco, 25/10, provando
+     l'app). Misurato: la barra in basso ha z-index 50 e il cassetto 60,
+     ma Leaflet mette le sue tessere a 200 e i controlli dello zoom e la
+     scritta dei crediti a 800 — e #mappa aveva z-index `auto`, cioe'
+     non faceva da contenitore: quei pezzi salivano nella pagina e
+     coprivano la barra e il cassetto. Con z-index 0 e `isolation`, i
+     suoi 800 restano suoi e valgono 0 qui fuori. */
+  position:relative;z-index:0;isolation:isolate;
+  width:100%;height:46vh;min-height:240px;max-height:520px;margin-top:16px;
+  border:1px solid var(--filo);border-radius:var(--tondo);overflow:hidden;
+  background:#0A0E13;
+  box-shadow:0 0 0 1px rgba(91,227,255,.1), 0 20px 48px rgba(0,0,0,.5);
+}
+#mappa.vuota{display:none}
+body[data-modo="utilita"] #mappa{display:none}
+/* le tessere arrivano bianche e in mezzo al nero accecano. Si rovesciano:
+   invert + hue-rotate rimette i colori al posto giusto e dà una mappa
+   scura vera, coi nomi chiari sul fondo — e di notte non si abbaglia
+   nessuno. */
+#mappa .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.85)}
+#mappa .leaflet-control-zoom a{
+  background:#161B22;color:var(--inchiostro);border-color:var(--filo);
+  width:40px;height:40px;line-height:40px;font-size:21px
+}
+#mappa .leaflet-control-zoom a:hover{background:#1F252E}
+#mappa .leaflet-control-attribution{
+  background:rgba(10,14,19,.75);color:var(--spento);font-size:10px
+}
+#mappa .leaflet-control-attribution a{color:#9FB6C4}
+
+/* ---------- i due tasti grandi ----------
+   Casa solo in Utilità (in Turismo non si torna: si gira). Avvisare c'è in
+   tutte e due, perché un guaio capita anche mentre si guarda una chiesa. */
+#casa-riga{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 0}
+#casa-riga[hidden]{display:none}
+#vai-a-casa{display:none}
+body[data-modo="utilita"] #vai-a-casa{display:block}
+/* LEGGERE I CARTELLI: il tasto sta in Utilità, dove si cammina per arrivare
+   da qualche parte e un numero di autobus o un citofono si leggono di
+   fretta. A voce («leggi») si può chiedere anche in Turismo. */
+#leggi-cartello{display:none}
+body[data-modo="utilita"] #leggi-cartello{display:block}
+.tasto.avvisa{border-color:rgba(224,81,63,.5);color:#F6C3BB;background:rgba(224,81,63,.1)}
+#riga-casa[hidden]{display:none}
+
+/* ============================================================
+   LA VESTE DI TURISMO — «perché lì i turisti vedono»
+   ============================================================
+   Vince, il 16/10: in Utilità a premere è un non vedente e lo schermo non
+   serve, quindi resta spoglio e grandissimo. In Turismo invece lo schermo
+   lo guardano, e deve essere bello: «qualcosa cyber, hi-tech e
+   architettura». Da lì il disegno: la carta da progetto (la griglia fine),
+   le squadre agli angoli come su un disegno tecnico, i dati in carattere da
+   macchina e il nome del monumento in Bodoni, che è un carattere
+   d'architettura. Niente di tutto questo cambia una parola di quello che
+   l'app dice: è solo la veste di chi guarda. */
+
+body[data-modo="turismo"]{
+  background:
+    /* la griglia della carta da progetto */
+    repeating-linear-gradient(0deg, rgba(91,227,255,.045) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(91,227,255,.045) 0 1px, transparent 1px 44px),
+    radial-gradient(1100px 700px at 50% -12%, rgba(91,227,255,.16) 0%, transparent 60%),
+    radial-gradient(900px 620px at 88% 10%, rgba(231,198,90,.10) 0%, transparent 56%),
+    linear-gradient(180deg,#0A1017 0%, var(--fondo) 64%);
+  background-attachment:fixed;
+}
+
+/* il riquadro del parlato diventa una tavola: squadre agli angoli */
+body[data-modo="turismo"] .dice{
+  background:linear-gradient(180deg, rgba(16,24,33,.92), rgba(10,15,21,.92));
+  border-color:rgba(91,227,255,.22);
+  box-shadow:0 0 0 1px rgba(91,227,255,.06), 0 24px 60px rgba(0,0,0,.55),
+             inset 0 1px 0 rgba(255,255,255,.05);
+  padding:26px 22px 22px;
+}
+body[data-modo="turismo"] .dice::before{
+  content:"";position:absolute;left:14px;top:14px;width:26px;height:26px;
+  border-left:2px solid var(--neon);border-top:2px solid var(--neon);
+  opacity:.75;background:none;height:26px
+}
+body[data-modo="turismo"] .dice::after{
+  content:"";position:absolute;right:14px;bottom:14px;width:26px;height:26px;
+  border-right:2px solid var(--oro);border-bottom:2px solid var(--oro);opacity:.7
+}
+/* la riga tecnica: dove sei, in carattere da macchina, come una quota */
+body[data-modo="turismo"] .dice .dove{
+  color:var(--neon);letter-spacing:.24em;font-size:11.5px;
+  padding-left:18px;position:relative
+}
+body[data-modo="turismo"] .dice .dove::before{
+  content:"";position:absolute;left:0;top:50%;width:10px;height:1px;background:var(--neon);opacity:.8
+}
+body[data-modo="turismo"] .dice .dove:empty{display:none}
+/* il nome del monumento: grande, in Bodoni, con la riga d'oro sotto */
+body[data-modo="turismo"] .dice .cosa{
+  font-size:calc(var(--base) * 2.05);margin:14px 0 14px;padding-bottom:14px;
+  border-bottom:1px solid rgba(231,198,90,.3);
+}
+body[data-modo="turismo"] .dice .corpo{color:#DCE3EA;line-height:1.62}
+body[data-modo="turismo"] .dice .gradino{
+  border-top:1px dashed rgba(91,227,255,.25);color:#8FB6C6;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;letter-spacing:.03em
+}
+
+/* la mappa, incorniciata come un visore */
+body[data-modo="turismo"] #mappa{
+  border-color:rgba(91,227,255,.3);
+  box-shadow:0 0 0 1px rgba(91,227,255,.14), 0 0 40px rgba(91,227,255,.1), 0 22px 54px rgba(0,0,0,.55)
+}
+body[data-modo="turismo"] .marchio{color:var(--neon);text-shadow:0 0 28px rgba(91,227,255,.35)}
+body[data-modo="turismo"] .stato{border-color:rgba(91,227,255,.22)}
+body[data-modo="turismo"] .barra{
+  background:linear-gradient(180deg, rgba(6,9,13,0), rgba(5,10,15,.94) 38%);
+  border-top:1px solid rgba(91,227,255,.12)
+}
+
+
+/* ---------- l'Italia sotto ----------
+   «qualcosa come sfondo leggero, di architettonico… o l'Italia sotto».
+   E' la costa vera, presa dai dati pubblici (Natural Earth via
+   world.geo.json) e ridotta a 87 punti: una sagoma disegnata a mano si
+   vedrebbe che e' sbagliata, e a un italiano non si fa. Sta in basso a
+   destra, quasi trasparente, e non copre mai una parola: il riquadro del
+   parlato ha il suo fondo e ci passa sopra. Solo in Turismo — in Utilita'
+   lo schermo non serve a nessuno. */
+body[data-modo="turismo"]::after{
+  content:"";position:fixed;z-index:-1;pointer-events:none;
+  right:-6vw;top:7vh;width:74vw;height:62vh;
+  background-image:var(--italia);
+  background-repeat:no-repeat;background-position:top right;background-size:contain;
+  opacity:.14;
+  filter:drop-shadow(0 0 18px rgba(91,227,255,.35));
+}
+@media (min-width:700px){ body[data-modo="turismo"]::after{ width:44vw; right:2vw } }
+
+/* e sulla porta, dove c'è spazio vuoto e si vede bene */
+#porta::after{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  right:-4vw;top:3vh;width:72vw;height:66vh;
+  background-image:var(--italia);
+  background-repeat:no-repeat;background-position:top right;background-size:contain;
+  opacity:.11;
+}
+#porta > *{position:relative;z-index:1}
+
+/* ---------- le icone dei tasti ----------
+   Disegnate, non emoji: le emoji cambiano faccia da un telefono all'altro,
+   si colorano da sole e fanno giocattolo. Queste prendono il colore del
+   tasto e restano uguali ovunque. Per chi non vede non cambia niente: il
+   nome del tasto lo dice l'aria-label, e l'icona è aria-hidden. */
+.tasto{display:inline-flex;align-items:center;justify-content:center;gap:12px}
+.tasto svg{width:23px;height:23px;flex:none}
+.tasto.tondo svg{width:27px;height:27px}
+.tasto.grande svg{width:25px;height:25px}
+.tasto.sos span{font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+
+/* ---------- il riquadro respira mentre parla ----------
+   Chi accompagna capisce a colpo d'occhio se l'app sta dicendo qualcosa:
+   prima, da fuori, l'app muta e l'app che parlava erano identiche. */
+body[data-parla="si"] .dice{border-color:rgba(231,198,90,.45)}
+body[data-parla="si"] .dice::before{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  body[data-parla="si"] .dice{animation:respira 2.1s ease-in-out infinite}
+  @keyframes respira{
+    0%,100%{box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(231,198,90,.12)}
+    50%{box-shadow:0 20px 54px rgba(0,0,0,.5), 0 0 26px rgba(231,198,90,.16), 0 0 0 1px rgba(231,198,90,.3)}
+  }
+}
+body[data-modo="turismo"][data-parla="si"] .dice{border-color:rgba(91,227,255,.45)}
+@media (prefers-reduced-motion:no-preference){
+  body[data-modo="turismo"][data-parla="si"] .dice{animation:respiraCiano 2.1s ease-in-out infinite}
+  @keyframes respiraCiano{
+    0%,100%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(91,227,255,.1)}
+    50%{box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 30px rgba(91,227,255,.18), 0 0 0 1px rgba(91,227,255,.34)}
+  }
+}
+
+/* IL CAMPO DOVE SI SCRIVE. Sta nella barra, fra il microfono e il SOS, e
+   si vede solo in Turismo. Prende lo spazio che avanza: i tasti tondi
+   restano tondi, lui si allarga. */
+#scrivi{
+  display:none;
+  /* UNA RIGA SUA, SOPRA I TASTI. Messo in fila con gli altri, su un
+     telefono da 375 punti il campo rubava lo spazio ai tasti tondi: il
+     SOS passava da 72 punti a 35, meta'. Il SOS non si stringe per far
+     posto a una tastiera. Allora la barra va a capo e il campo si prende
+     tutta la riga di sopra (order:-1), dove ci sta davvero. */
+  flex:1 0 100%;order:-1;min-width:0;
+  min-height:var(--tasto);
+  padding:0 14px;border-radius:14px;
+  border:1px solid var(--filo);
+  background:var(--carta);color:var(--inchiostro);
+  font-size:16px;                      /* sotto i 16 iOS ingrandisce la pagina */
+}
+#scrivi::placeholder{color:var(--inchiostro);opacity:.45}
+body[data-modo="turismo"] #scrivi{display:block}
+
+/* LA BARRA IN TURISMO E' PIU' ALTA DI UNA RIGA. Tutto quello che le sta
+   sopra va alzato della stessa misura, sennò ci finisce sotto: è il
+   difetto che Dario aveva trovato col cassetto a Napoli («ci clicco sopra
+   e non apre nulla» — si apriva, stava sotto la barra). Qui il cassetto
+   finiva sopra il campo dove si scrive, e la fine del testo pure. */
+body[data-modo="turismo"] .cassetto{
+  bottom:calc(env(safe-area-inset-bottom,0px) + var(--tasto) * 2 + 38px);
+}
+body[data-modo="turismo"]{
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 128px + var(--tasto) + 12px);
+}

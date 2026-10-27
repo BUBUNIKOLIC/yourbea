@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070A0E">
+<title>Yourbea — la voce che ti accompagna</title>
+<meta name="description" content="Yourbea accompagna a voce chi non vede: ti dice dove sei, cosa hai intorno e ti porta dove devi andare. E racconta l'arte che incontri. Aiutaci a mappare l'Italia.">
+<link rel="icon" href="./nuova/icone/icon-192.png">
+<!-- ============================================================
+     LA CASA DI YOURBEA, e insieme la porta di chi ce l'ha gia'.
+     Questa pagina fa due mestieri, e il secondo non si puo' togliere:
+     fino al 15/10/2026 qui c'era la vecchia app, e chi l'aveva
+     installata ha ancora la sua cassaforte nel telefono. Lo script in
+     fondo la spegne — ed e' il motivo per cui questa pagina non e' un
+     semplice volantino.
+     LA GRAFICA, 26/10: «richiamare arte, i monumenti, l'Italia; i non
+     vedenti e l'inclusivita'; aiutaci a creare una rete, a mappare
+     l'Italia» (Vince). I monumenti sono disegnati qui dentro, non sono
+     fotografie: una foto di un bene culturale italiano su un sito che
+     vende vuole l'autorizzazione del Ministero (Codice dei beni
+     culturali, art. 108), un disegno nostro no. E pesa due righe.
+     ============================================================ -->
+<style>
+  :root{ --fondo:#080F1F; --carta:#101A2E; --filo:#26334B;
+         --inchiostro:#F2EFE6; --spento:#B6BECF; --oro:#E3B765; --acqua:#79D8F7;
+         --pietra:#D8C49A; }
+  *{box-sizing:border-box}
+  html{font-size:17px}
+  body{margin:0;color:var(--inchiostro);
+       font-family:-apple-system,system-ui,"Segoe UI",sans-serif;line-height:1.65;
+       background:
+         radial-gradient(90% 55% at 50% 0%, rgba(227,183,101,.13) 0%, rgba(227,183,101,0) 58%),
+         radial-gradient(130% 70% at 50% 8%, rgba(121,216,247,.10) 0%, rgba(91,227,255,0) 55%),
+         linear-gradient(180deg,#0C1628 0%, var(--fondo) 46%, #050A16 100%);
+       background-attachment:fixed}
+  /* LA GRANA: un velo di polvere sopra tutto. Senza, il nero e' una
+     parete; con, e' aria. Non si clicca e non si legge. */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+    opacity:.055;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23g)'/></svg>")}
+  main,.cielo{position:relative;z-index:2}
+  /* LA PROFONDITA' SI VEDE QUANDO CI SI MUOVE: scorrendo, la citta'
+     lontana scivola meno dei monumenti davanti. E' lo stesso motivo per
+     cui in macchina le montagne sembrano ferme e i pali volano. */
+  #lontano,#vicino{will-change:transform}
+  .dentro{max-width:42em;margin:0 auto;padding:0 20px 80px}
+  a{color:var(--acqua)}
+  /* IL BORDO QUANDO SI ARRIVA COL TASTO TAB: chi non vede naviga cosi',
+     e un contorno che non si vede e' una porta chiusa. */
+  a:focus-visible,button:focus-visible{outline:3px solid var(--acqua);outline-offset:3px}
+  .salta{position:absolute;left:-9999px;background:var(--acqua);color:#06202A;
+         padding:12px 18px;border-radius:12px;font-weight:600}
+  .salta:focus{left:20px;top:20px;position:fixed;z-index:9}
+
+  /* LA FASCIA DEI MONUMENTI: e' una decorazione, e per chi legge con la
+     voce non esiste (aria-hidden). Chi non vede non perde niente: la
+     stessa cosa gliela dice il testo sotto. */
+  .cielo{background:
+      radial-gradient(85% 130% at 50% 104%, rgba(227,183,101,.20) 0%, rgba(227,183,101,.05) 45%, rgba(227,183,101,0) 72%),
+      radial-gradient(60% 90% at 18% 110%, rgba(121,216,247,.12) 0%, rgba(91,227,255,0) 60%),
+      linear-gradient(180deg,#050A16 0%, #081021 55%, #0D1830 100%);
+    border-bottom:1px solid rgba(227,183,101,.22);overflow:hidden;
+    box-shadow:inset 0 -26px 46px -28px rgba(227,183,101,.30)}
+  .cielo svg{display:block;width:100%;height:auto;max-height:190px}
+
+  h1{font-family:Georgia,"Times New Roman",serif;color:var(--oro);
+     letter-spacing:.16em;font-size:2.35rem;margin:26px 0 4px;font-weight:400;
+     /* L ISCRIZIONE: una riga di buio sotto e una di luce sopra. E' come
+        si legge una lettera scolpita — la pietra non e' piatta. */
+     text-shadow:0 1px 0 rgba(0,0,0,.65), 0 2px 1px rgba(0,0,0,.45),
+                 0 -1px 0 rgba(255,236,190,.22), 0 6px 22px rgba(227,183,101,.14)}
+  .sotto{color:var(--spento);font-size:1.12rem;margin:0 0 26px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:1.42rem;margin:44px 0 10px;color:var(--inchiostro);
+     letter-spacing:.01em}
+  /* il filetto sotto i titoli: due pietre e una linea, come un fregio */
+  h2::after{content:"";display:block;width:64px;height:1px;margin-top:9px;
+            background:linear-gradient(90deg,var(--oro),rgba(227,183,101,0))}
+  p,li{color:var(--spento)}
+  li{margin:8px 0}
+  strong{color:var(--inchiostro)}
+  /* LA VOCE CHE PARLA, sotto le scritte: le barre si muovono come una
+     voce, e la frase cambia ogni quattro secondi. E' la cosa che Yourbea
+     fa davvero, non un ornamento. Per chi legge con lo schermo non
+     esiste (aria-hidden): le stesse frasi stanno scritte piu' sotto, e
+     una riga che cambia da sola sarebbe un'interruzione continua. */
+  .voce{display:flex;align-items:center;gap:14px;margin:4px 0 26px;
+        min-height:54px}
+  .onda{display:flex;align-items:center;gap:5px;flex:0 0 auto;height:38px}
+  .onda i{display:block;width:5px;height:10px;border-radius:3px;
+          background:var(--oro);opacity:.85;
+          animation:respiro 1.25s ease-in-out infinite}
+  .onda i:nth-child(2){animation-delay:.10s}
+  .onda i:nth-child(3){animation-delay:.22s}
+  .onda i:nth-child(4){animation-delay:.34s}
+  .onda i:nth-child(5){animation-delay:.46s}
+  .onda i:nth-child(6){animation-delay:.58s}
+  .onda i:nth-child(7){animation-delay:.70s}
+  @keyframes respiro{0%,100%{height:7px;opacity:.5}50%{height:36px;opacity:1}}
+  .frase{color:var(--inchiostro);font-style:italic;font-size:1.02rem;
+         line-height:1.45;opacity:1;transition:opacity .5s}
+  .frase.via{opacity:0}
+  @media (prefers-reduced-motion:reduce){
+    .onda i{animation:none;height:18px}
+    .frase{transition:none}
+  }
+  /* LE SCRITTE ENTRANO, non compaiono di colpo: salgono di dodici punti
+     mentre si accendono. All apertura il titolo, poi ogni pezzo quando
+     arriva sullo schermo. Chi ha spento le animazioni nel telefono vede
+     tutto fermo e intero — e chi legge con la voce non se ne accorge,
+     perche' il testo e' sempre li', e' solo dipinto diverso. */
+  main{perspective:900px}
+  .entra{opacity:0;transform:translateY(14px) rotateX(7deg);transform-origin:50% 0;
+         transition:opacity .75s ease-out, transform .75s cubic-bezier(.22,.9,.3,1)}
+  .entra.dentro{opacity:1;transform:none}
+  .entra.r1{transition-delay:0s} .entra.r2{transition-delay:.12s}
+  .entra.r3{transition-delay:.24s}
+  .entra.r4{transition-delay:.36s}
+  .frase{transform:translateY(0);transition:opacity .5s, transform .5s}
+  .frase.via{opacity:0;transform:translateY(-8px)}
+  @media (prefers-reduced-motion:reduce){
+    .entra{opacity:1;transform:none;transition:none}
+    .frase{transition:none;transform:none}
+  }
+  .occhiello{font-family:Georgia,serif;color:var(--oro);letter-spacing:.22em;
+             text-transform:uppercase;font-size:.78rem;margin:28px 0 0}
+  .apri{display:inline-block;background:var(--acqua);color:#06202A;text-decoration:none;
+        font-weight:700;padding:20px 28px;border-radius:18px;font-size:1.15rem;
+        min-height:62px;line-height:1.3;text-align:center}
+  /* i due tasti per portarsela via: stesso peso del primo, altro colore —
+     uno sceglie il telefono che ha, non il piu' colorato */
+  .apri.fuori{background:transparent;color:var(--oro);border:1px solid rgba(227,183,101,.55);
+              font-weight:600}
+  .tasti{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 14px}
+  .tasti .apri{flex:1 1 15em}
+  .riquadro{background:var(--carta);border:1px solid var(--filo);
+            border-radius:18px;padding:18px 20px;margin:16px 0}
+  .riquadro h3{margin:0 0 6px;font-size:1.05rem;color:var(--inchiostro)}
+  .riquadro p:last-child{margin-bottom:0}
+  .dice{border-left:3px solid var(--oro);padding:4px 0 4px 16px;margin:14px 0;
+        color:var(--inchiostro);font-style:italic}
+  /* LA RETE: la sezione che chiede una mano, e si vede che la chiede */
+  .rete{background:linear-gradient(180deg,rgba(227,183,101,.07),rgba(227,183,101,.02));
+        border:1px solid rgba(227,183,101,.30);border-radius:20px;
+        padding:22px 22px 24px;margin:18px 0}
+  .rete h2{margin-top:0}
+  .numeri{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px;padding:0;list-style:none}
+  .numeri li{flex:1 1 9em;background:var(--carta);border:1px solid var(--filo);
+             border-radius:14px;padding:12px 14px;margin:0}
+  .numeri b{display:block;font-family:Georgia,serif;font-size:1.5rem;
+            color:var(--oro);font-weight:400;line-height:1.2}
+  .numeri span{font-size:.93rem;color:var(--spento)}
+  .piede{margin-top:46px;padding-top:20px;border-top:1px solid var(--filo);
+         color:var(--spento);font-size:.97rem}
+  @media (prefers-reduced-motion:no-preference){ a.apri{transition:transform .12s} }
+</style>
+</head>
+<body>
+<a class="salta" href="#comincia">Salta al tasto per aprire Yourbea</a>
+
+<div class="cielo" aria-hidden="true">
+  <svg viewBox="0 0 1200 210" role="presentation" focusable="false">
+    <defs>
+      <linearGradient id="pietra" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#E3B765" stop-opacity=".95"/>
+        <stop offset="1" stop-color="#E3B765" stop-opacity=".42"/>
+      </linearGradient>
+    </defs>
+    <!-- IL PIANO LONTANO: la citta' dietro, piu' piccola, piu' scura e
+         sfocata. E' quello che da' profondita': senza, i monumenti sono
+         adesivi incollati sul nero. -->
+    <defs>
+      <filter id="foschia" x="-10%" y="-10%" width="120%" height="130%">
+        <feGaussianBlur stdDeviation="1.6"/>
+      </filter>
+      <linearGradient id="lontananza" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#E3B765" stop-opacity=".30"/>
+        <stop offset="1" stop-color="#E3B765" stop-opacity=".06"/>
+      </linearGradient>
+    </defs>
+    <g id="lontano" fill="url(#lontananza)" filter="url(#foschia)">
+      <rect x="150" y="150" width="26" height="46"/>
+      <path d="M150 150 L163 132 L176 150 Z"/>
+      <rect x="236" y="162" width="52" height="34"/>
+      <rect x="252" y="140" width="18" height="24"/>
+      <rect x="540" y="146" width="22" height="50"/>
+      <path d="M538 146 L551 126 L564 146 Z"/>
+      <rect x="470" y="166" width="64" height="30"/>
+      <rect x="730" y="158" width="74" height="38"/>
+      <path d="M744 158 a16 14 0 0 1 32 0 Z"/>
+      <rect x="760" y="134" width="16" height="26"/>
+      <rect x="892" y="150" width="20" height="46"/>
+      <path d="M890 150 L902 130 L914 150 Z"/>
+      <rect x="1176" y="156" width="24" height="40"/>
+      <rect x="60" y="168" width="60" height="28"/>
+    </g>
+    <!-- la foschia che si posa fra i due piani -->
+    <rect x="0" y="120" width="1200" height="76" fill="url(#velo)"/>
+    <defs>
+      <linearGradient id="velo" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#050A16" stop-opacity="0"/>
+        <stop offset="1" stop-color="#050A16" stop-opacity=".55"/>
+      </linearGradient>
+    </defs>
+    <g id="vicino" fill="url(#pietra)">
+      <!-- tempio dorico: la Magna Grecia -->
+      <path d="M44 96 L135 56 L226 96 Z"/>
+      <rect x="48" y="98" width="174" height="13"/>
+      <rect x="56" y="113" width="14" height="64"/><rect x="84" y="113" width="14" height="64"/>
+      <rect x="112" y="113" width="14" height="64"/><rect x="140" y="113" width="14" height="64"/>
+      <rect x="168" y="113" width="14" height="64"/><rect x="196" y="113" width="14" height="64"/>
+      <rect x="48" y="177" width="174" height="9"/><rect x="40" y="186" width="190" height="9"/>
+
+      <!-- il Colosseo: l anello alto a sinistra, la parte caduta a destra -->
+      <path d="M286 195 L286 102 L434 102 L434 138 L524 138 L524 195 Z"/>
+
+      <!-- la cupola del Brunelleschi e il campanile di Giotto -->
+      <rect x="566" y="78" width="28" height="117"/>
+      <rect x="562" y="70" width="36" height="9"/>
+      <rect x="604" y="138" width="104" height="57"/>
+      <path d="M606 140 C612 96 630 70 656 58 C682 70 700 96 706 140 Z"/>
+      <rect x="648" y="38" width="16" height="22"/>
+      <path d="M646 38 L656 24 L666 38 Z"/>
+
+      <!-- la torre di Pisa, inclinata com e -->
+      <g transform="rotate(4.5 846 195)">
+        <rect x="820" y="86" width="56" height="10"/>
+        <rect x="822" y="96" width="52" height="99"/>
+        <rect x="832" y="66" width="32" height="20"/>
+        <rect x="828" y="58" width="40" height="9"/>
+      </g>
+
+      <!-- San Marco: il campanile e le cupole -->
+      <rect x="938" y="74" width="44" height="121"/>
+      <rect x="934" y="54" width="52" height="20"/>
+      <path d="M936 54 L960 20 L984 54 Z"/>
+      <rect x="1006" y="150" width="162" height="45"/>
+      <path d="M1018 150 a21 19 0 0 1 42 0 Z"/>
+      <path d="M1066 150 a21 19 0 0 1 42 0 Z"/>
+      <path d="M1114 150 a21 19 0 0 1 42 0 Z"/>
+      <rect x="1037" y="122" width="4" height="10"/>
+      <rect x="1085" y="122" width="4" height="10"/>
+      <rect x="1133" y="122" width="4" height="10"/>
+    </g>
+    <!-- gli archi: si ritagliano col colore del fondo -->
+    <g fill="#080F1F">
+      <path d="M296 144 L296 123 A9 9 0 0 1 314 123 L314 144 Z"/>
+      <path d="M322 144 L322 123 A9 9 0 0 1 340 123 L340 144 Z"/>
+      <path d="M348 144 L348 123 A9 9 0 0 1 366 123 L366 144 Z"/>
+      <path d="M374 144 L374 123 A9 9 0 0 1 392 123 L392 144 Z"/>
+      <path d="M400 144 L400 123 A9 9 0 0 1 418 123 L418 144 Z"/>
+      <path d="M296 180 L296 159 A9 9 0 0 1 314 159 L314 180 Z"/>
+      <path d="M322 180 L322 159 A9 9 0 0 1 340 159 L340 180 Z"/>
+      <path d="M348 180 L348 159 A9 9 0 0 1 366 159 L366 180 Z"/>
+      <path d="M374 180 L374 159 A9 9 0 0 1 392 159 L392 180 Z"/>
+      <path d="M400 180 L400 159 A9 9 0 0 1 418 159 L418 180 Z"/>
+      <path d="M446 180 L446 159 A9 9 0 0 1 464 159 L464 180 Z"/>
+      <path d="M472 180 L472 159 A9 9 0 0 1 490 159 L490 180 Z"/>
+      <path d="M498 180 L498 159 A9 9 0 0 1 516 159 L516 180 Z"/>
+      <g transform="rotate(4.5 846 195)">
+        <path d="M826 114 L826 102 A6 6 0 0 1 838 102 L838 114 Z"/>
+        <path d="M844 114 L844 102 A6 6 0 0 1 856 102 L856 114 Z"/>
+        <path d="M862 114 L862 102 A6 6 0 0 1 874 102 L874 114 Z"/>
+        <path d="M826 138 L826 126 A6 6 0 0 1 838 126 L838 138 Z"/>
+        <path d="M844 138 L844 126 A6 6 0 0 1 856 126 L856 138 Z"/>
+        <path d="M862 138 L862 126 A6 6 0 0 1 874 126 L874 138 Z"/>
+        <path d="M826 162 L826 150 A6 6 0 0 1 838 150 L838 162 Z"/>
+        <path d="M844 162 L844 150 A6 6 0 0 1 856 150 L856 162 Z"/>
+        <path d="M862 162 L862 150 A6 6 0 0 1 874 150 L874 162 Z"/>
+        <path d="M826 186 L826 174 A6 6 0 0 1 838 174 L838 186 Z"/>
+        <path d="M844 186 L844 174 A6 6 0 0 1 856 174 L856 186 Z"/>
+        <path d="M862 186 L862 174 A6 6 0 0 1 874 174 L874 186 Z"/>
+      </g>
+      <path d="M1016 195 L1016 179 A11 11 0 0 1 1038 179 L1038 195 Z"/>
+      <path d="M1046 195 L1046 179 A11 11 0 0 1 1068 179 L1068 195 Z"/>
+      <path d="M1076 195 L1076 179 A11 11 0 0 1 1098 179 L1098 195 Z"/>
+      <path d="M1106 195 L1106 179 A11 11 0 0 1 1128 179 L1128 195 Z"/>
+      <path d="M1136 195 L1136 179 A11 11 0 0 1 1158 179 L1158 195 Z"/>
+    </g>
+    <!-- la terra -->
+    <rect x="0" y="195" width="1200" height="2" fill="#E3B765" opacity=".45"/>
+  </svg>
+</div>
+
+<main class="dentro">
+
+  <p class="occhiello r1">Turismo per tutti · Arte inclusiva</p>
+  <h1 class="r2">YOURBEA</h1>
+  <p class="sotto r3">La voce che ti accompagna per strada, e ti racconta l'Italia
+  che hai intorno.</p>
+
+
+  <div class="voce r4" aria-hidden="true">
+    <span class="onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="frase" id="frase">«Sei in via dei Corazzieri.»</span>
+  </div>
+  <div id="comincia" class="tasti r4">
+    <a class="apri" href="./nuova/">Apri Yourbea</a>
+    <a class="apri fuori" href="./scarica.html#iphone">Scarica per iPhone</a>
+    <a class="apri fuori" href="./scarica.html#android">Scarica per Android</a>
+  </div>
+  <p style="font-size:.97rem">Si apre nel telefono, non c'è niente da
+  installare per provarla.</p>
+
+  <h2>Che cos'è</h2>
+  <p>Yourbea è nata per <strong>chi non vede</strong>. Cammini, e lei ti dice
+  dove sei, che strada stai facendo, cosa hai intorno e quanto manca.
+  Le parli e ti risponde: lo schermo non serve.</p>
+
+  <div class="dice">«Sei in via dei Corazzieri.»<br>
+  «Un attraversamento senza semaforo, col percorso tattile, nell'arco di
+  venti o trenta metri: presta attenzione, o chiedi a qualcuno dov'è.»<br>
+  «Elite Supermercati, a quarantacinque passi.»</div>
+
+  <p>Dice sempre quanto è sicura di quello che afferma. Un attraversamento
+  non si annuncia come una certezza: si dice dove dovrebbe essere, e si
+  invita a stare attenti. È la regola che tiene insieme tutto il resto.</p>
+
+  <h2>La stessa app, per chi vede e per chi non vede</h2>
+  <p>Non è una versione speciale per qualcuno e una normale per gli altri:
+  è una sola, e si usa a voce. Chi non vede ci trova la strada; chi vede ci
+  trova l'arte che gli passa accanto senza accorgersene. Camminate insieme e
+  sentite <strong>la stessa voce</strong> — ed è anche il motivo per cui chi
+  vede può segnare, per chi non vede, le cose che solo gli occhi colgono.</p>
+
+  <h2>Due modi</h2>
+  <div class="riquadro">
+    <h3>Utilità — gratis, per sempre</h3>
+    <p>Strade e numeri civici, farmacie e negozi, fermate, semafori e
+    attraversamenti. E «portami a casa», «portami dal dottore»: ti porta
+    passo per passo. È la modalità di chi non vede, e non si tocca.</p>
+  </div>
+  <div class="riquadro">
+    <h3>Turismo — l'arte, dove capita</h3>
+    <p>Ti racconta quello che incontri: chiese, palazzi, cosa c'è dentro,
+    chi l'ha dipinto, cosa è successo lì. Oggi conosce
+    <strong>quasi venticinquemila luoghi</strong> in tutta Italia, dai templi
+    greci alle cupole. Il pass costa 4,99 € per sette giorni e non si rinnova
+    da solo.</p>
+    <p><strong>Se sul telefono è acceso VoiceOver, il Turismo è gratis.</strong>
+    Niente da comprare e niente da dimostrare: lo capisce il telefono.</p>
+  </div>
+
+  <h2>Come si mette nel telefono</h2>
+  <p>Non sta negli store: si apre col browser e si aggiunge alla schermata
+  principale. Diventa un'icona come le altre.</p>
+  <ul>
+    <li><strong>iPhone:</strong> apri questa pagina con Safari, tocca
+    «Condividi» e poi «Aggiungi a schermata Home».</li>
+    <li><strong>Android:</strong> apri con Chrome, e quando compare tocca
+    «Installa».</li>
+  </ul>
+
+  <section class="rete">
+    <h2>Aiutaci a mappare l'Italia</h2>
+    <p>Gli attraversamenti col semaforo acustico e i percorsi tattili
+    <strong>non stanno in nessuna mappa al mondo</strong>, nemmeno in quelle
+    dei Comuni. Può metterli solo chi ci passa. Per questo Yourbea ha una
+    rete di persone che camminano e dicono a voce quello che trovano —
+    «qui c'è un attraversamento con semaforo», «qui ferma il 671» — e la
+    sera finisce nella mappa che usano tutti.</p>
+    <ul class="numeri">
+      <li><b>24.966</b><span>luoghi d'arte già raccontati</span></li>
+      <li><b>8</b><span>persone che camminano e segnano, oggi</span></li>
+      <li><b>0</b><span>mappe al mondo coi semafori acustici</span></li>
+    </ul>
+    <p>Non serve essere esperti di niente: serve camminare dove abiti e
+    parlare. Un quartiere alla volta, una città alla volta.</p>
+    <p><a href="mailto:info@yourbea.it?subject=Yourbea%20-%20vorrei%20fare%20il%20tester">Scrivici
+    e ti mandiamo il tuo codice</a>, oppure
+    <a href="./segnalazioni.html">guarda cosa ha segnato la rete finora</a>.</p>
+  </section>
+
+  <h2>Chi la fa</h2>
+  <p>Yourbea è di VDM Data, ed è scritta con chi la usa: ogni difetto che
+  trovate per strada diventa una correzione in giornata.</p>
+
+  <p class="piede">
+    <a href="./segnalazioni.html">Le segnalazioni</a> ·
+    <a href="./privacy.html">Che cosa facciamo dei tuoi dati</a> ·
+    <a href="mailto:info@yourbea.it">info@yourbea.it</a><br>
+    I luoghi vengono da Wikipedia, da OpenStreetMap e dal Catalogo generale
+    dei Beni Culturali del Ministero della Cultura.<br>
+    Yourbea &copy; 2026 Vincenzo Di Meglio. Tutti i diritti riservati.
+  </p>
+
+</main>
+<script>
+/* LA CASSAFORTE DELLA VECCHIA APP SI SPEGNE LO STESSO, mentre uno legge.
+   Prima questa pagina puliva e poi saltava dritta a ./nuova/; adesso non
+   salta piu' nessuno, ma la pulizia resta: senza, chi aveva installato la
+   vecchia Yourbea continuerebbe a vedersi servire quella, per sempre.
+   Quello della nuova app ha lo scope .../nuova/ e non si tocca. */
+(function laProfondita() {
+  var lontano = document.getElementById('lontano');
+  var vicino = document.getElementById('vicino');
+  if (!lontano || !vicino) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var atteso = false;
+  function muovi() {
+    atteso = false;
+    var y = window.pageYOffset || 0;
+    if (y > 320) return;                   /* sotto non si vede piu' */
+    lontano.setAttribute('transform', 'translate(' + (y * 0.016) + ' ' + (y * 0.012) + ')');
+    vicino.setAttribute('transform', 'translate(' + (-y * 0.045) + ' ' + (y * 0.05) + ')');
+  }
+  addEventListener('scroll', function () {
+    if (!atteso) { atteso = true; requestAnimationFrame(muovi); }
+  }, { passive: true });
+})();
+
+(function leScritteEntrano() {
+  var fermo = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var quali = document.querySelectorAll('h2, .riquadro, .dice, .rete, main p, main ul');
+  for (var i = 0; i < quali.length; i++) {
+    if (!quali[i].closest('.voce')) quali[i].classList.add('entra');
+  }
+  var subito = document.querySelectorAll('.occhiello, h1, .sotto, .voce, .tasti');
+  for (var n = 0; n < subito.length; n++) subito[n].classList.add('entra');
+  function accendi(e) { e.classList.add('dentro'); }
+  if (fermo || !('IntersectionObserver' in window)) {
+    var tutti = document.querySelectorAll('.entra');
+    for (var j = 0; j < tutti.length; j++) accendi(tutti[j]);
+    return;
+  }
+  void document.body.offsetHeight;
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      for (var k = 0; k < subito.length; k++) accendi(subito[k]);
+    });
+  });
+  var guarda = new IntersectionObserver(function (righe) {
+    righe.forEach(function (r) {
+      if (r.isIntersecting) { accendi(r.target); guarda.unobserve(r.target); }
+    });
+  }, { rootMargin: '0px 0px -12% 0px' });
+  var daGuardare = document.querySelectorAll('.entra:not(.dentro)');
+  for (var m = 0; m < daGuardare.length; m++) guarda.observe(daGuardare[m]);
+})();
+
+(function laVoceParla() {
+  var dove = document.getElementById('frase');
+  if (!dove) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var frasi = [
+    '\u00abSei in via dei Corazzieri.\u00bb',
+    '\u00abUn attraversamento senza semaforo, col percorso tattile: presta attenzione.\u00bb',
+    '\u00abLa chiesa di San Marco evangelista, sulla destra, a trenta passi.\u00bb',
+    '\u00abElite Supermercati, a quarantacinque passi.\u00bb',
+    '\u00abQui c\u2019\u00e8 un attraversamento con semaforo.\u00bb  \u2014 e finisce nella mappa di tutti'
+  ];
+  var i = 0;
+  setInterval(function () {
+    dove.classList.add('via');
+    setTimeout(function () {
+      i = (i + 1) % frasi.length;
+      dove.textContent = frasi[i];
+      dove.classList.remove('via');
+    }, 520);
+  }, 4200);
+})();
+
+(function () {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function (regs) {
+      regs.forEach(function (r) {
+        if ((r.scope || '').indexOf('/nuova/') < 0) { r.unregister(); }
+      });
+    }).catch(function () {});
+  }
+  if (window.caches && caches.keys) {
+    caches.keys().then(function (nomi) {
+      nomi.forEach(function (n) { if (n.indexOf('nuova') < 0) { caches.delete(n); } });
+    }).catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>

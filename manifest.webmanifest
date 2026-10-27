@@ -1,0 +1,32 @@
+{
+ "name": "Yourbea — la bellezza intorno a te",
+ "short_name": "Yourbea",
+ "description": "Cammini e la città ti parla: dove sei, cosa hai intorno, e i monumenti raccontati a voce. Per chi non vede e per chi visita.",
+ "lang": "it",
+ "start_url": "./nuova/",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#15161A",
+ "theme_color": "#15161A",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-maskable.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs>
+ <radialGradient id="f" cx="50%" cy="35%" r="75%"><stop offset="0%" stop-color="#1B2330"/><stop offset="100%" stop-color="#0B0D10"/></radialGradient>
+ <linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F3D79A"/><stop offset="100%" stop-color="#D79B3C"/></linearGradient>
+ <linearGradient id="o" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7FEBFF"/><stop offset="100%" stop-color="#2FB7D6"/></linearGradient>
+</defs>
+<rect width="512" height="512" fill="url(#f)"/>
+<g fill="none" stroke="url(#o)" stroke-linecap="round" transform="translate(28 -28)">
+  <path d="M330 150 a136 136 0 0 1 0 192" stroke-width="15" opacity=".95"/>
+  <path d="M372 116 a188 188 0 0 1 0 260" stroke-width="13" opacity=".5"/>
+</g>
+<g transform="translate(212 230)">
+  <path d="M0 -104 L56 82 L0 46 L-56 82 Z" fill="url(#a)"/>
+</g>
+<text x="256" y="440" text-anchor="middle" font-family="Trajan Pro 3, Trajan Pro, Optima, Palatino, Georgia, serif" font-weight="700"
+      font-size="80" letter-spacing="9" fill="#EFE7D8">URBEA</text>
+</svg>

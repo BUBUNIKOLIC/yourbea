@@ -1,0 +1,69 @@
+catalogo del ministero: 19206 beni col punto
+monumenti nuovi dal ministero: 5175
+   saltati, senza un nome suo:             5924
+   saltati, casa privata o non un monumento: 3016
+   saltati, ce l abbiamo gia:              2703
+   saltati, senza una descrizione vera:    2388
+
+VENTI PRESI A CASO — e cosa direbbe l app chiedendo «ancora»:
+
+=== Oratorio di San Giovanni Battista
+    piccolo edificio ad aula, con tetto a capanna e frontone in facciata. L'edificio è addossato alla barchessa della villa veneta a cui appartiene anche l'oratorio
+
+=== Palazzo Cimone-Gianfranceschi
+    L'edificio, bifamiliare, di forma poligonale si sviluppa su quattro livelli di piano, la muratura perimetrale è in pietra calcarea intonacata. La copertura è del tipo a falde con manto in coppi di lat
+
+=== Convento Domenicale
+    L’edificio si compone di due corpi di fabbrica dalle caratteristiche estremamente differenziate: la parte affacciata su via Cavour è a quattro piani fuori terra con finestre rettangolari, ingresso ad 
+
+=== Palazzo Biferi
+    L’edificio ha il prospetto principale sulla piazza Damiano Chiesa, di cui costituisce il fondale. La pianta è trapezoidale, ma posteriormente l’edificio si è accresciuto con altri contigui. L’elemento
+
+=== Cimitero di Forlì
+    l'edificio è composto da una struttura dove vi è l'ingresso del cimitero con l'androne e le scale che portano alle ali laterali. Dalle sezioni laterali si passa a corridoi. il campo è cinto da un port
+
+=== Fontana/ Lavatoio dei Meitre
+    Due vasche contigue realizzate in lastre di pietra, di dimensioni differenti. La prima, è utilizzata come fontana ed affiancata da un monolite cilindrico verticale in pietra terminante con una testa u
+
+=== Villa Livia
+    Villa con giardino anteriore e portineria (a due piani) a destra del cancello d'ingresso, un viale affianca la Villa passando sotto un terrazzo che giunge al muro di contenimento a confine, l'ingresso
+
+=== Torre del Ponte della Rosa e casa
+    La costruzione è composta attualmente da due corpi di fabbrica: l’antica torre di difesa e un corpo di fabbrica, a pianta trapezoidale destinato a residenza gentilizia. Il corpo di fabbrica è a tre pi
+
+=== Palazzo di Giustizia
+    Nel suo maestoso prospetto il Palazzo di Giustizia appare diviso in tre ordini di piani da cornici marcapiano. Anche verticalmente il prospetto si mostra diviso in tre settori geometrici: uno più ampi
+
+=== Chiesa della Madonna della Sanità
+    La chiesa del XIII sec. è a pianta rettangolare. La facciata è coronata da un timpano e conclusa lateralmente da lesene poste nei due lati estremi; al centro si apre il portale con cornici in pietra c
+
+=== Convento di San Francesco da Paola
+    La pianta rispetta la tradizione austera e semplice dei francescani e si presenta ad aula con sette cappelle laterali, conclusa da un coro rettangolare e allungato. La volta, per tutta la lunghezza de
+
+=== Cappella di Sant'Antonio
+    edificio composto da un'aula unica a pianta rettangolare, con campanile posto sul lato ovest; strutture verticali in muratura mista in pietra e ciottoli intonacate, lasciate a vista sulla facciata est
+
+=== Palazzo Fabbri ora Giommoni
+    Il palazzo ha pianta quadrata e prospetto principale tutto affrescato in bianco e marrone con motivi floreali, figure e maschere. Al PT presenta un portico con 3 grossi archi ribassati bugnati in piet
+
+=== Chiesa di San Nicola
+    Edificio con pianta ad aula ad una navata, in muratura di pietra intonacata (facciata) e a vista (pareti laterali); facciata con andamento curvilineo con portale riquadrato da elementi in pietra; due 
+
+=== Palazzo Fortuni
+    L'edificio presenta una configurazione unitaria, organizzato in modo simmetrico secondo l'asse centrale della facciata sottolineata dal portone e dalla trifora. Tale simmetria si ripete anche per la c
+
+=== Ex chiesa di San Francesco
+    Il volume parallelepipedo in muratura lapidea dell'aula unica, coperto a tetto su capriate lignee, è collegato per mezzo di arco trionfale, leggermente ogivale, allo spazio del coro a pianta poligonal
+
+=== Battistero di Santa Maria della Scala
+    Il Battistero è poco discostato dal fianco meridionale del Duomo ed è in comunicazione con esso mediante un breve corridoio in corrispondenza della quarta campata delle navatelle. La pianta è a croce 
+
+=== Torre Cannai
+    Situata nella costa sud-est dell'isola di S. Antioco, prospiciente Capo Teulada, è a forma di tronco di cono alto circa 22 mt. Esternamente presenta in sommità l'ex piazza d'armi oggi stanza da soggio
+
+=== Chiesa della Madonna del Carmine
+    Edificio a pianta rettangolare con muri perimetrali in pietraartificiale; l'accesso della porta immette subito al piccoloambiente di fine fattura; tutte le pareti sono decorate da affreschifigurati co
+
+=== Palazzo Mancini-Buccini
+    Il palazzo è disposto secondo un orientamento Nord-Sud, presenta un impianto quadrangolare; la muratura è in pietra ed è intonacata e si sviluppa su tre livelli di piano. La soluzione d’angolo raccord
+

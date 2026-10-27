@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "it.vdmdata.urbea",
+    "sha256_cert_fingerprints": ["B2:E7:CE:06:C4:EF:86:99:00:F9:AE:DF:D8:55:41:F9:44:DE:50:2B:1A:EE:6C:82:9D:85:97:94:08:FD:E1:60"]
+  }
+}]

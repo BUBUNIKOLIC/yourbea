@@ -1,0 +1,50 @@
+DA MANDARE A MARCO DI MEGLIO — Android — codice MARCO-0006
+===========================================================
+
+Due cose, in ordine:
+  1. gli mandi il file  Yourbea-1.7.0.apk
+  2. gli incolli il messaggio qui sotto
+
+---------------- da qui, copia tutto ----------------
+
+Ciao Marco, ti mando un'app che ho fatto io: si chiama Yourbea e
+accompagna a voce chi non vede. Mi serve che la provi camminando, e che
+mi dica quello che trovi in giro.
+
+PRIMA: installa il file che ti ho mandato (Yourbea-1.7.0.apk). Il
+telefono ti dirà che l'app non viene dal Play Store: dagli il permesso
+di installarla lo stesso, è mia.
+
+POI: apri una volta sola questo link col telefono.
+
+https://yourbea.it/nuova/?t=MARCO-0006
+
+L'app ti dice «Sei registrato come tester». Da quel momento quello che
+segni finisce nella mappa che usano tutti.
+
+COME SI USA: apri l'app, ti chiede «utilità oppure turismo» e tu
+rispondi a voce «utilità». Poi cammini, e lei ti dice dove sei e cosa
+hai intorno.
+
+QUELLO CHE MI SERVE DA TE: mentre cammini, dille quello che vedi. Basta
+parlare, non devi premere niente:
+
+   «Yourbea, qui c'è un attraversamento con semaforo»
+   «qui c'è la farmacia»
+   «qui ferma il 671»
+
+Lei ti ripete sempre cosa ha capito — «Segnato: attraversamento, col
+semaforo, in via Roma» — così se sbaglia lo senti subito.
+
+Serve perché gli attraversamenti col semaforo acustico e i percorsi
+tattili non stanno in nessuna mappa del mondo, nemmeno in quelle dei
+Comuni: può metterli solo chi ci cammina.
+
+Due cose e poi basta:
+- se la posizione non è precisa l'app non segna e te lo dice: fai due
+  passi e riprova;
+- se non c'è rete non si perde niente, parte da sola quando torna.
+
+Per chiuderla le dici «Yourbea, chiudi» e sparisce.
+
+---------------- fino a qui ----------------
