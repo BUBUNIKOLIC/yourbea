@@ -943,7 +943,7 @@
    ]
   },
   {
-   "it": "Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?",
+   "it": "Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi cinque secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?",
    "intera": true,
    "dove": [
     "app.js:3922"

@@ -206,7 +206,12 @@ function Scena(opzioni) {
     return buoni.slice(0, quanti || 2).map(function (p) {
       var m = dist(qui.lat, qui.lon, p.lat, p.lon);
       var parte = daCheParte(qui, p.lat, p.lon, direzione, buona);
-      return (p.nome ? p.nome : p.cosa) + (parte ? ' ' + parte : '') + ', ' + passi(m);
+      /* IL NOME DA SOLO NON DICE CHE COSA E'. «Pirani sulla destra, a 35
+         passi» non dice che e' una farmacia: lo stesso difetto corretto
+         in aiLati il 18/10, e qui era restato. comeSiChiama() mette il
+         tipo davanti, e lo lascia stare quando il nome lo contiene gia'
+         («stazione di Roma San Pietro»). */
+      return (p.nome ? comeSiChiama(p) : p.cosa) + (parte ? ' ' + parte : '') + ', ' + passi(m);
     });
   }
 
@@ -262,8 +267,21 @@ function Scena(opzioni) {
       });
     }
 
-    if (pezzi.length < 2) return null;
-    var testo = pezzi.shift() + '. ' + capo(pezzi.join('; ')) + '.';
+    /* FERMANDOSI NON SI STA ZITTI — 28/10/2026.
+       «E se mi fermo cinque secondi inizia la descrizione», «ma non può
+       stare zitta» (Vince). Nel diario del 28/10, in via dei Corazzieri,
+       «SCENA: niente da dire» 29 volte con CENTOVENTUNO punti intorno:
+       la strada l'aveva già detta (e il riposo dura due minuti), alberi
+       zero, attraversamenti già detti — restava un pezzo solo, e due era
+       il minimo. Camminando due pezzi sono giusti: una frase corta a ogni
+       passo e' un apparecchio. Ma se uno si FERMA sta chiedendo col
+       corpo «dove sono?», e un pezzo e' meglio del silenzio. */
+    if (pezzi.length < (s.fermo ? 1 : 2)) return null;
+    /* E CON UN PEZZO SOLO NON SI DICE «Sei in via Roma. .» — uscito al
+       banco il 28/10, appena il minimo e' sceso a uno: il primo pezzo
+       se ne va con lo shift e dietro resta la stringa vuota. */
+    var primo = pezzi.shift();
+    var testo = pezzi.length ? (primo + '. ' + capo(pezzi.join('; ')) + '.') : (primo + '.');
 
     // REGOLA 6: la stessa scena non si ripete
     if (testo === ultima && ora() - ultimaQuando < DI_NUOVO) return null;

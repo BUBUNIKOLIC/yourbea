@@ -502,7 +502,7 @@ function Posizione(opzioni) {
         stato.fermoDa = ora();
         stato.fermo = false;
       } else if (ora() - stato.fermoDa >= FERMO_PER) {
-        if (!stato.fermo) diario('FERMO da dieci secondi (senza contapassi)');
+        if (!stato.fermo) diario('FERMO da ' + Math.round(FERMO_PER / 1000) + ' s (senza contapassi)');
         stato.fermo = true;
       }
       if (passo > PASSO_BUONO) stato.ultimoPunto = { lat: lat, lon: lon };

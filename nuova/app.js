@@ -2560,7 +2560,7 @@
     if (d.tipo === 'percorso-qui') return 'Dimmi «sì» per seguirlo, «continuo» per tirare dritto.';
     if (d.tipo === 'cenno') return modo === 'servizi'
       ? 'Dimmi «ancora» se vuoi sapere cos\u2019\u00e8.'
-      : 'Fermati dieci secondi e te lo racconto. Oppure dimmi «ancora».';
+      : 'Fermati cinque secondi e te lo racconto. Oppure dimmi «ancora».';
     /* NON SI PROMETTE QUELLO CHE NON C'E'. La riga scritta diceva sempre
        «Dimmi "ancora" per sapere cosa guardare», e poi «ancora» rispondeva
        «Di questo ti ho detto tutto»: nei dati veri il campo «cosa vedere»
@@ -3074,8 +3074,68 @@
                                 /* fermo lo decide il contapassi, non il GPS */
                                 fermo: s.fermo,
                                 cardinale: null });
-    if (d) dillo(d);
+    if (d) { dillo(d); fermoDetto = s.fermo ? Date.now() : fermoDetto; }
+    else if (s.fermo) rispondiAlFermo(s);
   });
+
+  /* ============================================================
+     SE TI FERMI, QUALCOSA SI DICE — E NON LA STESSA COSA NEI DUE MODI
+     «E se mi fermo cinque secondi inizia la descrizione» — «ma non può
+     stare zitta» — «inoltre una cosa è utilità, un'altra turismo»
+     (Vince, 28/10).
+     Il contapassi dice «fermo» dopo cinque secondi (FERMO_PER, ed era
+     cinque anche prima: erano le FRASI a dire «fermati dieci secondi»).
+     Quando il racconto non ha niente, fin qui scendeva il silenzio:
+     in Turismo perche' intorno non c'era un monumento da raccontare, in
+     Utilita' perche' la scena voleva almeno due pezzi nuovi.
+     Adesso:
+       UTILITA' — la scena, com'e' il posto: la forma della piazza, la
+         strada, gli alberi, gli attraversamenti, i servizi. Basta un
+         pezzo.
+       TURISMO — quello che hai DAVANTI, com'e' fatto: alto come un
+         palazzo di quattro piani, di travertino, con il portico. E' la
+         descrizione orientativa, che in Turismo e' ammessa e non e'
+         storia dell'arte: e' cosa ti sta davanti.
+     E non si ripete: una volta per sosta, e non piu' di una ogni mezzo
+     minuto. ============================================================ */
+  var fermoDetto = 0;
+  var FERMO_RIPOSO = 30000;
+  function rispondiAlFermo(s) {
+    if (!acceso || !hoLaParola || staAspettando()) return;
+    if (guida.meta()) return;                 // in viaggio comanda la guida
+    if (voce.staParlando() || voce.inCoda().length) return;
+    if (Date.now() - fermoDetto < FERMO_RIPOSO) return;
+    if (s.prec > 50) return;                  // senza sapere dove sei, non si descrive
+    if (modo === 'servizi') {
+      fermoDetto = Date.now();
+      var sc = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
+                                direzioneBuona: s.direzioneBuona, strada: ultimaVia,
+                                mappa: SERVIZI, fermo: true });
+      if (sc) { dillo(sc); return; }
+      diario('FERMO: in Utilita non c\'era niente da descrivere');
+      return;
+    }
+    /* TURISMO: com'e' fatto quello che hai davanti. */
+    var vicini0 = vicini();
+    for (var i = 0; i < vicini0.length && i < 5; i++) {
+      var p = vicini0[i].p;
+      /* i dati di com'e' fatto: altezza, piani, larghezza, materiali,
+         forme. Senza quelli non c'e' una descrizione da dare. */
+      if (!(p.h || p.pi || p.l || (p.mat && p.mat.length) || (p.frm && p.frm.length))) continue;
+      var f = descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
+                                  altezza: p.h, piani: p.pi, larghezza: p.l,
+                                  materiali: p.mat, forme: p.frm,
+                                  catalogo: p.cf, pianta: p.pl });
+      if (f && f.testo) {
+        fermoDetto = Date.now();
+        dillo({ tipo: 'scheda-orientativa', luogo: p, livello: 'guida', testo: f.testo });
+        return;
+      }
+    }
+    fermoDetto = Date.now();
+    diario('FERMO: in Turismo niente da raccontare qui');
+    voce.parla('Qui intorno non ho niente da raccontare.', { livello: voce.GUIDA });
+  }
 
   // la vigilanza: se la posizione non arriva, si parla
   posizione.vigila(function (comeVa) {
@@ -4099,7 +4159,7 @@
     } catch (e) {}
     var sal = modi.saluto({ tornato: tornato });
     voce.parla(sal.testo + ' ' + (quale === 'cultura'
-      ? 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
+      ? 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi cinque secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
       : 'Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c\'è intorno? O ti cerco un negozio?'),
       { livello: voce.GUIDA });
     /* REGOLA C di parti/modi.js: se ha chiesto come sta, si sta a sentire.
