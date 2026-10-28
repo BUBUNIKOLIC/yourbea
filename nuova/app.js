@@ -125,6 +125,23 @@
       if (acceso || !el('porta').hidden) apriAscolto();
     }
   };
+  /* LE LINGUE DEI TURISTI — 28/10/2026
+     La traduzione si fa nell'ultimo momento, dentro voce.parla: le frasi
+     restano in italiano nel codice e qui si cerca la loro traduzione.
+     Se manca, si dice l'italiano. I testi stanno in dati/testi/<lingua>.json
+     e si chiedono una volta sola, quando serve. */
+  var LINGUE = ['de', 'en', 'fr', 'nl', 'pl', 'es', 'cs', 'zh', 'ro', 'pt',
+                'da', 'hu', 'sv', 'ja', 'ru', 'ko', 'nb', 'fi', 'el', 'ar'];
+  var lingua = Lingua({
+    diario: diario,
+    chiedi: function (codice) {
+      return fetch('dati/testi/' + codice + '.json' + VER).then(function (r) {
+        if (!r.ok) throw new Error('niente');
+        return r.json();
+      });
+    }
+  });
+
   var voce = MotoreVoce({ sintesi: sintesi, diario: diario, microfono: microfono,
                           cartellaClip: '../voce/clip/it/' });
 
@@ -396,6 +413,14 @@
     dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
     aPosto: miei.aPosto, nudo: miei.soloIlNome
   });
+  voce.attaccaLaLingua(lingua);
+  /* la lingua del telefono, se la sappiamo parlare. Chi ha l'italiano non
+     scarica niente e non cambia niente. */
+  (function () {
+    var q = lingua.dalTelefono(LINGUE);
+    if (q !== 'it') lingua.cambia(q);
+  }());
+
   try { posti.carica(JSON.parse(localStorage.getItem('yourbea2-posti-miei') || '[]')); } catch (e) {}
   function salvaIPosti() {
     try { localStorage.setItem('yourbea2-posti-miei', JSON.stringify(posti.perSalvare())); } catch (e) {}

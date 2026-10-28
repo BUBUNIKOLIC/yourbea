@@ -1,0 +1,1262 @@
+{
+ "quante": 177,
+ "intere": 90,
+ "frasi": [
+  {
+   "it": ", ma il numero civico qui non è segnato sulla mappa.",
+   "intera": false,
+   "dove": [
+    "app.js:3676"
+   ]
+  },
+  {
+   "it": ", numero:",
+   "intera": false,
+   "dove": [
+    "app.js:1882"
+   ]
+  },
+  {
+   "it": ", un momento.",
+   "intera": false,
+   "dove": [
+    "app.js:2095"
+   ]
+  },
+  {
+   "it": ", una cifra per volta.",
+   "intera": false,
+   "dove": [
+    "app.js:1943"
+   ]
+  },
+  {
+   "it": ". Adesso dimmi il suo numero, col prefisso, una cifra per volta.",
+   "intera": false,
+   "dove": [
+    "app.js:1889"
+   ]
+  },
+  {
+   "it": ". Apro WhatsApp col messaggio già scritto: premi invia.",
+   "intera": false,
+   "dove": [
+    "app.js:295"
+   ]
+  },
+  {
+   "it": ". Da adesso basta dire «portami a casa».",
+   "intera": false,
+   "dove": [
+    "app.js:4007"
+   ]
+  },
+  {
+   "it": ". Da adesso quello che segni arriva a tutti: dimmi «qui c\\u2019\\u00e8» e cosa c\\u2019\\u00e8.",
+   "intera": false,
+   "dove": [
+    "app.js:466"
+   ]
+  },
+  {
+   "it": ". Dimmi «che posti ho» per sentirli.",
+   "intera": false,
+   "dove": [
+    "app.js:1722"
+   ]
+  },
+  {
+   "it": ". Dimmi «portami a casa» e ti ci porto.",
+   "intera": false,
+   "dove": [
+    "app.js:3550"
+   ]
+  },
+  {
+   "it": ". Dimmi «portami» e il nome, e ti ci porto.",
+   "intera": false,
+   "dove": [
+    "app.js:3666"
+   ]
+  },
+  {
+   "it": ". In emergenza posso avvisarlo e dirgli dove sei.",
+   "intera": false,
+   "dove": [
+    "app.js:4115"
+   ]
+  },
+  {
+   "it": ". L'ho tenuta col nome «",
+   "intera": false,
+   "dove": [
+    "app.js:2112"
+   ]
+  },
+  {
+   "it": ". Li tengo? Dimmi s\\u00ec o no.",
+   "intera": false,
+   "dove": [
+    "app.js:497"
+   ]
+  },
+  {
+   "it": ". Lo tengo? Dimmi sì o no.",
+   "intera": false,
+   "dove": [
+    "app.js:378"
+   ]
+  },
+  {
+   "it": ". Nel messaggio d'aiuto dirò che sei tu.",
+   "intera": false,
+   "dove": [
+    "app.js:1877"
+   ]
+  },
+  {
+   "it": ". Non si rinnova da solo. Dimmi «compra» per prenderlo, oppure «ripristina» se l'hai già pagato.",
+   "intera": false,
+   "dove": [
+    "app.js:759"
+   ]
+  },
+  {
+   "it": ". Quando vuoi, dimmi «portami a casa».",
+   "intera": false,
+   "dove": [
+    "app.js:1869"
+   ]
+  },
+  {
+   "it": ". Ti sto seguendo.",
+   "intera": false,
+   "dove": [
+    "app.js:1600"
+   ]
+  },
+  {
+   "it": ". È giusto?",
+   "intera": false,
+   "dove": [
+    "app.js:1851"
+   ]
+  },
+  {
+   "it": ". È giusto? Dì sì, oppure ripeti il numero.",
+   "intera": false,
+   "dove": [
+    "app.js:1844",
+    "app.js:1882"
+   ]
+  },
+  {
+   "it": ". È un file GPX, lo apre qualunque mappa.",
+   "intera": false,
+   "dove": [
+    "app.js:358"
+   ]
+  },
+  {
+   "it": "A chi lo mando?",
+   "intera": true,
+   "dove": [
+    "app.js:3374"
+   ]
+  },
+  {
+   "it": "Adesso sei in",
+   "intera": false,
+   "dove": [
+    "app.js:2443"
+   ]
+  },
+  {
+   "it": "Allora:",
+   "intera": false,
+   "dove": [
+    "app.js:1851"
+   ]
+  },
+  {
+   "it": "Attento: di questa via la mappa non ha i numeri civici, quindi ti porto a metà strada. Posso sbagliare di",
+   "intera": false,
+   "dove": [
+    "app.js:2201"
+   ]
+  },
+  {
+   "it": "Avvisa, e il nome del tuo contatto.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Calcolo la strada da",
+   "intera": false,
+   "dove": [
+    "app.js:2095"
+   ]
+  },
+  {
+   "it": "Casa tua è",
+   "intera": false,
+   "dove": [
+    "app.js:1869",
+    "app.js:3550",
+    "app.js:4007"
+   ]
+  },
+  {
+   "it": "Casa tua è un punto che avevi segnato: non ne so l'indirizzo, ma so arrivarci.",
+   "intera": true,
+   "dove": [
+    "app.js:3553"
+   ]
+  },
+  {
+   "it": "Cerco",
+   "intera": false,
+   "dove": [
+    "app.js:1909"
+   ]
+  },
+  {
+   "it": "Cerco l'indirizzo, un momento.",
+   "intera": true,
+   "dove": [
+    "app.js:2141"
+   ]
+  },
+  {
+   "it": "Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Chiudo. A presto.",
+   "intera": true,
+   "dove": [
+    "app.js:3609"
+   ]
+  },
+  {
+   "it": "Ciao",
+   "intera": false,
+   "dove": [
+    "app.js:1877"
+   ]
+  },
+  {
+   "it": "Ciao. Prima di cominciare: come ti chiami? Dimmi solo il tuo nome.",
+   "intera": true,
+   "dove": [
+    "app.js:3903"
+   ]
+  },
+  {
+   "it": "Come lo chiamo? Dimmi per esempio: il medico, la farmacia, da mia sorella.",
+   "intera": true,
+   "dove": [
+    "app.js:3302"
+   ]
+  },
+  {
+   "it": "Con VoiceOver acceso Turismo è gratis: non c'è niente da pagare.",
+   "intera": true,
+   "dove": [
+    "app.js:740"
+   ]
+  },
+  {
+   "it": "Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c'è intorno? O ti cerco un negozio?",
+   "intera": true,
+   "dove": [
+    "app.js:3922"
+   ]
+  },
+  {
+   "it": "Da adesso ti dico solo i monumenti e i luoghi. Negozi, incroci e attraversamenti li lascio stare. Le strade e gli avvisi te li dico sempre. Per tornare a sentire tutto, dimmi: dimmi tutto.",
+   "intera": true,
+   "dove": [
+    "app.js:4030"
+   ]
+  },
+  {
+   "it": "Da adesso ti dico tutto quello che c'è: luoghi, negozi, incroci e attraversamenti.",
+   "intera": true,
+   "dove": [
+    "app.js:4030"
+   ]
+  },
+  {
+   "it": "Da qui non si può ancora comprare: l'abbonamento si prende dall'app dell'iPhone.",
+   "intera": true,
+   "dove": [
+    "app.js:745"
+   ]
+  },
+  {
+   "it": "Dimmi: utilità, oppure turismo.",
+   "intera": true,
+   "dove": [
+    "app.js:4189"
+   ]
+  },
+  {
+   "it": "E ho misurato il tuo passo:",
+   "intera": false,
+   "dove": [
+    "app.js:649"
+   ]
+  },
+  {
+   "it": "E «fai il percorso casa medico», per sapere la strada fra due dei tuoi posti.",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "E «solo monumenti», oppure «dimmi tutto».",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "Fatto: casa tua è questo punto. Da adesso «portami a casa» ti porta esattamente qui.",
+   "intera": true,
+   "dove": [
+    "app.js:2054"
+   ]
+  },
+  {
+   "it": "Hai:",
+   "intera": false,
+   "dove": [
+    "app.js:3364"
+   ]
+  },
+  {
+   "it": "Ho perso il percorso per strada. Ridimmi: manda il percorso.",
+   "intera": true,
+   "dove": [
+    "app.js:1924"
+   ]
+  },
+  {
+   "it": "Ho registrato",
+   "intera": false,
+   "dove": [
+    "app.js:4115"
+   ]
+  },
+  {
+   "it": "Ho segnato casa qui, ma il telefono non è sicuro della posizione: se puoi, dimmelo di nuovo quando sei fuori dal portone.",
+   "intera": true,
+   "dove": [
+    "app.js:2054"
+   ]
+  },
+  {
+   "it": "Ho sentito:",
+   "intera": false,
+   "dove": [
+    "app.js:1844"
+   ]
+  },
+  {
+   "it": "I percorsi camminati: dì «crea percorso» e cammina, e io me lo imparo;",
+   "intera": false,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "I riferimenti sono negli appunti: incollali dove vuoi.",
+   "intera": true,
+   "dove": [
+    "app.js:545"
+   ]
+  },
+  {
+   "it": "I tuoi posti: dì «registra casa», oppure «registra il medico», e me lo segno dove sei.",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "Il diario è negli appunti.",
+   "intera": true,
+   "dove": [
+    "app.js:4126"
+   ]
+  },
+  {
+   "it": "Il faro è già spento.",
+   "intera": true,
+   "dove": [
+    "app.js:3346"
+   ]
+  },
+  {
+   "it": "Il numero di",
+   "intera": false,
+   "dove": [
+    "app.js:306"
+   ]
+  },
+  {
+   "it": "Il pass di sette giorni è finito. Se vuoi continuare a sentire i racconti, dimmi «compra» e ne prendo un altro. Per il resto — le strade, i negozi, «portami a» — l'app resta come prima, e non si paga.",
+   "intera": true,
+   "dove": [
+    "app.js:727"
+   ]
+  },
+  {
+   "it": "Il percorso è negli appunti: incollalo dove vuoi.",
+   "intera": true,
+   "dove": [
+    "app.js:318"
+   ]
+  },
+  {
+   "it": "Il percorso è un file: scegli dove metterlo.",
+   "intera": true,
+   "dove": [
+    "app.js:351"
+   ]
+  },
+  {
+   "it": "Il più vicino che trovo è",
+   "intera": false,
+   "dove": [
+    "app.js:2223"
+   ]
+  },
+  {
+   "it": "Il telefono non è sicuro di dove siamo: posso sbagliare di",
+   "intera": false,
+   "dove": [
+    "app.js:2574"
+   ]
+  },
+  {
+   "it": "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.",
+   "intera": true,
+   "dove": [
+    "app.js:3420"
+   ]
+  },
+  {
+   "it": "Il tuo passo è",
+   "intera": false,
+   "dove": [
+    "app.js:3420"
+   ]
+  },
+  {
+   "it": "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "In rubrica",
+   "intera": false,
+   "dove": [
+    "app.js:1924",
+    "app.js:1943"
+   ]
+  },
+  {
+   "it": "La strada non la so dire.",
+   "intera": true,
+   "dove": [
+    "app.js:3675"
+   ]
+  },
+  {
+   "it": "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Mando a",
+   "intera": false,
+   "dove": [
+    "app.js:295",
+    "app.js:532"
+   ]
+  },
+  {
+   "it": "Mi serve l'indirizzo: via, numero e città.",
+   "intera": true,
+   "dove": [
+    "app.js:4003"
+   ]
+  },
+  {
+   "it": "Mi servono il nome e il numero.",
+   "intera": true,
+   "dove": [
+    "app.js:4109"
+   ]
+  },
+  {
+   "it": "Musica accesa, piano, sotto il racconto.",
+   "intera": true,
+   "dove": [
+    "app.js:4017"
+   ]
+  },
+  {
+   "it": "Musica accesa: si sentirà in Turismo. In Utilità resta muta.",
+   "intera": true,
+   "dove": [
+    "app.js:4017"
+   ]
+  },
+  {
+   "it": "Musica spenta.",
+   "intera": true,
+   "dove": [
+    "app.js:4017"
+   ]
+  },
+  {
+   "it": "Musica, per accenderla o spegnerla.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Non hai ancora nessun percorso tuo.",
+   "intera": true,
+   "dove": [
+    "app.js:3407"
+   ]
+  },
+  {
+   "it": "Non hai ancora nessun percorso tuo. Dimmi «crea percorso» e cammina: lo imparo da te.",
+   "intera": true,
+   "dove": [
+    "app.js:3364",
+    "app.js:3383"
+   ]
+  },
+  {
+   "it": "Non hai ancora segnato nessun riferimento.",
+   "intera": true,
+   "dove": [
+    "app.js:513"
+   ]
+  },
+  {
+   "it": "Non ho ancora nessuno da avvisare. Scrivi qui il nome e il numero, col prefisso, e poi basta un tasto.",
+   "intera": true,
+   "dove": [
+    "app.js:1655"
+   ]
+  },
+  {
+   "it": "Non ho capito il nome. Dimmelo di nuovo, da solo, oppure dì: lascia perdere.",
+   "intera": true,
+   "dove": [
+    "app.js:1835"
+   ]
+  },
+  {
+   "it": "Non posso guardare la tua rubrica: se vuoi, dallo nelle impostazioni. Intanto dimmi il numero di",
+   "intera": false,
+   "dove": [
+    "app.js:1943"
+   ]
+  },
+  {
+   "it": "Non so ancora dove abiti. Aprimi il cassetto, «dove abito», e scrivi la via: poi ti ci porto quando vuoi.",
+   "intera": true,
+   "dove": [
+    "app.js:2076"
+   ]
+  },
+  {
+   "it": "Non so ancora dove abiti. Dimmi: casa mia è, e poi la via e il numero.",
+   "intera": true,
+   "dove": [
+    "app.js:3556"
+   ]
+  },
+  {
+   "it": "Non so ancora dove sei.",
+   "intera": true,
+   "dove": [
+    "app.js:3625",
+    "app.js:3673"
+   ]
+  },
+  {
+   "it": "Non so quali sono. Dimmi «che posti ho» e te li elenco.",
+   "intera": true,
+   "dove": [
+    "app.js:3238"
+   ]
+  },
+  {
+   "it": "Non sono riuscito a preparare i riferimenti.",
+   "intera": true,
+   "dove": [
+    "app.js:520"
+   ]
+  },
+  {
+   "it": "Non sono riuscito a preparare il percorso.",
+   "intera": true,
+   "dove": [
+    "app.js:275"
+   ]
+  },
+  {
+   "it": "Non sono riuscito a salvare il file.",
+   "intera": true,
+   "dove": [
+    "app.js:362"
+   ]
+  },
+  {
+   "it": "Per i tuoi posti e i percorsi, dimmi: altri comandi.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Piacere,",
+   "intera": false,
+   "dove": [
+    "app.js:1823"
+   ]
+  },
+  {
+   "it": "Poi «che percorsi ho», «seguimi il percorso del medico», «manda il percorso».",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "Poi «portami dal medico», e «che posti ho» per sentirli tutti.",
+   "intera": true,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "Portami a, e un indirizzo; oppure portami a casa.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Prima devo sapere dove sei.",
+   "intera": true,
+   "dove": [
+    "app.js:2065",
+    "app.js:2128",
+    "app.js:3463",
+    "app.js:3513",
+    "app.js:3647"
+   ]
+  },
+  {
+   "it": "Prima devo sapere dove sei. Aspetta che trovo la posizione e ridimmelo.",
+   "intera": true,
+   "dove": [
+    "app.js:3275"
+   ]
+  },
+  {
+   "it": "Prima devo sapere dove sei. Aspetta che trovo la posizione, poi dimmelo di nuovo.",
+   "intera": true,
+   "dove": [
+    "app.js:2046"
+   ]
+  },
+  {
+   "it": "Puoi dire: dove sono. Cosa c'è qui intorno. Ancora, per saperne di più. Avanti. Ferma.",
+   "intera": true,
+   "dove": [
+    "app.js:3586"
+   ]
+  },
+  {
+   "it": "Quale?",
+   "intera": true,
+   "dove": [
+    "app.js:3364"
+   ]
+  },
+  {
+   "it": "Quale? Hai:",
+   "intera": false,
+   "dove": [
+    "app.js:3407"
+   ]
+  },
+  {
+   "it": "Quando finisce, se vuoi, ne prendi un altro.",
+   "intera": true,
+   "dove": [
+    "app.js:755"
+   ]
+  },
+  {
+   "it": "Quello non ce l'ho.",
+   "intera": true,
+   "dove": [
+    "app.js:3233"
+   ]
+  },
+  {
+   "it": "Questa non l'ho capita. Se vuoi, dimmi «comandi» e ti dico cosa so fare.",
+   "intera": true,
+   "dove": [
+    "app.js:3598",
+    "app.js:3972"
+   ]
+  },
+  {
+   "it": "Questa strada non sono riuscito a calcolarla. Riprova fra poco.",
+   "intera": true,
+   "dove": [
+    "app.js:2099"
+   ]
+  },
+  {
+   "it": "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
+   "intera": true,
+   "dove": [
+    "app.js:2184"
+   ]
+  },
+  {
+   "it": "Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.",
+   "intera": true,
+   "dove": [
+    "app.js:2184"
+   ]
+  },
+  {
+   "it": "Questo percorso non si può tenere.",
+   "intera": true,
+   "dove": [
+    "app.js:1707"
+   ]
+  },
+  {
+   "it": "Questo percorso è troppo corto per salvarlo.",
+   "intera": true,
+   "dove": [
+    "app.js:338"
+   ]
+  },
+  {
+   "it": "Questo telefono non sa condividere.",
+   "intera": true,
+   "dove": [
+    "app.js:322",
+    "app.js:550"
+   ]
+  },
+  {
+   "it": "Qui intorno non ho niente da dirti.",
+   "intera": true,
+   "dove": [
+    "app.js:3702"
+   ]
+  },
+  {
+   "it": "Qui intorno non trovo negozi segnati sulla mappa. Se ne cerchi uno in particolare dimmelo: per esempio, portami alla farmacia.",
+   "intera": true,
+   "dove": [
+    "app.js:3654"
+   ]
+  },
+  {
+   "it": "Qui vicino:",
+   "intera": false,
+   "dove": [
+    "app.js:3666"
+   ]
+  },
+  {
+   "it": "Registrato.",
+   "intera": true,
+   "dove": [
+    "app.js:1966"
+   ]
+  },
+  {
+   "it": "Salvato:",
+   "intera": false,
+   "dove": [
+    "app.js:358"
+   ]
+  },
+  {
+   "it": "Scegli a chi mandarli.",
+   "intera": true,
+   "dove": [
+    "app.js:540"
+   ]
+  },
+  {
+   "it": "Scegli a chi mandarlo.",
+   "intera": true,
+   "dove": [
+    "app.js:313"
+   ]
+  },
+  {
+   "it": "Scrivi il nome e il numero di chi deve venire ad aiutarti, poi salva.",
+   "intera": true,
+   "dove": [
+    "app.js:4105"
+   ]
+  },
+  {
+   "it": "Scrivi la via, il numero e la città di casa tua, poi salva.",
+   "intera": true,
+   "dove": [
+    "app.js:3998"
+   ]
+  },
+  {
+   "it": "Se preferisci non dirmelo, dì: lascia perdere.",
+   "intera": true,
+   "dove": [
+    "app.js:3903"
+   ]
+  },
+  {
+   "it": "Segnato. Quando vuoi dimmi «portami",
+   "intera": false,
+   "dove": [
+    "app.js:1750"
+   ]
+  },
+  {
+   "it": "Sei davanti al civico",
+   "intera": false,
+   "dove": [
+    "app.js:3676"
+   ]
+  },
+  {
+   "it": "Sei entrato in",
+   "intera": false,
+   "dove": [
+    "app.js:2715",
+    "app.js:2830"
+   ]
+  },
+  {
+   "it": "Sei in",
+   "intera": false,
+   "dove": [
+    "app.js:2715",
+    "app.js:2830",
+    "app.js:3676"
+   ]
+  },
+  {
+   "it": "Sei registrato come tester, codice",
+   "intera": false,
+   "dove": [
+    "app.js:466"
+   ]
+  },
+  {
+   "it": "Sei sempre in",
+   "intera": false,
+   "dove": [
+    "app.js:1600"
+   ]
+  },
+  {
+   "it": "Sto ancora cercando la tua posizione. Se sei al chiuso, prova a uscire.",
+   "intera": true,
+   "dove": [
+    "app.js:2976"
+   ]
+  },
+  {
+   "it": "Su cosa? Dimmi prima dove vuoi andare, oppure segna casa con «casa è qui».",
+   "intera": true,
+   "dove": [
+    "app.js:3335"
+   ]
+  },
+  {
+   "it": "Tenuti",
+   "intera": false,
+   "dove": [
+    "app.js:1722"
+   ]
+  },
+  {
+   "it": "Tenuto. Quando vuoi dimmi «portami",
+   "intera": false,
+   "dove": [
+    "app.js:1704"
+   ]
+  },
+  {
+   "it": "Testo",
+   "intera": false,
+   "dove": [
+    "app.js:4095"
+   ]
+  },
+  {
+   "it": "Ti hanno mandato",
+   "intera": false,
+   "dove": [
+    "app.js:497"
+   ]
+  },
+  {
+   "it": "Ti hanno mandato un percorso",
+   "intera": false,
+   "dove": [
+    "app.js:378"
+   ]
+  },
+  {
+   "it": "Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi dieci secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?",
+   "intera": true,
+   "dove": [
+    "app.js:3922"
+   ]
+  },
+  {
+   "it": "Ti sei spostato di",
+   "intera": false,
+   "dove": [
+    "app.js:2550"
+   ]
+  },
+  {
+   "it": "Ti sei spostato. Guardo dove siamo adesso.",
+   "intera": true,
+   "dove": [
+    "app.js:2558"
+   ]
+  },
+  {
+   "it": "Ti sto seguendo: qui intorno non ho niente di segnato.",
+   "intera": true,
+   "dove": [
+    "app.js:1600"
+   ]
+  },
+  {
+   "it": "Tolto:",
+   "intera": false,
+   "dove": [
+    "app.js:3233"
+   ]
+  },
+  {
+   "it": "Turismo si apre con un pass di sette giorni",
+   "intera": false,
+   "dove": [
+    "app.js:759"
+   ]
+  },
+  {
+   "it": "Turismo è aperto.",
+   "intera": true,
+   "dove": [
+    "app.js:755"
+   ]
+  },
+  {
+   "it": "Un percorso per",
+   "intera": false,
+   "dove": [
+    "app.js:3364"
+   ]
+  },
+  {
+   "it": "Va bene, continuiamo.",
+   "intera": true,
+   "dove": [
+    "app.js:3520"
+   ]
+  },
+  {
+   "it": "Va bene, dimmi di nuovo il numero, una cifra per volta.",
+   "intera": true,
+   "dove": [
+    "app.js:1856"
+   ]
+  },
+  {
+   "it": "Va bene, lascio il percorso.",
+   "intera": true,
+   "dove": [
+    "app.js:3324"
+   ]
+  },
+  {
+   "it": "Va bene, niente nome. Se cambi idea dimmi: io sono, e il tuo nome.",
+   "intera": true,
+   "dove": [
+    "app.js:1807"
+   ]
+  },
+  {
+   "it": "Va bene, non chiamo nessuno.",
+   "intera": true,
+   "dove": [
+    "app.js:3090"
+   ]
+  },
+  {
+   "it": "Va bene, non li tengo.",
+   "intera": true,
+   "dove": [
+    "app.js:1728"
+   ]
+  },
+  {
+   "it": "Va bene, non lo mando.",
+   "intera": true,
+   "dove": [
+    "app.js:1764"
+   ]
+  },
+  {
+   "it": "Va bene, non lo tengo.",
+   "intera": true,
+   "dove": [
+    "app.js:1711"
+   ]
+  },
+  {
+   "it": "Va bene, resta senza nome.",
+   "intera": true,
+   "dove": [
+    "app.js:1740"
+   ]
+  },
+  {
+   "it": "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.",
+   "intera": true,
+   "dove": [
+    "app.js:3430"
+   ]
+  },
+  {
+   "it": "centimetri, misurato camminando.",
+   "intera": false,
+   "dove": [
+    "app.js:3420"
+   ]
+  },
+  {
+   "it": "centimetri. Da adesso quando ti dico «a venti passi» sono i tuoi.",
+   "intera": false,
+   "dove": [
+    "app.js:649"
+   ]
+  },
+  {
+   "it": "chilometri. Rifaccio la strada da qui.",
+   "intera": false,
+   "dove": [
+    "app.js:2550"
+   ]
+  },
+  {
+   "it": "chilometri. Se è quello, dimmi: sì. Se no, ripeti l'indirizzo con la città.",
+   "intera": false,
+   "dove": [
+    "app.js:2223"
+   ]
+  },
+  {
+   "it": "e altri",
+   "intera": false,
+   "dove": [
+    "app.js:497"
+   ]
+  },
+  {
+   "it": "i tuoi riferimenti. Apro WhatsApp col messaggio gi\\u00e0 scritto: premi invia.",
+   "intera": false,
+   "dove": [
+    "app.js:532"
+   ]
+  },
+  {
+   "it": "il percorso",
+   "intera": false,
+   "dove": [
+    "app.js:295"
+   ]
+  },
+  {
+   "it": "li avevi gi\\u00e0",
+   "intera": false,
+   "dove": [
+    "app.js:1722"
+   ]
+  },
+  {
+   "it": "metri. Ti dico solo le cose grandi finché non migliora.",
+   "intera": false,
+   "dove": [
+    "app.js:2574"
+   ]
+  },
+  {
+   "it": "nella tua rubrica.",
+   "intera": false,
+   "dove": [
+    "app.js:1909"
+   ]
+  },
+  {
+   "it": "non ce l'ho.",
+   "intera": false,
+   "dove": [
+    "app.js:3364"
+   ]
+  },
+  {
+   "it": "non ce l'ho. Scrivilo nel cassetto, oppure dimmi «manda il percorso» e lo scelgo dal telefono.",
+   "intera": false,
+   "dove": [
+    "app.js:306"
+   ]
+  },
+  {
+   "it": "non lo trovo. Dimmi il suo numero, una cifra per volta.",
+   "intera": false,
+   "dove": [
+    "app.js:1943"
+   ]
+  },
+  {
+   "it": "non lo trovo. Dimmi «manda il percorso» e lo scelgo dal telefono.",
+   "intera": false,
+   "dove": [
+    "app.js:1924"
+   ]
+  },
+  {
+   "it": "passi,",
+   "intera": false,
+   "dove": [
+    "app.js:378"
+   ]
+  },
+  {
+   "it": "per andare",
+   "intera": false,
+   "dove": [
+    "app.js:295"
+   ]
+  },
+  {
+   "it": "percorsi:",
+   "intera": false,
+   "dove": [
+    "app.js:3383"
+   ]
+  },
+  {
+   "it": "percorso:",
+   "intera": false,
+   "dove": [
+    "app.js:3383"
+   ]
+  },
+  {
+   "it": "punti segnati",
+   "intera": false,
+   "dove": [
+    "app.js:378"
+   ]
+  },
+  {
+   "it": "punto segnato",
+   "intera": false,
+   "dove": [
+    "app.js:378"
+   ]
+  },
+  {
+   "it": "quando passi in un punto che conta dimmi «segna qui» e cosa c'è. Alla fine, «ho finito».",
+   "intera": false,
+   "dove": [
+    "app.js:3574"
+   ]
+  },
+  {
+   "it": "uno senza nome",
+   "intera": false,
+   "dove": [
+    "app.js:3364",
+    "app.js:3407"
+   ]
+  },
+  {
+   "it": "» e la chiamo.",
+   "intera": false,
+   "dove": [
+    "app.js:1966"
+   ]
+  },
+  {
+   "it": "» quando sei alla partenza, oppure «manda il percorso» per darla a qualcuno.",
+   "intera": false,
+   "dove": [
+    "app.js:2112"
+   ]
+  },
+  {
+   "it": "». E per darlo a qualcuno: «manda il percorso», e ti chiedo a chi.",
+   "intera": false,
+   "dove": [
+    "app.js:1750"
+   ]
+  },
+  {
+   "it": "»: dimmi «segui",
+   "intera": false,
+   "dove": [
+    "app.js:2112"
+   ]
+  },
+  {
+   "it": "è chi avviso: basta dire «avvisa",
+   "intera": false,
+   "dove": [
+    "app.js:1966"
+   ]
+  }
+ ]
+}

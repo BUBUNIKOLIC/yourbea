@@ -36,6 +36,9 @@
 
 function MotoreVoce(opzioni) {
   var o = opzioni || {};
+  /* chi traduce: lo attacca app.js con `attaccaLaLingua(...)`. Finche'
+     non c'e', o finche' la lingua e' l'italiano, qui non cambia niente. */
+  var laLingua = null;
 
   // --- il mondo fuori: tutto iniettato, così il motore si prova da solo ---
   var Audio_ = o.Audio || (typeof Audio !== 'undefined' ? Audio : null);
@@ -357,6 +360,13 @@ function MotoreVoce(opzioni) {
      chiama deve poterlo sapere, se no apre domande su frasi mai dette. */
   function parla(testo, opz) {
     var p = opz || {};
+    /* LA LINGUA, nell'ultimo momento utile — 28/10/2026.
+       Qui passa tutto quello che l'app dice: e' il solo punto da cui si
+       puo' tradurre senza toccare le trecento chiamate sparse nel
+       codice. Se la traduzione manca, `di()` restituisce l'italiano e
+       non si perde niente — meglio un'app tradotta a meta' che un'app
+       muta a meta'. */
+    if (laLingua && typeof laLingua.di === 'function') testo = laLingua.di(testo);
     var livello = p.livello || CENNO;
     var clip = p.clip || null;
     var ancheSeUguale = !!p.ancheSeUguale;
@@ -428,6 +438,7 @@ function MotoreVoce(opzioni) {
 
   return {
     parla: parla,
+    attaccaLaLingua: function (l) { laLingua = l; },
     ferma: ferma,
     /* la chiama il guscio quando la telefonata e' finita */
     riprendi: riprendi,
