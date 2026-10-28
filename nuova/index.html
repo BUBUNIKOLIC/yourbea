@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=179">
-<link rel="stylesheet" href="stile.css?v=179">
+<link rel="stylesheet" href="mappa/leaflet.css?v=180">
+<link rel="stylesheet" href="stile.css?v=180">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -104,6 +104,38 @@
   <button class="tasto" id="passeggiate" hidden>Passeggiate qui</button>
   <button class="tasto" id="installa-cassetto" hidden>Installa sul telefono</button>
   <button class="tasto" id="cambia-modo">Cambia modo</button>
+  <!-- LA LINGUA, 28/10/2026. Vince: «la lingua da scegliere non c'è» —
+       c'era solo a voce. Di suo l'app prende quella del telefono: qui si
+       cambia quando il telefono dice una cosa e il turista un'altra.
+       E' un elenco e non venti tasti: col lettore di schermo si scorre
+       con un dito, e non si allunga il cassetto a chi non gli serve. -->
+  <div id="riga-lingua" style="flex:1 1 100%">
+    <label class="et" for="scegli-lingua">La lingua in cui ti parlo</label>
+    <select id="scegli-lingua"
+            style="width:100%;padding:14px;margin:6px 0;border-radius:12px;border:1px solid var(--filo);background:var(--carta);color:var(--inchiostro);font-size:var(--base)">
+      <option value="it">Italiano</option>
+      <option value="en">English — inglese</option>
+      <option value="de">Deutsch — tedesco</option>
+      <option value="fr">Français — francese</option>
+      <option value="es">Español — spagnolo</option>
+      <option value="nl">Nederlands — olandese</option>
+      <option value="pl">Polski — polacco</option>
+      <option value="cs">Čeština — ceco</option>
+      <option value="zh">中文 — cinese</option>
+      <option value="ro">Română — rumeno</option>
+      <option value="pt">Português — portoghese</option>
+      <option value="da">Dansk — danese</option>
+      <option value="hu">Magyar — ungherese</option>
+      <option value="sv">Svenska — svedese</option>
+      <option value="ja">日本語 — giapponese</option>
+      <option value="ru">Русский — russo</option>
+      <option value="ko">한국어 — coreano</option>
+      <option value="nb">Norsk — norvegese</option>
+      <option value="fi">Suomi — finlandese</option>
+      <option value="el">Ελληνικά — greco</option>
+      <option value="ar">العربية — arabo</option>
+    </select>
+  </div>
   <button class="tasto" id="manda-diario">Manda il diario</button>
   <button class="tasto" id="dimmi-dove">Dove sono</button>
   <button class="tasto" id="chi-chiamare">Chi avvisare</button>
@@ -144,39 +176,39 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/faro.js?v=179"></script>
-<script src="parti/percorsiMiei.js?v=179"></script>
-<script src="parti/postiMiei.js?v=179"></script>
-<script src="parti/contributi.js?v=179"></script>
-<script src="parti/avanzamento.js?v=179"></script>
-<script src="parti/fermate.js?v=179"></script>
-<script src="parti/aChiServe.js?v=179"></script>
-<script src="parti/paesaggio.js?v=179"></script>
-<script src="parti/modi.js?v=179"></script>
-<script src="parti/pronuncia.js?v=179"></script>
-<script src="parti/lingua.js?v=179"></script>
-<script src="parti/voce.js?v=179"></script>
-<script src="parti/distanza.js?v=179"></script>
-<script src="parti/descrizione.js?v=179"></script>
-<script src="parti/racconto.js?v=179"></script>
-<script src="parti/clip.js?v=179"></script>
-<script src="parti/aggancio.js?v=179"></script>
-<script src="parti/posizione.js?v=179"></script>
-<script src="parti/intorno.js?v=179"></script>
-<script src="parti/emergenza.js?v=179"></script>
-<script src="parti/pulizia.js?v=179"></script>
-<script src="parti/dettatura.js?v=179"></script>
-<script src="parti/guida.js?v=179"></script>
-<script src="parti/lettura.js?v=179"></script>
-<script src="parti/passeggiata.js?v=179"></script>
-<script src="parti/musica.js?v=179"></script>
-<script src="mappa/leaflet.js?v=179"></script>
-<script src="parti/negozi.js?v=179"></script>
-<script src="parti/passaggi.js?v=179"></script>
-<script src="parti/incroci.js?v=179"></script>
-<script src="parti/scena.js?v=179"></script>
-<script src="parti/mappa.js?v=179"></script>
-<script src="app.js?v=179"></script>
+<script src="parti/faro.js?v=180"></script>
+<script src="parti/percorsiMiei.js?v=180"></script>
+<script src="parti/postiMiei.js?v=180"></script>
+<script src="parti/contributi.js?v=180"></script>
+<script src="parti/avanzamento.js?v=180"></script>
+<script src="parti/fermate.js?v=180"></script>
+<script src="parti/aChiServe.js?v=180"></script>
+<script src="parti/paesaggio.js?v=180"></script>
+<script src="parti/modi.js?v=180"></script>
+<script src="parti/pronuncia.js?v=180"></script>
+<script src="parti/lingua.js?v=180"></script>
+<script src="parti/voce.js?v=180"></script>
+<script src="parti/distanza.js?v=180"></script>
+<script src="parti/descrizione.js?v=180"></script>
+<script src="parti/racconto.js?v=180"></script>
+<script src="parti/clip.js?v=180"></script>
+<script src="parti/aggancio.js?v=180"></script>
+<script src="parti/posizione.js?v=180"></script>
+<script src="parti/intorno.js?v=180"></script>
+<script src="parti/emergenza.js?v=180"></script>
+<script src="parti/pulizia.js?v=180"></script>
+<script src="parti/dettatura.js?v=180"></script>
+<script src="parti/guida.js?v=180"></script>
+<script src="parti/lettura.js?v=180"></script>
+<script src="parti/passeggiata.js?v=180"></script>
+<script src="parti/musica.js?v=180"></script>
+<script src="mappa/leaflet.js?v=180"></script>
+<script src="parti/negozi.js?v=180"></script>
+<script src="parti/passaggi.js?v=180"></script>
+<script src="parti/incroci.js?v=180"></script>
+<script src="parti/scena.js?v=180"></script>
+<script src="parti/mappa.js?v=180"></script>
+<script src="app.js?v=180"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -275,7 +307,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=179", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=180", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

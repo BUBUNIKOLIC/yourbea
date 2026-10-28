@@ -428,6 +428,11 @@
   /* la lingua del telefono, se la sappiamo parlare. Chi ha l'italiano non
      scarica niente e non cambia niente. */
   (function () {
+    /* la scelta fatta a mano vince su quella del telefono: chi l'ha
+       cambiata una volta non se la vede tornare indietro al riavvio. */
+    var tenuta = null;
+    try { tenuta = localStorage.getItem('yourbea2-lingua'); } catch (e) {}
+    if (tenuta) return;
     var q = lingua.dalTelefono(LINGUE);
     if (q !== 'it') lingua.cambia(q);
   }());
@@ -3144,7 +3149,7 @@
         if (!Object.prototype.hasOwnProperty.call(CHIESTA, qq)) continue;
         if (!CHIESTA[qq].test(t)) continue;
         lingua.cambia(qq).then(function (fatta) {
-          voce.parla(fatta === 'it' ? 'Parlo italiano.' : lingua.di('Va bene.'),
+          voce.parla(fatta === 'it' ? 'Parlo italiano.' : 'Va bene.',
                      { livello: voce.GUIDA, ancheSeUguale: true });
           diario('LINGUA: chiesta a voce → ' + fatta);
         });
@@ -4211,6 +4216,32 @@
     el('riga-contatto').hidden = true;
     voce.parla('Ho registrato ' + nome + '. In emergenza posso avvisarlo e dirgli dove sei.', { livello: voce.GUIDA, ancheSeUguale: true });
   });
+  /* la lingua dal cassetto: la scelta la tiene il telefono, cosi' chi
+     riapre l'app la ritrova. Se il file dei testi non c'e', `cambia`
+     torna all'italiano da se' e qui non si rompe niente. */
+  (function () {
+    var scelta = el('scegli-lingua');
+    if (!scelta) return;
+    try {
+      var tenuta = localStorage.getItem('yourbea2-lingua');
+      if (tenuta) { scelta.value = tenuta; lingua.cambia(tenuta); }
+      else scelta.value = lingua.quale();
+    } catch (e) {}
+    scelta.addEventListener('change', function () {
+      var q = scelta.value;
+      try { localStorage.setItem('yourbea2-lingua', q); } catch (e) {}
+      lingua.cambia(q).then(function (fatta) {
+        scelta.value = fatta;
+        /* la frase si passa in ITALIANO: a tradurla ci pensa voce.parla,
+           che e' l'ultimo punto. Passandogliela gia' tradotta, lei la
+           cercava nella tabella e non la trovava. */
+        voce.parla(fatta === 'it' ? 'Parlo italiano.' : 'Va bene.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        diario('LINGUA: scelta dal cassetto → ' + fatta);
+      });
+    });
+  }());
+
   el('manda-diario').addEventListener('click', function () {
     var s = posizione.leggi();
     var capo = 'Yourbea nuova — diario\n' + (navigator.userAgent || '') +
