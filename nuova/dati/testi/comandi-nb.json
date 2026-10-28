@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "mer",
+  "fortell mer",
+  "fortsett"
+ ],
+ "avanti": [
+  "neste",
+  "hopp over"
+ ],
+ "ferma": [
+  "stopp",
+  "stille",
+  "vær stille"
+ ],
+ "dove": [
+  "hvor er jeg",
+  "hvor er vi",
+  "hvilken gate"
+ ],
+ "intorno": [
+  "hva er her",
+  "beskriv",
+  "rundt meg",
+  "hva ser du"
+ ],
+ "civico": [
+  "husnummer",
+  "hvilket nummer"
+ ],
+ "negozi": [
+  "butikker",
+  "butikk"
+ ],
+ "casamia": [
+  "hvor bor jeg",
+  "hvor er hjemmet mitt",
+  "adressen min"
+ ],
+ "turismo": [
+  "turisme",
+  "turist"
+ ],
+ "utilita": [
+  "hverdag",
+  "tjenester"
+ ],
+ "leggi": [
+  "les",
+  "skilt",
+  "ringeklokke",
+  "hva står det"
+ ],
+ "aiuto": [
+  "hjelp",
+  "kommandoer",
+  "hva kan jeg si"
+ ],
+ "chiudi": [
+  "lukk",
+  "avslutt",
+  "ferdig",
+  "ha det",
+  "god natt"
+ ],
+ "musica": [
+  "musikk"
+ ],
+ "portami": [
+  "ta meg",
+  "jeg vil til"
+ ],
+ "casa": [
+  "hjem",
+  "hjemmet mitt"
+ ]
+}

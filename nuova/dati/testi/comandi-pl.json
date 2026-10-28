@@ -1,0 +1,79 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "więcej",
+  "powiedz więcej",
+  "dalej"
+ ],
+ "avanti": [
+  "następny",
+  "pomiń",
+  "dalej idź"
+ ],
+ "ferma": [
+  "stop",
+  "cisza",
+  "przestań"
+ ],
+ "dove": [
+  "gdzie jestem",
+  "gdzie jesteśmy",
+  "jaka ulica"
+ ],
+ "intorno": [
+  "co tu jest",
+  "opisz",
+  "wokół mnie",
+  "co widzisz"
+ ],
+ "civico": [
+  "numer domu",
+  "jaki numer"
+ ],
+ "negozi": [
+  "sklepy",
+  "sklep"
+ ],
+ "casamia": [
+  "gdzie mieszkam",
+  "gdzie jest mój dom",
+  "mój adres"
+ ],
+ "turismo": [
+  "turystyka",
+  "turysta"
+ ],
+ "utilita": [
+  "codzienne",
+  "usługi"
+ ],
+ "leggi": [
+  "przeczytaj",
+  "znak",
+  "domofon",
+  "co tam pisze"
+ ],
+ "aiuto": [
+  "pomoc",
+  "komendy",
+  "co mogę powiedzieć"
+ ],
+ "chiudi": [
+  "zamknij",
+  "wyłącz",
+  "koniec",
+  "do widzenia",
+  "dobranoc"
+ ],
+ "musica": [
+  "muzyka"
+ ],
+ "portami": [
+  "zaprowadź mnie",
+  "chcę iść"
+ ],
+ "casa": [
+  "do domu",
+  "mój dom"
+ ]
+}

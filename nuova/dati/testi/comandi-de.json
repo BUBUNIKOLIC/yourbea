@@ -1,0 +1,19 @@
+{
+ "_leggimi": "I COMANDI IN TEDESCO. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni (es. «da», «hier» da sole), che si trovano dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": ["mehr", "weitererzähl", "erzähl mir mehr", "mehr davon", "ausführlich"],
+ "avanti": ["weiter", "nächste", "nächster", "überspring"],
+ "ferma": ["halt", "ruhe", "sei still", "schweig", "aufhören"],
+ "dove": ["wo bin ich", "wo sind wir", "in welcher straße"],
+ "intorno": ["was ist hier", "was gibt es hier", "beschreib", "umgebung", "was siehst du"],
+ "civico": ["hausnummer", "welche nummer"],
+ "negozi": ["geschäfte", "laden", "läden", "geschäft"],
+ "casamia": ["wo wohne ich", "wo ist mein zuhause", "welche adresse habe ich"],
+ "turismo": ["tourismus", "touristisch"],
+ "utilita": ["alltag", "dienste", "praktisch"],
+ "leggi": ["lies", "lies vor", "schild", "klingel", "was steht da"],
+ "aiuto": ["hilfe", "befehle", "was kann ich sagen"],
+ "chiudi": ["schließen", "mach zu", "beenden", "schluss", "fertig", "tschüss", "auf wiedersehen", "gute nacht"],
+ "musica": ["musik"],
+ "portami": ["bring mich", "führ mich", "ich will nach"],
+ "casa": ["nach hause", "zuhause"]
+}

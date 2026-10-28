@@ -135,10 +135,21 @@
   var lingua = Lingua({
     diario: diario,
     chiedi: function (codice) {
-      return fetch('dati/testi/' + codice + '.json' + VER).then(function (r) {
-        if (!r.ok) throw new Error('niente');
-        return r.json();
-      });
+      /* le frasi e i comandi di quella lingua. I comandi possono
+         mancare: allora si capiscono solo quelli italiani, che e' come
+         stava prima e non rompe niente. */
+      /* le frasi possono mancare — oggi sono tradotte solo alcune lingue —
+         e i comandi no: chi ha i comandi della sua lingua deve poterla
+         comandare anche se l'app gli parla ancora in italiano. Se qui si
+         buttasse tutto, un francese non sarebbe capito. */
+      return Promise.all([
+        fetch('dati/testi/' + codice + '.json' + VER)
+          .then(function (r) { return r.ok ? r.json() : {}; })
+          .catch(function () { return {}; }),
+        fetch('dati/testi/comandi-' + codice + '.json' + VER)
+          .then(function (r) { return r.ok ? r.json() : {}; })
+          .catch(function () { return {}; })
+      ]).then(function (due) { return { frasi: due[0], comandi: due[1] }; });
     }
   });
 
@@ -3100,7 +3111,11 @@
       var quali = [].slice.call(arguments);
       return quali.some(function (k) {
         var frasi = PAROLE[k] || [k];
-        return frasi.some(function (p) { return t.indexOf(p) >= 0; });
+        if (frasi.some(function (p) { return t.indexOf(p) >= 0; })) return true;
+        /* e nella lingua del turista: l'ascolto alterna italiano e la
+           sua lingua, quindi qui puo' arrivare «bring mich nach Hause»
+           invece di «portami a casa». L'italiano vale sempre. */
+        return lingua.suoComando(k, t) || lingua.suoComando(k, grezzo);
       });
     }
 
@@ -3786,14 +3801,38 @@
 
   /* ---------- l'ascolto ---------- */
   var ascolto = null, ascoltoVoluto = false, micChiuso = false;
+  var ascoltoItaliano = true;
+  var LINGUA_ASCOLTO = { de: 'de-DE', en: 'en-GB', fr: 'fr-FR', es: 'es-ES', nl: 'nl-NL',
+                         pl: 'pl-PL', cs: 'cs-CZ', zh: 'zh-CN', ro: 'ro-RO', pt: 'pt-PT',
+                         da: 'da-DK', hu: 'hu-HU', sv: 'sv-SE', ja: 'ja-JP', ru: 'ru-RU',
+                         ko: 'ko-KR', nb: 'nb-NO', fi: 'fi-FI', el: 'el-GR', ar: 'ar-SA' };
+  function laLinguaDellAscolto() {
+    var q = lingua.quale();
+    var sua = LINGUA_ASCOLTO[q];
+    if (!sua) return 'it-IT';
+    ascoltoItaliano = !ascoltoItaliano;
+    var scelta = ascoltoItaliano ? 'it-IT' : sua;
+    diario('ASCOLTO: ' + scelta);
+    return scelta;
+  }
   function apriAscolto() {
     micChiuso = false;
-    if (window.urbeaAscolta) { try { window.urbeaAscolta(); } catch (e) {} return; }
+    /* al guscio si dice in che lingua ascoltare: lui ha un
+       riconoscitore solo, e la lingua gliela cambiamo noi a ogni giro. */
+    if (window.urbeaAscolta) { try { window.urbeaAscolta(laLinguaDellAscolto()); } catch (e) {} return; }
     var R = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!R || ascolto) return;
     try {
       ascolto = new R();
-      ascolto.lang = 'it-IT'; ascolto.continuous = true; ascolto.interimResults = false;
+      /* SI ASCOLTA IN DUE LINGUE, A TURNO — 28/10/2026.
+         Un riconoscitore ha una lingua sola, e il turista deve poter
+         dire sia «portami a casa» sia «bring mich nach Hause». Ma
+         l'ascolto si richiude dopo ogni frase e si riapre da se': a
+         ogni riapertura si cambia lingua. Una frase su due, quindi, e
+         quella giusta — e con tre ipotesi per volta ne resta fuori
+         poco. In italiano non cambia niente: si resta sempre su it-IT. */
+      ascolto.lang = laLinguaDellAscolto();
+      ascolto.continuous = true; ascolto.interimResults = false;
       /* TRE IPOTESI, NON UNA — 28/10/2026
          Il riconoscitore ne ha sempre piu' d'una in mano, ma di suo ne
          consegna una sola: se quella e' sbagliata, il comando e' perso.

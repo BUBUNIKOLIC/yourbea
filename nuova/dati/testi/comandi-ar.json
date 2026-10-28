@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "المزيد",
+  "أخبرني أكثر",
+  "تابع"
+ ],
+ "avanti": [
+  "التالي",
+  "تخطى"
+ ],
+ "ferma": [
+  "توقف",
+  "صمت",
+  "اسكت"
+ ],
+ "dove": [
+  "أين أنا",
+  "أين نحن",
+  "أي شارع"
+ ],
+ "intorno": [
+  "ماذا يوجد هنا",
+  "صف لي",
+  "حولي",
+  "ماذا ترى"
+ ],
+ "civico": [
+  "رقم المنزل",
+  "أي رقم"
+ ],
+ "negozi": [
+  "محلات",
+  "متجر"
+ ],
+ "casamia": [
+  "أين أسكن",
+  "أين بيتي",
+  "عنواني"
+ ],
+ "turismo": [
+  "سياحة",
+  "سائح"
+ ],
+ "utilita": [
+  "الحياة اليومية",
+  "خدمات"
+ ],
+ "leggi": [
+  "اقرأ",
+  "لافتة",
+  "جرس الباب",
+  "ماذا مكتوب"
+ ],
+ "aiuto": [
+  "مساعدة",
+  "الأوامر",
+  "ماذا يمكنني أن أقول"
+ ],
+ "chiudi": [
+  "أغلق",
+  "إنهاء",
+  "انتهينا",
+  "وداعا",
+  "تصبح على خير"
+ ],
+ "musica": [
+  "موسيقى"
+ ],
+ "portami": [
+  "خذني",
+  "أريد الذهاب"
+ ],
+ "casa": [
+  "إلى البيت",
+  "بيتي"
+ ]
+}

@@ -1,0 +1,88 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "more",
+  "tell me more",
+  "go on",
+  "in more detail"
+ ],
+ "avanti": [
+  "next",
+  "skip",
+  "move on"
+ ],
+ "ferma": [
+  "stop",
+  "be quiet",
+  "silence",
+  "quiet"
+ ],
+ "dove": [
+  "where am i",
+  "where are we",
+  "what street"
+ ],
+ "intorno": [
+  "what's here",
+  "what is here",
+  "describe",
+  "around me",
+  "what do you see"
+ ],
+ "civico": [
+  "house number",
+  "what number"
+ ],
+ "negozi": [
+  "shops",
+  "shop",
+  "stores",
+  "store"
+ ],
+ "casamia": [
+  "where do i live",
+  "where is my home",
+  "what's my address"
+ ],
+ "turismo": [
+  "tourism",
+  "tourist"
+ ],
+ "utilita": [
+  "everyday",
+  "utility",
+  "services"
+ ],
+ "leggi": [
+  "read this",
+  "read it",
+  "sign",
+  "doorbell",
+  "what does it say"
+ ],
+ "aiuto": [
+  "help",
+  "commands",
+  "what can i say"
+ ],
+ "chiudi": [
+  "close",
+  "shut down",
+  "finished",
+  "goodbye",
+  "good night",
+  "that's all"
+ ],
+ "musica": [
+  "music"
+ ],
+ "portami": [
+  "take me",
+  "bring me",
+  "i want to go"
+ ],
+ "casa": [
+  "home",
+  "to my house"
+ ]
+}

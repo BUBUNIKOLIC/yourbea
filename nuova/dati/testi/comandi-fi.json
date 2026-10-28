@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "lisää",
+  "kerro lisää",
+  "jatka"
+ ],
+ "avanti": [
+  "seuraava",
+  "ohita"
+ ],
+ "ferma": [
+  "seis",
+  "hiljaa",
+  "lopeta"
+ ],
+ "dove": [
+  "missä olen",
+  "missä olemme",
+  "mikä katu"
+ ],
+ "intorno": [
+  "mitä täällä on",
+  "kuvaile",
+  "ympärilläni",
+  "mitä näet"
+ ],
+ "civico": [
+  "talon numero",
+  "mikä numero"
+ ],
+ "negozi": [
+  "kaupat",
+  "kauppa"
+ ],
+ "casamia": [
+  "missä asun",
+  "missä kotini on",
+  "osoitteeni"
+ ],
+ "turismo": [
+  "matkailu",
+  "turisti"
+ ],
+ "utilita": [
+  "arki",
+  "palvelut"
+ ],
+ "leggi": [
+  "lue",
+  "kyltti",
+  "ovipuhelin",
+  "mitä siinä lukee"
+ ],
+ "aiuto": [
+  "apua",
+  "komennot",
+  "mitä voin sanoa"
+ ],
+ "chiudi": [
+  "sulje",
+  "lopeta sovellus",
+  "valmis",
+  "näkemiin",
+  "hyvää yötä"
+ ],
+ "musica": [
+  "musiikki"
+ ],
+ "portami": [
+  "vie minut",
+  "haluan mennä"
+ ],
+ "casa": [
+  "kotiin",
+  "kotini"
+ ]
+}

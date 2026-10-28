@@ -1,0 +1,79 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "подробнее",
+  "расскажи ещё",
+  "продолжай"
+ ],
+ "avanti": [
+  "дальше",
+  "пропусти",
+  "следующий"
+ ],
+ "ferma": [
+  "стоп",
+  "тихо",
+  "замолчи"
+ ],
+ "dove": [
+  "где я",
+  "где мы",
+  "какая улица"
+ ],
+ "intorno": [
+  "что здесь",
+  "опиши",
+  "вокруг меня",
+  "что ты видишь"
+ ],
+ "civico": [
+  "номер дома",
+  "какой номер"
+ ],
+ "negozi": [
+  "магазины",
+  "магазин"
+ ],
+ "casamia": [
+  "где я живу",
+  "где мой дом",
+  "мой адрес"
+ ],
+ "turismo": [
+  "туризм",
+  "турист"
+ ],
+ "utilita": [
+  "повседневное",
+  "услуги"
+ ],
+ "leggi": [
+  "прочитай",
+  "табличка",
+  "домофон",
+  "что там написано"
+ ],
+ "aiuto": [
+  "помощь",
+  "команды",
+  "что я могу сказать"
+ ],
+ "chiudi": [
+  "закрой",
+  "выключи",
+  "конец",
+  "до свидания",
+  "спокойной ночи"
+ ],
+ "musica": [
+  "музыка"
+ ],
+ "portami": [
+  "отведи меня",
+  "я хочу пойти"
+ ],
+ "casa": [
+  "домой",
+  "мой дом"
+ ]
+}

@@ -25,6 +25,7 @@
     o = o || {};
     var quale = 'it';
     var tabella = {};
+    var comandiSuoi = {};        // i comandi nella lingua del turista
     var mancanti = {};
     var chiedi = o.chiedi;               // chi va a prendere il file
     var diario = o.diario || function () {};
@@ -36,11 +37,29 @@
       return disponibili.indexOf(corta) >= 0 ? corta : 'it';
     }
 
-    function metti(codice, testi) {
+    function metti(codice, testi, comandi) {
       quale = codice;
       tabella = testi || {};
+      comandiSuoi = comandi || {};
       mancanti = {};
-      diario('LINGUA: ' + codice + ', ' + Object.keys(tabella).length + ' frasi');
+      diario('LINGUA: ' + codice + ', ' + Object.keys(tabella).length + ' frasi, ' +
+             Object.keys(comandiSuoi).filter(function (k) { return k.charAt(0) !== '_'; }).length + ' comandi');
+    }
+
+    /* I COMANDI NELLA SUA LINGUA — 28/10/2026, Vince: «in tedesco».
+       L'ascolto alterna italiano e lingua del turista, quindi qui arriva
+       sia «portami a casa» sia «bring mich nach Hause». Questa funzione
+       dice se una frase contiene uno dei comandi di quel gruppo nella
+       lingua scelta; i comandi italiani continuano a valere sempre, e
+       non si toccano. */
+    function suoComando(gruppo, frase) {
+      var elenco = comandiSuoi[gruppo];
+      if (!elenco || !elenco.length || !frase) return false;
+      var t = String(frase).toLowerCase();
+      for (var i = 0; i < elenco.length; i++) {
+        if (t.indexOf(String(elenco[i]).toLowerCase()) >= 0) return true;
+      }
+      return false;
     }
 
     /* la traduzione, o l'italiano. Mai niente. */
@@ -60,8 +79,12 @@
     function cambia(codice) {
       if (codice === 'it') { metti('it', {}); return Promise.resolve('it'); }
       if (!chiedi) return Promise.resolve(quale);
-      return chiedi(codice).then(function (testi) {
-        metti(codice, testi); return codice;
+      return chiedi(codice).then(function (due) {
+        /* `chiedi` puo' tornare le sole frasi (com'era) o frasi e
+           comandi insieme: tutt'e due vanno bene. */
+        if (due && due.frasi) metti(codice, due.frasi, due.comandi);
+        else metti(codice, due);
+        return codice;
       }).catch(function () {
         diario('LINGUA: non trovo i testi di ' + codice + ', resto in italiano');
         metti('it', {}); return 'it';
@@ -70,6 +93,7 @@
 
     return {
       di: di, cambia: cambia, quale: function () { return quale; },
+      suoComando: suoComando,
       dalTelefono: dalTelefono,
       /* quello che non e' tradotto, per chi vuole completare la tabella */
       cheManca: function () { return Object.keys(mancanti); }

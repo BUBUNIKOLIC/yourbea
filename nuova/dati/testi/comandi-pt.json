@@ -1,0 +1,80 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "mais",
+  "conta mais",
+  "continua"
+ ],
+ "avanti": [
+  "próximo",
+  "salta",
+  "avança"
+ ],
+ "ferma": [
+  "para",
+  "silêncio",
+  "cala"
+ ],
+ "dove": [
+  "onde estou",
+  "onde estamos",
+  "que rua"
+ ],
+ "intorno": [
+  "o que há aqui",
+  "descreve",
+  "à minha volta",
+  "o que vês"
+ ],
+ "civico": [
+  "número da porta",
+  "que número"
+ ],
+ "negozi": [
+  "lojas",
+  "loja"
+ ],
+ "casamia": [
+  "onde moro",
+  "onde é a minha casa",
+  "a minha morada"
+ ],
+ "turismo": [
+  "turismo",
+  "turista"
+ ],
+ "utilita": [
+  "utilidade",
+  "serviços",
+  "dia a dia"
+ ],
+ "leggi": [
+  "lê isto",
+  "placa",
+  "campainha",
+  "o que está escrito"
+ ],
+ "aiuto": [
+  "ajuda",
+  "comandos",
+  "o que posso dizer"
+ ],
+ "chiudi": [
+  "fecha",
+  "desliga",
+  "acabou",
+  "adeus",
+  "boa noite"
+ ],
+ "musica": [
+  "música"
+ ],
+ "portami": [
+  "leva me",
+  "quero ir"
+ ],
+ "casa": [
+  "para casa",
+  "a minha casa"
+ ]
+}

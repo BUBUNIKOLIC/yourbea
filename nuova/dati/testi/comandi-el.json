@@ -1,0 +1,79 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "περισσότερα",
+  "πες μου κι άλλο",
+  "συνέχισε"
+ ],
+ "avanti": [
+  "επόμενο",
+  "παράλειψε"
+ ],
+ "ferma": [
+  "σταμάτα",
+  "ησυχία",
+  "σώπα"
+ ],
+ "dove": [
+  "πού είμαι",
+  "πού είμαστε",
+  "ποιος δρόμος"
+ ],
+ "intorno": [
+  "τι υπάρχει εδώ",
+  "περίγραψε",
+  "γύρω μου",
+  "τι βλέπεις"
+ ],
+ "civico": [
+  "αριθμός",
+  "τι νούμερο"
+ ],
+ "negozi": [
+  "μαγαζιά",
+  "μαγαζί",
+  "καταστήματα"
+ ],
+ "casamia": [
+  "πού μένω",
+  "πού είναι το σπίτι μου",
+  "η διεύθυνσή μου"
+ ],
+ "turismo": [
+  "τουρισμός",
+  "τουρίστας"
+ ],
+ "utilita": [
+  "καθημερινά",
+  "υπηρεσίες"
+ ],
+ "leggi": [
+  "διάβασε",
+  "πινακίδα",
+  "θυροτηλέφωνο",
+  "τι γράφει"
+ ],
+ "aiuto": [
+  "βοήθεια",
+  "εντολές",
+  "τι μπορώ να πω"
+ ],
+ "chiudi": [
+  "κλείσε",
+  "τερμάτισε",
+  "τέλος",
+  "αντίο",
+  "καληνύχτα"
+ ],
+ "musica": [
+  "μουσική"
+ ],
+ "portami": [
+  "πήγαινέ με",
+  "θέλω να πάω"
+ ],
+ "casa": [
+  "σπίτι",
+  "στο σπίτι μου"
+ ]
+}

@@ -1,0 +1,79 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "meer",
+  "vertel meer",
+  "ga door"
+ ],
+ "avanti": [
+  "volgende",
+  "sla over",
+  "verder"
+ ],
+ "ferma": [
+  "stop",
+  "stil",
+  "wees stil"
+ ],
+ "dove": [
+  "waar ben ik",
+  "waar zijn we",
+  "welke straat"
+ ],
+ "intorno": [
+  "wat is hier",
+  "beschrijf",
+  "om mij heen",
+  "wat zie je"
+ ],
+ "civico": [
+  "huisnummer",
+  "welk nummer"
+ ],
+ "negozi": [
+  "winkels",
+  "winkel"
+ ],
+ "casamia": [
+  "waar woon ik",
+  "waar is mijn huis",
+  "mijn adres"
+ ],
+ "turismo": [
+  "toerisme",
+  "toerist"
+ ],
+ "utilita": [
+  "dagelijks",
+  "diensten"
+ ],
+ "leggi": [
+  "lees",
+  "bord",
+  "bel",
+  "wat staat er"
+ ],
+ "aiuto": [
+  "hulp",
+  "commando's",
+  "wat kan ik zeggen"
+ ],
+ "chiudi": [
+  "sluit",
+  "afsluiten",
+  "klaar",
+  "tot ziens",
+  "goedenacht"
+ ],
+ "musica": [
+  "muziek"
+ ],
+ "portami": [
+  "breng me",
+  "ik wil naar"
+ ],
+ "casa": [
+  "naar huis",
+  "mijn huis"
+ ]
+}

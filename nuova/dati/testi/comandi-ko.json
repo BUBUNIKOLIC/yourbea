@@ -1,0 +1,77 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "더 알려줘",
+  "자세히",
+  "계속"
+ ],
+ "avanti": [
+  "다음",
+  "건너뛰어"
+ ],
+ "ferma": [
+  "멈춰",
+  "조용히",
+  "그만"
+ ],
+ "dove": [
+  "여기가 어디",
+  "우리 어디",
+  "무슨 길"
+ ],
+ "intorno": [
+  "여기 뭐가 있어",
+  "설명해",
+  "주변",
+  "뭐가 보여"
+ ],
+ "civico": [
+  "번지",
+  "몇 번"
+ ],
+ "negozi": [
+  "가게",
+  "상점"
+ ],
+ "casamia": [
+  "내 집이 어디",
+  "내 주소"
+ ],
+ "turismo": [
+  "관광",
+  "여행"
+ ],
+ "utilita": [
+  "생활",
+  "서비스"
+ ],
+ "leggi": [
+  "읽어줘",
+  "표지판",
+  "초인종",
+  "뭐라고 쓰여"
+ ],
+ "aiuto": [
+  "도움말",
+  "명령",
+  "뭐라고 말할 수 있어"
+ ],
+ "chiudi": [
+  "종료",
+  "닫아줘",
+  "끝내",
+  "안녕히",
+  "잘 자"
+ ],
+ "musica": [
+  "음악"
+ ],
+ "portami": [
+  "데려다줘",
+  "가고 싶어"
+ ],
+ "casa": [
+  "집으로",
+  "우리 집"
+ ]
+}

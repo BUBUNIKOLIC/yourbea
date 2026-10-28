@@ -1,0 +1,83 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "plus",
+  "dis m'en plus",
+  "continue",
+  "davantage"
+ ],
+ "avanti": [
+  "suivant",
+  "passe",
+  "au suivant"
+ ],
+ "ferma": [
+  "arrête",
+  "silence",
+  "tais toi"
+ ],
+ "dove": [
+  "où suis je",
+  "où sommes nous",
+  "quelle rue"
+ ],
+ "intorno": [
+  "qu'est ce qu'il y a",
+  "décris",
+  "autour de moi",
+  "que vois tu"
+ ],
+ "civico": [
+  "numéro de rue",
+  "quel numéro"
+ ],
+ "negozi": [
+  "magasins",
+  "magasin",
+  "boutiques"
+ ],
+ "casamia": [
+  "où j'habite",
+  "où est ma maison",
+  "mon adresse"
+ ],
+ "turismo": [
+  "tourisme",
+  "touriste"
+ ],
+ "utilita": [
+  "utilitaire",
+  "services",
+  "quotidien"
+ ],
+ "leggi": [
+  "lis",
+  "panneau",
+  "interphone",
+  "qu'est ce qui est écrit"
+ ],
+ "aiuto": [
+  "aide",
+  "commandes",
+  "que puis je dire"
+ ],
+ "chiudi": [
+  "ferme",
+  "éteins",
+  "terminé",
+  "au revoir",
+  "bonne nuit"
+ ],
+ "musica": [
+  "musique"
+ ],
+ "portami": [
+  "emmène moi",
+  "conduis moi",
+  "je veux aller"
+ ],
+ "casa": [
+  "à la maison",
+  "chez moi"
+ ]
+}

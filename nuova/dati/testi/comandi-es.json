@@ -1,0 +1,82 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "más",
+  "cuéntame más",
+  "sigue",
+  "más detalles"
+ ],
+ "avanti": [
+  "siguiente",
+  "salta",
+  "adelante"
+ ],
+ "ferma": [
+  "para",
+  "silencio",
+  "cállate"
+ ],
+ "dove": [
+  "dónde estoy",
+  "dónde estamos",
+  "qué calle"
+ ],
+ "intorno": [
+  "qué hay aquí",
+  "describe",
+  "a mi alrededor",
+  "qué ves"
+ ],
+ "civico": [
+  "número de portal",
+  "qué número"
+ ],
+ "negozi": [
+  "tiendas",
+  "tienda",
+  "comercios"
+ ],
+ "casamia": [
+  "dónde vivo",
+  "dónde está mi casa",
+  "mi dirección"
+ ],
+ "turismo": [
+  "turismo",
+  "turista"
+ ],
+ "utilita": [
+  "utilidad",
+  "servicios",
+  "día a día"
+ ],
+ "leggi": [
+  "lee",
+  "cartel",
+  "portero",
+  "qué pone"
+ ],
+ "aiuto": [
+  "ayuda",
+  "comandos",
+  "qué puedo decir"
+ ],
+ "chiudi": [
+  "cierra",
+  "apaga",
+  "terminado",
+  "adiós",
+  "buenas noches"
+ ],
+ "musica": [
+  "música"
+ ],
+ "portami": [
+  "llévame",
+  "quiero ir"
+ ],
+ "casa": [
+  "a casa",
+  "a mi casa"
+ ]
+}

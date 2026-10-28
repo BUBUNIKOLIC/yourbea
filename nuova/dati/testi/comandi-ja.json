@@ -1,0 +1,77 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "もっと",
+  "詳しく",
+  "続けて"
+ ],
+ "avanti": [
+  "次へ",
+  "とばして"
+ ],
+ "ferma": [
+  "止まって",
+  "静かに",
+  "やめて"
+ ],
+ "dove": [
+  "ここはどこ",
+  "私はどこ",
+  "何通り"
+ ],
+ "intorno": [
+  "何がある",
+  "説明して",
+  "まわり",
+  "何が見える"
+ ],
+ "civico": [
+  "番地",
+  "何番"
+ ],
+ "negozi": [
+  "お店",
+  "店は"
+ ],
+ "casamia": [
+  "家はどこ",
+  "私の住所"
+ ],
+ "turismo": [
+  "観光",
+  "旅行"
+ ],
+ "utilita": [
+  "生活",
+  "サービス"
+ ],
+ "leggi": [
+  "読んで",
+  "看板",
+  "インターホン",
+  "何て書いてある"
+ ],
+ "aiuto": [
+  "ヘルプ",
+  "助けて",
+  "何が言える"
+ ],
+ "chiudi": [
+  "終了",
+  "閉じて",
+  "おしまい",
+  "さようなら",
+  "おやすみ"
+ ],
+ "musica": [
+  "音楽"
+ ],
+ "portami": [
+  "連れて行って",
+  "行きたい"
+ ],
+ "casa": [
+  "家に",
+  "自宅"
+ ]
+}

@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "更多",
+  "多说一点",
+  "继续"
+ ],
+ "avanti": [
+  "下一个",
+  "跳过"
+ ],
+ "ferma": [
+  "停下",
+  "安静",
+  "别说了"
+ ],
+ "dove": [
+  "我在哪里",
+  "我们在哪里",
+  "哪条街"
+ ],
+ "intorno": [
+  "这里有什么",
+  "描述",
+  "周围",
+  "你看到什么"
+ ],
+ "civico": [
+  "门牌号",
+  "几号"
+ ],
+ "negozi": [
+  "商店",
+  "店铺"
+ ],
+ "casamia": [
+  "我住在哪里",
+  "我家在哪里",
+  "我的地址"
+ ],
+ "turismo": [
+  "旅游",
+  "观光"
+ ],
+ "utilita": [
+  "日常",
+  "服务"
+ ],
+ "leggi": [
+  "读一下",
+  "牌子",
+  "门铃",
+  "上面写什么"
+ ],
+ "aiuto": [
+  "帮助",
+  "命令",
+  "我能说什么"
+ ],
+ "chiudi": [
+  "关闭",
+  "退出",
+  "结束",
+  "再见",
+  "晚安"
+ ],
+ "musica": [
+  "音乐"
+ ],
+ "portami": [
+  "带我去",
+  "我要去"
+ ],
+ "casa": [
+  "回家",
+  "我家"
+ ]
+}

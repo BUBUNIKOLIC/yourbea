@@ -1,0 +1,79 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "többet",
+  "mondj többet",
+  "folytasd"
+ ],
+ "avanti": [
+  "következő",
+  "ugord át"
+ ],
+ "ferma": [
+  "állj",
+  "csend",
+  "hallgass"
+ ],
+ "dove": [
+  "hol vagyok",
+  "hol vagyunk",
+  "melyik utca"
+ ],
+ "intorno": [
+  "mi van itt",
+  "írd le",
+  "körülöttem",
+  "mit látsz"
+ ],
+ "civico": [
+  "házszám",
+  "hányas szám"
+ ],
+ "negozi": [
+  "boltok",
+  "bolt",
+  "üzletek"
+ ],
+ "casamia": [
+  "hol lakom",
+  "hol van az otthonom",
+  "a címem"
+ ],
+ "turismo": [
+  "turizmus",
+  "turista"
+ ],
+ "utilita": [
+  "mindennapi",
+  "szolgáltatások"
+ ],
+ "leggi": [
+  "olvasd",
+  "tábla",
+  "kaputelefon",
+  "mi van ráírva"
+ ],
+ "aiuto": [
+  "segítség",
+  "parancsok",
+  "mit mondhatok"
+ ],
+ "chiudi": [
+  "zárd be",
+  "kapcsold ki",
+  "vége",
+  "viszlát",
+  "jó éjszakát"
+ ],
+ "musica": [
+  "zene"
+ ],
+ "portami": [
+  "vigyél",
+  "oda akarok menni"
+ ],
+ "casa": [
+  "haza",
+  "az otthonom"
+ ]
+}

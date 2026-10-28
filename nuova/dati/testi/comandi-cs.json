@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "více",
+  "řekni víc",
+  "pokračuj"
+ ],
+ "avanti": [
+  "další",
+  "přeskoč"
+ ],
+ "ferma": [
+  "stop",
+  "ticho",
+  "přestaň"
+ ],
+ "dove": [
+  "kde jsem",
+  "kde jsme",
+  "jaká ulice"
+ ],
+ "intorno": [
+  "co je tady",
+  "popiš",
+  "kolem mě",
+  "co vidíš"
+ ],
+ "civico": [
+  "číslo domu",
+  "jaké číslo"
+ ],
+ "negozi": [
+  "obchody",
+  "obchod"
+ ],
+ "casamia": [
+  "kde bydlím",
+  "kde je můj dům",
+  "moje adresa"
+ ],
+ "turismo": [
+  "turistika",
+  "turista"
+ ],
+ "utilita": [
+  "běžné",
+  "služby"
+ ],
+ "leggi": [
+  "přečti",
+  "cedule",
+  "zvonek",
+  "co tam stojí"
+ ],
+ "aiuto": [
+  "pomoc",
+  "příkazy",
+  "co můžu říct"
+ ],
+ "chiudi": [
+  "zavři",
+  "vypni",
+  "konec",
+  "na shledanou",
+  "dobrou noc"
+ ],
+ "musica": [
+  "hudba"
+ ],
+ "portami": [
+  "vezmi mě",
+  "chci jít"
+ ],
+ "casa": [
+  "domů",
+  "můj dům"
+ ]
+}

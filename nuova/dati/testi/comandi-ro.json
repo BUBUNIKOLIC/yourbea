@@ -1,0 +1,78 @@
+{
+ "_leggimi": "I COMANDI IN QUESTA LINGUA. L'ascolto alterna italiano e questa lingua a ogni riapertura, quindi l'app capisce tutte e due. Le parole vanno scritte come il riconoscitore le TRASCRIVE: minuscole, senza punteggiatura. Niente parole corte e comuni, che si troverebbero dentro mezza frase e farebbero scattare un comando per sbaglio.",
+ "ancora": [
+  "mai mult",
+  "spune mai mult",
+  "continuă"
+ ],
+ "avanti": [
+  "următorul",
+  "sari peste"
+ ],
+ "ferma": [
+  "oprește",
+  "liniște",
+  "taci"
+ ],
+ "dove": [
+  "unde sunt",
+  "unde suntem",
+  "ce stradă"
+ ],
+ "intorno": [
+  "ce e aici",
+  "descrie",
+  "în jurul meu",
+  "ce vezi"
+ ],
+ "civico": [
+  "numărul casei",
+  "ce număr"
+ ],
+ "negozi": [
+  "magazine",
+  "magazin"
+ ],
+ "casamia": [
+  "unde locuiesc",
+  "unde e casa mea",
+  "adresa mea"
+ ],
+ "turismo": [
+  "turism",
+  "turist"
+ ],
+ "utilita": [
+  "zilnic",
+  "servicii"
+ ],
+ "leggi": [
+  "citește",
+  "indicator",
+  "interfon",
+  "ce scrie"
+ ],
+ "aiuto": [
+  "ajutor",
+  "comenzi",
+  "ce pot spune"
+ ],
+ "chiudi": [
+  "închide",
+  "oprește aplicația",
+  "gata",
+  "la revedere",
+  "noapte bună"
+ ],
+ "musica": [
+  "muzică"
+ ],
+ "portami": [
+  "du mă",
+  "vreau să merg"
+ ],
+ "casa": [
+  "acasă",
+  "casa mea"
+ ]
+}
