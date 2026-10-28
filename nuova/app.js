@@ -3119,6 +3119,39 @@
       });
     }
 
+    /* SCEGLIERE LA LINGUA A VOCE — 28/10/2026, Vince: «dove si sceglie?».
+       Di suo l'app prende la lingua del telefono: per un cieco e' la cosa
+       giusta, non deve cercare niente. Ma un telefono in inglese in mano
+       a un tedesco, o una prova, hanno bisogno di un modo — e dev'essere
+       a voce, come tutto il resto. Si dice nella lingua che si vuole
+       («sprich deutsch», «speak english») oppure in italiano («parla
+       tedesco»), perche' chi la chiede magari l'italiano non lo sa. */
+    var CHIESTA = {
+      it: /\b(italiano|italian|italienisch|italien)\b/, de: /\b(deutsch|tedesco|german)\b/,
+      en: /\b(english|inglese|englisch|anglais)\b/, fr: /\b(francais|français|francese|french)\b/,
+      es: /\b(espanol|español|spagnolo|spanish)\b/, nl: /\b(nederlands|olandese|dutch)\b/,
+      pl: /\b(polski|polacco|polish)\b/, cs: /\b(cesky|čes|ceco|czech)\b/,
+      zh: /(中文|cinese|chinese)/, ro: /\b(romana|română|rumeno|romanian)\b/,
+      pt: /\b(portugues|português|portoghese|portuguese)\b/, da: /\b(dansk|danese|danish)\b/,
+      hu: /\b(magyar|ungherese|hungarian)\b/, sv: /\b(svenska|svedese|swedish)\b/,
+      ja: /(日本語|giapponese|japanese)/, ru: /(русский|russo|russian)/,
+      ko: /(한국어|coreano|korean)/, nb: /\b(norsk|norvegese|norwegian)\b/,
+      fi: /\b(suomi|finlandese|finnish)\b/, el: /(ελλην|greco|greek)/,
+      ar: /(العربية|arabo|arabic)/
+    };
+    if (/\b(parla|parlare|lingua|speak|sprich|sprache|language|parle|habla|idioma)\b/.test(t)) {
+      for (var qq in CHIESTA) {
+        if (!Object.prototype.hasOwnProperty.call(CHIESTA, qq)) continue;
+        if (!CHIESTA[qq].test(t)) continue;
+        lingua.cambia(qq).then(function (fatta) {
+          voce.parla(fatta === 'it' ? 'Parlo italiano.' : lingua.di('Va bene.'),
+                     { livello: voce.GUIDA, ancheSeUguale: true });
+          diario('LINGUA: chiesta a voce → ' + fatta);
+        });
+        return true;
+      }
+    }
+
     if (!el('porta').hidden) {
       if (ha('turismo')) { entra('cultura'); return true; }
       if (ha('utilita')) { entra('servizi'); return true; }
