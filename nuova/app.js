@@ -4237,18 +4237,27 @@
      riapre l'app la ritrova. Se il file dei testi non c'e', `cambia`
      torna all'italiano da se' e qui non si rompe niente. */
   (function () {
+    /* i due elenchi — quello della porta e quello del cassetto — sono la
+       stessa scelta: si tengono allineati, se no uno dice una cosa e
+       l'altro un'altra. */
     var scelta = el('scegli-lingua');
+    var allaPorta = el('lingua-porta');
     if (!scelta) return;
     try {
       var tenuta = localStorage.getItem('yourbea2-lingua');
       if (tenuta) { scelta.value = tenuta; lingua.cambia(tenuta); }
       else scelta.value = lingua.quale();
     } catch (e) {}
+    if (allaPorta) { allaPorta.value = scelta.value; allaPorta.addEventListener('change', function () {
+      scelta.value = allaPorta.value;
+      scelta.dispatchEvent(new Event('change'));
+    }); }
     scelta.addEventListener('change', function () {
       var q = scelta.value;
       try { localStorage.setItem('yourbea2-lingua', q); } catch (e) {}
       lingua.cambia(q).then(function (fatta) {
         scelta.value = fatta;
+        if (allaPorta) allaPorta.value = fatta;
         /* la frase si passa in ITALIANO: a tradurla ci pensa voce.parla,
            che e' l'ultimo punto. Passandogliela gia' tradotta, lei la
            cercava nella tabella e non la trovava. */
