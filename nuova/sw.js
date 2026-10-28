@@ -24,7 +24,7 @@
    diverso (`/yourbea/nuova/` contro `/yourbea/`) e per le pagine della
    nuova vince il piu' preciso, cioe' questo.                              */
 
-const VERSIONE = 185;
+const VERSIONE = 186;
 const CASSAFORTE = 'yourbea-nuova-v' + VERSIONE;
 const MIO_PREFISSO = 'yourbea-nuova-v';
 const V = '?v=' + VERSIONE;
@@ -50,6 +50,55 @@ const ESSENZIALI = [
   './parti/pronuncia.js' + V,
   './parti/lingua.js' + V,
   './dati/testi/it.json' + V,
+  /* E LE ALTRE VENTI LINGUE, CHE QUI NON C’ERANO — 28/10/2026.
+     Nella cassaforte stava solo l’italiano: chi scegliendo il tedesco
+     uscisse dalla rete si ritrovava un’app che ascolta in tedesco e non
+     ha una frase da dire. Pesano in tutto un paio di centinaia di
+     chilobyte — i dati dei luoghi sono megabyte — e cosi la lingua si
+     può cambiare anche in viaggio, senza campo.
+     (Gli apostrofi qui sono quelli tipografici: la prova della pagina
+     legge le righe fra apici semplici, e un commento con l’apostrofo
+     diritto le finisce dentro.) */
+  './dati/testi/ar.json' + V,
+  './dati/testi/comandi-ar.json' + V,
+  './dati/testi/cs.json' + V,
+  './dati/testi/comandi-cs.json' + V,
+  './dati/testi/da.json' + V,
+  './dati/testi/comandi-da.json' + V,
+  './dati/testi/de.json' + V,
+  './dati/testi/comandi-de.json' + V,
+  './dati/testi/el.json' + V,
+  './dati/testi/comandi-el.json' + V,
+  './dati/testi/en.json' + V,
+  './dati/testi/comandi-en.json' + V,
+  './dati/testi/es.json' + V,
+  './dati/testi/comandi-es.json' + V,
+  './dati/testi/fi.json' + V,
+  './dati/testi/comandi-fi.json' + V,
+  './dati/testi/fr.json' + V,
+  './dati/testi/comandi-fr.json' + V,
+  './dati/testi/hu.json' + V,
+  './dati/testi/comandi-hu.json' + V,
+  './dati/testi/ja.json' + V,
+  './dati/testi/comandi-ja.json' + V,
+  './dati/testi/ko.json' + V,
+  './dati/testi/comandi-ko.json' + V,
+  './dati/testi/nb.json' + V,
+  './dati/testi/comandi-nb.json' + V,
+  './dati/testi/nl.json' + V,
+  './dati/testi/comandi-nl.json' + V,
+  './dati/testi/pl.json' + V,
+  './dati/testi/comandi-pl.json' + V,
+  './dati/testi/pt.json' + V,
+  './dati/testi/comandi-pt.json' + V,
+  './dati/testi/ro.json' + V,
+  './dati/testi/comandi-ro.json' + V,
+  './dati/testi/ru.json' + V,
+  './dati/testi/comandi-ru.json' + V,
+  './dati/testi/sv.json' + V,
+  './dati/testi/comandi-sv.json' + V,
+  './dati/testi/zh.json' + V,
+  './dati/testi/comandi-zh.json' + V,
   './parti/voce.js' + V,
   './parti/distanza.js' + V,
   './parti/descrizione.js' + V,

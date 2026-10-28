@@ -77,6 +77,21 @@ function AChiServe() {
     'scena':             [ true,    true,    false,       false ],
     'lati':              [ true,    true,    false,       false ],
     'passaggio':         [ true,    true,    false,       false ],
+    /* IL NEGOZIO CHE PASSI NON E' TURISMO — 28/10/2026.
+       Diciassette minuti in centro a Roma, in TURISMO. Contate nel
+       diario, delle 78 frasi: 28 di arte, 17 di negozi che passava
+       accanto, 11 di scivoli e attraversamenti, 13 di strade. Due su tre
+       non c'entravano niente. Vince: «mi diceva degli scivoli invece
+       dell'arte», «via del Tritone zero» — e lì, in due minuti, ha
+       sentito Luisa Spagnoli, Shoopsy, Salmoiraghi & Vigano, un bar e
+       uno scivolo, mentre sopra la testa aveva Santa Maria in Via.
+       Un passaggio puo' essere due cose diverse: un AVVISO — scalini,
+       paletto, scivolo, attraversamento: dove metti i piedi, e passa
+       sempre, in tutt'e due i modi — oppure un negozio accanto a cui
+       stai passando, che e' descrizione della realta': serve a chi si
+       muove, non a chi guarda i monumenti. In Turismo quello tace.
+       Chi lo vuole lo chiede: «negozi» risponde comunque. */
+    'passante':          [ true,    false,   false,       false ],
     'incrocio':          [ true,    true,    false,       false ],
     /* IL CENNO NON REGGE IL MOVIMENTO. Provato nei due sensi il 22/10 —
        prima aperto a 1.200 metri come fa Soundscape in macchina, poi

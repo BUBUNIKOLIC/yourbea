@@ -89,6 +89,19 @@ function MotoreVoce(opzioni) {
 
   // --- lo stato, tutto qui dentro: nessuna variabile globale ---
   var turno = 0;
+  /* ---------- QUANDO I TEMPI SI FERMANO ----------
+     28/10, via dei Corazzieri, 10:27:35: «audio interrotto (telefonata,
+     sveglia o altra app)», e poi UNDICI MINUTI in cui il motore ha
+     scritto trecentodue volte «aspetto, sta parlando» mentre non usciva
+     un suono. Il tetto c'era gia' e non e' scattato, perche' il tetto e'
+     un setTimeout: col telefono in tasca e lo schermo spento iOS
+     congela i tempi della pagina. Il guscio pero' continua a passare la
+     posizione, quindi il codice gira a sprazzi — e in quegli sprazzi
+     nessuno guardava l'orologio.
+     Questi due numeri sono il tetto scritto sull'ora, non su un tempo:
+     li guarda staParlando(), che il motore chiama a ogni posizione. */
+  var inizioFrase = 0;
+  var tettoInCorso = 0;
   var parlando = false;
   var livelloInCorso = 0;
   var coda = [];
@@ -282,6 +295,8 @@ function MotoreVoce(opzioni) {
     }
     if (sintesi) try { sintesi.taci(); } catch (e) {}
     parlando = true;
+    inizioFrase = ora();
+    tettoInCorso = tetto(f.testo, f.clip && f.clip.length);
     livelloInCorso = f.livello;
     ultimoTesto = normalizza(f.uguale || f.testo);
     ultimoQuando = ora();
@@ -291,7 +306,7 @@ function MotoreVoce(opzioni) {
     // il tetto: qualunque cosa vada storta, entro il tetto si va avanti
     fra(function () {
       if (mio === turno && parlando) { diario('TETTO: la frase non si è chiusa, vado avanti'); finito(mio); }
-    }, tetto(f.testo, f.clip && f.clip.length));
+    }, tettoInCorso);
 
     if (!f.clip || !f.clip.length || !Audio_) { conLaVoceDiSistema(mio, f.testo); return; }
 
@@ -442,7 +457,28 @@ function MotoreVoce(opzioni) {
     ferma: ferma,
     /* la chiama il guscio quando la telefonata e' finita */
     riprendi: riprendi,
-    staParlando: function () { return parlando; },
+    /* e questa quando gliel'hanno tolto: la frase in corso e' morta
+       a meta' e non arrivera' nessun «ho finito». Senza questa si
+       aspettava il tetto, e col telefono in tasca il tetto non scatta. */
+    interrotta: function () {
+      if (!parlando) return;
+      diario('AUDIO TOLTO: la frase era a meta\u0027, la chiudo');
+      finito(turno);
+    },
+    /* E QUI SI GUARDA L'OROLOGIO. Sembra strano che una domanda
+       risponda cambiando le cose, ed e' voluto: staParlando() e' il solo
+       punto che TUTTO il motore interroga — la musica, il racconto, i
+       comandi — e quindi il solo da cui si possa uscire da un blocco
+       quando i tempi della pagina sono fermi. Il tetto doppio e' per non
+       tagliare una frase vera che sta solo andando per le lunghe. */
+    staParlando: function () {
+      if (parlando && tettoInCorso && ora() - inizioFrase > tettoInCorso * 2) {
+        diario('SBLOCCO: dicevo di parlare da ' + Math.round((ora() - inizioFrase) / 1000) +
+               ' s e i tempi erano fermi — vado avanti');
+        finito(turno);
+      }
+      return parlando;
+    },
     livello: function () { return livelloInCorso; },
     inCoda: function () { return coda.slice(); },
     EMERGENZA: EMERGENZA, GUIDA: GUIDA, CENNO: CENNO

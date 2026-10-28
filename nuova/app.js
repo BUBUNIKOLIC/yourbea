@@ -650,6 +650,15 @@
   /* L'AUDIO E' TORNATO DOPO UNA TELEFONATA. «Ieri mi hanno chiamato e dopo
      non si e' riattaccata» (Vince, 24/10): iOS mette in pausa l'audio, la
      frase resta ferma a meta' e la coda non riparte piu'. */
+  /* IL GUSCIO LO SAPEVA E NON LO DICEVA. Il 28/10 l'interruzione
+     dell'audio e' arrivata (10:27:35) e la fine non e' arrivata MAI: in
+     cinque ore, zero «interruzione finita». La pagina restava a credere
+     di parlare. Adesso l'inizio dell'interruzione si sa subito. */
+  window.urbeaAudioInterrotto = function () {
+    diario('AUDIO: interrotto da fuori, chiudo la frase in corso');
+    voce.interrotta();
+  };
+
   window.urbeaAudioTornato = function () {
     try { voce.riprendi(); } catch (e) {}
   };
@@ -1281,6 +1290,17 @@
   try { casa = localStorage.getItem('yourbea2-casa') || ''; } catch (e) {}
   var ioSonoIo = '';
   try { ioSonoIo = localStorage.getItem('yourbea2-io') || ''; } catch (e) {}
+  /* e chi ce l'ha già sbagliato in memoria non deve risentirselo per
+     sempre: «Sono Vincenzo» salvato ieri si ripulisce qui, una volta. */
+  if (ioSonoIo && /^(?:sono|io sono|mi chiamo|piacere|eccomi)\b/i.test(ioSonoIo)) {
+    var rifatto = nomeDallaFrase(ioSonoIo);
+    diario('NOME: in memoria c\'era «' + ioSonoIo + '» — adesso «' + (rifatto || 'nessuno') + '»');
+    ioSonoIo = rifatto || '';
+    try {
+      if (ioSonoIo) localStorage.setItem('yourbea2-io', ioSonoIo);
+      else localStorage.removeItem('yourbea2-io');
+    } catch (e) {}
+  }
   /* chi ha detto «lascia perdere» non se lo sente richiedere mai più:
      sta in una chiave sua, perché nel posto del nome diventerebbe la voce
      che dice «Ciao meno». */
@@ -1851,10 +1871,7 @@
         return true;
       }
       var secco = (r && r.cosa === 'io') ? r.nome : null;
-      if (!secco && !unComando(t)) {
-        var m = String(t || '').trim().match(/^([a-zà-ÿ]{2,})(?:\s+([a-zà-ÿ]{2,}))?$/i);
-        if (m) secco = maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
-      }
+      if (!secco && !unComando(t)) secco = nomeDallaFrase(t);
       if (secco) {
         inAttesaDi = null;
         ioSonoIo = secco;
@@ -1987,6 +2004,29 @@
       { livello: voce.GUIDA, ancheSeUguale: true });
   };
   function maiuscolaNome(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
+
+  /* ---------- «SONO VINCENZO» NON E' UN NOME ----------
+     Il 28/10, in giro per Roma, l'app ha detto diciotto volte «Buongiorno
+     Sono Vincenzo. Come stai?». Alla domanda «come ti chiami» Vince aveva
+     risposto «sono Vincenzo», e la regola di prima prendeva per nome due
+     parole qualunque: il nome salvato era «Sono Vincenzo», e da li' ogni
+     saluto sembrava che l'app si chiamasse lei Vincenzo.
+     Nessuno risponde col nome nudo: si risponde come si risponde a una
+     persona. La testa della frase si toglie, e quello che resta e' il
+     nome. Se togliendola non resta niente — ha detto solo «sono» — non si
+     e' capito, e si richiede. */
+  var TESTE_DEL_NOME = /^(?:(?:ciao|salve|ehi|allora|beh|guarda|senti|si)[\s,]+)*(?:io\s+)?(?:mi\s+chiamo|mi\s+chiamano|mi\s+puoi\s+chiamare|chiamami|il\s+mio\s+nome\s+(?:e|è)|sono|piacere|eccomi)[\s,]*/i;
+  function nomeDallaFrase(t) {
+    var s = String(t || '').trim().replace(/[.!?]+$/, '');
+    if (TESTE_DEL_NOME.test(s)) {
+      var resto = s.replace(TESTE_DEL_NOME, '').trim();
+      if (!resto) return null;          // «sono» e nient'altro
+      s = resto;
+    }
+    var m = s.match(/^([a-zà-ÿ']{2,})(?:\s+([a-zà-ÿ']{2,}))?$/i);
+    if (!m) return null;
+    return maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
+  }
 
   /* somigliano(): il nome detto a voce contro quello in rubrica. «Mia
      sorella» deve trovare «Sorella», e «lucia» deve trovare «Lucia». */
@@ -2424,9 +2464,16 @@
        A chi vede una parte sbagliata è un'imprecisione da correggere con
        un'occhiata. A chi non vede è un ORDINE, e lo esegue. */
     var preciso = !(qui0.prec > 50);
-    if (!aChiServe.serve(d.avviso ? 'avviso' : d.tipo, modo,
+    /* e un «passaggio» va guardato per quello che e': l'avviso dove
+       metti i piedi, la fermata, o il negozio accanto a cui passi. */
+    var cheCosa = d.avviso ? 'avviso' : d.tipo;
+    if (cheCosa === 'passaggio') {
+      var cosEra = (d.cosa && d.cosa.cosa) ? String(d.cosa.cosa) : '';
+      if (!/fermata|stazione|metropolitana/i.test(cosEra)) cheCosa = 'passante';
+    }
+    if (!aChiServe.serve(cheCosa, modo,
                          { aPiedi: qui0.aPiedi !== false, preciso: preciso, chiesto: !!d.chiesto })) {
-      diario('REGOLA: ' + d.tipo + ' non va in ' + modo +
+      diario('REGOLA: ' + cheCosa + ' non va in ' + modo +
              (qui0.aPiedi === false ? ' (non a piedi)' : '') +
              (!preciso ? ' (±' + Math.round(qui0.prec) + ' m)' : ''));
       return;
@@ -2480,11 +2527,23 @@
     }
     if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') {
       var viaOra = ultimaVia;        // il nome, non il numero
-      if (viaOra) {
+      /* MA NON CINQUE VOLTE LA STESSA VIA — 28/10/2026.
+         Girando attorno al blocco fra via del Corso e via del Tritone,
+         «Adesso sei in Via di Santa Maria in Via» e' uscita CINQUE volte
+         in dodici minuti (15:16, 15:23, 15:26, 15:27, 15:28), e le
+         ultime due a quarantasette secondi l'una dall'altra: qui non si
+         guardava mai quando l'avevamo detta. La frase serve a
+         riorientare dopo un racconto lungo, e la seconda volta nello
+         stesso quarto d'ora non riorienta nessuno. */
+      var chiaveVia = viaOra ? senzaAccenti(viaOra) : '';
+      if (viaOra && Date.now() - (riorientato[chiaveVia] || 0) > 300000) {
+        riorientato[chiaveVia] = Date.now();
         voce.parla('Adesso sei in ' + viaOra + '.', {
           livello: voce.CENNO, ancheSeUguale: true,
           valida: function () { return !guida.meta(); }
         });
+      } else if (viaOra) {
+        diario('STRADA: non ridico «' + viaOra + '», l\'ho appena detta');
       }
     }
     if (d.luogo) {
@@ -2537,6 +2596,7 @@
   /* la via che dice l'aggancio, e quante letture di fila la confermano */
   var agganciataInProva = '', agganciataConferme = 0;
   var stradeDette = {};        // quale via, e quando l'ho annunciata
+  var riorientato = {};        // e quando l'ho ridetta dopo una scheda
   var viaInProva = '';         // vista una volta: aspetto che si confermi
 
   /* uguali(): «Via Álvaro del Portillo» e «Via Alvaro del Portillo» sono la
@@ -2552,6 +2612,12 @@
   }
   function uguali(a, b) { return senzaAccenti(a) === senzaAccenti(b); }
   var ultimoAnnuncioStrada = 0;   // quando ho annunciato una strada, qualunque
+  /* QUANTO SI ASPETTA PRIMA DI RIDIRE LA STESSA VIA. Erano tre minuti, e
+     il 28/10 non sono bastati: girando attorno a un blocco si rientra
+     nella stessa via ogni tre minuti e mezzo, e «Sei entrato in Via di
+     Santa Maria in Via» e' uscita cinque volte. Sei minuti: nel suo giro
+     diventano due annunci invece di cinque. */
+  var STESSA_VIA = 360000;
   var ultimoAvvisoPrecisione = 0;
   posizione.quando(function (cosa, s) {
     if (cosa === 'posizione') segnaPunto(s);
@@ -2736,7 +2802,7 @@
         var AD = Date.now();
         var aspetta = aPiediOra() ? 25000 : 120000;
         var dettaQuando = stradeDette[senzaAccenti(s.viaAgganciata)] || 0;
-        if (AD - ultimoAnnuncioStrada >= aspetta && AD - dettaQuando >= 180000) {
+        if (AD - ultimoAnnuncioStrada >= aspetta && AD - dettaQuando >= STESSA_VIA) {
           var primaEra = ultimaVia;
           ultimaVia = s.viaAgganciata;
           /* ATTENZIONE: QUI NON SI SCRIVE IL CIVICO, E NON SI INVENTA.
@@ -2861,7 +2927,7 @@
         var prima = ultimaVia;
         ultimaVia = viaOra;
         stradeDette[senzaAccenti(viaOra)] = ADESSO;
-        if (ADESSO - quandoDetta < 180000) {
+        if (ADESSO - quandoDetta < STESSA_VIA) {
           diario('STRADA: ' + viaOra + ' gia detta da ' + Math.round((ADESSO - quandoDetta) / 1000) + 's, taccio');
           scena.dimentica();
           passaggi.stradaNuova();
@@ -3962,11 +4028,14 @@
   };
 
   /* ---------- la porta e i tasti ---------- */
-  function entra(quale) {
+  function entra(quale, riprendendo) {
     modo = quale;
     document.body.dataset.modo = (quale === 'cultura' ? 'turismo' : 'utilita');
     el('porta').hidden = true;
-    try { localStorage.setItem('yourbea2-modo', quale); } catch (e) {}
+    try {
+      localStorage.setItem('yourbea2-modo', quale);
+      localStorage.setItem('yourbea2-modo-quando', String(Date.now()));
+    } catch (e) {}
     acceso = true;
     el('avvia').textContent = 'Ferma';
     diario('ENTRATO in ' + (quale === 'cultura' ? 'Turismo' : 'Utilità'));
@@ -3986,6 +4055,14 @@
        e nessuno indovina una frase che non gli è stata detta. Così non lo
        aveva nessuno, e la voce diceva «Ciao.» a tutti. Lo si chiede la
        prima volta e basta: dalla seconda non si chiede più niente. */
+    /* RIENTRANDO NON SI RICOMINCIA: ne' il nome, ne' il saluto, ne'
+       l'elenco di cosa sa fare. Una parola per dire che c'e', e si
+       riprende da dove si era. */
+    if (riprendendo) {
+      voce.parla('Riprendo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      mostra({ titolo: 'Riprendo', testo: 'Cerco la posizione\u2026', attesa: true, dove: '\u2014', gradino: '' });
+      return;
+    }
     if (!ioSonoIo && !nienteNome) { chiediIlNome(quale); return; }
     apertura(quale);
   }
@@ -4333,6 +4410,47 @@
        nell'app installata, funziona), e se non va basta sfiorare lo
        schermo in qualunque punto — non c'e' un tasto da trovare.
      ============================================================ */
+  /* ---------- SI RIPRENDE, NON SI RICOMINCIA ----------
+     28/10, cinque ore in giro per Roma: la pagina e' ripartita da zero
+     DIECI volte, e nel diario c'e' sempre la stessa terzina —
+         — in sottofondo — memoria 30 MB
+         — chiusa dal sistema o dall'utente —
+         — acceso —
+     cioe' il telefono va in tasca, iOS scarica la pagina, e quando torna
+     davanti si riparte dall'inizio: la porta, «dimmi utilita' oppure
+     turismo», un altro saluto. Diciannove volte la domanda, diciotto il
+     saluto, e Vince: «capirai che siamo sempre punto e a capo».
+     Chi non vede il telefono lo tiene in tasca: questo e' il caso
+     normale, non l'eccezione. Il modo lo salvavamo gia' dal primo giorno
+     e non lo rileggeva nessuno.
+     Dopo due ore invece si ricomincia davvero: allora l'app e' stata
+     chiusa e riaperta, e un saluto ci vuole. */
+  var RIPRENDE_ENTRO = 2 * 3600 * 1000;
+  (function riprendi() {
+    var quale = null, quando = 0;
+    try {
+      quale = localStorage.getItem('yourbea2-modo');
+      quando = Number(localStorage.getItem('yourbea2-modo-quando') || 0);
+    } catch (e) {}
+    if (quale !== 'cultura' && quale !== 'servizi') return;
+    var da = Date.now() - quando;
+    if (!quando || da > RIPRENDE_ENTRO) {
+      diario('RIPRESA: c\'era ' + quale + ', ma di ' + Math.round(da / 60000) +
+             ' minuti fa: ricomincio dalla porta');
+      return;
+    }
+    diario('RIPRESA: rientro in ' + (quale === 'cultura' ? 'Turismo' : 'Utilit\u00e0') +
+           ', eri qui ' + Math.round(da / 1000) + ' s fa');
+    entra(quale, true);
+  })();
+
+  /* e finche' si cammina l'orologio della ripresa va avanti: cinque ore
+     di passeggiata non sono «chiusa due ore fa». */
+  setInterval(function () {
+    if (!acceso || !modo) return;
+    try { localStorage.setItem('yourbea2-modo-quando', String(Date.now())); } catch (e) {}
+  }, 30000);
+
   (function allaPorta() {
     if (el('porta').hidden) return;
     var giaFatto = false;

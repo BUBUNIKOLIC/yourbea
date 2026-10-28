@@ -146,6 +146,19 @@ function Contributi(opzioni) {
      { cosa:'contributo', tipo:'attraversamento', come:{...}, nome:'' }
      «qui c'e' Elite» -> tipo 'posto', nome 'Elite'.
      Torna null se la frase non e' un contributo. */
+  /* ---------- «QUI SULLA SINISTRA C'E' MONDADORI» ----------
+     28/10, via del Corso, 15:26:28. L'unico contributo che Vince ha
+     provato a mandare in cinque ore, e l'app non l'ha preso: le regole
+     volevano «qui» attaccato a «c'e'», e lui in mezzo ci aveva messo il
+     lato — che e' il modo in cui si parla, non un disturbo. Sul server
+     quel punto non e' mai arrivato.
+     Fra «qui» e «c'e'» adesso ci puo' stare dove sta la cosa. */
+  var LATO = '(?:[,\\s]*(?:a|al|alla|sul|sulla|su|di|in|verso)?\\s*' +
+             '(?:destra|sinistra|fronte|davanti|dietro|angolo|lato|fianco)\\s*)?';
+  var QUI_CE = new RegExp('^(?:qui|qua)' + LATO + '[,\\s]*(?:c\u2019e|c\'e|ce|e|sta|si trova|abbiamo)\\s+(.+)$');
+  var TAGLIA_NOME = new RegExp('^.*?(?:qui|qua)' + LATO +
+    '[,\\s]*(?:c[\'\u2019]?[e\u00e8]|ce|sta|si trova|abbiamo)\\s+', 'i');
+
   function dallaVoce(testo) {
     var grezzo = String(testo || '').trim().replace(/[?!.]+$/, '');
     /* ============================================================
@@ -190,7 +203,7 @@ function Contributi(opzioni) {
       }
     }
 
-    var m = t.match(/^(?:qui|qua)\s+(?:c’e|c'e|ce|e|sta|si trova|abbiamo)\s+(.+)$/) ||
+    var m = t.match(QUI_CE) ||
             t.match(/^(?:segnala|segna|aggiungi|metti|c’e|c'e)\s+(?:qui\s+)?(.+)$/);
     if (!m) return null;
     var resto = m[1].replace(/^(?:un|uno|una|il|lo|la|i|gli|le|dei|delle|degli)\s+/, '').trim();
@@ -208,7 +221,7 @@ function Contributi(opzioni) {
        il riconoscimento: «qui c'\u00e8 Elite» ha la e ACCENTATA, e il primo
        taglio cercava «c'e» — cosi' il nome restava tutta la frase. */
     var nome = grezzo
-      .replace(/^.*?(?:qui|qua)\s+(?:c['\u2019]?[e\u00e8]|ce|sta|si trova|abbiamo)\s+/i, '')
+      .replace(TAGLIA_NOME, '')
       .replace(/^(?:segnala|segna|aggiungi|metti)\s+(?:qui\s+)?/i, '')
       .replace(/^(?:un|uno|una|il|lo|la|i|gli|le)\s+/i, '')
       /* e NON si tolgono i tipi: «la farmacia Pirani» resta «farmacia
