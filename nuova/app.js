@@ -4276,6 +4276,11 @@
      terrebbe i luoghi di ieri mentre tutto il resto e' nuovo: lo stesso
      difetto che il 15/10 ha fatto perdere due giorni, solo sui dati. */
   var VER = ((document.querySelector('script[src^="app.js"]') || {}).src || '').replace(/^.*(\?v=\d+).*$/, '$1');
+  /* QUALE VERSIONE STA GIRANDO. Il 28/10 Vince ha detto «non compare»
+     di una cosa appena pubblicata, e non c'era modo di sapere se il suo
+     telefono avesse preso la nuova o stesse ancora su quella di ieri:
+     il diario non lo diceva. Adesso e' la prima riga. */
+  diario('VERSIONE: ' + (VER.replace('?v=', '') || 'sconosciuta'));
   if (VER.indexOf('?v=') !== 0) VER = '';
   fetch('dati/luoghi.json' + VER).then(function (r) { return r.json(); }).then(function (l) {
     LUOGHI = l;
