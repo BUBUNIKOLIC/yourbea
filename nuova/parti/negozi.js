@@ -209,8 +209,26 @@ function Negozi(opzioni) {
       }
 
       if (!x.d || peso < 2) {
+        /* UNA SCHEDA CORTA E' UNA SCHEDA — 28/10/2026.
+           Qui un luogo di poco peso perdeva la SUA scheda e si ritrovava
+           al suo posto «Qui c'è il Palazzo della Banca Commerciale
+           Italiana»: quattro parole, senza da che parte e senza quanti
+           passi. Il 28/10, in centro a Roma, Vince ne ha sentite
+           ventidue e ha detto la cosa giusta: «ha iniziato con palazzo
+           wekein ma non sapevo dove era».
+           Contate nei quadretti del centro: dei 636 luoghi con la
+           scheda, **341 la perdevano** — piu' della meta'. Fra loro la
+           chiesa di Santa Maria della Febbre (284 caratteri), Santo
+           Stefano degli Abissini (147), il Palazzo del Sant'Uffizio
+           (213): corte, ma vere, e scritte meglio di qualunque ripiego.
+           Il peso resta e serve a quello per cui era nato: un luogo
+           minore non merita mezzo minuto di storia dell'arte, quindi
+           `minore` e k=1, un gradino solo. Ma quello che ha da dire lo
+           dice. Il ripiego «Qui c'è...» resta solo per chi non ha
+           NIENTE, e quelli in Turismo tacciono (senzaScheda). */
         fuori.push(comeEFatta({ n: x.n, lat: x.lat, lon: x.lon, k: 1, t: x.t || '', y: x.y || 0,
-                     d: 'Qui c\'è ' + (comeSiChiama || intro || x.n) + '.', i: '', a: '',
+                     d: x.d ? x.d : ('Qui c\'è ' + (comeSiChiama || intro || x.n) + '.'),
+                     i: '', a: '',
                      intro: intro, daWiki: true, minore: true,
                      senzaScheda: !x.d }));
         return;
