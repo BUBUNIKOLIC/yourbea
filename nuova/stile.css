@@ -435,3 +435,14 @@ body[data-modo="turismo"] .cassetto{
 body[data-modo="turismo"]{
   padding-bottom:calc(env(safe-area-inset-bottom,0px) + 128px + var(--tasto) + 12px);
 }
+
+/* IL TASTO INDIETRO del cassetto — 28/10/2026.
+   Largo tutta la riga e in cima: chi non vede lo trova scendendo col
+   dito dal bordo, e chi vede lo riconosce dove lo mettono tutti. */
+.cassetto .indietro {
+  flex: 1 1 100%;
+  text-align: left;
+  font-weight: 600;
+  background: var(--carta);
+  border: 1px solid var(--filo);
+}

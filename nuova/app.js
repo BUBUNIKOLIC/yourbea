@@ -4081,6 +4081,17 @@
     el('cassetto').classList.toggle('aperto', aperto !== false);
     el('altro').setAttribute('aria-expanded', aperto !== false ? 'true' : 'false');
   }
+  /* e si chiude anche da dentro: col tasto «Indietro» e con Esc, che e'
+     il tasto indietro di chi usa una tastiera o un lettore di schermo. */
+  function chiudiIlCassetto() {
+    el('cassetto').classList.remove('aperto');
+    el('altro').setAttribute('aria-expanded', 'false');
+    try { el('altro').focus(); } catch (e) {}
+  }
+  el('chiudi-cassetto').addEventListener('click', chiudiIlCassetto);
+  el('cassetto').addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { chiudiIlCassetto(); e.preventDefault(); }
+  });
   el('altro').addEventListener('click', function () {
     var aperto = el('cassetto').classList.toggle('aperto');
     this.setAttribute('aria-expanded', aperto ? 'true' : 'false');
