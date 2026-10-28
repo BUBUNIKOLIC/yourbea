@@ -4089,6 +4089,12 @@
     try { el('altro').focus(); } catch (e) {}
   }
   el('chiudi-cassetto').addEventListener('click', chiudiIlCassetto);
+  /* arrivati in fondo la sfumatura si toglie, se no l'ultima riga resta
+     sbiadita e sembra spenta. */
+  el('cassetto').addEventListener('scroll', function () {
+    var c = el('cassetto');
+    c.classList.toggle('in-fondo', c.scrollTop + c.clientHeight >= c.scrollHeight - 4);
+  });
   el('cassetto').addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { chiudiIlCassetto(); e.preventDefault(); }
   });

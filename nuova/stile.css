@@ -170,6 +170,16 @@ body[data-testo="enorme"]{--base:26px}
   box-shadow:0 -18px 44px rgba(0,0,0,.6);
 }
 .cassetto.aperto{display:flex}
+/* SI DEVE VEDERE CHE SI SCORRE — 28/10/2026.
+   Il cassetto mostra 399 pixel su 537: chi non lo sa si ferma al primo
+   schermo e crede che sotto non ci sia niente («non c'è», Vince). Una
+   sfumatura in fondo dice che continua, e sul bordo resta la barra. */
+.cassetto.aperto{
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);
+  mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);
+  scrollbar-width:thin;
+}
+.cassetto.in-fondo{-webkit-mask-image:none;mask-image:none}
 .cassetto .tasto{flex:1 1 44%}
 .et{font-size:13px;color:var(--spento);letter-spacing:.04em}
 
