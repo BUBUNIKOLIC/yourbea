@@ -3025,7 +3025,37 @@
       .replace(/[òó]/g, 'o').replace(/[ùú]/g, 'u')
       .replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
   }
-  function comando(testo) {
+  /* LE IPOTESI SI PROVANO IN FILA, e ci si ferma alla prima capita.
+     Se nessuna e' un comando, si esegue comunque la PRIMA: e' quella che
+     il riconoscitore ritiene piu' probabile, ed e' lei che deve arrivare
+     a chi segna un contributo a voce («qui c'e' un albero») — li' contano
+     le parole sue, non la somiglianza con un comando. */
+  function comandoFraLeIpotesi(ipotesi) {
+    var lista = (ipotesi || []).filter(function (x) { return String(x || '').trim(); });
+    if (!lista.length) return false;
+    if (lista.length > 1) diario('SENTITO, le ipotesi: ' + lista.join(' | '));
+    /* PRIMA si cercano i comandi in TUTTE e tre — compresa la prima:
+       se la prima si prendesse anche la strada del «questa non l'ho
+       capita», risponderebbe li' e la fila non arriverebbe mai alla
+       seconda. E' proprio il caso che vogliamo chiudere. */
+    for (var i = 0; i < lista.length; i++) {
+      if (comando(lista[i], true)) {
+        if (i > 0) diario('COMANDO: ha funzionato l\'ipotesi numero ' + (i + 1) + ' — ' + lista[i]);
+        return true;
+      }
+    }
+    /* nessuna era un comando: vale la prima, con tutto quello che comando()
+       fa anche quando non riconosce (segnare un contributo, rispondere a
+       chi ci parlava). */
+    return comando(lista[0]);
+  }
+
+  /* `soloComandi`: quando si sta provando la SECONDA o la TERZA ipotesi
+     del riconoscitore, si accettano solo i comandi veri. Senza questo,
+     un'ipotesi fantasiosa che «sembra rivolta a noi» farebbe rispondere
+     «questa non l'ho capita» e la fila si fermerebbe li', proprio come
+     se avesse funzionato. */
+  function comando(testo, soloComandi) {
     var t = normalizza(testo);
     /* IL TESTO COME L'HA DETTO, accanto a quello sbassato. normalizza()
        butta via tutto quello che non e' una lettera, apostrofi compresi:
@@ -3035,7 +3065,7 @@
        le sue parole lavora su questo. */
     var grezzo = String(testo || '').trim();
     if (!t) return false;
-    diario('COMANDO: ' + t.slice(0, 50));
+    if (!soloComandi) diario('COMANDO: ' + t.slice(0, 50));
     /* ha(): o il nome di un gruppo di PAROLE, o le frasi scritte lì per lì —
        si usano tutt'e due gli stili qui sotto. Scritta che accettava solo i
        gruppi, `ha('portami a casa', ...)` cercava il gruppo «portami a casa»,
@@ -3058,6 +3088,28 @@
     if (/^(?:annulla|non chiamare|aspetta|no aspetta|ferma tutto)$/.test(t)) {
       fermaLeMosse();
       voce.parla('Va bene, non chiamo nessuno.', { livello: voce.EMERGENZA, ancheSeUguale: true });
+      return true;
+    }
+    /* CHIUDERE VIENE PRIMA DI ZITTIRE — 28/10/2026
+       «Non mi ha fatto chiudere l'app vocalmente», detto da Vince piu'
+       volte. Non era il microfono e non era il riconoscitore: `ferma`
+       contiene «ferma», «basta», «stop», e `ha()` cerca la parola DENTRO
+       la frase. Cosi' «yourbea fermati» trovava «ferma» QUI, faceva
+       silenzio, e la regola della chiusura — quattrocentocinquanta righe
+       piu' in basso — non la raggiungeva mai. Misurato nel browser il
+       28/10: «yourbea chiudi» e «ho finito» dicevano «Chiudo. A presto.»,
+       «yourbea fermati» e «basta» non facevano niente.
+       (Il 25 avevo allargato la regola della chiusura per far entrare
+       «affermati»: era giusto, ma inutile, perche' li' non si arrivava.)
+       UNA PAROLA SOLA NON CHIUDE. «basta», «ferma», «stop», «zitto»,
+       «silenzio» dette da sole restano quello che sono sempre state —
+       «adesso taci» — perche' chiudere l'app a uno che cammina al buio
+       non si fa per una parola che puo' voler dire due cose. Con
+       qualunque altra cosa intorno («basta yourbea», «basta, siamo
+       arrivati») la frase e' una chiusura, e chiude. */
+    if (!/^(?:basta|ferma|stop|zitto|zitta|silenzio)$/.test(t) &&
+        CHIUDI_TUTTO.test(t) && !NON_CHIUDE.test(t)) {
+      chiudiTutto();
       return true;
     }
     if (ha('ferma')) {
@@ -3509,24 +3561,7 @@
     if (ha('negozi')) { diciINegozi(); return true; }
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
-    if (CHIUDI_TUTTO.test(t) && !NON_CHIUDE.test(t)) {
-      /* si saluta, si spegne tutto, e poi si chiude per davvero dove si
-         puo'. Su iPhone un'app non puo' terminarsi da sola: allora tace,
-         lascia andare microfono e posizione, e lo dice. */
-      voce.parla('Chiudo. A presto.', { livello: voce.GUIDA, ancheSeUguale: true });
-      setTimeout(function () {
-        try { suonaMusica({ suona: false }); } catch (e) {}
-        try { faro.spegni(); spegniIlSuono(); } catch (e) {}
-        try { miei.smetti(); } catch (e) {}
-        try { passeggiata.ferma && passeggiata.ferma(); } catch (e) {}
-        acceso = false;
-        try { voce.ferma(); } catch (e) {}
-        if (window.urbeaChiudi) { window.urbeaChiudi(); return; }
-        /* nel browser o dove non si puo' chiudere: resta ferma e muta */
-        mostra({ titolo: 'Yourbea', testo: 'Chiusa. Premi Avvia per riaprirla.', dove: '', gradino: '' });
-      }, 1600);
-      return true;
-    }
+    if (CHIUDI_TUTTO.test(t) && !NON_CHIUDE.test(t)) { chiudiTutto(); return true; }
     /* COSA SO FARE — e perche' sono due elenchi.
        «Poi non ho trovato il comando per creare il percorso» (Vince,
        23/10). Il comando c'era, e risponde a dieci modi di dirlo: non
@@ -3559,7 +3594,7 @@
       return true;
     }
     /* non capito: si risponde solo a chi parlava con noi */
-    if (sembraRivoltoANoi(t)) {
+    if (!soloComandi && sembraRivoltoANoi(t)) {
       voce.parla('Questa non l\'ho capita. Se vuoi, dimmi «comandi» e ti dico cosa so fare.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       diario('NON CAPITO (ma era per noi): ' + t.slice(0, 40));
@@ -3567,6 +3602,24 @@
     }
     return false;
   }
+  /* si saluta, si spegne tutto, e poi si chiude per davvero dove si puo'.
+     Su iPhone un'app non puo' terminarsi da sola: allora tace, lascia
+     andare microfono e posizione, e lo dice. */
+  function chiudiTutto() {
+    voce.parla('Chiudo. A presto.', { livello: voce.GUIDA, ancheSeUguale: true });
+    setTimeout(function () {
+      try { suonaMusica({ suona: false }); } catch (e) {}
+      try { faro.spegni(); spegniIlSuono(); } catch (e) {}
+      try { miei.smetti(); } catch (e) {}
+      try { passeggiata.ferma && passeggiata.ferma(); } catch (e) {}
+      acceso = false;
+      try { voce.ferma(); } catch (e) {}
+      if (window.urbeaChiudi) { window.urbeaChiudi(); return; }
+      /* nel browser o dove non si puo' chiudere: resta ferma e muta */
+      mostra({ titolo: 'Yourbea', testo: 'Chiusa. Premi Avvia per riaprirla.', dove: '', gradino: '' });
+    }, 1600);
+  }
+
   function diciDove() {
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Non so ancora dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
@@ -3716,11 +3769,24 @@
     try {
       ascolto = new R();
       ascolto.lang = 'it-IT'; ascolto.continuous = true; ascolto.interimResults = false;
+      /* TRE IPOTESI, NON UNA — 28/10/2026
+         Il riconoscitore ne ha sempre piu' d'una in mano, ma di suo ne
+         consegna una sola: se quella e' sbagliata, il comando e' perso.
+         E' il difetto della chiusura a voce, quello che Vince ha visto
+         «le altre volte»: lui diceva «Yourbea, fermati» e arrivava
+         «Ok Urbe fermati», oppure «Curve affermati». La seconda o la
+         terza ipotesi erano quelle buone, e le buttavamo via.
+         Tre e non dieci: piu' giu' le ipotesi diventano fantasiose, e
+         una frase qualunque finirebbe per somigliare a un comando. */
+      ascolto.maxAlternatives = 3;
       ascolto.onresult = function (e) {
         for (var i = e.resultIndex; i < e.results.length; i++) {
           if (!e.results[i].isFinal) continue;
-          var t = e.results[i][0].transcript;
-          comando(t);
+          var ipotesi = [];
+          for (var j = 0; j < e.results[i].length && j < 3; j++) {
+            if (e.results[i][j] && e.results[i][j].transcript) ipotesi.push(e.results[i][j].transcript);
+          }
+          comandoFraLeIpotesi(ipotesi);
         }
       };
       ascolto.onend = function () { ascolto = null; if (ascoltoVoluto && !micChiuso) apriAscolto(); };
@@ -3784,8 +3850,12 @@
     return /^(?:crea|registra|segna|impara|memorizza|manda|invia|condividi|spedisci|portami|porta|dimmi|dammi|fammi|leggi|cerca|trova|apri|chiudi|accendi|spegni|chiama|avvisa|aiuto|ferma|vai|torna|compra|ripristina|abbonamento|si|no|ok)\b/.test(n);
   }
 
+  /* il guscio passa UNA frase (com'era prima) oppure l'elenco delle sue
+     ipotesi: tutt'e due vanno bene, cosi' un'app vecchia e una nuova
+     parlano con la stessa pagina. */
   window.urbeaComando = function (testo) {
     if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
+    if (Array.isArray(testo)) { comandoFraLeIpotesi(testo); return; }
     comando(testo || '');
   };
 
