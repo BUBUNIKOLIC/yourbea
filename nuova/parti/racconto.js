@@ -691,6 +691,39 @@ function Racconto(opzioni) {
      la parte produceva la frase giusta, la regola la lasciava passare, e
      l'app diceva lo stesso la voce di Wikipedia, perche' passava
      dall'altra copia. Una copia sola, e non succede piu'. */
+  /* ---------- SI DICE DI CHE POSTO SI PARLA ----------
+     28/10, via di Santa Maria in Via: Vince si ferma e l'app attacca
+     «Il portico è fatto con sedici colonne ioniche vere, prelevate...».
+     Il portico DI CHE COSA? E' la scheda di Palazzo Wedekind, che su
+     Wikipedia comincia cosi' — e lui: «poi ha iniziato con palazzo
+     wekein ma non sapevo dove era».
+     Chi vede alza gli occhi e capisce di quale palazzo si parla. Chi non
+     vede ha solo la voce: se la prima frase non nomina il posto, il
+     posto non esiste. Quindi quando il testo non lo dice, il nome si
+     mette davanti; quando lo dice gia' — «La chiesa di Santa Maria in
+     Via e' un luogo di culto...» — non si tocca niente. */
+  function diceIlNome(p, testo) {
+    var n = String((p && p.n) || '');
+    if (!n) return true;
+    var piatto = String(testo || '').slice(0, 140).toLowerCase();
+    var forti = n.toLowerCase()
+      .replace(/[^a-zà-ÿ0-9 ]/g, ' ')
+      .split(/\s+/)
+      .filter(function (w) {
+        return w.length > 3 && ['chiesa', 'palazzo', 'basilica', 'cappella',
+          'oratorio', 'museo', 'teatro', 'villa', 'casa', 'santa', 'santo',
+          'della', 'delle', 'degli', 'tempio', 'galleria', 'piazza',
+          'complesso', 'istituto'].indexOf(w) < 0;
+      });
+    if (!forti.length) return piatto.indexOf(n.toLowerCase().split(' ')[0]) >= 0;
+    for (var i = 0; i < forti.length; i++) if (piatto.indexOf(forti[i]) >= 0) return true;
+    return false;
+  }
+  function colNomeDavanti(p, testo) {
+    if (diceIlNome(p, testo)) return testo;
+    return p.n.charAt(0).toUpperCase() + p.n.slice(1) + '. ' + testo;
+  }
+
   function scendiDiUnGradino(p) {
     if (!p) return null;
     var g = gradino[p.n] || 0;
@@ -702,7 +735,7 @@ function Racconto(opzioni) {
       if (g === 0) return { tipo: 'scheda-orientativa', luogo: p, testo: fatta, livello: 'guida' };
       g = g - 1;             // da qui in poi i gradini sono quelli di sempre
     }
-    if (g === 0 && p.d) return { tipo: 'scheda', luogo: p, testo: p.d, livello: 'guida' };
+    if (g === 0 && p.d) return { tipo: 'scheda', luogo: p, testo: colNomeDavanti(p, p.d), livello: 'guida' };
     /* E SE LA SCHEDA NON C'E', C'E' QUELLA DEL MINISTERO. 227 luoghi
        hanno la descrizione del Catalogo generale dei Beni Culturali nel
        campo `cf` e l'app non la diceva MAI: `cf` si usava solo dentro
@@ -711,14 +744,14 @@ function Racconto(opzioni) {
        primo «ancora» rispondeva «Di questo ti ho detto tutto», con la
        descrizione li' dentro. Sono proprio le chiese e i palazzi di
        paese, quelli che una voce su Wikipedia non ce l'hanno. */
-    if (g === 0 && p.cf) return { tipo: 'scheda', luogo: p, testo: p.cf, livello: 'guida' };
+    if (g === 0 && p.cf) return { tipo: 'scheda', luogo: p, testo: colNomeDavanti(p, p.cf), livello: 'guida' };
     if (g === 0) return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
     if (g === 1 && p.i) return { tipo: 'cosa-vedere', luogo: p, testo: 'Cosa vedere: ' + p.i, livello: 'guida' };
     /* quanti gradini stanno PRIMA dei capitoli: la scheda, cosa vedere e
        l'approfondimento (com'e' fatta l'ha gia' tolta la riga sopra). */
     var prima = 1 + (p.i ? 1 : 0) + (p.a ? 1 : 0);
     if (p.a && g === prima - 1) {
-      return { tipo: 'approfondimento', luogo: p, testo: p.a, livello: 'guida' };
+      return { tipo: 'approfondimento', luogo: p, testo: colNomeDavanti(p, p.a), livello: 'guida' };
     }
     /* I CAPITOLI, uno per «ancora». Si dice anche di COSA parlano: chi
        non vede non ha un indice da guardare, e «la facciata» prima del
@@ -728,10 +761,10 @@ function Racconto(opzioni) {
       if (quale >= 0 && quale < p.cap.length) {
         var c = p.cap[quale];
         return { tipo: 'approfondimento', luogo: p, livello: 'guida',
-                 testo: c.t ? (c.t.replace(/\.$/, '') + '. ' + c.d) : c.d };
+                 testo: c.t ? (c.t.replace(/\.$/, '') + '. ' + c.d) : colNomeDavanti(p, c.d) };
       }
     }
-    if (p.a && !p.cap) return { tipo: 'approfondimento', luogo: p, testo: p.a, livello: 'guida' };
+    if (p.a && !p.cap) return { tipo: 'approfondimento', luogo: p, testo: colNomeDavanti(p, p.a), livello: 'guida' };
     return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
   }
 

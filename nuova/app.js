@@ -21,6 +21,18 @@
   var acceso = false;
   var DIARIO = [];
 
+  /* ---------- QUALE VERSIONE STA GIRANDO, E PERCHE' STA QUI IN CIMA ----
+     Il numero serve a ogni indirizzo che l'app chiede («?v=188»), cosi'
+     il telefono non tiene i file di ieri. Stava in fondo al file, e
+     all'avvio valeva `undefined`: chi aveva scelto una lingua si
+     ritrovava la richiesta «dati/testi/de.jsonundefined», un 404, e una
+     lingua con ZERO frasi. Nel diario del 28/10 si vede tre volte —
+     «LINGUA: nl, 0 frasi, 0 comandi», «LINGUA: it, 0 frasi» — e l'ho
+     trovato solo facendo girare l'app vera nel browser.
+     Qui in cima e' definita prima che chiunque la usi. */
+  var VER = ((document.querySelector('script[src^="app.js"]') || {}).src || '').replace(/^.*(\?v=\d+).*$/, '$1');
+  if (VER.indexOf('?v=') !== 0) VER = '';
+
   /* ---------- il diario: resta nel telefono, si può mandare ---------- */
   function diario(t) {
     var d = new Date();
@@ -4427,13 +4439,8 @@
      secondo posto dove ricordarsi di alzarlo a mano. Senza, la cassaforte
      terrebbe i luoghi di ieri mentre tutto il resto e' nuovo: lo stesso
      difetto che il 15/10 ha fatto perdere due giorni, solo sui dati. */
-  var VER = ((document.querySelector('script[src^="app.js"]') || {}).src || '').replace(/^.*(\?v=\d+).*$/, '$1');
-  /* QUALE VERSIONE STA GIRANDO. Il 28/10 Vince ha detto «non compare»
-     di una cosa appena pubblicata, e non c'era modo di sapere se il suo
-     telefono avesse preso la nuova o stesse ancora su quella di ieri:
-     il diario non lo diceva. Adesso e' la prima riga. */
+  /* VER sta in cima al file: qui si dice solo quale e'. */
   diario('VERSIONE: ' + (VER.replace('?v=', '') || 'sconosciuta'));
-  if (VER.indexOf('?v=') !== 0) VER = '';
   fetch('dati/luoghi.json' + VER).then(function (r) { return r.json(); }).then(function (l) {
     LUOGHI = l;
     diario('dati: ' + LUOGHI.length + ' luoghi, ' + LUOGHI.filter(function (x) { return x.a; }).length + ' approfondimenti');
@@ -4495,8 +4502,10 @@
     if (quale !== 'cultura' && quale !== 'servizi') return;
     var da = Date.now() - quando;
     if (!quando || da > RIPRENDE_ENTRO) {
-      diario('RIPRESA: c\'era ' + quale + ', ma di ' + Math.round(da / 60000) +
-             ' minuti fa: ricomincio dalla porta');
+      diario('RIPRESA: c\'era ' + quale +
+             (quando ? (', ma di ' + Math.round(da / 60000) + ' minuti fa')
+                     : ', ma non so di quando') +
+             ': ricomincio dalla porta');
       return;
     }
     diario('RIPRESA: rientro in ' + (quale === 'cultura' ? 'Turismo' : 'Utilit\u00e0') +
