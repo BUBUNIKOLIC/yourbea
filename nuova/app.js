@@ -3131,6 +3131,15 @@
      minuto. ============================================================ */
   var fermoDetto = 0;
   var FERMO_RIPOSO = 30000;
+  /* «QUI INTORNO NON HO NIENTE DA RACCONTARE» SI DICE UNA VOLTA.
+     29/10, Laurentina: su 34 frasi, QUINDICI erano questa, una ogni
+     trenta secondi. «Non può stare zitta» voleva dire che fermandosi
+     deve dire quello che c'è, non che deve ripetere di non avere niente
+     da dire: alla seconda volta è peggio del silenzio.
+     Si dice la prima volta, e poi non più finché non ti sei spostato di
+     centocinquanta metri — cioè finché non sei in un altro posto. */
+  var NIENTE_DA_DIRE_DA = 150;
+  var nienteDaDireDove = null;
   function rispondiAlFermo(s) {
     if (!acceso || !hoLaParola || staAspettando()) return;
     if (guida.meta()) return;                 // in viaggio comanda la guida
@@ -3164,6 +3173,12 @@
       }
     }
     fermoDetto = Date.now();
+    if (nienteDaDireDove &&
+        posizione.dist(nienteDaDireDove.lat, nienteDaDireDove.lon, s.lat, s.lon) < NIENTE_DA_DIRE_DA) {
+      diario('FERMO: niente da raccontare, e l\'ho già detto qui');
+      return;
+    }
+    nienteDaDireDove = { lat: s.lat, lon: s.lon };
     diario('FERMO: in Turismo niente da raccontare qui');
     voce.parla('Qui intorno non ho niente da raccontare.', { livello: voce.GUIDA });
   }
