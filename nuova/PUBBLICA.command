@@ -74,7 +74,7 @@ echo "in linea: https://bubunikolic.github.io/yourbea/nuova/"
 # stata fatta partire.
 echo ""
 echo "— controllo che la pagina in linea parta —"
-if ! python3 -I "$(dirname "$0")/strumenti/parte-in-linea.py"; then
+if ! python3 -I nuova/strumenti/parte-in-linea.py; then
   echo ""
   echo "ATTENZIONE: i file sono in linea ma L'APP NON PARTE."
   echo "Non dirlo a nessuno come «pubblicato»: va corretto adesso."
