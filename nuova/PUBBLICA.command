@@ -64,3 +64,19 @@ if ! git push origin HEAD 2>/tmp/yourbea-push.txt; then
 fi
 rm -f /tmp/yourbea-push.txt
 echo "in linea: https://bubunikolic.github.io/yourbea/nuova/"
+
+# ---------- E LA PAGINA PUBBLICATA PARTE DAVVERO? ----------
+# «Non è il singolo errore, è la gestione di tutto che non mi torna»
+# (Vince, 29/10). Fin qui questo comando finiva a «in linea»: guardava
+# che i file ci fossero, non che l'app si accendesse. Il 29/10 la pagina
+# pubblicata moriva al primo istante e l'ho saputo da Vince, in strada.
+# Adesso la pubblicazione non è finita finché l'app pubblicata non è
+# stata fatta partire.
+echo ""
+echo "— controllo che la pagina in linea parta —"
+if ! python3 -I "$(dirname "$0")/strumenti/parte-in-linea.py"; then
+  echo ""
+  echo "ATTENZIONE: i file sono in linea ma L'APP NON PARTE."
+  echo "Non dirlo a nessuno come «pubblicato»: va corretto adesso."
+  exit 1
+fi
