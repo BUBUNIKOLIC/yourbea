@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=189">
-<link rel="stylesheet" href="stile.css?v=189">
+<link rel="stylesheet" href="mappa/leaflet.css?v=190">
+<link rel="stylesheet" href="stile.css?v=190">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -220,39 +220,39 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/faro.js?v=189"></script>
-<script src="parti/percorsiMiei.js?v=189"></script>
-<script src="parti/postiMiei.js?v=189"></script>
-<script src="parti/contributi.js?v=189"></script>
-<script src="parti/avanzamento.js?v=189"></script>
-<script src="parti/fermate.js?v=189"></script>
-<script src="parti/aChiServe.js?v=189"></script>
-<script src="parti/paesaggio.js?v=189"></script>
-<script src="parti/modi.js?v=189"></script>
-<script src="parti/pronuncia.js?v=189"></script>
-<script src="parti/lingua.js?v=189"></script>
-<script src="parti/voce.js?v=189"></script>
-<script src="parti/distanza.js?v=189"></script>
-<script src="parti/descrizione.js?v=189"></script>
-<script src="parti/racconto.js?v=189"></script>
-<script src="parti/clip.js?v=189"></script>
-<script src="parti/aggancio.js?v=189"></script>
-<script src="parti/posizione.js?v=189"></script>
-<script src="parti/intorno.js?v=189"></script>
-<script src="parti/emergenza.js?v=189"></script>
-<script src="parti/pulizia.js?v=189"></script>
-<script src="parti/dettatura.js?v=189"></script>
-<script src="parti/guida.js?v=189"></script>
-<script src="parti/lettura.js?v=189"></script>
-<script src="parti/passeggiata.js?v=189"></script>
-<script src="parti/musica.js?v=189"></script>
-<script src="mappa/leaflet.js?v=189"></script>
-<script src="parti/negozi.js?v=189"></script>
-<script src="parti/passaggi.js?v=189"></script>
-<script src="parti/incroci.js?v=189"></script>
-<script src="parti/scena.js?v=189"></script>
-<script src="parti/mappa.js?v=189"></script>
-<script src="app.js?v=189"></script>
+<script src="parti/faro.js?v=190"></script>
+<script src="parti/percorsiMiei.js?v=190"></script>
+<script src="parti/postiMiei.js?v=190"></script>
+<script src="parti/contributi.js?v=190"></script>
+<script src="parti/avanzamento.js?v=190"></script>
+<script src="parti/fermate.js?v=190"></script>
+<script src="parti/aChiServe.js?v=190"></script>
+<script src="parti/paesaggio.js?v=190"></script>
+<script src="parti/modi.js?v=190"></script>
+<script src="parti/pronuncia.js?v=190"></script>
+<script src="parti/lingua.js?v=190"></script>
+<script src="parti/voce.js?v=190"></script>
+<script src="parti/distanza.js?v=190"></script>
+<script src="parti/descrizione.js?v=190"></script>
+<script src="parti/racconto.js?v=190"></script>
+<script src="parti/clip.js?v=190"></script>
+<script src="parti/aggancio.js?v=190"></script>
+<script src="parti/posizione.js?v=190"></script>
+<script src="parti/intorno.js?v=190"></script>
+<script src="parti/emergenza.js?v=190"></script>
+<script src="parti/pulizia.js?v=190"></script>
+<script src="parti/dettatura.js?v=190"></script>
+<script src="parti/guida.js?v=190"></script>
+<script src="parti/lettura.js?v=190"></script>
+<script src="parti/passeggiata.js?v=190"></script>
+<script src="parti/musica.js?v=190"></script>
+<script src="mappa/leaflet.js?v=190"></script>
+<script src="parti/negozi.js?v=190"></script>
+<script src="parti/passaggi.js?v=190"></script>
+<script src="parti/incroci.js?v=190"></script>
+<script src="parti/scena.js?v=190"></script>
+<script src="parti/mappa.js?v=190"></script>
+<script src="app.js?v=190"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -351,7 +351,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=189", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=190", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

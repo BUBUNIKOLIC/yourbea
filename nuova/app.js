@@ -31,6 +31,48 @@
      trovato solo facendo girare l'app vera nel browser.
      Qui in cima e' definita prima che chiunque la usi. */
   var VER = ((document.querySelector('script[src^="app.js"]') || {}).src || '').replace(/^.*(\?v=\d+).*$/, '$1');
+
+  /* ---------- COME SI LEGGE UN NOME, E PERCHE' STA QUI IN CIMA ----------
+     Queste tre righe stavano a metà file, e la ripulitura del nome
+     («Sono Vincenzo» → «Vincenzo») sta all'avvio, mille righe prima:
+     `var` si dichiara in cima da sé ma il VALORE arriva dove e' scritto,
+     quindi TESTE_DEL_NOME era `undefined` e l'app moriva sul primo
+     `.test()`. Il 29/10 Vince ha aperto l'app e non e' partita proprio:
+     nel diario del telefono trentun minuti di posizioni e passometro
+     senza una riga di VERSIONE, di PORTA, di ENTRATO — il guscio vivo e
+     la pagina ferma al primo errore. L'avevo provata nel browser con un
+     nome pulito, che non passa da qui: il caso suo era l'unico che
+     scoppiava. Chi legge un nome lo legge da qui, e qui sta prima di
+     tutti. */
+  function maiuscolaNome(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
+
+  /* ---------- «SONO VINCENZO» NON E' UN NOME ----------
+     Il 28/10, in giro per Roma, l'app ha detto diciotto volte «Buongiorno
+     Sono Vincenzo. Come stai?». Alla domanda «come ti chiami» Vince aveva
+     risposto «sono Vincenzo», e la regola di prima prendeva per nome due
+     parole qualunque: il nome salvato era «Sono Vincenzo», e da li' ogni
+     saluto sembrava che l'app si chiamasse lei Vincenzo.
+     Nessuno risponde col nome nudo: si risponde come si risponde a una
+     persona. La testa della frase si toglie, e quello che resta e' il
+     nome. Se togliendola non resta niente — ha detto solo «sono» — non si
+     e' capito, e si richiede. */
+  function nomeDallaFrase(t) {
+    /* LA REGOLA STA DENTRO, NON FUORI. Era una `var` qui accanto, e una
+       `var` vale `undefined` finche' non si arriva alla sua riga: il
+       29/10 l'app non e' partita proprio perche' questa funzione girava
+       all'avvio, mille righe prima. Dentro la funzione si costruisce
+       quando serve, e l'ordine delle righe non conta piu'. */
+    var TESTE = /^(?:(?:ciao|salve|ehi|allora|beh|guarda|senti|si)[\s,]+)*(?:io\s+)?(?:mi\s+chiamo|mi\s+chiamano|mi\s+puoi\s+chiamare|chiamami|il\s+mio\s+nome\s+(?:e|è)|sono|piacere|eccomi)[\s,]*/i;
+    var s = String(t || '').trim().replace(/[.!?]+$/, '');
+    if (TESTE.test(s)) {
+      var resto = s.replace(TESTE, '').trim();
+      if (!resto) return null;          // «sono» e nient'altro
+      s = resto;
+    }
+    var m = s.match(/^([a-zà-ÿ']{2,})(?:\s+([a-zà-ÿ']{2,}))?$/i);
+    if (!m) return null;
+    return maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
+  }
   if (VER.indexOf('?v=') !== 0) VER = '';
 
   /* ---------- il diario: resta nel telefono, si può mandare ---------- */
@@ -2015,30 +2057,7 @@
       : 'In rubrica ' + chi + ' non lo trovo. Dimmi il suo numero, una cifra per volta.',
       { livello: voce.GUIDA, ancheSeUguale: true });
   };
-  function maiuscolaNome(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 
-  /* ---------- «SONO VINCENZO» NON E' UN NOME ----------
-     Il 28/10, in giro per Roma, l'app ha detto diciotto volte «Buongiorno
-     Sono Vincenzo. Come stai?». Alla domanda «come ti chiami» Vince aveva
-     risposto «sono Vincenzo», e la regola di prima prendeva per nome due
-     parole qualunque: il nome salvato era «Sono Vincenzo», e da li' ogni
-     saluto sembrava che l'app si chiamasse lei Vincenzo.
-     Nessuno risponde col nome nudo: si risponde come si risponde a una
-     persona. La testa della frase si toglie, e quello che resta e' il
-     nome. Se togliendola non resta niente — ha detto solo «sono» — non si
-     e' capito, e si richiede. */
-  var TESTE_DEL_NOME = /^(?:(?:ciao|salve|ehi|allora|beh|guarda|senti|si)[\s,]+)*(?:io\s+)?(?:mi\s+chiamo|mi\s+chiamano|mi\s+puoi\s+chiamare|chiamami|il\s+mio\s+nome\s+(?:e|è)|sono|piacere|eccomi)[\s,]*/i;
-  function nomeDallaFrase(t) {
-    var s = String(t || '').trim().replace(/[.!?]+$/, '');
-    if (TESTE_DEL_NOME.test(s)) {
-      var resto = s.replace(TESTE_DEL_NOME, '').trim();
-      if (!resto) return null;          // «sono» e nient'altro
-      s = resto;
-    }
-    var m = s.match(/^([a-zà-ÿ']{2,})(?:\s+([a-zà-ÿ']{2,}))?$/i);
-    if (!m) return null;
-    return maiuscolaNome(m[1]) + (m[2] ? ' ' + maiuscolaNome(m[2]) : '');
-  }
 
   /* somigliano(): il nome detto a voce contro quello in rubrica. «Mia
      sorella» deve trovare «Sorella», e «lucia» deve trovare «Lucia». */
