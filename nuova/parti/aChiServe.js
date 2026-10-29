@@ -100,6 +100,18 @@ function AChiServe() {
        scooter). La storia di un palazzo la ascolti stando davanti al
        palazzo. */
     'cenno':             [ true,    true,    false,       false ],
+    /* IL CENNO DI UN MONUMENTO GRANDE, IN MACCHINA — 29/10/2026.
+       «In macchina i monumenti grandi si devono sentire anche a
+       cinquecento-ottocento metri» — «se sono particolarmente
+       importanti» (Vince, dopo essere passato a settecento metri dallo
+       Stadio Olimpico senza sentirlo).
+       La riga sopra resta: una chiesetta a ottanta passi, mentre vai a
+       cinquanta all'ora, e' rumore. Questa vale solo per i luoghi che
+       `parti/racconto.js` chiama importanti — rango 3, o larghi almeno
+       cento metri — e il racconto glielo da' questo tipo solo quando
+       non sei a piedi. Niente senza precisione: un monumento annunciato
+       a settecento metri dalla parte sbagliata non si trova piu'. */
+    'cenno-lontano':     [ true,    true,    true,        false ],
     'superato':          [ true,    true,    false,       false ],
     /* COM'E' FATTA NON E' STORIA DELL'ARTE. «Alta come un palazzo di
        dodici piani, larga ottantacinque passi, di marmo» e' cos'hai

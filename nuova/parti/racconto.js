@@ -217,7 +217,17 @@ function Racconto(opzioni) {
        prodotto, segnato, e buttato dalla regola piu' in la': un posto
        bruciato in silenzio, che sceso dall'autobus non te lo diceva piu'
        nessuno. */
-    if (situazione.aPiedi === false) return null;
+    /* ---------- IN MACCHINA, SOLO I GRANDI ---------- 29/10/2026
+       Qui c'era un «return null» secco: in macchina nessun cenno, mai.
+       Giusto per le chiesette, sbagliato per lo Stadio Olimpico, che
+       Vince si e' lasciato alle spalle a settecento metri in silenzio.
+       Adesso in macchina si va avanti, e il filtro lo fa raggio(): per i
+       luoghi non importanti torna zero, quindi restano fuori da se'; i
+       grandi passano e il loro cenno esce col tipo «cenno-lontano», che
+       la regola in parti/aChiServe.js fa passare anche in movimento.
+       In Utilita' resta come prima: chi deve muoversi, in macchina, non
+       ha bisogno dei monumenti. */
+    if (situazione.aPiedi === false && modo !== 'cultura') return null;
     /* L'ARIA FRA UNA COSA E L'ALTRA.
        La camminata vera ai Fori, provata il 23/10: CINQUANTA frasi in
        cinquecento metri, una ogni dieci passi — «Tempio di Augusto»,
@@ -253,7 +263,7 @@ function Racconto(opzioni) {
         if (situazione.direzioneBuona === false) continue;   // senza bussola «dietro» è una bugia
         if (rango(p) >= 2 ? o.m > 120 : o.m > 45) continue;
       }
-      if (o.m > raggio(p, modo)) continue;
+      if (o.m > raggio(p, modo, situazione.aPiedi)) continue;
       candidati.push({ o: o, p: p, dietro: dietro, punti: quantoVale(p, o, modo) });
     }
     /* ============================================================
@@ -308,17 +318,25 @@ function Racconto(opzioni) {
                cardinale: situazione.cardinale || null,
                testo: 'Hai appena passato ' + comeSiChiama(p) + ', ' + metri(o.m) + ' dietro di te.' };
     }
-    return { tipo: 'cenno', luogo: p, livello: liv,
+    /* in macchina il cenno di un monumento importante esce con un tipo
+       suo, perche' la regola generale («il cenno non regge il
+       movimento») resta giusta per tutto il resto. */
+    return { tipo: (situazione && situazione.aPiedi === false) ? 'cenno-lontano' : 'cenno',
+             luogo: p, livello: liv,
              rel: o.rel, metri: Math.round(o.m),
              direzioneBuona: situazione.direzioneBuona !== false,
              cardinale: situazione.cardinale || null,
              /* «e a pochi passi hai…»: prima dove, poi quanto, poi cosa.
                 Dietro si dice con parole sue, se no sembra un posto nuovo
                 invece di uno che ti sei perso. */
+             /* IN MACCHINA I METRI, A PIEDI I PASSI. «A 900 passi, Stadio
+                Olimpico» non si cammina: a cinquanta all'ora sono venti
+                secondi, e la misura che si capisce sono i metri. */
              testo: dietro
-               ? ('Hai appena passato ' + comeSiChiama(p) + ', ' + metri(o.m) + ' dietro di te.')
+               ? ('Hai appena passato ' + comeSiChiama(p) + ', ' +
+                  quanto(o.m, situazione.aPiedi) + ' dietro di te.')
                : ((situazione.direzioneBuona !== false ? versoTesto(o) + ', ' : '') +
-                  metri(o.m) + ', ' + comeSiChiama(p) + '.') };
+                  quanto(o.m, situazione.aPiedi) + ', ' + comeSiChiama(p) + '.') };
     return null;
   }
 
@@ -601,7 +619,18 @@ function Racconto(opzioni) {
     'ponte': 30, 'porta cittadina': 15, 'fontana': 6, 'monumento': 8,
     'obelisco': 4, 'statua': 3, 'casa': 15, 'stazione ferroviaria': 50,
     'piazza': 60, 'parco': 120, 'giardino': 60, 'stadio': 150,
-    'area archeologica': 150, 'anfiteatro': 100, 'tempio': 40
+    'area archeologica': 150, 'anfiteatro': 100, 'tempio': 40,
+    /* LO STADIO OLIMPICO ERA PICCOLO — 29/10/2026. Vince: «sono passato
+       davanti allo stadio olimpico e non ne ha parlato». Nei dati c'e',
+       col suo testo, ma il tipo e' «impianto di calcio» e qui dentro
+       stava solo «stadio»: non combaciava, e un impianto da
+       settantamila posti valeva come una palazzina. */
+    'impianto di calcio': 150, 'impianto sportivo': 120, 'arena': 100,
+    'ippodromo': 150, 'autodromo': 200, 'velodromo': 80,
+    'palazzetto dello sport': 60, 'palasport': 60, 'piscina': 40,
+    'aeroporto': 300, 'porto': 200, 'acquedotto': 150, 'mura': 200,
+    'necropoli': 120, 'terme': 100, 'foro': 150, 'circo': 200,
+    'reggia': 100, 'cimitero': 120, 'universita': 80, 'ospedale': 70
   };
   function quantoEGrande(p) {
     if (p.l) return Number(p.l);
@@ -638,7 +667,30 @@ function Racconto(opzioni) {
      fontana da cinquanta, il museo di via Cippico da duecento — e Vince
      era a duecentotrentacinque.
      ============================================================ */
-  function raggio(p, modo) {
+  /* ---------- IN MACCHINA, SOLO I GRANDI, E DA LONTANO ----------
+     29/10, Vince: «in macchina i monumenti grandi si devono sentire
+     anche a cinquecento-ottocento metri» — «se sono particolarmente
+     importanti».
+     Misurato sulla sua traccia: alle 13:05, sul lungotevere Maresciallo
+     Diaz a 50 all'ora, lo Stadio Olimpico era a SETTECENTO metri e
+     l'app ha taciuto. A piedi settecento metri sono dieci minuti e non
+     si dicono; in macchina sono quaranta secondi, e un monumento che
+     vedi dal finestrino va nominato.
+     Chi e' «particolarmente importante»: rango 3 (3.505 luoghi su
+     25.325, il 14%) oppure grande almeno cento metri — lo stadio, il
+     foro, le mura, un parco. Tutto il resto, in macchina, tace come
+     prima: «deve essere tarata sul camminare sempre» resta vero per i
+     palazzi e le chiesette. */
+  var LONTANO_IN_MACCHINA = o.lontanoInMacchina || 800;
+  var GRANDE_DA_LONTANO = 100;       // metri di larghezza
+  function eImportante(p) {
+    return rango(p) >= 3 || quantoEGrande(p) >= GRANDE_DA_LONTANO;
+  }
+  function raggio(p, modo, aPiedi) {
+    if (aPiedi === false) {
+      /* in macchina: i grandi si sentono da lontano, gli altri niente */
+      return eImportante(p) ? LONTANO_IN_MACCHINA : 0;
+    }
     var m = quantoEGrande(p) * 8;
     /* IN UTILITA' NON SI STRINGE. «In utilita invece bisogna aumentare le
        descrizioni» (Vince, 25/10): a chi cammina senza vedere serve
@@ -650,7 +702,14 @@ function Racconto(opzioni) {
      in app.js — perche' chi raccoglie i posti intorno deve guardare
      esattamente fin dove guarda il racconto: scritto in due posti, al
      primo ritocco si scolla. E' gia' successo coi gradini. */
-  function finDove() { return 500; }
+  function finDove(aPiedi) {
+    /* in macchina si guarda fino a ottocento metri, perche' li' dentro
+       stanno i monumenti grandi che si vedono dal finestrino (lo Stadio
+       Olimpico era a 672). A piedi resta mezzo chilometro: oltre, non ci
+       vai. Chi raccoglie i posti intorno chiama questa, cosi' guarda
+       esattamente fin dove guarda il racconto. */
+    return aPiedi === false ? LONTANO_IN_MACCHINA : 500;
+  }
   /* QUATTRO PAROLE, NON SETTE. «In Utilità metti avanti, dietro, destra,
      sinistra. Non nord» (Vince, 16/10). «Proprio a destra» e «indietro a
      destra» sembrano precise e invece fanno fermare a pensare: chi
