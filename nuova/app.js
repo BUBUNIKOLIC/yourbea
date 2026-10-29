@@ -2567,7 +2567,13 @@
          riorientare dopo un racconto lungo, e la seconda volta nello
          stesso quarto d'ora non riorienta nessuno. */
       var chiaveVia = viaOra ? senzaAccenti(viaOra) : '';
-      if (viaOra && Date.now() - (riorientato[chiaveVia] || 0) > 300000) {
+      /* E NON DUE VOLTE NELLO STESSO SECONDO. 29/10, 15:11:07: «Sei in
+         Via dei Corazzieri.» e, nello stesso istante, in coda «Adesso
+         sei in Via dei Corazzieri.» — due sorgenti diverse per la stessa
+         notizia, e la seconda ha tagliato la prima a meta'. Se la strada
+         e' stata appena annunciata, qui si tace. */
+      var appenaDetta = Date.now() - ultimoAnnuncioStrada < 30000;
+      if (viaOra && !appenaDetta && Date.now() - (riorientato[chiaveVia] || 0) > 300000) {
         riorientato[chiaveVia] = Date.now();
         voce.parla('Adesso sei in ' + viaOra + '.', {
           livello: voce.CENNO, ancheSeUguale: true,
