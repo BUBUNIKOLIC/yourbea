@@ -103,6 +103,7 @@ function Fermate(opzioni) {
       if (d < dmin) { dmin = d; mig = p; }
     });
     if (!mig) return null;
+    if (!nomeDice(mig.nome)) return null;      // «13.» non dice niente
 
     var nome = mig.nome;
     var adesso = ora();
@@ -111,7 +112,7 @@ function Fermate(opzioni) {
       if (adesso - (avvisate[nome] || 0) < RIPOSO) return null;
       avvisate[nome] = adesso;
       return { tipo: 'fermata', livello: 'guida', fermata: mig,
-               testo: 'Stai per arrivare a ' + nome + '.' +
+               testo: 'Stai per arrivare alla ' + conFermata(nome) + '.' +
                       cosaCEfuori(mig, situazione.luoghi) };
     }
     /* ci sei */
@@ -119,7 +120,30 @@ function Fermate(opzioni) {
     dette[nome] = adesso;
     avvisate[nome] = adesso;
     return { tipo: 'fermata', livello: 'guida', fermata: mig,
-             testo: nome + '.' + cosaCEfuori(mig, situazione.luoghi) };
+             testo: capo(conFermata(nome)) + '.' + cosaCEfuori(mig, situazione.luoghi) };
+  }
+
+  /* ---------- «13.» NON E' UN ANNUNCIO ----------
+     29/10, Laurentina, in macchina a 43 all'ora: l'app ha detto
+     «Suppè.», «13.», «14.», «Gaurico.». Sono i nomi delle fermate
+     dell'autobus, detti nudi — e «13» da solo, a chi non vede, non vuol
+     dire niente: non sa nemmeno che gli stiamo parlando di una fermata.
+     Due regole:
+     - se il nome e' solo un numero o due lettere, la fermata NON si
+       annuncia: non orienta nessuno;
+     - se il nome dice qualcosa, davanti ci va «fermata» — a meno che il
+       nome lo dica gia' («Metro Laurentina», «stazione Due Ponti»). */
+  function capo(t) { return String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1); }
+  function nomeDice(n) {
+    var t = String(n || '').trim();
+    if (t.length < 3) return false;
+    if (/^[0-9\s.\-\/]+$/.test(t)) return false;        // «13», «14», «7/A»
+    return true;
+  }
+  function conFermata(n) {
+    var t = String(n || '').trim();
+    if (/fermata|stazione|metro|capolinea|terminal/i.test(t)) return t;
+    return 'fermata ' + t;
   }
 
   function dimentica() { dette = {}; avvisate = {}; }

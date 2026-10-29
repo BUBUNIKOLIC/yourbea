@@ -3206,7 +3206,11 @@
     negozi: ['negozi', 'un negozio', 'negozio', 'che negozi', 'botteghe'],
     casamia: ['dove abito', 'dov e casa', 'qual e casa', 'che indirizzo ho', 'casa mia dov'],
     turismo: ['turismo', 'turista'],
-    utilita: ['utilita', 'servizi'],
+    /* e i modi di dirlo: «passa in utilita'», «modalita' utilita'»,
+       «mettimi in servizi». Il 29/10 Vince ci ha provato e l'app non
+       cambiava: il difetto era un altro (valevano solo alla porta), ma
+       le parole tanto vale tenerle larghe. */
+    utilita: ['utilita', 'servizi', 'utilit'],
     /* LA LETTURA. «Scritto» da solo tiene tutte le forme in cui la gente la
        chiede — «che c'è scritto», «cosa c'è scritto qui», «leggimi quello
        che è scritto» — e «cartello» la frase più naturale di tutte. */
@@ -3329,9 +3333,26 @@
       }
     }
 
-    if (!el('porta').hidden) {
-      if (ha('turismo')) { entra('cultura'); return true; }
-      if (ha('utilita')) { entra('servizi'); return true; }
+    /* ---------- SI CAMBIA MODO ANCHE DA DENTRO ----------
+       29/10, Vince: «sono uscito dall'app e non riuscivo a passare in
+       modalita' utilita'». Il diario gli da' ragione: dieci «ENTRATO in
+       Turismo» e nemmeno un «ENTRATO in Utilita'», perche' questi due
+       comandi stavano dentro «se la porta e' ancora aperta» — valevano
+       solo prima di entrare. Una volta dentro, dire «utilita'» non
+       faceva niente, e per cambiare bisognava chiudere l'app.
+       Adesso valgono sempre. E se sei gia' in quel modo, lo dice invece
+       di ricominciare da capo. */
+    if (ha('turismo')) {
+      if (modo === 'cultura' && acceso) {
+        voce.parla('Sei già in Turismo.', { livello: voce.GUIDA, ancheSeUguale: true });
+      } else { entra('cultura'); }
+      return true;
+    }
+    if (ha('utilita')) {
+      if (modo === 'servizi' && acceso) {
+        voce.parla('Sei già in Utilità.', { livello: voce.GUIDA, ancheSeUguale: true });
+      } else { entra('servizi'); }
+      return true;
     }
     /* «annulla»: ferma la chiamata al 112 nei cinque secondi che ha di
        conto alla rovescia. Dario: «per poco non ho chiamato il 112». */
