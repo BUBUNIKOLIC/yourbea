@@ -4149,6 +4149,23 @@
      ipotesi: tutt'e due vanno bene, cosi' un'app vecchia e una nuova
      parlano con la stessa pagina. */
   window.urbeaComando = function (testo) {
+    /* ---------- LA PROPRIA VOCE NON E' UN COMANDO ---------- 29/10/2026
+       Da oggi il microfono resta aperto anche mentre l'app parla (il
+       telefono ci toglie l'eco). Se un pezzo di eco passa comunque, si
+       riconosce: sono le parole che stiamo dicendo in questo momento. */
+    if (voce.staParlando() && typeof voce.cheStaDicendo === 'function') {
+      var mia = normalizza(voce.cheStaDicendo() || '');
+      var sentito = normalizza(Array.isArray(testo) ? (testo[0] || '') : (testo || ''));
+      /* la soglia e' lunga per forza: «turismo» sta dentro «Dimmi:
+         utilita', oppure turismo» — e scartandolo l'app non si accendeva
+         piu' a voce (preso dal collaudo, voci 4 e 5, prima di
+         pubblicare). Un comando e' corto; l'eco di una frase e' lunga.
+         E un comando riconosciuto non si butta mai. */
+      if (sentito && sentito.length >= 25 && mia && mia.indexOf(sentito) >= 0 && !unComando(sentito)) {
+        diario('ECO: ho sentito me stessa, lascio perdere');
+        return;
+      }
+    }
     if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
     if (Array.isArray(testo)) { comandoFraLeIpotesi(testo); return; }
     comando(testo || '');

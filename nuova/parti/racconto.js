@@ -627,10 +627,12 @@ function Racconto(opzioni) {
        settantamila posti valeva come una palazzina. */
     'impianto di calcio': 150, 'impianto sportivo': 120, 'arena': 100,
     'ippodromo': 150, 'autodromo': 200, 'velodromo': 80,
-    'palazzetto dello sport': 60, 'palasport': 60, 'piscina': 40,
+    'palazzetto dello sport': 60, 'palasport': 60, 'piscina': 30,
     'aeroporto': 300, 'porto': 200, 'acquedotto': 150, 'mura': 200,
     'necropoli': 120, 'terme': 100, 'foro': 150, 'circo': 200,
-    'reggia': 100, 'cimitero': 120, 'universita': 80, 'ospedale': 70
+    /* questi sono grandi di superficie ma non sono cose da annunciare da
+       lontano mentre passi in macchina: stanno sotto la soglia. */
+    'reggia': 100, 'cimitero': 60, 'universita': 60, 'ospedale': 50
   };
   function quantoEGrande(p) {
     if (p.l) return Number(p.l);
@@ -682,9 +684,20 @@ function Racconto(opzioni) {
      prima: «deve essere tarata sul camminare sempre» resta vero per i
      palazzi e le chiesette. */
   var LONTANO_IN_MACCHINA = o.lontanoInMacchina || 800;
-  var GRANDE_DA_LONTANO = 100;       // metri di larghezza
+  var GRANDE_DA_LONTANO = 150;       // da solo basta se e' enorme
+  /* CHI SI SENTE DAL FINESTRINO, E CHI NO. Primo tentativo: «rango 3
+     oppure grande cento metri». Rifacendo una camminata vera in
+     macchina a Portici — tredici chilometri — veniva fuori un elenco:
+     «cimitero di Portici», «Villa Pizzicato», «Villa Sinicopri»,
+     «Villa Salvetella», «Villa Bonocore», una frase ogni dieci secondi.
+     Le ville vesuviane hanno il rango alto perche' Wikipedia ne parla,
+     ma dal lungomare non le distingui; un cimitero e' largo ma non e'
+     un monumento che si annuncia.
+     Allora: o e' importante E grande (una basilica, una reggia), o e'
+     enorme (uno stadio, un foro, le mura, un aeroporto). */
   function eImportante(p) {
-    return rango(p) >= 3 || quantoEGrande(p) >= GRANDE_DA_LONTANO;
+    var g = quantoEGrande(p);
+    return (rango(p) >= 3 && g >= 60) || g >= GRANDE_DA_LONTANO;
   }
   function raggio(p, modo, aPiedi) {
     if (aPiedi === false) {

@@ -49,6 +49,11 @@ function MotoreVoce(opzioni) {
   var annulla = o.annulla || function (id) { clearTimeout(id); };
   var diario = o.diario || function () {};
   var microfono = o.microfono || { chiudi: function () {}, apri: function () {} };
+  /* lo dice il guscio, scrivendolo nella pagina quando apre il microfono */
+  function nonSenteSeStessa() {
+    if (typeof o.nonSenteSeStessa === 'function') return !!o.nonSenteSeStessa();
+    return typeof window !== 'undefined' && !!window.urbeaNonSenteSeStessa;
+  }
 
   // --- le soglie, tutte in un posto, tutte spiegate ---
   var TEMPO_CLIP = o.tempoClip || 3500;     // una clip che non parte entro questo si abbandona
@@ -300,7 +305,18 @@ function MotoreVoce(opzioni) {
     livelloInCorso = f.livello;
     ultimoTesto = normalizza(f.uguale || f.testo);
     ultimoQuando = ora();
-    microfono.chiudi();
+    /* ---------- L'ORECCHIO RESTA APERTO, SE IL TELEFONO SA TOGLIERE
+       L'ECO ---------- 29/10/2026. Qui si chiudeva sempre, per non
+       sentirsi parlare. Il prezzo l'ha pagato Vince: nel diario del
+       29/10 l'app ha sentito DUE parole in tutto il giorno, perche'
+       parlava quasi sempre e fra una frase e l'altra il microfono
+       faceva in tempo solo a riaprirsi. «Ho provato a dire qui c'e'
+       Elite ma niente.»
+       Quando il guscio accende la cancellazione dell'eco di iOS, il
+       microfono non sente l'altoparlante e puo' restare aperto: si
+       parla e si ascolta insieme, come al telefono. Senza quella —
+       browser, Android vecchi — si chiude come prima. */
+    if (!nonSenteSeStessa()) microfono.chiudi();
     diario('PARLA (' + f.livello + '): ' + String(f.testo).slice(0, 60));
 
     // il tetto: qualunque cosa vada storta, entro il tetto si va avanti
@@ -471,6 +487,9 @@ function MotoreVoce(opzioni) {
        comandi — e quindi il solo da cui si possa uscire da un blocco
        quando i tempi della pagina sono fermi. Il tetto doppio e' per non
        tagliare una frase vera che sta solo andando per le lunghe. */
+    /* cosa sta dicendo adesso: serve alla pagina per non prendere per
+       comando l'eco della propria voce (29/10). */
+    cheStaDicendo: function () { return parlando ? ultimoTesto : ''; },
     staParlando: function () {
       if (parlando && tettoInCorso && ora() - inizioFrase > tettoInCorso * 2) {
         diario('SBLOCCO: dicevo di parlare da ' + Math.round((ora() - inizioFrase) / 1000) +
