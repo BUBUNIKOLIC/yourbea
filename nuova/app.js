@@ -1848,6 +1848,49 @@
     /* HO CHIESTO COME STA, E HA RISPOSTO. Due parole e si va al lavoro:
        non è una conversazione. Se invece di rispondere chiede una cosa,
        vince la cosa — l'attesa cade e il comando passa. */
+    /* HO CHIESTO «UN PERCORSO O CAMMINARE LIBERO?» (l'apertura di Utilita).
+       Tre risposte, e tutte e tre portano da qualche parte:
+       - «un percorso» → si chiede dove, e la frase dopo e' la meta;
+       - «libero», «cammino» → non si fa niente: l'app accompagna com'e';
+       - qualunque altra cosa → era un comando, e vince il comando. */
+    if (inAttesaDi && inAttesaDi.cosa === 'percorso-o-libero') {
+      var r0 = normalizza(t);
+      if (/\b(?:percorso|un percorso|il percorso|percorsi|guidami|portami)\b/.test(r0)) {
+        inAttesaDi = { da: Date.now(), cosa: 'dove-vado' };
+        voce.parla('Dimmi dove devi andare.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      if (/\b(?:libero|liberamente|cammin\w*|a piedi|niente|nessuno|giro|passeggi\w*)\b/.test(r0)) {
+        inAttesaDi = null;
+        voce.parla('Va bene. Cammina, e ti dico quello che passi.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      inAttesaDi = null;            // era un comando: vince lui
+    }
+
+    /* E DOVE DEVE ANDARE: la frase intera e' la meta. */
+    if (inAttesaDi && inAttesaDi.cosa === 'dove-vado') {
+      inAttesaDi = null;
+      if (!/^(?:lascia perdere|niente|annulla|non importa)$/.test(normalizza(t))) {
+        portamiA(grezzo || t); return true;
+      }
+      voce.parla('Va bene. Quando vuoi dimmi dove andare.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return true;
+    }
+
+    /* HO CHIESTO SE LO PORTO A CASA (il tasto toccato mentre una guida era
+       accesa, vedi il tasto «vai a casa»). «Sì» e si va; qualunque altra
+       cosa è un no e il percorso di prima resta. */
+    if (inAttesaDi && inAttesaDi.cosa === 'conferma-casa') {
+      inAttesaDi = null;
+      if (/^(si|si grazie|va bene|certo|esatto|ok|portami a casa|a casa)$/.test(normalizza(t))) {
+        aCasa(); return true;
+      }
+      /* non era un sì: non si butta niente, e il comando continua la sua
+         strada qui sotto come se la domanda non ci fosse stata. */
+    }
     if (inAttesaDi && inAttesaDi.cosa === 'percorso-arrivato') {
       var ilSuo = inAttesaDi.percorso;
       inAttesaDi = null;
@@ -2271,8 +2314,68 @@
   /* portamiA(): trova la meta e chiede il percorso. Prima fra i luoghi
      nostri, poi fra i servizi, poi fra gli indirizzi — e la citta' detta
      dall'utente vince sempre (il difetto che portava a Cisterna di Latina). */
+  /* ---------- I PALAZZETTI ---------- 30/10/2026
+     «Devo andare a palla Bianchini» (Latina, 16:07:41): capita, ma la
+     ricerca è tornata vuota — «nessun candidato in "palla bianchini"».
+     Il posto si chiama PalaBianchini, attaccato, e la dettatura lo
+     spezza: «pala», «palla», «la bianchini». È un genere intero di
+     posti italiani — Palalottomatica, Paladozza, Palaverde — e un
+     geocodificatore non li trova scritti in due parole.
+     altriModi() dà le altre scritture da riprovare, una volta sola,
+     prima di dire «non l'ho trovato». */
+  function altriModi(pulita) {
+    var p = String(pulita).toLowerCase().trim();
+    var altri = [];
+    var m = p.match(/^(?:il |lo |la |al |allo |alla )?(pala|palla|palo|pallo|pali)\s+(.+)$/);
+    if (m) {
+      altri.push('pala' + m[2].replace(/\s+/g, ''));
+      altri.push('palazzetto dello sport ' + m[2]);
+      altri.push('palazzetto ' + m[2]);
+    }
+    /* e il contrario: «palabianchini» detto attaccato dove la mappa lo
+       scrive diviso. */
+    var a = p.match(/^pala([a-z]{4,})$/);
+    if (a) { altri.push('pala ' + a[1]); altri.push('palazzetto ' + a[1]); }
+    return altri;
+  }
+
+  /* provaInFila(): le altre scritture, una dopo l'altra. La prima che la
+     mappa conosce vince; se non la conosce nessuna, si dice la via
+     d'uscita una volta sola (non una per tentativo). */
+  function provaInFila(elenco, qui, eCasa) {
+    if (!elenco.length) { diCheNonLhoTrovato(eCasa); return; }
+    var questo = elenco[0];
+    intorno.cercaIndirizzo(questo, qui).then(function (cand) {
+      var scelto = guida.scegli(cand, guida.cittaNelTesto(questo), qui, questo);
+      if (scelto) {
+        diario('TROVATO cosi: ' + questo + ' → ' + scelto.nome);
+        partiVerso({ n: scelto.nome, lat: scelto.lat, lon: scelto.lon }, qui, eCasa);
+        return;
+      }
+      provaInFila(elenco.slice(1), qui, eCasa);
+    }, function () { provaInFila(elenco.slice(1), qui, eCasa); });
+  }
+
+  function diCheNonLhoTrovato(eCasa) {
+    /* E QUANDO NON LO TROVA, SI DICE LA VIA D'USCITA.
+       Provato il 20/10 con l'indirizzo vero di Vince: Photon, a «Via
+       dei Corazzieri 47 Latina», risponde «Via dei Marrucini 47» —
+       un'altra strada a due chilometri. Adesso quella risposta la
+       buttiamo, ed e' giusto; ma «non l'ho trovato» da solo lascia a
+       piedi chi non vede. La via d'uscita c'e' e non la sa nessuno:
+       mettersi sulla porta e dire «casa è qui». */
+    voce.parla(eCasa
+      ? 'Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.'
+      : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
+      { livello: voce.GUIDA, ancheSeUguale: true });
+  }
+
   var metaInDubbio = null;
-  function portamiA(cosa, eCasa) {
+  /* quando si è rifatto il percorso l'ultima volta, e di quanto si era
+     fuori: servono al ramo del fuori strada, che senza questi rifaceva la
+     strada ogni venti secondi (Latina, 30/10). */
+  var ultimoRicalcolo = 0, ultimoFuoriMetri = 0;
+  function portamiA(cosa, eCasa, giaRiprovato) {
     metaInDubbio = null;
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
@@ -2296,7 +2399,7 @@
     var suo0 = posti.trova(cerca);
     if (suo0) {
       diario('PORTAMI A: è un posto suo, ' + suo0.n);
-      partiVerso({ n: suo0.n, lat: suo0.lat, lon: suo0.lon }, qui);
+      partiVerso({ n: suo0.n, lat: suo0.lat, lon: suo0.lon }, qui, true);
       return;
     }
 
@@ -2323,20 +2426,17 @@
     var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(pulita, qui);
     cercatore.then(function (candidati) {
       var scelto = guida.scegli(candidati, parole, qui, tipo ? '' : pulita);
-      if (!scelto) {
-        /* E QUANDO NON LO TROVA, SI DICE LA VIA D'USCITA.
-           Provato il 20/10 con l'indirizzo vero di Vince: Photon, a «Via
-           dei Corazzieri 47 Latina», risponde «Via dei Marrucini 47» —
-           un'altra strada a due chilometri. Adesso quella risposta la
-           buttiamo, ed e' giusto; ma «non l'ho trovato» da solo lascia a
-           piedi chi non vede. La via d'uscita c'e' e non la sa nessuno:
-           mettersi sulla porta e dire «casa è qui». */
-        voce.parla(eCasa
-          ? 'Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.'
-          : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
-          { livello: voce.GUIDA, ancheSeUguale: true });
-        return;
+      if (!scelto && !giaRiprovato && !tipo) {
+        /* un'altra scrittura dello stesso posto, prima di arrendersi
+           (vedi altriModi(): i palazzetti). */
+        var ancora = altriModi(pulita);
+        if (ancora.length) {
+          diario('RIPROVO: ' + ancora.join(' / '));
+          provaInFila(ancora, qui, eCasa);
+          return;
+        }
       }
+      if (!scelto) { diCheNonLhoTrovato(eCasa); return; }
       /* SI DICE CHE E' APPROSSIMATO, invece di far finta di niente.
          «Via dei Corazzieri 47, Roma»: il civico 47 in OpenStreetMap non
          c'e' — verificato con Photon e con Nominatim — e la via arriva a
@@ -2375,13 +2475,36 @@
                    { livello: voce.GUIDA, ancheSeUguale: true });
         return;
       }
-      partiVerso({ n: nome, lat: scelto.lat, lon: scelto.lon }, qui);
+      partiVerso({ n: nome, lat: scelto.lat, lon: scelto.lon }, qui, eCasa);
     });
   }
-  function partiVerso(m, qui) {
+  /* NESSUNO CAMMINA CENTOVENTI CHILOMETRI. Latina, 30/10, 16:05:44:
+     l'app ha annunciato «Per arrivare a Farmacia Del Prete: a 122,9
+     chilometri a piedi, 110 svolte» con la voce di sempre, come fosse
+     dietro l'angolo, e si è messa a guidarlo. Il paracadute che c'era
+     guarda la distanza IN LINEA D'ARIA del posto scelto: la farmacia era
+     vicina in linea d'aria e il percorso a piedi girava per 122 km.
+     Qui si guarda il percorso VERO, quello che dovrebbe camminare.
+     Oltre venti chilometri non si parte: si dice quanto è e si chiede.
+     Per casa tua non si chiede — casa è dove sta, lontana o no (dal
+     centro di Latina sono 58 km, ed è giusto così). */
+  var LONTANO_A_PIEDI = 20000;
+  function partiVerso(m, qui, eCasa) {
     Promise.all([intorno.strada(qui.lat, qui.lon), intorno.percorso(qui, m)]).then(function (r) {
-      PERCORSO = r[1];                       // la mappa ci disegna la strada
-      dilloSubito(guida.vaiA(m, qui, r[0], r[1]));
+      var p = r[1];
+      if (!eCasa && p && p.metri > LONTANO_A_PIEDI) {
+        diario('TROPPO LONTANO A PIEDI: ' + m.n + ', ' + p.metri + ' m, chiedo');
+        metaInDubbio = { n: m.n, lat: m.lat, lon: m.lon };
+        voce.parla('Il più vicino che trovo è ' + m.n + ', ma a piedi sono ' +
+                   Math.round(p.metri / 1000) + ' chilometri. Se è davvero quello, dimmi: sì. ' +
+                   'Se no, ripetimelo con la città, o dimmi un altro posto.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return;
+      }
+      PERCORSO = p;                          // la mappa ci disegna la strada
+      /* percorso nuovo: il conto dei ricalcoli riparte da zero */
+      ultimoRicalcolo = 0; ultimoFuoriMetri = 0;
+      dilloSubito(guida.vaiA(m, qui, r[0], p));
     });
   }
 
@@ -2434,7 +2557,13 @@
      di questi giorni: 6, e QUATTRO sono «Bea». «Urbe» e «Curve», che il
      26/10 avevamo messo in lista, una ciascuna. Quello che capita piu'
      spesso era l'unico che mancava. */
-                        '(?:(?:yourbea|yourbe|your bea|urbea|urbe|curve|curbe|jurbea|iurbea|bea)[, ]+)?';
+  /* E AL 30/10 SERA SE NE AGGIUNGONO DUE, dal quaderno di Latina:
+     «Eubea fermati» (16:12:38) e «Rube qui c'è una pompa di benzina»
+     (16:02:57). Il primo non ha chiuso l'app; la segnalazione del secondo
+     è andata perduta — Vince l'ha dovuta ripetere 29 secondi dopo, senza
+     chiamarla per nome. Contati tutti i modi nei quaderni: bea 4, urbe 2,
+     rube 2, eubea 1, curve 1. Sono SETTE scritture per un nome. */
+                        '(?:(?:yourbea|yourbe|your bea|urbea|urbe|eubea|curve|curbe|jurbea|iurbea|rube|bea)[, ]+)?';
   var CHIUDI_TUTTO = new RegExp(
     '^(?:' +
     /* il nome, davanti o dietro: «yourbea basta», «basta yourbea» */
@@ -2742,7 +2871,7 @@
                    { livello: voce.GUIDA, ancheSeUguale: true });
         intorno.percorso(qui5, m5).then(function (nuovo) {
           PERCORSO = nuovo;
-          dilloSubito(guida.vaiA(m5, qui5, { via: '' }, nuovo));
+          dilloSubito(guida.vaiA(m5, qui5, { via: '' }, nuovo, true));
         });
       } else {
         voce.parla('Ti sei spostato. Guardo dove siamo adesso.',
@@ -3081,13 +3210,30 @@
          altro. Il percorso si richiede da dove sei adesso, verso la stessa
          meta: se la rete non risponde resta la bussola, e si sente. */
       if (g && g.tipo === 'fuori') {
+        /* NON SI RIFA' IL PERCORSO OGNI VENTI SECONDI. Latina, 30/10,
+           16:10:12 → 16:11:51: sei ricalcoli in 94 secondi, uno ogni
+           venti, perche' Vince camminava nella direzione opposta a casa e
+           quindi era sempre «fuori strada». Ogni ricalcolo riannunciava
+           tutto da capo e la coda non si svuotava piu': alle 16:10:36
+           parlava ancora degli 84 metri di 16:10:12, quando era a 171.
+           Mentre ti allontani, un percorso nuovo non serve: parte comunque
+           da dietro di te. Quindi uno ogni quarantacinque secondi, e si
+           rifa' solo se ti sei allontanato PIU' dell'ultima volta. */
+        var adesso3 = Date.now();
+        var lontano3 = (g.metri || 0);
+        if (adesso3 - ultimoRicalcolo < 45000 && lontano3 < ultimoFuoriMetri + 150) {
+          diario('FUORI STRADA: non rifaccio, l ultimo e di ' +
+                 Math.round((adesso3 - ultimoRicalcolo) / 1000) + ' s');
+          return;
+        }
+        ultimoRicalcolo = adesso3; ultimoFuoriMetri = lontano3;
         var m3 = guida.meta();
         var qui3 = { lat: s.lat, lon: s.lon, direzione: s.direzione, direzioneBuona: s.direzioneBuona };
         diario('FUORI STRADA: rifaccio il percorso');
         intorno.percorso(qui3, m3).then(function (nuovo) {
           PERCORSO = nuovo;
           if (!nuovo) { diario('FUORI STRADA: percorso non arrivato, resta la bussola'); }
-          dilloSubito(guida.vaiA(m3, qui3, { via: ultimaStrada }, nuovo));
+          dilloSubito(guida.vaiA(m3, qui3, { via: ultimaStrada }, nuovo, true));
         });
       }
       return;
@@ -3324,7 +3470,27 @@
      un'ipotesi fantasiosa che «sembra rivolta a noi» farebbe rispondere
      «questa non l'ho capita» e la fila si fermerebbe li', proprio come
      se avesse funzionato. */
+  /* ---------- «PUOI PORTARMI AL PALA BIANCHINI» ----------
+     Latina, 30/10/2026, 16:00:48. La prima cosa che Vince ha chiesto, e
+     la risposta è stata «Questa non l'ho capita»: tutti i riconoscitori
+     cercano «portami», e lui ha detto «puoi portarmi» — che è come si
+     parla a qualcuno, non a un telecomando.
+     Qui la cortesia si scioglie UNA VOLTA, all'ingresso, così i cinque
+     punti che cercano «portami» non vanno toccati. Si riscrivono solo
+     forme che oggi non fanno NIENTE: quello che già funziona non passa
+     da qui. */
+  function scioglieCortesia(testo) {
+    return String(testo || '')
+      .replace(/\b(?:mi\s+)?(?:puoi|potresti|riesci a|vuoi)\s+(?:mi\s+)?port(?:armi|arci|are)\b/gi, 'portami')
+      .replace(/\b(?:mi|ci)\s+port(?:i|erebbe|eresti)\b/gi, 'portami')
+      .replace(/\bport(?:armi|arci)\b/gi, 'portami')
+      .replace(/\b(?:vorrei|voglio|devo|dovrei|ho bisogno di)\s+andare\b/gi, 'devo andare')
+      .replace(/\b(?:mi\s+)?(?:puoi|potresti)\s+accompagnar(?:mi|ci)\b/gi, 'accompagnami')
+      .replace(/\baccompagnarmi\b/gi, 'accompagnami');
+  }
+
   function comando(testo, soloComandi) {
+    testo = scioglieCortesia(testo);
     var t = normalizza(testo);
     /* IL TESTO COME L'HA DETTO, accanto a quello sbassato. normalizza()
        butta via tutto quello che non e' una lettera, apostrofi compresi:
@@ -3510,8 +3676,11 @@
     }
     if (metaInDubbio && /^(?:si|si grazie|va bene|esatto|confermo|quello)$/.test(t)) {
       var m2 = metaInDubbio; metaInDubbio = null;
+      /* il «true» in coda: ha già detto sì. Senza, la domanda dei venti
+         chilometri (vedi partiVerso) tornerebbe a ogni conferma e non si
+         partirebbe mai. */
       partiVerso(m2, { lat: posizione.leggi().lat, lon: posizione.leggi().lon,
-                       direzione: posizione.leggi().direzione, direzioneBuona: posizione.leggi().direzioneBuona });
+                       direzione: posizione.leggi().direzione, direzioneBuona: posizione.leggi().direzioneBuona }, true);
       return true;
     }
     /* QUESTO VIENE PRIMA DI dalDettato E DI miei.dallaVoce, e non è
@@ -4305,25 +4474,44 @@
   }
 
   function apertura(quale) {
-    /* IL SALUTO È VARIO, IL RESTO NO. «Solo devi creare un eloquio più
-       vario» (Vince, 16/10): cambia il modo di salutare — l'ora del giorno,
-       il nome, il «come stai» — e non cambia una parola di quello che l'app
-       dice dopo, che è l'elenco di cosa può fare. Chi riapre dopo meno di
-       sei ore non è appena arrivato: si dice «bentornato». */
-    var tornato = false;
+    /* L'ora dell'ultima apertura si tiene comunque: la usano le riprese
+       («RIPRESA: c'era servizi, ma di 293 minuti fa»). */
+    try { localStorage.setItem('yourbea2-ultima-apertura', String(Date.now())); } catch (e) {}
+    var aperture = 0;
     try {
-      var prima = Number(localStorage.getItem('yourbea2-ultima-apertura') || 0);
-      tornato = prima > 0 && (Date.now() - prima) < 6 * 3600 * 1000;
-      localStorage.setItem('yourbea2-ultima-apertura', String(Date.now()));
-    } catch (e) {}
-    var sal = modi.saluto({ tornato: tornato });
-    voce.parla(sal.testo + ' ' + (quale === 'cultura'
-      ? 'Ti racconto quello che hai intorno: camminando ti dico cosa passi, e se ti fermi cinque secondi te lo racconto. Vuoi che cominciamo, o preferisci una passeggiata a tappe?'
-      : 'Cosa facciamo? Devi andare da qualche parte? Ti illustro cosa c\'è intorno? O ti cerco un negozio?'),
-      { livello: voce.GUIDA });
-    /* REGOLA C di parti/modi.js: se ha chiesto come sta, si sta a sentire.
-       Una domanda a cui l'app non reagisce è peggio del silenzio. */
-    if (sal.chiede) inAttesaDi = { da: Date.now(), cosa: 'come-stai' };
+      aperture = Number(localStorage.getItem('yourbea2-aperture') || 0) + 1;
+      localStorage.setItem('yourbea2-aperture', String(aperture));
+    } catch (e) { aperture = 1; }
+    /* IL SALUTO L'HA GIA' DATO LA PORTA — «Ciao Vincenzo, come posso
+       esserti utile? Turismo o utilita?». Qui dentro non si ricomincia da
+       capo: in Utilita' si fa la domanda che ha chiesto Vince, in Turismo
+       si parte e si racconta. */
+    /* ---------- «LA PRESENTAZIONE ALL'INIZIO FA SCHIFO» ----------
+       Vince, Latina, 30/10. Quello che diceva, per intero: «Di nuovo qui
+       Vincenzo. Cosa facciamo? Devi andare da qualche parte? Ti illustro
+       cosa c'è intorno? O ti cerco un negozio?» — con il «come stai»
+       davanti, due volte su tre, fanno CINQUE domande di fila e
+       venticinque parole prima che uno possa aprire bocca.
+       Due regole, e la seconda era già scritta in parti/modi.js:
+       A. L'ELENCO SOLO LE PRIME VOLTE. Chi apre l'app per la terza volta
+          sa cosa può chiedere; sentirselo ridire ogni volta è il modo
+          più rapido per spegnerla.
+       B. UNA DOMANDA SOLA. Se ha chiesto «come stai», quella è LA
+          domanda e si sta a sentire (REGOLA C di modi.js): metterci
+          dietro altre tre vuol dire che non si ascoltava nessuna. */
+    /* ---------- TURISMO VA, UTILITA' CHIEDE ----------
+       Vince, 30/10: «poi turismo va, e utilità chiedi se vuole fare un
+       percorso o camminare libero». Sono le due cose che si fanno in
+       Utilita', e chiederlo subito vale piu' di un elenco: a una domanda
+       si risponde, un elenco si ascolta.
+       In Turismo non si chiede niente: si parte e si racconta. */
+    diario('APERTURA n. ' + aperture + ' in ' + quale);
+    if (quale !== 'cultura') {
+      voce.parla('Vuoi fare un percorso, o camminare libero?',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      /* REGOLA C di parti/modi.js: a una domanda si sta a sentire. */
+      inAttesaDi = { da: Date.now(), cosa: 'percorso-o-libero' };
+    }
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
   }
 
@@ -4400,7 +4588,32 @@
   });
 
   /* il tasto di casa, e il posto dove si scrive l'indirizzo */
-  el('vai-a-casa').addEventListener('click', aCasa);
+  /* ---------- IL TASTO IN TASCA ---------- 30/10/2026
+     Latina, 16:09:51: è partito un percorso per casa di 58,4 chilometri
+     che Vince non aveva chiesto — «e voleva portarmi a casa», «mai
+     chiesto». Nei 22 secondi prima, nel quaderno, non c'è nessuna frase
+     sentita: l'unica altra via è questo tasto, grande quanto lo schermo e
+     in fondo alla pagina, dove il pollice finisce camminando. E il tocco
+     ha buttato via la strada che stava facendo.
+     Perciò: se una guida è accesa, un tocco solo non la butta. Si chiede,
+     e basta un secondo tocco — o un «sì» — per confermare. Senza nessuna
+     guida accesa il tasto parte com'è sempre stato: un tocco a vuoto non
+     fa danni a nessuno. */
+  var casaChiesta = 0;
+  el('vai-a-casa').addEventListener('click', function () {
+    var adesso = Date.now();
+    if (guida.meta() && adesso - casaChiesta > 12000) {
+      casaChiesta = adesso;
+      metaInDubbio = null;
+      diario('TASTO CASA: guida accesa, chiedo conferma');
+      voce.parla('Ti sto accompagnando da un\'altra parte. Ti porto a casa? Dimmi sì, o tocca di nuovo.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      inAttesaDi = { da: adesso, cosa: 'conferma-casa' };
+      return;
+    }
+    casaChiesta = 0;
+    aCasa();
+  });
   el('leggi-cartello').addEventListener('click', leggiIlCartello);
   el('avvisa-contatto').addEventListener('click', function () { avvisaOra('chiamata'); });
   el('messaggio-contatto').addEventListener('click', function () { avvisaOra('messaggio'); });
@@ -4679,7 +4892,18 @@
          TalkBack acceso la pagina viene gia' letta, e due voci sopra la
          stessa cosa e' quello che Dario ha chiamato «troppo frenetico». */
       if (!voiceOver) {
-        voce.parla('Dimmi: utilità, oppure turismo.', { livello: voce.GUIDA, ancheSeUguale: true });
+        /* ---------- LA PRESENTAZIONE, PAROLA PER PAROLA DI VINCE ----------
+           30/10/2026, dopo Latina: «la presentazione all'inizio fa schifo».
+           Prima erano due presentazioni una dietro l'altra — «Dimmi:
+           utilità, oppure turismo.» alla porta, e appena dentro «Di nuovo
+           qui Vincenzo. Cosa facciamo? Devi andare da qualche parte? Ti
+           illustro cosa c'è intorno? O ti cerco un negozio?»: con il «come
+           stai» davanti, cinque domande e venticinque parole prima che uno
+           potesse aprire bocca.
+           Queste due frasi le ha dettate lui, in quest'ordine. */
+        voce.parla((ioSonoIo ? 'Ciao ' + ioSonoIo + ', c' : 'C') +
+                   'ome posso esserti utile? Turismo o utilità?',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
       }
     }
     setTimeout(function () { apri('da sola'); }, 1200);

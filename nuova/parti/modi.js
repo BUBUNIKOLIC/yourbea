@@ -149,8 +149,12 @@ function Modi(opzioni) {
       : sceglie(SALUTI[oraDelGiorno(h)], 'saluto');            // REGOLA A
     var frase = testa + (nome ? ' ' + nome : '') + '.';
     /* il «come stai» non a ogni apertura: due volte su tre, e mai di notte,
-       quando chi apre l'app alle quattro del mattino ha altro per la testa */
-    var chiede = oraDelGiorno(h) !== 'notte' && caso() < 0.66;
+       quando chi apre l'app alle quattro del mattino ha altro per la testa.
+       E mai quando chi chiama ha gia' qualcosa da dire dopo il saluto —
+       `senzaDomanda`: alle prime due aperture l'app spiega cosa le si puo'
+       chiedere, e due domande di fila sono quello che Vince ha chiamato
+       «la presentazione fa schifo» (30/10). Una domanda per volta. */
+    var chiede = !q.senzaDomanda && oraDelGiorno(h) !== 'notte' && caso() < 0.66;
     if (chiede) frase += ' ' + sceglie(COME_STAI, 'come-stai');
     return { testo: frase, chiede: chiede };
   }

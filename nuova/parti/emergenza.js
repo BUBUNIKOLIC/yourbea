@@ -207,6 +207,28 @@ function Emergenza(opzioni) {
       for (var i = 0; i < arguments.length; i++) if (t.indexOf(arguments[i]) >= 0) return true;
       return false;
     }
+    /* ---------- SEGNALARE UN POSTO NON E' CHIEDERE DI ANDARCI ----------
+       Latina, 30/10/2026, 16:05:40. Vince ha detto «sulla destra c'è
+       farmacia Travagliati» per METTERLA SULLA MAPPA, e l'app gli ha
+       aperto un percorso di 122,9 chilometri per la Farmacia Del Prete.
+       Il suo punto non è stato segnato. Vince: «ho segnalato una farmacia
+       ma non ha capito e voleva portarmi ad un'altra farmacia».
+       La causa è la stessa trappola di «fermata» del mattino (vedi
+       prova-laurentina-30-10): ha() cerca le parole A PEZZI, e «farmacia»
+       sta dentro «c'è farmacia Travagliati». Vale per tutte le righe qui
+       sotto: commissariato, polizia, carabinieri, ospedale, ambulanza.
+       Quindi: una frase che RACCONTA cos'hai intorno non entra qui. La
+       forma è quella di parti/contributi.js — «qui c'è», «sulla destra
+       c'è», «davanti a me c'è», o «c'è» in testa.
+       Ma se dentro c'è anche una RICHIESTA — «mi serve», «dov'è», «qui
+       vicino», «portami» — allora è una domanda e passa: chi sta male
+       dice «c'è una farmacia qui vicino?», e quella deve funzionare. */
+    var RACCONTA = /(?:^c e\b)|(?:(?:^|\s)(?:qui|qua|davanti|destra|sinistra|dietro|angolo|fronte|fianco|lato)\b[\s\S]*\b(?:c e|ce|sta|si trova|abbiamo)\s)/;
+    /* «vicin» e «dov» senza il confine di parola in coda: devono prendere
+       anche «vicino», «vicina», «dov e». Col \b finale «c'è una farmacia
+       qui vicino» restava una segnalazione, e quella è una domanda. */
+    var CHIEDE = /\b(?:portami|accompagnami|andiamo|voglio andare|devo andare|mi serve|ho bisogno|cerco|trovami|come arrivo|come ci arrivo)\b|\bvicin|\bdov/;
+    if (RACCONTA.test(t) && !CHIEDE.test(t)) return null;
     /* «CHIEDI AIUTO» CHIAMA I SOCCORSI. Fin qui «aiuto» apriva un menu
        — «dì: chiama il 112, oppure commissariato...» — e chi sta male
        doveva ascoltare un elenco e poi dire un'altra frase. «Chiedi

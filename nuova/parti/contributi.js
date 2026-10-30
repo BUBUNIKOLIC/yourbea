@@ -155,7 +155,19 @@ function Contributi(opzioni) {
      Fra «qui» e «c'e'» adesso ci puo' stare dove sta la cosa. */
   var LATO = '(?:[,\\s]*(?:a|al|alla|sul|sulla|su|di|in|verso)?\\s*' +
              '(?:destra|sinistra|fronte|davanti|dietro|angolo|lato|fianco)\\s*)?';
-  var QUI_CE = new RegExp('^(?:qui|qua)' + LATO + '[,\\s]*(?:c\u2019e|c\'e|ce|e|sta|si trova|abbiamo)\\s+(.+)$');
+  /* ---------- \u00abSULLA DESTRA C'E' FARMACIA TRAVAGLIATI\u00bb ----------
+     Latina, 30/10, 16:05:40. Il \u00abqui\u00bb non c'era affatto: c'era solo il
+     lato. La regola lo voleva per forza e la segnalazione non e' stata
+     riconosciuta \u2014 il punto di Vince non e' mai arrivato sul server,
+     mentre l'app gli apriva un percorso di 122 chilometri per un'altra
+     farmacia (per quello vedi parti/emergenza.js).
+     Adesso basta il lato: \u00absulla destra c'e'\u00bb, \u00abdavanti a me c'e'\u00bb, \u00aba
+     sinistra c'e'\u00bb. Il \u00abqui\u00bb resta buono dov'era. */
+  var SOLO_LATO = '(?:[,\\s]*(?:a|al|alla|sul|sulla|su|di|in|verso)?\\s*' +
+                  '(?:destra|sinistra|fronte|davanti|dietro|angolo|lato|fianco)' +
+                  '(?:\\s+(?:a|di)\\s+me)?\\s*)';
+  var QUI_CE = new RegExp('^(?:(?:qui|qua)' + LATO + '|' + SOLO_LATO + ')' +
+                          '[,\\s]*(?:c\u2019e|c\'e|ce|e|sta|si trova|abbiamo)\\s+(.+)$');
   /* ---------- \u00abC'E' IL BENZINAIO QUI\u00bb ----------
      30/10, Via Laurentina. Tre delle otto segnalazioni di Vince sono
      arrivate sul server col nome sporco: \u00abC'\u00e8 il benzinaio qui\u00bb, \u00abC'\u00e8
@@ -183,7 +195,10 @@ function Contributi(opzioni) {
        ============================================================ */
     /* e «bea» come lo scrive la dettatura: il nome intero non arriva
        quasi mai. Dei sei nomi storpiati nei diari, quattro sono «Bea». */
-    grezzo = grezzo.replace(/^(?:ehi|hey|ei|senti|scusa|ciao)?\s*(?:yourbea|urbea|bea)\s*[,:]?\s*/i, '').trim();
+    /* 30/10, Latina: «Rube qui c'è una pompa di benzina» — il nome
+       storpiato in testa e la segnalazione perduta. I sette modi stanno
+       in SI_RIVOLGE_A_ME (app.js); qui serve la stessa lista. */
+    grezzo = grezzo.replace(/^(?:ehi|hey|ei|senti|scusa|ciao)?\s*(?:yourbea|yourbe|urbea|urbe|eubea|rube|bea)\s*[,:]?\s*/i, '').trim();
     var t = sbassa(grezzo);
     if (!t) return null;
     /* la smentita prima: «qui NON c'e' piu' il ferramenta» comincia come

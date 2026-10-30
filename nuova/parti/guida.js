@@ -284,8 +284,15 @@ function Guida(opzioni) {
     return tre.slice(0, -1).join(', ') + ' e ' + tre[tre.length - 1] + coda;
   }
 
-  /* verso(): la meta è fissata. Restituisce la frase d'apertura. */
-  function vaiA(m, qui, dove, percorso) {
+  /* verso(): la meta è fissata. Restituisce la frase d'apertura.
+     `rifatto` true quando il percorso si ricalcola a strada in corso
+     (fuori strada, o un salto in metro): allora NON si rilegge
+     l'intestazione. Latina, 30/10: sei ricalcoli in 94 secondi, e ogni
+     volta «Per arrivare a casa tua: a 58,4 chilometri a piedi, 58
+     svolte. Si passa per...» sopra tutto il resto — Vince: «parecchie
+     volte discorso smorzato». Chi è già per strada sa dove sta andando:
+     gli serve la prossima mossa, non il totale da capo. */
+  function vaiA(m, qui, dove, percorso, rifatto) {
     meta = m; svolte = []; prossima = 0; piuVicinoMai = null; quandoMisurata = -1; ultimoAvviso = 0; preavvisata = -1; fuoriDa = 0;
     linea = (percorso && percorso.linea && percorso.linea.length > 1) ? percorso.linea : [];
     quantoManca = dist(qui.lat, qui.lon, m.lat, m.lon);
@@ -301,7 +308,11 @@ function Guida(opzioni) {
     if (percorso && percorso.svolte && percorso.svolte.length) {
       svolte = percorso.svolte;
       prossima = 1;                             // la prima si dice adesso
-      diario('GUIDA: ' + svolte.length + ' svolte per ' + m.n);
+      diario('GUIDA: ' + svolte.length + ' svolte per ' + m.n + (rifatto ? ' (rifatto)' : ''));
+      if (rifatto) {
+        return { tipo: 'parto', livello: 'guida',
+                 testo: capo(minuscolaPrima(svolte[0].testo)) };
+      }
       var strade = elencoStrade(leStrade(svolte));
       return { tipo: 'parto', livello: 'guida',
                testo: 'Per arrivare a ' + m.n + ': ' + metri(percorso.metri) + ' a piedi' +
