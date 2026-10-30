@@ -1626,8 +1626,28 @@
        non si dice niente. E si dice con la via, perche' «numero 13» da
        solo non orienta nessuno.
        ============================================================ */
+    /* ============================================================
+       E ANCHE IL CIVICO DELLA MAPPA, NON SOLO QUELLO DELLA SCRITTA
+       «I numeri civici devi citarli piu' spesso» — «ne ha detto uno ed
+       era preciso» (Vince, 30/10, tornato dalla camminata).
+       Preciso lo era, ma in ventitre' minuti ne ha detti DUE. Il motivo
+       sta nel quaderno: il numero si cercava solo in fondo alla scritta
+       che arriva dalla rete, e in sedici righe di strada quella scritta
+       non aveva un numero nemmeno una volta; cinque volte la strada e'
+       arrivata «senza rete», dall'aggancio locale, che il numero non ce
+       l'ha per niente.
+       I civici invece ci sono, e sono i nostri: nei quadretti della
+       mappa ce n'erano fino a 68. Hanno la via scritta accanto e le
+       coordinate, quindi si prende quello che ti sta addosso — venti
+       metri — e solo se e' della via dove sei. Lo stesso dato con cui
+       portiamo qualcuno a un indirizzo.
+       L'attesa scende da un minuto a quaranta secondi: la raffica del
+       18/10 («numeri civici mai») era un numero diverso ogni venti
+       secondi, e il civico sta dentro il giro delle cose da dire,
+       quindi due di fila non ne escono per costruzione.
+       ============================================================ */
     if (perUtilita && aPiediOra() && ultimaStrada &&
-        Date.now() - ultimoCivico > 60000) {
+        Date.now() - ultimoCivico > 40000) {
       var trovato = /(?:^|[\s,])(\d{1,4}[a-zA-Z]?)\s*$/.exec(ultimaStrada.trim());
       var numero = trovato ? trovato[1] : '';
       /* E IL CIVICO DEVE ESSERE DI QUESTA VIA. La scritta intera arriva
@@ -1638,6 +1658,24 @@
       var viaDellaScritta = (ultimaStrada.replace(/(?:^|[\s,])\d{1,4}[a-zA-Z]?\s*$/, '')).trim();
       if (numero && ultimaVia && viaDellaScritta && !uguali(ultimaVia, viaDellaScritta)) {
         numero = '';
+      }
+      /* la scritta non ha dato un numero: lo cerco nei civici della mappa,
+         il piu' vicino entro venti metri e della via dove sono. Se il
+         civico non porta scritta la via si tiene solo se e' addosso. */
+      if (!numero) {
+        var vicinoCiv = null, dCiv = 20;
+        (SERVIZI.civici || []).forEach(function (c) {
+          if (!c.n) return;
+          var dd = posizione.dist(qui.lat, qui.lon, c.lat, c.lon);
+          if (dd >= dCiv) return;
+          if (c.via) { if (!ultimaVia || !uguali(ultimaVia, c.via)) return; }
+          else if (dd > 12) return;
+          dCiv = dd; vicinoCiv = c;
+        });
+        if (vicinoCiv) {
+          numero = vicinoCiv.n;
+          viaDellaScritta = vicinoCiv.via || viaDellaScritta;
+        }
       }
       if (numero) {
         var viaDelCivico = ultimaVia || viaDellaScritta;
@@ -2388,7 +2426,15 @@
      c'e' un «ok» che la regola non prevedeva. Due tentativi, zero
      chiusure — e la terza volta che succede. */
   var SI_RIVOLGE_A_ME = '(?:(?:ok|okay|ehi|hey|ei|senti|scusa|ciao)[, ]+)?' +
-                        '(?:(?:yourbea|yourbe|your bea|urbea|urbe|curve|curbe|jurbea|iurbea)[, ]+)?';
+  /* «BEA» E' IL MODO IN CUI IL NOME ARRIVA PIU' SPESSO.
+     30/10, 10:21:29: Vince ha detto «Yourbea, fermati» e la dettatura
+     ha scritto «Bea fermati» — mangiata la prima meta' del nome. Non ha
+     spento, e lui ha dovuto chiuderla a mano 49 secondi dopo.
+     Contate tutte le volte che il nome e' arrivato storpiato nei diari
+     di questi giorni: 6, e QUATTRO sono «Bea». «Urbe» e «Curve», che il
+     26/10 avevamo messo in lista, una ciascuna. Quello che capita piu'
+     spesso era l'unico che mancava. */
+                        '(?:(?:yourbea|yourbe|your bea|urbea|urbe|curve|curbe|jurbea|iurbea|bea)[, ]+)?';
   var CHIUDI_TUTTO = new RegExp(
     '^(?:' +
     /* il nome, davanti o dietro: «yourbea basta», «basta yourbea» */
@@ -3389,8 +3435,31 @@
       chiudiTutto();
       return true;
     }
-    if (ha('ferma')) {
-      fermaLeMosse(); voce.ferma(); guida.lascia();
+    /* ============================================================
+       «FERMATA» NON E' «FERMA»
+       30/10, Via Laurentina, 10:15:09. «Portami a casa» aveva guidato
+       per tre minuti e mezzo — sei svolte, l'ultima su Piazzale Giulio
+       Douhet — e poi, per sette minuti e mezzo fino a casa, non ha
+       detto piu' una parola: ne' una svolta, ne' «sei arrivato». A casa
+       c'e' arrivato Vince e l'ha detto a lei.
+       Non si era rotto niente: lui aveva detto «la fermata autobus euro
+       Laurentina Africa» per sapere della fermata. ha('ferma') cerca
+       «ferma» DENTRO la frase, e «fermata» la contiene: quindi questo
+       ramo ha preso quella domanda per «fermati», ha chiamato
+       guida.lascia() e ha buttato il percorso. Alle 10:14:51 c'era
+       stato l'ultimo filo; FILO e' 20 secondi, il successivo era dovuto
+       alle 10:15:11, e il comando e' arrivato due secondi prima.
+       Due difetti in una riga, e si chiudono entrambi:
+       1. le parole che fermano si cercano INTERE — \bferma\b non sta in
+          «fermata», ne' in «fermate», «affermare», «confermo»;
+       2. lasciare un percorso non si fa in silenzio. Chi non vede non
+          ha modo di accorgersene: cammina e aspetta una voce che non
+          arrivera' piu'. Adesso si dice.
+       ============================================================ */
+    if (ha('ferma') && /\b(?:ferma|fermati|basta|silenzio|zitto|zitta|stop)\b/.test(t)) {
+      fermaLeMosse(); voce.ferma();
+      var mollata = guida.lascia();
+      if (mollata) dilloSubito(mollata);
       /* «ferma» durante una passeggiata la lascia, e si dice: se si zittisse
          soltanto la voce, l'app resterebbe a seguire un giro che l'utente
          ha lasciato, e al primo monumento ricomincerebbe da sé.

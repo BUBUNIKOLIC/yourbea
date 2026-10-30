@@ -17,6 +17,29 @@ sed -i '' "s/^const VERSIONE = $vecchia;/const VERSIONE = $nuova;/" nuova/sw.js
 echo "versione $vecchia → $nuova (pagina e cassaforte)"
 ./nuova/PROVA-LA-NUOVA.command | tee /tmp/prove-yourbea.txt
 grep -q "TUTTO A POSTO" /tmp/prove-yourbea.txt || { echo "NON pubblico: qualcosa non passa."; exit 1; }
+
+# ---------- IL PUNTO ZERO NON SI ROMPE ----------
+# «Si deve partire da un punto zero... poi da lì si possono correggere le
+# cose piano piano» (Vince, 28/10) — e il 29/10, correggendo una cosa, il
+# microfono è andato da due parole a zero. Le prove qui sopra guardano i
+# pezzi; il collaudo guarda se l'app fa ancora quello che deve: si apre a
+# voce, sceglie Utilità o Turismo, cambia modo da dentro, racconta,
+# descrive. Se una di quelle cade, non si pubblica — qualunque cosa si
+# stesse correggendo.
+echo ""
+echo "— il collaudo: l'app fa ancora quello che deve? —"
+./COLLAUDO.command > /tmp/collaudo-yourbea.txt 2>&1
+collaudo=$?
+tail -24 /tmp/collaudo-yourbea.txt
+if [ "$collaudo" != 0 ]; then
+  echo ""
+  echo "NON PUBBLICO: il punto zero è rotto. Si corregge quello, prima."
+  exit 1
+fi
+# e cosa è cambiato dal sigillo: se stavi correggendo una cosa sola e qui
+# esce mezza app, è scappato di mano (→ strumenti/sigillo.py).
+echo ""
+./SIGILLO.command
 # NON `git add -A`: il 16/10 si e' portato dentro il guscio iOS lasciato a
 # meta' da chi ci stava lavorando in quel momento, e l'ha committato con il
 # messaggio di un'altra cosa. Qui si pubblica il sito, e il sito e' questo:

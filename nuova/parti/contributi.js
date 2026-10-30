@@ -156,8 +156,21 @@ function Contributi(opzioni) {
   var LATO = '(?:[,\\s]*(?:a|al|alla|sul|sulla|su|di|in|verso)?\\s*' +
              '(?:destra|sinistra|fronte|davanti|dietro|angolo|lato|fianco)\\s*)?';
   var QUI_CE = new RegExp('^(?:qui|qua)' + LATO + '[,\\s]*(?:c\u2019e|c\'e|ce|e|sta|si trova|abbiamo)\\s+(.+)$');
-  var TAGLIA_NOME = new RegExp('^.*?(?:qui|qua)' + LATO +
-    '[,\\s]*(?:c[\'\u2019]?[e\u00e8]|ce|sta|si trova|abbiamo)\\s+', 'i');
+  /* ---------- \u00abC'E' IL BENZINAIO QUI\u00bb ----------
+     30/10, Via Laurentina. Tre delle otto segnalazioni di Vince sono
+     arrivate sul server col nome sporco: \u00abC'\u00e8 il benzinaio qui\u00bb, \u00abC'\u00e8
+     una siciliana gastronomia da 7 kg\u00bb, \u00abC'\u00e8 iPhone\u00bb. Nella mappa di
+     tutti restavano scritte cosi'.
+     Il taglio voleva \u00abqui\u00bb PRIMA di \u00abc'e'\u00bb: lui il \u00abqui\u00bb l'ha messo in
+     coda, o non l'ha detto affatto \u2014 che e' come si parla. Quando il
+     taglio non scattava, il nome diventava tutta la frase.
+     Adesso il \u00abqui\u00bb davanti e' facoltativo e quello in coda si butta.
+     Provati gli otto modi veri: i quattro sbagliati si raddrizzano e i
+     tre che funzionavano (\u00abqui c'\u00e8 Elite\u00bb, \u00abqui sulla sinistra c'\u00e8
+     Mondadori\u00bb, \u00abqui c'\u00e8 la farmacia Pirani\u00bb) vengono identici. */
+  var TAGLIA_NOME = new RegExp('^.*?(?:(?:qui|qua)' + LATO +
+    '[,\\s]*)?(?:c[\'\u2019]?[e\u00e8]|ce|sta|si trova|abbiamo)\\s+', 'i');
+  var QUI_IN_CODA = /[,\s]+(?:qui|qua)\s*$/i;
 
   function dallaVoce(testo) {
     var grezzo = String(testo || '').trim().replace(/[?!.]+$/, '');
@@ -168,7 +181,9 @@ function Contributi(opzioni) {
        dentro l'app il nome non serve a niente: si toglie e si guarda il
        resto. Valgono anche «ehi Yourbea» e «senti Yourbea».
        ============================================================ */
-    grezzo = grezzo.replace(/^(?:ehi|hey|ei|senti|scusa|ciao)?\s*yourbea\s*[,:]?\s*/i, '').trim();
+    /* e «bea» come lo scrive la dettatura: il nome intero non arriva
+       quasi mai. Dei sei nomi storpiati nei diari, quattro sono «Bea». */
+    grezzo = grezzo.replace(/^(?:ehi|hey|ei|senti|scusa|ciao)?\s*(?:yourbea|urbea|bea)\s*[,:]?\s*/i, '').trim();
     var t = sbassa(grezzo);
     if (!t) return null;
     /* la smentita prima: «qui NON c'e' piu' il ferramenta» comincia come
@@ -222,6 +237,7 @@ function Contributi(opzioni) {
        taglio cercava «c'e» — cosi' il nome restava tutta la frase. */
     var nome = grezzo
       .replace(TAGLIA_NOME, '')
+      .replace(QUI_IN_CODA, '')
       .replace(/^(?:segnala|segna|aggiungi|metti)\s+(?:qui\s+)?/i, '')
       .replace(/^(?:un|uno|una|il|lo|la|i|gli|le)\s+/i, '')
       /* e NON si tolgono i tipi: «la farmacia Pirani» resta «farmacia
