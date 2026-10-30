@@ -2717,7 +2717,19 @@
        per intero lei: l'attacco va solo sul testo della voce di sistema. */
     segnaDetto(d.tipo, d.testo);
     var detto = modi.veste(d.tipo, d.testo);
+    /* ---------- LE INDICAZIONI NON SI ACCUMULANO ---------- 30/10/2026
+       Di una guida serve l'ULTIMA cosa vera. Quelle che stanno ancora
+       aspettando in coda parlano di una svolta che hai gia' passato: al
+       Palabianchini, 14 frasi su 19 sono uscite con cinque secondi o
+       piu' di ritardo, la peggiore con ventisei. Vedi parti/voce.js,
+       «una guida dice l'ultima cosa vera».
+       Gli AVVISI non entrano qui: uno scalino o un attraversamento non
+       si sostituiscono mai, sono dove metti i piedi. */
+    var genere = (!d.avviso && (d.tipo === 'passo' || d.tipo === 'svolta' ||
+                                d.tipo === 'preavviso' || d.tipo === 'parto' ||
+                                d.tipo === 'fuori')) ? 'guida' : null;
     var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo,
+                                    sostituisce: genere,
                                     rifai: rifaiLaDistanza(d, detto) });
     if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
@@ -3010,6 +3022,13 @@
         agganciataInProva = s.viaAgganciata;
         agganciataConferme = 1;
       }
+      /* GLI INCROCI LI DICE GIA' parti/incroci.js, dal 16/10, con le sue
+         cinque regole — venticinque metri, da che parte sei girato, mai
+         due volte, solo in Utilita'. Il 30/10 qui ne avevo aggiunto un
+         altro, piu' povero, senza guardare che ci fosse gia': tolto.
+         Quello che mancava davvero non era DIRLO, era non far diventare
+         la trasversale la tua via, e sta nella regola 7 di
+         parti/aggancio.js. */
       if (agganciataConferme === 2 && !uguali(s.viaAgganciata, ultimaVia)) {
         var AD = Date.now();
         var aspetta = aPiediOra() ? 25000 : 120000;

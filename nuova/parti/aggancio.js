@@ -236,6 +236,44 @@ function Aggancio(opzioni) {
         }
       }
     }
+    /* ============================================================
+       REGOLA 7: UNA STRADA DI TRAVERSO NON E' LA TUA — LA INCROCI
+       (30/10) Vince, dopo Latina: «agli incroci a volte, pur andando
+       dritto, mi dici: hai imboccato questa strada; in realta' sto
+       andando dritto». E: «puoi semplicemente dire, incroci questa
+       strada».
+       Il quaderno gli da' ragione tre volte in un minuto e mezzo:
+         16:07:22 Via Amerigo Vespucci → 16:07:36 Via Scrivia → 16:07:44
+         di nuovo Amerigo Vespucci; 16:08:08 Via Ticino → 16:08:17
+         Amerigo Vespucci; 16:09:39 Via Amsterdam → :43 Vespucci → :48
+         Amsterdam.
+       Scrivia e Ticino sono LE TRASVERSALI: in un incrocio passano a
+       pochi metri dal punto, e vincevano perche' erano piu' vicine.
+       La regola 6 qui sopra copriva solo le PARALLELE (il GPS che
+       scivola). Questa copre l'altro caso, ed e' la stessa idea: a una
+       strada che taglia la tua non ci arrivi andando dritto.
+       Vale solo A PIEDI, perche' e' li' che si guida chi non vede —
+       Vince: «in auto m'interessa zero». E non si butta niente: il nome
+       torna fuori come `incrocia`, che per chi non vede e' una cosa da
+       sapere.
+       ============================================================ */
+    var incrocia = null;
+    /* si guarda MIGLIORE, non scelto: quando la trasversale passa a un
+       metro — cioe' proprio sull'incrocio — la regola 3 qui sopra ha gia'
+       tenuto la tua via, e guardando `scelto` non ci si accorgerebbe
+       nemmeno che c'e' un incrocio da dire. */
+    if (s.aPiedi !== false && viaDiPrima && migliore && migliore.nome &&
+        migliore.nome !== viaDiPrima && migliore.m <= QUANTO_LONTANO &&
+        typeof s.direzione === 'number' && s.direzioneBuona &&
+        migliore.verso !== undefined && migliore.verso !== null) {
+      var diTraverso = quantoGira(s.direzione, migliore.verso);
+      diTraverso = Math.min(diTraverso, 180 - diTraverso);
+      /* oltre 50 gradi dalla direzione in cui stai andando: la tagli */
+      if (diTraverso > 50 && suDiPrima && suDiPrima.m <= QUANTO_LONTANO) {
+        incrocia = migliore.nome;
+        scelto = suDiPrima;
+      }
+    }
     /* e si tiene il conto di quando hai camminato di traverso alla tua
        via: e' quello che distingue una svolta da uno scivolamento. */
     if (typeof s.direzione === 'number' && s.direzioneBuona && versoDiPrima !== null) {
@@ -249,6 +287,7 @@ function Aggancio(opzioni) {
     viaDiPrima = scelto.nome || viaDiPrima;
     quando = ora();
     return { lat: scelto.lat, lon: scelto.lon, via: scelto.nome,
+             incrocia: incrocia,
              spostato: Math.round(dist(s.lat, s.lon, scelto.lat, scelto.lon)) };
   }
 

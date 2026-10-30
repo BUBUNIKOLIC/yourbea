@@ -449,16 +449,41 @@ function MotoreVoce(opzioni) {
     if (livello > livelloInCorso) {
       /* non taglia, ma non si mette in fondo: parla appena l'altra finisce */
       coda.unshift({ testo: testo, clip: clip, livello: livello, valida: valida,
-                     rifai: rifai, uguale: daConfrontare });
+                     rifai: rifai, uguale: daConfrontare, sostituisce: p.sostituisce || null });
       if (coda.length > CODA_MAX) coda.length = CODA_MAX;
       diario('APPENA FINISCE (' + livello + '): ' + String(testo).slice(0, 40));
       return true;
+    }
+    /* ---------- UNA GUIDA DICE L'ULTIMA COSA VERA ---------- 30/10/2026
+       Vince, dopo la prova del Palabianchini: «continua a interrompersi
+       alle volte». Misurato sul quaderno di quella camminata: delle 19
+       frasi passate per la coda, **14 sono uscite con cinque secondi o
+       piu' di ritardo, e la peggiore con VENTISEI**. Alle 17:58, in
+       ventisei secondi, sette frasi una dietro l'altra: «svolta a destra
+       per rimanere su Via Cavata», «mancano 70 metri», «svolta a
+       destra», «mantieni la destra per imboccare Via Mario Lauro»,
+       «mancano 40 metri»... Quattro modi di dire la stessa svolta, piu'
+       i metri che nel frattempo erano cambiati.
+       Non era un'interruzione tecnica: ognuna aspettava che finisse la
+       precedente. Ma chi ascolta sente una frase continuamente
+       rimpiazzata da un'altra versione di se stessa — ed e' peggio, perche'
+       quando senti «svolta a destra» la svolta l'hai gia' passata.
+       Chi mette in coda una frase con `sostituisce` butta via quelle
+       dello stesso genere che stanno ancora aspettando: di una guida
+       serve l'ULTIMA cosa vera, non la fila di quelle vecchie. */
+    if (p.sostituisce) {
+      var prima = coda.length;
+      coda = coda.filter(function (f) { return f.sostituisce !== p.sostituisce; });
+      if (coda.length < prima) {
+        diario('SOSTITUITE in coda: ' + (prima - coda.length) + ' di «' + p.sostituisce + '»');
+      }
     }
     for (var i = 0; i < coda.length; i++) {
       if (normalizza(coda[i].uguale || coda[i].testo) === normalizza(daConfrontare)) { diario('GIÀ IN CODA'); return true; }
     }
     if (livello === CENNO && coda.length >= CODA_MAX) { diario('CODA PIENA, cenno buttato'); return false; }
-    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida, rifai: rifai, uguale: daConfrontare });
+    coda.push({ testo: testo, clip: clip, livello: livello, valida: valida, rifai: rifai,
+                uguale: daConfrontare, sostituisce: p.sostituisce || null });
     coda.sort(function (a, b) { return b.livello - a.livello; });
     if (coda.length > CODA_MAX) coda.length = CODA_MAX;
     diario('IN CODA (' + livello + '): ' + String(testo).slice(0, 40));

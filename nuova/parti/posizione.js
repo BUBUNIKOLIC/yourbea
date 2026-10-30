@@ -181,6 +181,9 @@ function Posizione(opzioni) {
     passi: null, passiPrima: null, passiCambiati: 0, passiQuando: 0,
     attivita: null, attivitaQuando: 0, attivitaSicura: false,
     viaAgganciata: null,
+    /* la strada che stai TAGLIANDO, non percorrendo: regola 7
+       dell'aggancio, 30/10 */
+    incroci: null, incrociQuando: 0,
     velocitaAlta: 0, velocitaAltaQuando: 0,
     /* il corso che dice il telefono, se lo dice */
     corsoSuo: null, corsoSuoPrec: null, corsoSuoQuando: 0,
@@ -348,6 +351,10 @@ function Posizione(opzioni) {
       if (posato) {
         lat = posato.lat; lon = posato.lon;
         stato.viaAgganciata = posato.via || null;
+        if (posato.incrocia && posato.incrocia !== stato.incroci) {
+          stato.incroci = posato.incrocia; stato.incrociQuando = ora();
+          diario('INCROCIO: taglio ' + posato.incrocia + ', resto su ' + (posato.via || '?'));
+        }
         if (posato.spostato >= 5) diario('AGGANCIO: spostata di ' + posato.spostato + ' m su ' + (posato.via || 'una via'));
       } else {
         stato.viaAgganciata = null;
