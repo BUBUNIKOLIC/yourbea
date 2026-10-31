@@ -621,6 +621,40 @@ function Guida(opzioni) {
        il ponte» non si vede finche' non si guarda la frase intera. */
     puoi: puoi,
     meta: function () { return meta; },
+    /* ---------- DOVE DEVO ANDARE, ADESSO ---------- 31/10/2026
+       «Ed effettivamente non mi ha guidato fino a casa» (Vince). Il
+       quaderno di stamattina: percorso per casa chiesto alle 08:17:03,
+       detto «Adesso: cammina su Via Vincenzo Cerulli», e poi per DODICI
+       MINUTI nemmeno una svolta. Non era rotto: passo() si chiama a ogni
+       posizione nuova, e in quei dodici minuti il telefono ne ha date
+       DUE (08:19:27 e 08:26:05, lo stesso punto, 0 km/h). Vince era
+       fermo, e l'app da fermo e' muta per costruzione — iOS consegna una
+       posizione solo quando ti sei spostato di cinque metri.
+       Per uno che vede non cambia niente: guarda lo schermo. Per uno che
+       non vede, un percorso che tace e' un percorso che non c'e': resta
+       li' e non sa piu' se la guida e' accesa ne' da che parte andare.
+       Questa dice la mossa di adesso senza toccare niente, e la chiama
+       il battito dell'app quando da un minuto non si e' detto nulla. */
+    dovaiAdesso: function () {
+      if (!meta) return null;
+      if (avanzamento && avanzamento.quantoELungo() > 0) {
+        var pr = avanzamento.prossima();
+        if (pr && pr.svolta && pr.svolta.testo) {
+          return { tipo: 'prossima', livello: 'guida',
+                   testo: pr.manca < PREAVVISO
+                     ? conAvvertenza('Adesso: ' + minuscola(pr.svolta.testo))
+                     : conAvvertenza('Verso ' + meta.n + ': fra ' +
+                         (Math.round(pr.manca / 10) * 10) + ' metri, ' + passi(pr.manca) +
+                         ', ' + puoi(pr.svolta.testo) + '.') };
+        }
+      }
+      if (svolte.length && prossima < svolte.length && svolte[prossima].testo) {
+        return { tipo: 'prossima', livello: 'guida',
+                 testo: conAvvertenza('Verso ' + meta.n + ': ' + minuscola(svolte[prossima].testo)) };
+      }
+      return { tipo: 'prossima', livello: 'guida',
+               testo: 'Stai andando verso ' + meta.n + '.' };
+    },
     /* il tracciato, perche' la posizione ci si possa posare sopra:
        quando la guida e' accesa, sapere su quale linea stai andando vale
        piu' di tutte le vie intorno (parti/aggancio.js, regola 5). */

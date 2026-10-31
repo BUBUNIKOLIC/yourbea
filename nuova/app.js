@@ -1755,6 +1755,27 @@
                                 : 'Ti sto seguendo: qui intorno non ho niente di segnato.' });
   }, 20000);
 
+  /* ---------- UN PERCORSO ACCESO NON STA ZITTO ---------- 31/10/2026
+     Il battito che chiude il buco di stamattina (vedi dovaiAdesso() in
+     parti/guida.js): finche' c'e' una meta, se da un minuto non si e'
+     detta una cosa della guida, si ridice dove deve andare. Da fermo
+     serve esattamente a questo — il «SEGNO DI VITA» qui sopra salta
+     proprio quando sei fermo, ed e' per questo che alle 08:17 Vince non
+     ha sentito piu' niente.
+     Un minuto perche' le svolte vere arrivano piu' spesso di cosi': a
+     percorso in movimento questo non parla mai. */
+  var quandoHoGuidato = 0;
+  setInterval(function () {
+    if (!acceso || !guida.meta()) return;
+    if (voce.staParlando() || staAspettando()) return;
+    if (Date.now() - quandoHoGuidato < 60000) return;
+    var mossa = guida.dovaiAdesso();
+    if (!mossa) return;
+    quandoHoGuidato = Date.now();
+    diario('GUIDA MUTA da un minuto: ridico la mossa');
+    dillo(mossa);
+  }, 10000);
+
   /* il giro della musica: una volta ogni mezzo secondo, così l'abbassata
      sotto la voce si sente morbida e non a scatti. */
   setInterval(function () {
@@ -2261,6 +2282,7 @@
       diario('A CASA: il punto segnato nella vecchia');
       Promise.all([intorno.strada(qui0.lat, qui0.lon), intorno.percorso(qui0, meta0)]).then(function (r) {
         PERCORSO = r[1];
+        riparlo('parte un percorso nuovo');
         dilloSubito(guida.vaiA(meta0, qui0, r[0], r[1]));
       });
       return;
@@ -2504,6 +2526,7 @@
       PERCORSO = p;                          // la mappa ci disegna la strada
       /* percorso nuovo: il conto dei ricalcoli riparte da zero */
       ultimoRicalcolo = 0; ultimoFuoriMetri = 0;
+      riparlo('parte un percorso nuovo');
       dilloSubito(guida.vaiA(m, qui, r[0], p));
     });
   }
@@ -2596,6 +2619,27 @@
   var soloMonumenti = false;
   try { soloMonumenti = localStorage.getItem('yourbea2-solo-monumenti') === 'si'; } catch (e) {}
 
+  /* ---------- ARRIVATO VUOL DIRE FINITO ---------- 31/10/2026
+     «Continua a non chiudersi», e alla domanda se fosse la voce che va
+     avanti dopo essere arrivato: «sì, quello». Il quaderno di stamattina
+     gli dà ragione: alle 08:32:01 «Sei arrivato: casa tua, proprio
+     davanti a te», e poi l'app ha parlato altre SEI volte, fino alle
+     08:38:26 — la fermata Corazzieri, un attraversamento, «stai
+     percorrendo Via dei Corazzieri», i supermercati. Era a casa, con la
+     macchina parcheggiata, e lei continuava a descrivergli la strada.
+     La regola che aveva dettato il 30/10 e' questa: «se c'è un percorso
+     deve guidare verso l'obiettivo, se invece è una passeggiata allora
+     descrive». Finito il percorso, l'app non si rimette a passeggiare da
+     sola: tace. Restano solo le due cose che non sono informazione —
+     quello che chiede lui, e dove mette i piedi. Si risveglia al primo
+     comando, o quando parte un altro percorso. */
+  var arrivatoETaccio = false;
+  function riparlo(perche) {
+    if (!arrivatoETaccio) return;
+    arrivatoETaccio = false;
+    diario('RIPARLO dopo l\'arrivo: ' + perche);
+  }
+
   var SEMPRE = { svolta: 1, preavviso: 1, prossima: 1, arrivato: 1, fuori: 1, parto: 1,
                  manca: 1, tappa: 1, finita: 1, lascio: 1, elenco: 1, avvisa: 1,
                  chiama: 1, 'chiama-contatto': 1, furto: 1, scelte: 1, 'chi-e': 1,
@@ -2657,6 +2701,10 @@
     }
     if (staAspettando() && d.livello !== 'emergenza') {
       diario('ZITTO: sto aspettando una risposta (' + inAttesaDi.cosa + ')');
+      return;
+    }
+    if (arrivatoETaccio && d.livello !== 'emergenza' && !d.chiesto && !d.avviso) {
+      diario('ARRIVATO: taccio ' + d.tipo);
       return;
     }
     /* LA REGOLA: a chi serve questa cosa, e regge il movimento?
@@ -2727,7 +2775,9 @@
        si sostituiscono mai, sono dove metti i piedi. */
     var genere = (!d.avviso && (d.tipo === 'passo' || d.tipo === 'svolta' ||
                                 d.tipo === 'preavviso' || d.tipo === 'parto' ||
+                                d.tipo === 'prossima' ||
                                 d.tipo === 'fuori')) ? 'guida' : null;
+    if (genere === 'guida' || d.tipo === 'arrivato' || d.tipo === 'manca') quandoHoGuidato = Date.now();
     var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo,
                                     sostituisce: genere,
                                     rifai: rifaiLaDistanza(d, detto) });
@@ -2742,6 +2792,11 @@
        passi gira a destra»; se un camion la copre, la vibrazione no. */
     if (d.tipo === 'svolta' || d.tipo === 'arrivato' || d.tipo === 'percorso-arrivato') {
       vibra(d.tipo === 'svolta' ? 'forte' : 'arrivato');
+    }
+    /* e qui il percorso e' finito: da adesso tace (vedi arrivatoETaccio) */
+    if (d.tipo === 'arrivato' || d.tipo === 'percorso-arrivato') {
+      arrivatoETaccio = true;
+      diario('ARRIVATO: da qui in poi taccio, finche\' non mi chiedi qualcosa');
     }
     if (d.tipo === 'scheda' || d.tipo === 'cosa-vedere' || d.tipo === 'approfondimento') {
       var viaOra = ultimaVia;        // il nome, non il numero
@@ -3509,6 +3564,7 @@
   }
 
   function comando(testo, soloComandi) {
+    riparlo('mi hai detto qualcosa');
     testo = scioglieCortesia(testo);
     var t = normalizza(testo);
     /* IL TESTO COME L'HA DETTO, accanto a quello sbassato. normalizza()
@@ -4429,7 +4485,45 @@
         return;
       }
     }
-    if (voce.staParlando()) diario('comando mentre parlavo: lo eseguo comunque');
+    /* ---------- CHI PARLA CON ALTRI NON STA PARLANDO CON ME ---------- 31/10/2026
+       «Ancora troppe frasi smorzate» (Vince), per la terza mattina di
+       fila. Il 30/10 avevo chiuso il doppio comando del guscio, e quello
+       e' chiuso davvero; questo e' un altro. Nel quaderno di stamattina
+       la riga «comando mentre parlavo: lo eseguo comunque» compare SETTE
+       volte, e CINQUE stanno dentro i tre minuti di guida verso casa
+       (08:29:16 → 08:31:09). Quello che l'app ha sentito, e per cui si
+       e' zittita a meta' frase: «Il compleanno della principessa di»,
+       «Vedi un po'», «E», «Vedi Rebecca», «US Viale Luca Cau». Vince
+       stava parlando con sua figlia in macchina. Nessuna di quelle
+       cinque era un comando: cinque indicazioni di strada troncate per
+       niente.
+       Da oggi: mentre sta parlando, una frase che nessuno riconosce non
+       la interrompe. Si scrive nel quaderno e si lascia perdere. Un
+       comando vero tronca come prima — chi dice «fermati» deve essere
+       ubbidito a meta' parola — e per essere sicuri che non si perda
+       niente passano anche il proprio nome e le segnalazioni, che hanno
+       le loro regole in parti/contributi.js. Fuori da quando parla non
+       cambia niente: in silenzio l'app ascolta tutto come prima. */
+    if (voce.staParlando()) {
+      /* IL RICONOSCITORE MANDA FINO A TRE IPOTESI, e il comando buono puo'
+         essere la seconda: basta che UNA sia per me e passano tutte, che
+         poi comandoFraLeIpotesi le prova in fila come sempre. */
+      var ipotesi = (Array.isArray(testo) ? testo : [testo])
+                      .map(function (x) { return normalizza(x || ''); })
+                      .filter(function (x) { return x; });
+      var perMe = ipotesi.some(function (u) {
+        if (unComando(u)) return true;
+        if (/\b(?:yourbea|yourbe|your bea|urbea|urbe|eubea|curve|curbe|jurbea|iurbea|rube|bea)\b/.test(u)) return true;
+        if (/\b(?:portami|accompagnami|andiamo|voglio andare|devo andare|mi serve|ho bisogno|come arrivo|come ci arrivo|riportami)\b/.test(u)) return true;
+        try { if (contributi.dallaVoce(u)) return true; } catch (e) {}
+        return false;
+      });
+      if (ipotesi.length && !perMe) {
+        diario('NON ERA PER ME (parlavo): ' + ipotesi[0]);
+        return;
+      }
+      diario('comando mentre parlavo: lo eseguo comunque');
+    }
     if (Array.isArray(testo)) { comandoFraLeIpotesi(testo); return; }
     comando(testo || '');
   };

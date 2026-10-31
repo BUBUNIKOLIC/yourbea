@@ -450,8 +450,57 @@ function Intorno(opzioni) {
            inciampa. */
         var senzaNome = /\b(?:passerella|marciapiede|attraversamento|sentiero|il percorso)\b/i.test(testo);
         var gradini = /gradin|scalin|scala/i.test(testo);
-        if (k && metri < 15 && senzaNome && !gradini) return;
+        /* ---------- NOVE METRI DI VIA NON SONO UNA SVOLTA ---------- 31/10/2026
+           «Mentre eravamo in via dei Corazzieri mi ha detto di girare in
+           via dei Guastatori, che stava alla nostra sinistra non a
+           destra, ma non dovevo girare: dovevo andare diritto» (Vince).
+           Rifatto stamattina il suo percorso vero (41.824512,12.491393 →
+           casa) e contato: la manovra n. 9 era «Svolta a destra su Via
+           dei Guastatori» per NOVE METRI, e la n. 10 subito dopo «Svolta
+           a sinistra su Via dei Corazzieri». Quei nove metri sono la
+           larghezza dell'incrocio: tu attraversi e tiri dritto, e la
+           svolta vera e' quella dopo.
+           Il filtro c'era dal 23/10 ma buttava solo i pezzi SENZA nome —
+           passerella, marciapiede. Bastava che l'incrocio avesse un nome
+           di via per rientrare dalla finestra. Da oggi il metro conta
+           piu' del nome: sotto i quindici metri non e' una svolta,
+           qualunque cosa ci sia scritto. I gradini restano sempre. */
+        if (k && metri < 15 && !gradini) return;
         if (svolte.length && svolte[svolte.length - 1].testo === testo) return;  // Valhalla la spezza in due
+        /* ---------- LA STESSA VIA NON SI SVOLTA DUE VOLTE ---------- 31/10/2026
+           Dallo stesso percorso: n. 3 «Svolta a sinistra su Via Fratelli
+           Laurana», e 17 metri dopo la n. 4 «Mantieni la destra per
+           imboccare Via dei Fratelli Laurana». Poi la n. 5 «Svolta a
+           destra su Viale Luca Gaurico» e la n. 6 «Mantieni la sinistra
+           per rimanere su Viale Luca Gaurico». Sono quattro annunci per
+           due svolte, e il secondo di ogni coppia dice un lato opposto al
+           primo: stamattina Vince le ha sentite tutte e quattro, a dieci
+           secondi l'una dall'altra.
+           Quando due manovri di fila nominano la stessa via, la svolta e'
+           una: vale la prima, quella che dice di girare. La seconda e'
+           la corsia da tenere dopo — informazione per chi guida, non per
+           chi cammina. */
+        /* il nome della via dentro la frase, scritto sempre allo stesso
+           modo: Valhalla dice «Via Fratelli Laurana» nella svolta e «Via
+           dei Fratelli Laurana» nella corsia dopo, ed e' la stessa via —
+           quindi gli articoli si levano prima di confrontare. Si cerca il
+           nome da solo, senza la preposizione davanti: «per imboccare Via
+           dei Fratelli Laurana» non ha nessun «su». */
+        var viaDi = function (t) {
+          var m2 = /\b((?:via|viale|corso|piazza|largo|vicolo|lungotevere|salita|strada|circonvallazione)\b[^,.;]*)/i.exec(t || '');
+          return m2 ? m2[1].toLowerCase()
+                        .replace(/\b(?:dei|degli|delle|del|della|dello|di|la|il|lo|le|l)\b/g, '')
+                        .replace(/[^a-z\u00e0-\u00ff ]/g, '')
+                        .replace(/\s+/g, ' ').trim() : '';
+        };
+        if (svolte.length) {
+          var viaPrima = viaDi(svolte[svolte.length - 1].testo);
+          var viaOra = viaDi(testo);
+          if (viaPrima && viaOra && viaPrima === viaOra) {
+            diario('PERCORSO: «' + testo.slice(0, 45) + '» e la stessa via di prima, la salto');
+            return;
+          }
+        }
         svolte.push({ lat: pt[0], lon: pt[1], testo: testo, metri: metri, avviso: gradini });
       });
       if (!svolte.length) return null;
