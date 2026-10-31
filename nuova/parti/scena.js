@@ -381,6 +381,10 @@ function Scena(opzioni) {
     var c = p.cosa || p.categoria || '';
     if (!c) return p.nome;
     if (p.nome.toLowerCase().indexOf(String(c).toLowerCase()) === 0) return p.nome;
+    /* «LA ORTOFRUTTA» NO. Uscito al banco il 31/10 facendo girare il
+       ripasso: davanti a vocale l'articolo si elide, e in italiano
+       parlato «la ortofrutta» suona come un errore di chi legge. */
+    if (/^[aeiouàèéìòù]/i.test(String(c))) return 'l\'' + c + ' ' + p.nome;
     return (femmina(c) ? 'la ' : 'il ') + c + ' ' + p.nome;
   }
 
@@ -407,10 +411,16 @@ function Scena(opzioni) {
     var pezzi = [];
     if (via) pezzi.push('Sei sempre in ' + via);
 
-    var tre = servizi(qui, mappa.punti, s.direzione, s.direzioneBuona !== false, 2);
+    /* IL RIPASSO GIRA. Con trenta secondi di silenzio massimo (il numero
+       di Vince) la stessa frase tornerebbe due volte al minuto: allora
+       ogni volta si parte da una cosa diversa fra quelle vicine. */
+    var tre = servizi(qui, mappa.punti, s.direzione, s.direzioneBuona !== false, 6);
     if (tre.length) {
-      pezzi.push(tre[0]);
-      if (tre[1] && pezzi.length < 3) pezzi.push(tre[1]);
+      var da = giroRipasso % tre.length;
+      giroRipasso = (giroRipasso + 1) % Math.max(1, tre.length);
+      pezzi.push(tre[da]);
+      var dopo = tre[(da + 1) % tre.length];
+      if (tre.length > 1 && dopo && pezzi.length < 3) pezzi.push(dopo);
     } else {
       /* nessun servizio: almeno com'e' fatto il posto */
       var forma = laForma(qui, (s.mappa || {}).aree || []);
@@ -421,11 +431,13 @@ function Scena(opzioni) {
       ? (pezzi[0] + '. ' + capo(pezzi.slice(1).join('; ')) + '.')
       : (pezzi[0] + '.');
     /* e due volte di fila la stessa, nemmeno qui */
-    if (testo === ultimoRipasso && ora() - ultimoRipassoQuando < 60000) return null;
+    /* la stessa frase identica non due volte di fila: venticinque
+       secondi, cosi' a trenta il ripasso dopo puo' partire. */
+    if (testo === ultimoRipasso && ora() - ultimoRipassoQuando < 25000) return null;
     ultimoRipasso = testo; ultimoRipassoQuando = ora();
     return { tipo: 'scena', livello: 'cenno', testo: testo };
   }
-  var ultimoRipasso = '', ultimoRipassoQuando = 0;
+  var ultimoRipasso = '', ultimoRipassoQuando = 0, giroRipasso = 0;
 
   return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, dimenticaTutto: dimenticaTutto, attraversamenti: attraversamenti,
            laForma: laForma, dimentica: dimentica, comunqueQualcosa: comunqueQualcosa,

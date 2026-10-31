@@ -1768,10 +1768,13 @@
      I due buchi del quaderno dell'una: 200 secondi (12:54:59 → 12:58:19)
      e 121 (13:01:45 → 13:03:46), piu' buchi da 54, 46, 40 e 36. In
      Utilita', in una via dove sei appena passato, i tempi di riposo
-     coprono tutto e l'app tace. Dopo settanta secondi di silenzio si
-     parla comunque: un ripasso vale piu' del niente, per chi non vede. */
+     coprono tutto e l'app tace. Dopo TRENTA secondi di silenzio si parla
+     comunque: un ripasso vale piu' del niente, per chi non vede.
+     Trenta e' il numero di Vince, 31/10: «anche 30 secondi». Perche' non
+     diventi un apparecchio che ripete, il ripasso GIRA fra le cose
+     vicine (vedi comunqueQualcosa in parti/scena.js). */
   var quandoHoParlato = Date.now();
-  var SILENZIO_MAX = 70000;
+  var SILENZIO_MAX = 30000;
   setInterval(function () {
     if (!acceso || modo !== 'servizi') return;
     if (guida.meta()) return;                  // in viaggio comanda la guida
