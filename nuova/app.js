@@ -1764,6 +1764,30 @@
      ha sentito piu' niente.
      Un minuto perche' le svolte vere arrivano piu' spesso di cosi': a
      percorso in movimento questo non parla mai. */
+  /* ---------- IL BATTITO DEL SILENZIO ---------- 31/10/2026
+     I due buchi del quaderno dell'una: 200 secondi (12:54:59 → 12:58:19)
+     e 121 (13:01:45 → 13:03:46), piu' buchi da 54, 46, 40 e 36. In
+     Utilita', in una via dove sei appena passato, i tempi di riposo
+     coprono tutto e l'app tace. Dopo settanta secondi di silenzio si
+     parla comunque: un ripasso vale piu' del niente, per chi non vede. */
+  var quandoHoParlato = Date.now();
+  var SILENZIO_MAX = 70000;
+  setInterval(function () {
+    if (!acceso || modo !== 'servizi') return;
+    if (guida.meta()) return;                  // in viaggio comanda la guida
+    if (voce.staParlando() || voce.inCoda().length || staAspettando()) return;
+    if (Date.now() - quandoHoParlato < SILENZIO_MAX) return;
+    var s = posizione.leggi();
+    if (!s || s.prec > 50) return;
+    var rip = scena.comunqueQualcosa({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
+                                       direzioneBuona: s.direzioneBuona, strada: ultimaVia,
+                                       mappa: SERVIZI });
+    if (!rip) return;
+    diario('SILENZIO da ' + Math.round((Date.now() - quandoHoParlato) / 1000) +
+           ' s: dico comunque qualcosa');
+    dillo(rip);
+  }, 10000);
+
   var quandoHoGuidato = 0;
   setInterval(function () {
     if (!acceso || !guida.meta()) return;
@@ -2782,6 +2806,7 @@
                                     sostituisce: genere,
                                     rifai: rifaiLaDistanza(d, detto) });
     if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
+    quandoHoParlato = Date.now();   /* il battito del silenzio parte da qui */
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
        ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha
        perso il filo di dove si trova — e chi non vede non può recuperarlo
@@ -3424,6 +3449,15 @@
                                 direzioneBuona: s.direzioneBuona, strada: ultimaVia,
                                 mappa: SERVIZI, fermo: true });
       if (sc) { dillo(sc); return; }
+      /* ---------- NON SI STA ZITTI ---------- 31/10/2026
+         «Una app che descrive, che non parla» (Vince). Qui finiva: 13
+         volte in quindici minuti, con 110 punti intorno. Adesso, se la
+         descrizione non ha niente di nuovo, si fa un ripasso: la via
+         sotto i piedi e la cosa piu' vicina. */
+      var rip = scena.comunqueQualcosa({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
+                                         direzioneBuona: s.direzioneBuona, strada: ultimaVia,
+                                         mappa: SERVIZI });
+      if (rip) { diario('FERMO: niente di nuovo, faccio un ripasso'); dillo(rip); return; }
       diario('FERMO: in Utilita non c\'era niente da descrivere');
       return;
     }
@@ -4457,7 +4491,19 @@
        scritta — «dimmi una cosa a caso che non esiste» veniva buttata per
        via delle otto parole, senza nemmeno guardare che cominciava con
        «dimmi»: e uno che chiede qualcosa resta senza risposta. */
-    return /^(?:dimmi|dammi|fammi|portami|leggi|cerca|trova|cosa|dove|quanto|quanti|chi |come|quando|puoi|mi |ti |che )/.test(t);
+    /* ---------- «PUOI SCENDERE» NON E' UNA DOMANDA PER ME ---------- 31/10/2026
+       Via dei Corazzieri, 12:49 → 13:01: 13 frasi sentite, e quasi tutte
+       erano Vince che parlava con la figlia — «orsetto», «togli»,
+       «ciao», «piccolina», «puoi scendere», «ormai sono magro biotico».
+       A «puoi scendere» l'app ha risposto a voce alta «Questa non l'ho
+       capita. Se vuoi, dimmi comandi...», perche' qui bastava cominciare
+       con «puoi». Bastavano anche «mi», «ti», «che», «come»: cioe' mezzo
+       parlato di tutti i giorni.
+       Chi parla con l'app, in pratica, la chiama per nome o le chiede
+       qualcosa con un verbo: quella e' la riga. Tutto il resto non e' per
+       noi, e si lascia perdere in silenzio — nel quaderno resta scritto. */
+    if (/^(?:dimmi|dammi|fammi|portami|accompagnami|leggi|cerca|trova|raccontami|ripeti|descrivi|segna|registra|apri|chiudi|aiuto)\b/.test(t)) return true;
+    return /^(?:dove sono|dove siamo|dov e|cosa c e|cosa vedo|cosa ci e|quanto manca|quanti passi|che strada|che numero|come arrivo|come si chiama|chi e)\b/.test(t);
   }
 
   /* ---------- «CREA PERCORSO» NON E' UN NOME DI PERSONA ----------

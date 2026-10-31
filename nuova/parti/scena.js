@@ -386,8 +386,49 @@ function Scena(opzioni) {
 
   function dimenticaILati() { ultimiLati = ''; ultimiLatiQuando = 0; }
 
+  /* ============================================================
+     COMUNQUE QUALCOSA — 31/10/2026
+     «Una app che descrive, che non parla» (Vince). Nel quaderno dell'una,
+     in quindici minuti: 53 volte «SCENA: niente da dire» con 110-115
+     punti intorno, 13 volte «in Utilita non c'era niente da descrivere»,
+     e due buchi di silenzio da 200 e 121 secondi. Non era rotta: i tempi
+     di riposo (servizio 150 s, attraversamenti 180 s, strada 240 s)
+     avevano coperto tutto, e in una via dove sei passato da poco non
+     resta piu' niente di «fresco».
+     Il riposo serve a non diventare un apparecchio che ripete. Ma dopo un
+     minuto di silenzio il problema non e' piu' la ripetizione: e' il
+     silenzio. Allora si ridice la cosa piu' vicina, dicendo che e' un
+     ripasso — «sei sempre in...» — e almeno la via sotto i piedi.
+     Qui NON si guarda `fresco`: questa funzione si chiama solo quando
+     l'app e' stata zitta, e il suo mestiere e' non starlo. */
+  function comunqueQualcosa(s) {
+    var qui = s.qui, mappa = s.mappa || { punti: [] };
+    var via = s.strada ? String(s.strada).replace(/\s+\d+[a-z]?$/i, '') : '';
+    var pezzi = [];
+    if (via) pezzi.push('Sei sempre in ' + via);
+
+    var tre = servizi(qui, mappa.punti, s.direzione, s.direzioneBuona !== false, 2);
+    if (tre.length) {
+      pezzi.push(tre[0]);
+      if (tre[1] && pezzi.length < 3) pezzi.push(tre[1]);
+    } else {
+      /* nessun servizio: almeno com'e' fatto il posto */
+      var forma = laForma(qui, (s.mappa || {}).aree || []);
+      if (forma) pezzi.push(forma);
+    }
+    if (!pezzi.length) return null;
+    var testo = pezzi.length > 1
+      ? (pezzi[0] + '. ' + capo(pezzi.slice(1).join('; ')) + '.')
+      : (pezzi[0] + '.');
+    /* e due volte di fila la stessa, nemmeno qui */
+    if (testo === ultimoRipasso && ora() - ultimoRipassoQuando < 60000) return null;
+    ultimoRipasso = testo; ultimoRipassoQuando = ora();
+    return { tipo: 'scena', livello: 'cenno', testo: testo };
+  }
+  var ultimoRipasso = '', ultimoRipassoQuando = 0;
+
   return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, dimenticaTutto: dimenticaTutto, attraversamenti: attraversamenti,
-           laForma: laForma, dimentica: dimentica,
+           laForma: laForma, dimentica: dimentica, comunqueQualcosa: comunqueQualcosa,
            aiLati: aiLati, dimenticaILati: dimenticaILati };
 }
 
