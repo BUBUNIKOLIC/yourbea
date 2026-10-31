@@ -4185,6 +4185,22 @@
     }
     /* non capito: si risponde solo a chi parlava con noi */
     if (!soloComandi && sembraRivoltoANoi(t)) {
+      /* ---------- ALLA PORTA NON SI BALBETTA ---------- 31/10/2026
+         «Non che inizia a balbettare sin dall'inizio» (Vince). Stamattina,
+         alle 08:09:48 l'app aveva appena chiesto turismo o utilita'; lui ha
+         detto «Come» e alle 08:09:57 si e' sentito «Questa non l'ho capita.
+         Se vuoi, dimmi comandi e ti dico cosa so fare» — una seconda frase
+         lunga sopra una domanda a cui non aveva ancora risposto.
+         Davanti alla porta c'e' una domanda sola e una risposta sola: se
+         non si capisce, si ridice la domanda, non si apre un discorso
+         nuovo. I comandi si spiegano dopo, a chi li chiede. */
+      var allaPortaAncora = false;
+      try { allaPortaAncora = !!(el('porta') && !el('porta').hidden); } catch (e) {}
+      if (allaPortaAncora) {
+        voce.parla('Turismo o utilità?', { livello: voce.GUIDA, ancheSeUguale: true });
+        diario('NON CAPITO alla porta: ridico la domanda — ' + t.slice(0, 40));
+        return true;
+      }
       voce.parla('Questa non l\'ho capita. Se vuoi, dimmi «comandi» e ti dico cosa so fare.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       diario('NON CAPITO (ma era per noi): ' + t.slice(0, 40));
@@ -5013,9 +5029,14 @@
            illustro cosa c'è intorno? O ti cerco un negozio?»: con il «come
            stai» davanti, cinque domande e venticinque parole prima che uno
            potesse aprire bocca.
-           Queste due frasi le ha dettate lui, in quest'ordine. */
-        voce.parla((ioSonoIo ? 'Ciao ' + ioSonoIo + ', c' : 'C') +
-                   'ome posso esserti utile? Turismo o utilità?',
+           Queste due frasi le ha dettate lui, in quest'ordine.
+           E il 31/10, dopo averla usata, l'ha dettata di nuovo: «cioe'
+           almeno buongiorno Vincenzo, vuoi entrare in turismo o in
+           utilita'» — «non che inizia a balbettare sin dall'inizio».
+           Una frase, un nome, una domanda. Niente altro, finche' non
+           risponde. */
+        voce.parla('Buongiorno' + (ioSonoIo ? ' ' + ioSonoIo : '') +
+                   ', vuoi entrare in turismo o in utilità?',
                    { livello: voce.GUIDA, ancheSeUguale: true });
       }
     }
