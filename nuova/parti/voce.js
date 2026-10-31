@@ -125,7 +125,14 @@ function MotoreVoce(opzioni) {
      Quindi qui si tiene la fila di quello che ha detto, e si confronta a
      pezzi (vedi hoDettoIo). */
   var ultimeDette = [];
-  var RICORDO = 120000;
+  /* QUANTO INDIETRO SI GUARDA: 45 secondi, non due minuti. Nel quaderno
+     del 31/10 l'eco piu' in ritardo e' arrivata 31 secondi dopo la frase
+     (11:46:34 → 11:47:05, una cucitura di quattro frasi sue): 45 copre
+     tutte e otto. Piu' corta e' meglio, perche' fuori da questa finestra
+     una frase di Vince non puo' piu' essere confusa con una dell'app —
+     e lui ripete spesso quello che ha appena sentito, per segnare un
+     posto. */
+  var RICORDO = 45000;
   var orologi = [];              // i tempi in corso, per annullarli tutti
 
   function scorda() {
