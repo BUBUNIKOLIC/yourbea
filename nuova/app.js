@@ -4484,6 +4484,29 @@
      ipotesi: tutt'e due vanno bene, cosi' un'app vecchia e una nuova
      parlano con la stessa pagina. */
   window.urbeaComando = function (testo) {
+    /* ---------- LA MIA VOCE NON E' UN COMANDO, NEANCHE DOPO ---------- 31/10/2026
+       Via dei Corazzieri, 11:46:30 → 11:48:34. L'app ha sentito 19 frasi
+       e 11 erano SUE: il riconoscitore le consegna a voce finita, cucite
+       fra loro, quindi il controllo di sotto (che guarda solo la frase in
+       corso, e per intero) non le prendeva. Dentro una c'era «farmacia»:
+       cinque «PORTAMI A: farmacia» mai chiesti, un percorso di 102,8 km,
+       e un anello — diceva «ti porto a Farmacia Marchese», si risentiva,
+       ripartiva. Poi la coda si e' intasata e per il resto della
+       passeggiata ha detto tre frasi sempre uguali.
+       Qui si guarda tutto quello che ha detto negli ultimi due minuti, a
+       pezzi di cinque parole. Un comando vero non ci cade dentro: sono
+       tutti piu' corti («portami a casa», «fermati»). */
+    if (typeof voce.hoDettoIo === 'function') {
+      var ipotesiMie = (Array.isArray(testo) ? testo : [testo])
+                         .filter(function (x) { return x; });
+      var tutteMie = ipotesiMie.length > 0 && ipotesiMie.every(function (x) {
+        return voce.hoDettoIo(x);
+      });
+      if (tutteMie) {
+        diario('ECO: era la mia voce — ' + String(ipotesiMie[0]).slice(0, 60));
+        return;
+      }
+    }
     /* ---------- LA PROPRIA VOCE NON E' UN COMANDO ---------- 29/10/2026
        Da oggi il microfono resta aperto anche mentre l'app parla (il
        telefono ci toglie l'eco). Se un pezzo di eco passa comunque, si
@@ -4997,9 +5020,16 @@
              ': ricomincio dalla porta');
       return;
     }
-    diario('RIPRESA: rientro in ' + (quale === 'cultura' ? 'Turismo' : 'Utilit\u00e0') +
-           ', eri qui ' + Math.round(da / 1000) + ' s fa');
-    entra(quale, true);
+    /* ---------- LA PORTA SI APRE SEMPRE ---------- 31/10/2026
+       «Gia' dall'inizio e' entrata direttamente alla seconda pagina senza
+       presentazione e senza possibilita' di scegliere» (Vince). Era
+       questa ripresa: se avevi usato l'app da meno di due ore, entrava
+       muta nel modo di prima. L'avevo decisa io, e nessuno l'aveva
+       chiesta. Da oggi la porta, il buongiorno e la scelta ci sono ogni
+       volta che l'app si apre: l'inizio non si salta. Il modo resta
+       salvato per il resto (il titolo, la lingua), ma non apre niente. */
+    diario('RIPRESA: c\'era ' + quale + ' di ' + Math.round(da / 1000) +
+           ' s fa, ma l\'inizio non si salta: resto alla porta');
   })();
 
   /* e finche' si cammina l'orologio della ripresa va avanti: cinque ore

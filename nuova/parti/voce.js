@@ -112,6 +112,20 @@ function MotoreVoce(opzioni) {
   var coda = [];
   var inCorso = null;            // la clip che sta suonando
   var ultimoTesto = '', ultimoQuando = 0;
+  /* ---------- QUELLO CHE HO DETTO NEGLI ULTIMI DUE MINUTI ---------- 31/10/2026
+     `cheStaDicendo()` da' solo la frase IN CORSO, e non bastava. Il
+     riconoscitore consegna la frase quando ha finito di sentirla, cioe'
+     DOPO, e spesso incollata a quella di prima: Via dei Corazzieri,
+     11:46:30, l'app ha sentito «Allora un attraversamento senza semaforo
+     col percorso tattile... la farmacia magico sorriso... a 55 passi» —
+     due frasi sue, cucite. Nessuna delle due la conteneva per intero,
+     l'eco non e' scattata, dentro c'era «farmacia» e l'app si e'
+     incamminata verso una farmacia a 102,8 km. Nei dieci minuti di quella
+     prova: 19 frasi sentite, 11 erano la sua stessa voce.
+     Quindi qui si tiene la fila di quello che ha detto, e si confronta a
+     pezzi (vedi hoDettoIo). */
+  var ultimeDette = [];
+  var RICORDO = 120000;
   var orologi = [];              // i tempi in corso, per annullarli tutti
 
   function scorda() {
@@ -305,6 +319,8 @@ function MotoreVoce(opzioni) {
     livelloInCorso = f.livello;
     ultimoTesto = normalizza(f.uguale || f.testo);
     ultimoQuando = ora();
+    ultimeDette.push({ t: normalizza(f.testo), quando: ora() });
+    while (ultimeDette.length > 12) ultimeDette.shift();
     /* ---------- L'ORECCHIO RESTA APERTO, SE IL TELEFONO SA TOGLIERE
        L'ECO ---------- 29/10/2026. Qui si chiudeva sempre, per non
        sentirsi parlare. Il prezzo l'ha pagato Vince: nel diario del
@@ -515,6 +531,27 @@ function MotoreVoce(opzioni) {
     /* cosa sta dicendo adesso: serve alla pagina per non prendere per
        comando l'eco della propria voce (29/10). */
     cheStaDicendo: function () { return parlando ? ultimoTesto : ''; },
+    /* ---------- L'HO DETTO IO? ---------- 31/10/2026
+       Vero se la frase sentita ha in comune CINQUE PAROLE DI FILA con
+       qualcosa che ho detto negli ultimi due minuti. Cinque perche'
+       quattro le azzecca il caso («a destra su via»), e perche' nessun
+       comando vero e' lungo cinque parole uguali a una mia frase:
+       «portami a casa» sono tre, «fermati» una. */
+    hoDettoIo: function (testo) {
+      var n = normalizza(testo || '');
+      if (!n) return false;
+      var p = n.split(' ').filter(function (x) { return x; });
+      if (p.length < 5) return false;
+      var adesso = ora();
+      for (var i = 0; i < ultimeDette.length; i++) {
+        if (adesso - ultimeDette[i].quando > RICORDO) continue;
+        var mia = ' ' + ultimeDette[i].t + ' ';
+        for (var k = 0; k + 5 <= p.length; k++) {
+          if (mia.indexOf(' ' + p.slice(k, k + 5).join(' ') + ' ') >= 0) return true;
+        }
+      }
+      return false;
+    },
     staParlando: function () {
       if (parlando && tettoInCorso && ora() - inizioFrase > tettoInCorso * 2) {
         diario('SBLOCCO: dicevo di parlare da ' + Math.round((ora() - inizioFrase) / 1000) +
