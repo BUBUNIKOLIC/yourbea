@@ -876,6 +876,25 @@
      quel gesto vuole parlare adesso, non aspettare la fine della frase. */
   window.YBzitta = function () { voce.ferma(); };
 
+  /* ============================================================
+     DOPO IL GESTO, BASTA DIRE LA COSA — 01/11/2026
+     «Rendere agevole e immediata la segnalazione» (Vince). Stamattina,
+     47 frasi sentite e 9 segnalazioni riuscite: «Palazzo dell'Eni»,
+     «Gelateria crema molato», «Condominio e alberi», «sono i gradini
+     sono sulla sinistra» — tutte cose che voleva mettere sulla mappa, e
+     nessuna e' arrivata, perche' senza «qui c'e'» davanti non sono
+     segnalazioni.
+     Aggiungere «qui c'e'» a ogni frase e' il contrario di immediato.
+     Ma c'e' un momento in cui l'app SA che le stai parlando: quando le
+     porti il telefono alla bocca e lei risponde «Dimmi». In quei dieci
+     secondi una frase che non e' un comando non e' una chiacchiera: e'
+     la cosa che volevi segnare. */
+  var alLaBoccaFino = 0;
+  window.YBalLaBocca = function () {
+    alLaBoccaFino = Date.now() + 10000;
+    diario('ALLA BOCCA: dieci secondi in cui quello che dici lo segno');
+  };
+
   /* SE UN'ALTRA APP STA SUONANDO, YOURBEA TACE — scelta di Vince, 21/10,
      dopo aver scoperto che l'app si addormentava proprio quando apriva
      Radio 24. Tace, ma resta viva e continua a seguire la strada: appena
@@ -4356,6 +4375,29 @@
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
+    /* ---------- DOPO IL GESTO, QUELLO CHE DICI LO SEGNO ----------
+       Prima di qualunque altra cosa, e PRIMA del filtro «parlava con
+       noi?»: il gesto e' gia' la prova che parlava con noi. «Palazzo
+       dell'Eni» detto camminando non e' una segnalazione; detto col
+       telefono alla bocca, dopo che l'app ha risposto «Dimmi», lo e'. */
+    if (!soloComandi && Date.now() < alLaBoccaFino &&
+        String(grezzo || '').trim().split(/\s+/).length >= 2) {
+      var sg = posizione.leggi();
+      var rg = contributi.segna({ cosa: 'contributo', tipo: 'posto', dice: '',
+                                  come: '', nome: String(grezzo).trim() },
+                                sg && sg.pronto
+                                  ? { lat: sg.lat, lon: sg.lon, prec: sg.prec,
+                                      via: sg.viaAgganciata || ultimaVia || '' }
+                                  : null);
+      if (rg) {
+        alLaBoccaFino = 0;
+        diario('ALLA BOCCA: segnato «' + String(grezzo).slice(0, 40) + '»');
+        dilloSubito({ tipo: rg.tipo === 'segnato' ? 'segnato' : 'niente',
+                      livello: voce.GUIDA, testo: rg.testo });
+        return true;
+      }
+    }
+
     /* non capito: si risponde solo a chi parlava con noi */
     if (!soloComandi && sembraRivoltoANoi(t)) {
       /* ---------- ALLA PORTA NON SI BALBETTA ---------- 31/10/2026

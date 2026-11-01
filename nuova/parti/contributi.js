@@ -166,8 +166,14 @@ function Contributi(opzioni) {
   var SOLO_LATO = '(?:[,\\s]*(?:a|al|alla|sul|sulla|su|di|in|verso)?\\s*' +
                   '(?:destra|sinistra|fronte|davanti|dietro|angolo|lato|fianco)' +
                   '(?:\\s+(?:a|di)\\s+me)?\\s*)';
-  var QUI_CE = new RegExp('^(?:(?:qui|qua)' + LATO + '|' + SOLO_LATO + ')' +
-                          '[,\\s]*(?:c\u2019e|c\'e|ce|e|sta|si trova|abbiamo)\\s+(.+)$');
+  /* ---------- «SULLA SINISTRA QUI C'E' UNA SCUOLA» ---------- 01/11/2026
+     Detta cosi' alle 08:26:15, all'EUR, e persa: la regola prevedeva
+     «qui» PRIMA del lato («qui sulla sinistra c'e'»), non dopo. Si parla
+     nei due modi, e chi cammina non ricorda l'ordine giusto: adesso il
+     «qui» puo' stare da tutt'e due le parti. */
+  var QUI_CE = new RegExp('^(?:(?:qui|qua)' + LATO + '|' + SOLO_LATO +
+                          '(?:[,\\s]*(?:qui|qua))?)' +
+                          '[,\\s]*(?:c\u2019e|c\'e|ce|ci sono|ci stanno|e|sono|sta|stanno|si trova|si trovano|abbiamo)\\s+(.+)$');
   /* ---------- \u00abC'E' IL BENZINAIO QUI\u00bb ----------
      30/10, Via Laurentina. Tre delle otto segnalazioni di Vince sono
      arrivate sul server col nome sporco: \u00abC'\u00e8 il benzinaio qui\u00bb, \u00abC'\u00e8
@@ -180,8 +186,11 @@ function Contributi(opzioni) {
      Provati gli otto modi veri: i quattro sbagliati si raddrizzano e i
      tre che funzionavano (\u00abqui c'\u00e8 Elite\u00bb, \u00abqui sulla sinistra c'\u00e8
      Mondadori\u00bb, \u00abqui c'\u00e8 la farmacia Pirani\u00bb) vengono identici. */
+  /* e il taglio del nome conosce il plurale come la regola di sopra:
+     senza, «a sinistra ci sono le cascate» finiva sulla mappa di tutti
+     scritta cosi', tutta intera (01/11). */
   var TAGLIA_NOME = new RegExp('^.*?(?:(?:qui|qua)' + LATO +
-    '[,\\s]*)?(?:c[\'\u2019]?[e\u00e8]|ce|sta|si trova|abbiamo)\\s+', 'i');
+    '[,\\s]*)?(?:c[\'\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sono|stanno|sta|si trova|si trovano|abbiamo)\\s+', 'i');
   var QUI_IN_CODA = /[,\s]+(?:qui|qua)\s*$/i;
 
   function dallaVoce(testo) {
@@ -234,7 +243,12 @@ function Contributi(opzioni) {
     }
 
     var m = t.match(QUI_CE) ||
-            t.match(/^(?:segnala|segna|aggiungi|metti|c’e|c'e)\s+(?:qui\s+)?(.+)$/);
+            /* ---------- E AL PLURALE ---------- 01/11/2026
+               «A sinistra ci sono le cascate» (Vince, EUR): detta cosi'
+               alle 08:33:58 e persa, perche' si conosceva solo il
+               singolare «c'e'». Le cose al plurale — le cascate, le
+               panchine, i gradini — si dicono «ci sono». */
+            t.match(/^(?:segnala|segna|aggiungi|metti|c’e|c'e|ci sono|ci stanno)\s+(?:qui\s+)?(.+)$/);
     if (!m) return null;
     var resto = m[1].replace(/^(?:un|uno|una|il|lo|la|i|gli|le|dei|delle|degli)\s+/, '').trim();
     if (!resto) return null;
