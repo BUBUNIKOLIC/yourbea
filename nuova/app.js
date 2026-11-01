@@ -1474,9 +1474,95 @@
      svolta, quanto manca e il fuori strada, senza casi particolari.
      parti/avanzamento.js, 7 prove. */
   var avanzamento = Avanzamento({ dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); } });
+  /* ============================================================
+     L'ULTIMO TRATTO: I CIVICI COME CONTO ALLA ROVESCIA — 01/11/2026
+     «Bisogna migliorare anche la capacita' di guidare il non vedente a
+     casa... i numeri civici ecc...» (Vince). Stamattina i civici li ha
+     detti ed erano precisi — «sui numeri civici e' precisa» — ma li
+     diceva mentre camminava, uno ogni quaranta secondi, slegati dalla
+     meta. Negli ultimi cento metri servono per un'altra cosa: sapere
+     quanti portoni mancano. Chi vede guarda i numeri e rallenta; chi non
+     vede ha bisogno che glieli dica qualcuno.
+     Quindi: sotto i cento metri da casa, ogni quindici secondi, il
+     civico che hai addosso e quanto manca, col lato. Fuori da questo
+     tratto non cambia niente — la regola dei quaranta secondi resta. */
+  var ultimoContoCivici = 0;
+  var ultimoCivicoDetto = '';
+  function ilContoDeiCivici(s) {
+    if (!acceso || modo !== 'servizi') return;
+    var m = guida.meta();
+    if (!m) return;
+    if (voce.staParlando() || voce.inCoda().length || staAspettando()) return;
+    var quanto = posizione.dist(s.lat, s.lon, m.lat, m.lon);
+    if (quanto > 100 || quanto < 12) return;      // sotto i 12 parla l'arrivo
+    if (Date.now() - ultimoContoCivici < 15000) return;
+    var vicino = null, dMin = 25;
+    (SERVIZI.civici || []).forEach(function (c) {
+      if (!c.n) return;
+      var dd = posizione.dist(s.lat, s.lon, c.lat, c.lon);
+      if (dd < dMin) { dMin = dd; vicino = c; }
+    });
+    if (!vicino) return;
+    if (String(vicino.n) === ultimoCivicoDetto) return;   // non due volte lo stesso
+    ultimoCivicoDetto = String(vicino.n);
+    ultimoContoCivici = Date.now();
+    var lato = '';
+    try {
+      var rel = ((posizione.verso(s.lat, s.lon, m.lat, m.lon) - s.direzione + 540) % 360) - 180;
+      if (s.direzioneBuona !== false && typeof s.direzione === 'number') {
+        lato = Math.abs(rel) < 35 ? 'davanti a te'
+             : rel > 0 ? 'sulla destra' : 'sulla sinistra';
+      }
+    } catch (e) {}
+    var frase = 'Sei al ' + vicino.n + (vicino.via ? ' di ' + vicino.via : '') +
+                '. ' + m.n + ' fra ' + (Math.round(quanto / 10) * 10) + ' metri' +
+                (lato ? ', ' + lato : '') + '.';
+    diario('CONTO CIVICI: ' + Math.round(quanto) + ' m dalla meta, sono al ' + vicino.n);
+    dillo({ tipo: 'manca', livello: 'guida', testo: frase });
+  }
+
+  /* ---------- IL RIFERIMENTO DELLA SVOLTA ---------- 01/11/2026
+     «Non conosco il nome della strada» (Vince). A una svolta serve una
+     cosa che si sente: il semaforo che suona, la fermata, il bar
+     all'angolo. Qui si cerca nei dati, a venticinque metri dal punto
+     esatto della svolta, e si prende la cosa piu' riconoscibile — in
+     quest'ordine, perche' un semaforo acustico lo senti da solo e un
+     negozio bisogna che qualcuno te lo dica. Niente civici: «numeri
+     civici mai» (18/10), e comunque non ti dicono dove girare. */
+  function riferimentoDiSvolta(lat, lon) {
+    var punti = (SERVIZI && SERVIZI.punti) || [];
+    var vicini = [];
+    for (var i = 0; i < punti.length; i++) {
+      var p = punti[i];
+      if (!p || typeof p.lat !== 'number') continue;
+      var d = posizione.dist(lat, lon, p.lat, p.lon);
+      if (d <= 25) vicini.push({ p: p, d: d });
+    }
+    if (!vicini.length) return '';
+    vicini.sort(function (a, b) { return a.d - b.d; });
+    function primo(prova) {
+      for (var k = 0; k < vicini.length; k++) if (prova(vicini[k].p)) return vicini[k].p;
+      return null;
+    }
+    var q = primo(function (p) { return p.cosa === 'attraversamento' && p.suona; });
+    if (q) return 'al semaforo che suona';
+    q = primo(function (p) { return p.cosa === 'attraversamento' && p.semaforo; });
+    if (q) return 'al semaforo';
+    q = primo(function (p) { return /fermata/.test(p.cosa || ''); });
+    if (q) return q.nome ? ('alla fermata ' + q.nome) : 'alla fermata dell\'autobus';
+    q = primo(function (p) { return p.cosa === 'attraversamento'; });
+    if (q) return 'all\'attraversamento';
+    q = primo(function (p) { return p.cosa === 'scalini'; });
+    if (q) return 'agli scalini';
+    q = primo(function (p) { return p.nome && p.servizio && p.cosa !== 'lampione'; });
+    if (q) return 'all\'altezza di ' + q.nome;
+    return '';
+  }
+
   var guida = Guida({ distanza: laDistanza,  dist: function (a, b, c, d) { return posizione.dist(a, b, c, d); },
                       verso: function (a, b, c, d) { return posizione.verso(a, b, c, d); },
                       avanzamento: avanzamento,
+                      riferimento: riferimentoDiSvolta,
                       diario: diario });
 
   /* la musica sotto il racconto: solo in Turismo e piano, con le regole in
@@ -3308,6 +3394,7 @@
       var g = guida.passo({ lat: s.lat, lon: s.lon, direzione: s.direzione,
                             direzioneBuona: s.direzioneBuona }, Date.now(), { accanto: accanto });
       if (g) dilloSubito(g);
+      ilContoDeiCivici(s);
       /* FUORI STRADA: un navigatore non si limita a dirlo, ne cerca un
          altro. Il percorso si richiede da dove sei adesso, verso la stessa
          meta: se la rete non risponde resta la bussola, e si sente. */
@@ -4216,6 +4303,14 @@
                  'Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. ' +
                  'Avvisa, e il nome del tuo contatto. ' +
                  'Musica, per accenderla o spegnerla. ' +
+                 /* ---------- COME SI CAMBIA MODO ---------- 01/11/2026
+                    «E la possibilita' vocalmente di passare da una
+                    funzione ad un'altra» (Vince). Si poteva da sempre —
+                    «turismo», «utilita'», «cambia modo» funzionano tutti
+                    e tre, provati al banco — ma in questo elenco non
+                    c'era scritto, e un comando che nessuno ti dice e'
+                    come se non ci fosse. */
+                 'Turismo, oppure utilità, per passare da una all\'altra. ' +
                  'Per i tuoi posti e i percorsi, dimmi: altri comandi.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;

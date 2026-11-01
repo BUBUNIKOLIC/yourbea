@@ -487,7 +487,15 @@ function Intorno(opzioni) {
            nome da solo, senza la preposizione davanti: «per imboccare Via
            dei Fratelli Laurana» non ha nessun «su». */
         var viaDi = function (t) {
-          var m2 = /\b((?:via|viale|corso|piazza|largo|vicolo|lungotevere|salita|strada|circonvallazione)\b[^,.;]*)/i.exec(t || '');
+          /* 01/11/2026: mancava «passeggiata», e al laghetto dell'EUR il
+             percorso andava tutto su Passeggiata del Giappone: cinque
+             coppie di annunci identici su quindici («Adesso: mantieni la
+             destra per rimanere su Passeggiata del Giappone» alle
+             08:45:00 e di nuovo alle 08:45:15), perche' per questo filtro
+             quelle due manovre non erano nemmeno nella stessa via.
+             Qui dentro vanno TUTTI i modi in cui in Italia si chiama una
+             strada, non solo «via» e «piazza». */
+          var m2 = /\b((?:via|viale|corso|piazza|piazzale|largo|vicolo|vicoletto|lungotevere|lungomare|lungolago|lungarno|salita|discesa|strada|stradone|circonvallazione|passeggiata|passaggio|ponte|galleria|traversa|rampa|scalinata|sentiero|borgo|clivo|viottolo|calle|contrada|rotonda)\b[^,.;]*)/i.exec(t || '');
           return m2 ? m2[1].toLowerCase()
                         .replace(/\b(?:dei|degli|delle|del|della|dello|di|la|il|lo|le|l)\b/g, '')
                         .replace(/[^a-z\u00e0-\u00ff ]/g, '')

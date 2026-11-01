@@ -63,6 +63,23 @@ function Guida(opzioni) {
     return s.replace(/[.\s]*$/, '') + NON_PRECISO + '.';
   }
   var PREAVVISO = o.preavviso || 70;        // «fra settanta metri, gira a destra»
+  /* ---------- «NON CONOSCO IL NOME DELLA STRADA» ---------- 01/11/2026
+     Vince, stamattina, dopo un'ora verso casa: «per un non vedente non
+     guida a casa», e alla domanda su cosa dire a una svolta: «non conosco
+     il nome della strada». Nel quaderno: DODICI annunci «Verso casa tua»
+     e ZERO che dicessero dove girare — «fra 90 metri svolta a destra»,
+     a destra di che cosa? Su quel percorso (passeggiate e marciapiedi)
+     Valhalla non aveva nomi da dare, e anche quando li ha un nome non
+     serve a chi non legge le targhe.
+     Serve una cosa che si SENTE: il semaforo che suona, la fermata, il
+     bar all'angolo. `riferimento(lat, lon)` la cerca nei dati, nel punto
+     esatto della svolta: la passa la pagina, che e' l'unica a avere i
+     luoghi. Se non trova niente, la frase resta com'era. */
+  var ilRiferimento = o.riferimento || null;
+  function riferimentoDellaSvolta(sv) {
+    if (!ilRiferimento || !sv || typeof sv.lat !== 'number') return '';
+    try { return ilRiferimento(sv.lat, sv.lon) || ''; } catch (e) { return ''; }
+  }
   var ARRIVATO = o.arrivato || 22;
   var FILO = o.filo || 20000;        // non si tace mai piu' di venti secondi
   var FUORI = o.fuori || 45;                // quanto ci si può scostare dal tracciato
@@ -375,13 +392,26 @@ function Guida(opzioni) {
     [/^vai /, 'andare '], [/^procedi /, 'procedere '],
     [/^svolta leggermente a /, 'svoltare leggermente a ']
   ];
+  /* ---------- «PUOI CI SONO DEI GRADINI» ---------- 01/11/2026
+     Detta DICIASSETTE volte stamattina, andando verso casa: «Verso casa
+     tua: fra 90 metri, 120 passi, puoi ci sono dei gradini». Il «puoi»
+     si attaccava a qualunque cosa, e una manovra di Valhalla non e'
+     sempre un ordine da coniugare — «ci sono dei gradini» e' una notizia.
+     Se non c'e' un verbo da mettere all'infinito, la notizia si dice
+     cosi' com'e': «fra 90 metri, 120 passi, ci sono dei gradini». */
   function puoi(testo) {
     var t = minuscola(String(testo || ''));
+    var coniugata = false;
     for (var i = 0; i < INFINITO.length; i++) {
-      if (INFINITO[i][0].test(t)) { t = t.replace(INFINITO[i][0], INFINITO[i][1]); break; }
+      if (INFINITO[i][0].test(t)) {
+        t = t.replace(INFINITO[i][0], INFINITO[i][1]);
+        coniugata = true;
+        break;
+      }
     }
     t = t.replace(/[.\s]+$/, '');          // il punto lo mette chi compone la frase
-    return /^puoi /.test(t) ? t : ('puoi ' + t);
+    if (/^puoi /.test(t)) return t;
+    return coniugata ? ('puoi ' + t) : t;
   }
 
   /* passo(): si chiama a ogni posizione nuova mentre si va verso la meta. */
@@ -431,15 +461,20 @@ function Guida(opzioni) {
              Qui si tiene il conto di quelle gia' annunciate. */
           if (preavvisata !== pr.quale + 1000) {
             preavvisata = pr.quale + 1000;
+            var rif1 = riferimentoDellaSvolta(pr.svolta);
             return { tipo: 'svolta', livello: 'guida',
-                     testo: conAvvertenza('Adesso: ' + minuscola(pr.svolta.testo)) };
+                     testo: conAvvertenza(rif1
+                       ? ('Adesso, ' + rif1 + ': ' + minuscola(pr.svolta.testo))
+                       : ('Adesso: ' + minuscola(pr.svolta.testo))) };
           }
         } else if (pr.manca < PREAVVISO && preavvisata !== pr.quale) {
           preavvisata = pr.quale;
           ultimoAvviso = adesso;
+          var rif3 = riferimentoDellaSvolta(pr.svolta);
           return { tipo: 'preavviso', livello: 'guida',
                    testo: conAvvertenza('Mancano ' + (Math.round(pr.manca / 10) * 10) + ' metri, ' +
-                          passi(pr.manca) + '. Poi ' + puoi(pr.svolta.testo) + '.') };
+                          passi(pr.manca) + (rif3 ? ', ' + rif3 : '') +
+                          '. Poi ' + puoi(pr.svolta.testo) + '.') };
         }
       }
     }
@@ -492,7 +527,10 @@ function Guida(opzioni) {
         prossima++;
         piuVicinoMai = null;
         ultimoAvviso = adesso;
-        return { tipo: 'svolta', livello: 'guida', testo: 'Adesso: ' + minuscola(s.testo) };
+        var rif2 = riferimentoDellaSvolta(s);
+        return { tipo: 'svolta', livello: 'guida',
+                 testo: rif2 ? ('Adesso, ' + rif2 + ': ' + minuscola(s.testo))
+                             : ('Adesso: ' + minuscola(s.testo)) };
       }
       /* IL PREAVVISO. «Penso debba avere quasi la funzione di navigatore
          camminando» (Vince, 16/10). Un navigatore dice la svolta DUE volte:
@@ -507,9 +545,11 @@ function Guida(opzioni) {
            farai dopo. «Fra 70 metri gira a destra» e' un ordine da
            eseguire adesso che pero' si eseguira' fra venti secondi; cosi'
            invece uno sa che deve solo continuare, e cosa lo aspetta. */
+        var rif4 = riferimentoDellaSvolta(s);
         return { tipo: 'preavviso', livello: 'guida',
                  testo: 'Mancano ' + (Math.round(quanto / 10) * 10) + ' metri, ' +
-                        passi(quanto) + '. Poi ' + puoi(s.testo) + '.' };
+                        passi(quanto) + (rif4 ? ', ' + rif4 : '') +
+                        '. Poi ' + puoi(s.testo) + '.' };
       }
     }
     /* FUORI STRADA. Un navigatore se ne accorge e lo dice, invece di

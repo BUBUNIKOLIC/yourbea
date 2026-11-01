@@ -132,7 +132,14 @@ function Passaggi(opzioni) {
      rallentare e cercare il bordo, senza perdere il conto. E quando ci sei
      sopra lo ridice `prossimo()`, che e' l'avviso che conta. */
   var DAVANTI = o.davanti || 15;        // metri: prima e' troppo presto
-  var CONO = o.cono || 40;              // gradi: dev'essere davvero davanti
+  /* ---------- QUARANTA GRADI NON SONO «DAVANTI» ---------- 01/11/2026
+     Vince, stamattina: «continuava a dirmi dei gradini... ma erano a
+     sinistra non sulla mia direzione». A quindici metri, quaranta gradi
+     di lato sono dieci metri fuori dal cammino: una scala che non
+     incontrerai mai. Venticinque gradi sono cinque metri a quella
+     distanza, cioe' la larghezza di un marciapiede e della strada che
+     stai per attraversare. */
+  var CONO = o.cono || 25;              // gradi: dev'essere davvero davanti
   var PASSO = 0.75;
 
   function inPassi(m) {
@@ -203,9 +210,15 @@ function Passaggi(opzioni) {
     if (!mig) return null;
     detti['avanti:' + chiave(mig)] = ora();
     ultimaVolta = ora();
+    /* E SI DICE DA CHE PARTE. Questo avviso era il solo a non dirlo (lo
+       dice `prossimo` da sempre): «Fra 20 passi, degli scalini» e poi
+       quelli stavano a sinistra. Chi non vede deve sapere se la cosa gli
+       viene incontro o se gli resta di fianco. */
+    var parteSua = daCheParte(qui, mig, s.direzione, s.direzioneBuona);
     return {
     tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
-             testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) + '.' };
+             testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) +
+                    (parteSua ? ' ' + parteSua : '') + '.' };
   }
 
   /* prossimo(): la cosa che stai passando adesso, o null. */
