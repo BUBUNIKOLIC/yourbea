@@ -55,6 +55,18 @@
   #italia{height:62vh;min-height:320px;border-radius:18px;overflow:hidden;
           border:1px solid var(--filo);background:#0B1424;margin:0 0 8px}
   .leaflet-container{background:#0B1424}
+  /* ---------- LE NUOVE SI VEDONO ---------- 01/11/2026
+     «Con quelle nuove che sono evidenziate» (Vince). Nuova vuol dire che
+     non l'hai ancora vista tu: si guarda l'ultima volta che hai aperto
+     questa pagina, non un numero di giorni deciso da noi. */
+  .segno-nuovo{animation:battito 1.8s ease-in-out infinite}
+  @keyframes battito{0%,100%{stroke-width:3;stroke-opacity:1}
+                     50%{stroke-width:9;stroke-opacity:.35}}
+  .nuova{display:inline-block;margin-left:8px;font-size:.74rem;
+         letter-spacing:.08em;text-transform:uppercase;
+         color:#0B1424;background:var(--oro);border-radius:3px;padding:1px 6px;
+         vertical-align:1px}
+  ul.punti li.e-nuova{border-color:var(--oro)}
   .leaflet-popup-content-wrapper{background:var(--carta);color:var(--inchiostro);
      border:1px solid var(--filo);border-radius:14px}
   .leaflet-popup-tip{background:var(--carta)}
@@ -160,6 +172,25 @@
 
   var LA_MAPPA = null, SEGNI = {};
 
+  /* l'ultima volta che hai aperto questa pagina. La prima volta in
+     assoluto non si evidenzia tutto: si prendono le ultime 24 ore. */
+  var VISTE_FINO_A = (function () {
+    var v = 0;
+    try { v = Number(localStorage.getItem('yourbea-segnalazioni-viste') || 0); } catch (e) {}
+    return v;
+  })();
+  /* UN GIORNO INTERO, COMUNQUE. Provando la pagina: aperta, guardata,
+     ricaricata — e l'evidenza era gia' sparita, perche' «viste» si era
+     segnato dopo tre secondi. Quello che e' arrivato oggi resta
+     evidenziato per ventiquattro ore anche se la pagina la riapri dieci
+     volte; piu' tutto quello che non hai ancora visto, se manchi da piu'
+     di un giorno. */
+  var IERI = Date.now() - 24 * 3600 * 1000;
+  function eNuova(p) {
+    var q = p.quando || 0;
+    return q > IERI || (VISTE_FINO_A > 0 && q > VISTE_FINO_A);
+  }
+
   function disegnaLaMappa(punti) {
     var dove = document.getElementById('italia');
     if (!dove || typeof L === 'undefined') { if (dove) dove.style.display = 'none'; return; }
@@ -178,9 +209,13 @@
       /* IL BORDO SCURO. Col primo punto vero (Latina, 26/10) il cerchio
          bianco dei «posti» spariva dentro una mappa chiara: il colore
          dice il tipo, ma a tenerlo visibile e' il bordo scuro. */
+      var nuova = eNuova(p);
       var segno = L.circleMarker([p.lat, p.lon], {
-        radius: raggio, color: '#0B1424', weight: 2.5,
-        fillColor: colore, fillOpacity: .95
+        radius: nuova ? raggio + 3 : raggio,
+        color: nuova ? '#E3B64B' : '#0B1424',
+        weight: nuova ? 3 : 2.5,
+        fillColor: colore, fillOpacity: .95,
+        className: nuova ? 'segno-nuovo' : ''
       }).addTo(LA_MAPPA);
       segno.bindPopup('<b>' + comeSiDice(p) + '</b>' +
                       (p.via ? '<br>' + p.via : '') +
@@ -242,6 +277,14 @@
     });
   }
 
+  /* SI SEGNA CHE LE HAI VISTE SOLO DOPO TRE SECONDI: aprire e chiudere
+     la pagina per sbaglio non deve cancellarti l'evidenza. */
+  function leHoViste() {
+    setTimeout(function () {
+      try { localStorage.setItem('yourbea-segnalazioni-viste', String(Date.now())); } catch (e) {}
+    }, 3000);
+  }
+
   function ilGiorno(quando) {
     if (!quando) return '';
     var d = new Date(quando);
@@ -262,8 +305,11 @@
         ' e ti mandiamo il tuo codice.</p></div>';
       return;
     }
+    var quanteNuove = punti.filter(eNuova).length;
     conto.innerHTML = '<b>' + punti.length + '</b> ' +
-      (punti.length === 1 ? 'segnalazione sulla mappa' : 'segnalazioni sulla mappa');
+      (punti.length === 1 ? 'segnalazione sulla mappa' : 'segnalazioni sulla mappa') +
+      (quanteNuove ? ', di cui <b>' + quanteNuove + '</b> ' +
+        (quanteNuove === 1 ? 'nuova' : 'nuove') : '');
     disegnaLaMappa(punti);
     var lista = document.createElement('ul');
     lista.className = 'punti';
@@ -273,6 +319,13 @@
       var cosa = document.createElement('div');
       cosa.className = 'cosa';
       cosa.textContent = comeSiDice(p);
+      if (eNuova(p)) {
+        li.classList.add('e-nuova');
+        var fresca = document.createElement('span');
+        fresca.className = 'nuova';
+        fresca.textContent = 'nuova';
+        cosa.appendChild(fresca);
+      }
       if (p.quanti > 1) {
         var bollo = document.createElement('span');
         bollo.className = 'tanti';
@@ -296,6 +349,7 @@
       lista.appendChild(li);
     });
     elenco.appendChild(lista);
+    leHoViste();
   }).catch(function () {
     conto.textContent = 'Le segnalazioni non si caricano in questo momento.';
     elenco.innerHTML = '<div class="vuoto"><p>Riprova fra poco: il server che le ' +

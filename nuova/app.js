@@ -509,6 +509,10 @@
      `URBEA/server-contributi/`). Non e' su vdmdata: vive per conto suo e
      non tocca il sito. */
   var DOVE_MANDARE = 'https://contributi-yourbea.server-contributi.workers.dev/punti';
+  /* all'apertura si va a vedere cosa hanno segnato gli altri: prima la
+     copia sul telefono (subito), poi la rete se c'e'. */
+  setTimeout(function () { dagliAltri.apri(); }, 1200);
+
   var contributi = Contributi({
     chi: (function () {
       try { return localStorage.getItem('yourbea2-tester') || ''; } catch (e) { return ''; }
@@ -927,6 +931,36 @@
 
   /* ---------- quello che c'è intorno, pronto per il racconto ---------- */
   var SERVIZI = { punti: [], aree: [], alberi: [] };
+
+  /* ============================================================
+     QUELLO CHE HANNO SEGNATO GLI ALTRI — 01/11/2026
+     «Una mappa online sul sito che si aggiorna in tempo reale dai vari
+     tester, e tutte le volte che si apre la app si fa riferimento a
+     quella mappa» — «un sistema misto?» (Vince). I contributi salivano
+     dal 25/10 e non tornavano giu': 28 punti sul server, e le
+     segnalazioni di stamattina non le sentiva nessuno, nemmeno lui.
+     Le regole stanno in parti/dagliAltri.js. Qui ci sono solo i tubi:
+     come si chiede al server, e dove si tiene la copia sul telefono. */
+  var dagliAltri = DagliAltri({
+    dist: posizione.dist,
+    diario: diario,
+    prendi: function () {
+      /* lo stesso indirizzo a cui si mandano (DOVE_MANDARE, riga 511):
+         un server solo, una strada sola. */
+      return fetch(DOVE_MANDARE, { cache: 'no-store' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('il server dice ' + r.status);
+          return r.json();
+        });
+    },
+    leggiSalvati: function () {
+      try { return JSON.parse(localStorage.getItem('yourbea2-dagli-altri') || 'null'); }
+      catch (e) { return null; }
+    },
+    salva: function (roba) {
+      try { localStorage.setItem('yourbea2-dagli-altri', JSON.stringify(roba)); } catch (e) {}
+    }
+  });
   /* cosaHoIntorno(): com'è fatto il posto dove sei, in tre cose.
      «Per i non vedenti la descrizione del luogo in cui si è» — «è
      inutile mettere il meccanico, l'autosalone e queste cose: meglio
@@ -3353,6 +3387,13 @@
           return Math.abs(x.lat - s.lat) < 0.0035 && Math.abs(x.lon - s.lon) < 0.0045;
         });
         v.punti = negozi.unisci(v.punti || [], vicini300);
+        /* e quello che hanno segnato gli altri tester: sta sul telefono,
+           quindi non costa rete e c'e' anche in galleria. */
+        var deiTester = dagliAltri.qui(s.lat, s.lon, 300);
+        if (deiTester.length) {
+          v.punti = negozi.unisci(v.punti || [], deiTester);
+          diario('DAGLI ALTRI: ' + deiTester.length + ' punti dei tester qui intorno');
+        }
         SERVIZI = v;
         /* appena si sa cosa c'è intorno, lo si dice: è la cosa che a chi non
            vede serve più di tutte, e al turista racconta dov'è capitato. */
