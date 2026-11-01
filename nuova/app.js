@@ -1088,12 +1088,42 @@
   var LE = null, alone = null, ioSono = null, laMeta = null, laLinea = null;
   var segni = [], segniDi = '', ultimoDisegno = 0;
 
+  var aspettoIlRiquadro = false;
   function apriMappa(s) {
     if (LE || typeof L === 'undefined') return;
     /* il riquadro si scopre PRIMA di fare la mappa: Leaflet misura il
        contenitore quando nasce, e dentro un display:none misura zero —
        veniva fuori una sola tessera in alto a sinistra. */
     el('mappa').classList.remove('vuota');
+    /* ---------- E SE E' ANCORA ALTA ZERO, NON SI FA ---------- 01/11/2026
+       Togliere la classe non basta: in Utilita' il riquadro resta
+       display:none per il CSS (`body[data-modo="utilita"] #mappa`), e una
+       mappa nata li' dentro resta rotta per sempre — provato: dopo il
+       passaggio in Turismo il riquadro era alto 353 pixel, quattro
+       `invalidateSize()` erano partiti, e la tessera era ancora UNA.
+       Leaflet si rimette a posto solo se nasce gia' misurabile. Quindi:
+       se adesso misura zero, non si fa niente e si aspetta il momento in
+       cui il riquadro c'e' davvero. */
+    var riquadro = el('mappa');
+    if (!riquadro || riquadro.offsetHeight === 0 || riquadro.offsetWidth === 0) {
+      if (!aspettoIlRiquadro) {
+        aspettoIlRiquadro = true;
+        diario('MAPPA: il riquadro e\' ancora alto zero, aspetto che si veda');
+        var guarda = function () {
+          if (LE) return;
+          var r = el('mappa');
+          if (r && r.offsetHeight > 0 && r.offsetWidth > 0) {
+            aspettoIlRiquadro = false;
+            var p = posizione.leggi();
+            if (p && p.pronto) apriMappa(p);
+            return;
+          }
+          setTimeout(guarda, 500);
+        };
+        setTimeout(guarda, 500);
+      }
+      return;
+    }
     LE = L.map('mappa', { zoomControl: true, attributionControl: true, tap: true });
     LE.setView([s.lat, s.lon], 17);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -1104,8 +1134,46 @@
       fillColor: '#5BE3FF', fillOpacity: 1, interactive: false }).addTo(LE);
     /* chi trascina o allarga se la tiene: niente ricentrate in faccia */
     LE.on('dragstart zoomstart', function () { mappa.laTocca(); });
-    /* e si rimisura appena il riquadro ha la sua altezza vera */
-    setTimeout(function () { try { LE.invalidateSize(); } catch (e) {} }, 300);
+    /* ---------- LA MAPPA NERA ---------- 01/11/2026
+       «La mappa sul telefono non si apriva del tutto, solo angolo
+       sinistro sopra, il resto era nero» (Vince). E' il difetto classico
+       di Leaflet — nasce dentro un contenitore di altezza zero e disegna
+       una tessera sola — ma qui la causa non era l'attesa di 300
+       millisecondi: e' il CSS. `body[data-modo="utilita"] #mappa` la
+       tiene a display:none, quindi in Utilita' la mappa esiste e misura
+       ZERO. Stamattina alle 08:47 Vince e' passato in Turismo: il
+       display:none e' caduto, il riquadro ha preso la sua altezza vera,
+       e nessuno l'ha piu' rimisurata — i trecento millisecondi erano
+       passati da un pezzo.
+       Adesso si rimisura ogni volta che il riquadro CAMBIA MISURA, che e'
+       il momento giusto e non una scommessa sul tempo. Piu' due reti: al
+       ritorno in primo piano (iOS sospende e riprende) e qualche
+       rimisura nei primi secondi, per i telefoni senza ResizeObserver. */
+    function rimisura(perche) {
+      if (!LE) return;
+      try {
+        LE.invalidateSize();
+        diario('MAPPA rimisurata (' + perche + ')');
+      } catch (e) {}
+    }
+    [120, 400, 1200, 3000].forEach(function (ms) {
+      setTimeout(function () { rimisura(ms + ' ms'); }, ms);
+    });
+    try {
+      if (typeof ResizeObserver === 'function') {
+        new ResizeObserver(function (voci) {
+          for (var i = 0; i < voci.length; i++) {
+            var r = voci[i].contentRect;
+            if (r && r.width > 0 && r.height > 0) { rimisura('il riquadro e\' cambiato'); return; }
+          }
+        }).observe(el('mappa'));
+      }
+    } catch (e) {}
+    try {
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) setTimeout(function () { rimisura('torno in primo piano'); }, 250);
+      });
+    } catch (e) {}
     diario('MAPPA aperta');
   }
 
