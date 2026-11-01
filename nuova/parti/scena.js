@@ -40,7 +40,8 @@ function Scena(opzioni) {
      cambia sempre un po' — un passo, un metro, un negozio diverso — e
      bastava quello per ridire la stessa cosa. */
   var dettiPezzi = {};
-  var QUANTO = { forma: 240000, alberi: 300000, attraversamenti: 180000, servizio: 150000 };
+  var QUANTO = { forma: 240000, alberi: 300000, attraversamenti: 180000, servizio: 150000,
+                 paesaggio: 180000 };
 
   function passi(m) { return 'a ' + passiNudi(m); }
   /* passiNudi(): «pochi passi», «una ventina di passi», «110 passi» — la
@@ -101,6 +102,12 @@ function Scena(opzioni) {
          mentre la chiesa era lì accanto, chiusa. Adesso si guarda se il
          punto cade davvero dentro il poligono. */
       if (!dentroIlContorno(qui, a.punti)) return;
+      /* DENTRO UN LAGO NON CI SEI. 01/11/2026: appena l'acqua e' entrata
+         nei dati, camminando sulla riva usciva «Sei in dell'EUR, largo
+         160 passi» — il contorno del laghetto comprende il bordo, e un
+         punto sulla riva ci cade dentro. L'acqua, il fiume e la zona
+         umida si dicono ACCANTO (ilPaesaggio), mai sotto i piedi. */
+      if (a.cosa === 'lago' || a.cosa === 'fiume' || a.cosa === 'zona umida') return;
       if (!dentro || dM < dentro.largo) {
         dentro = { cosa: a.cosa, nome: a.nome, largo: Math.round(dM) };
       }
@@ -134,8 +141,51 @@ function Scena(opzioni) {
     });
     var dove = Object.keys(parti).sort(function (a, b) { return parti[b] - parti[a]; })[0];
     var tanti = vicini.length >= 8;
+    /* ---------- «C'ERANO I CILIEGI» ---------- 01/11/2026
+       Quando i dati dicono che albero e', lo si dice: alla Passeggiata
+       del Giappone sono ciliegi, e «qualche albero sulla destra» non e'
+       la stessa cosa. Si usa il nome solo se almeno meta' degli alberi
+       vicini sono quelli, se no restano «alberi». */
+    var specie = {};
+    vicini.forEach(function (p) { if (p.che) specie[p.che] = (specie[p.che] || 0) + 1; });
+    var quale = Object.keys(specie).sort(function (a, b) { return specie[b] - specie[a]; })[0];
+    var nome = (quale && specie[quale] * 2 >= vicini.length) ? quale : null;
+    if (nome) {
+      if (!dove) return tanti ? (nome + ' lungo la strada') : ('qualche ' + nome.replace(/i$/, 'o') + ' vicino');
+      return tanti ? (nome + ' in fila ' + dove) : (nome + ' ' + dove);
+    }
     if (!dove) return tanti ? 'alberi lungo la strada' : 'qualche albero vicino';
     return tanti ? ('alberi in fila ' + dove) : ('qualche albero ' + dove);
+  }
+
+  /* ---------- IL PAESAGGIO CHE HAI ACCANTO ---------- 01/11/2026
+     `laForma` dice solo dove sei DENTRO. Al laghetto dell'EUR Vince ci
+     camminava accanto, non dentro: il lago non e' mai stato nominato.
+     Qui si guarda quello che hai di fianco — il lago, il parco, il bosco,
+     il fiume — entro centocinquanta metri, perche' una cosa grande la
+     senti e ti orienta anche da lontano. */
+  var GRANDI = { lago: 1, bosco: 1, fiume: 1, spiaggia: 1, prato: 1, parco: 1,
+                 giardino: 1, 'riserva naturale': 1, 'zona umida': 1, macchia: 1 };
+  function ilPaesaggio(qui, aree, direzione, buona) {
+    var mig = null, dmin = Infinity;
+    (aree || []).forEach(function (a) {
+      if (!a || !a.punti || !a.punti.length || !GRANDI[a.cosa]) return;
+      var dm = Infinity, vicino = null;
+      a.punti.forEach(function (p) {
+        var d = dist(qui.lat, qui.lon, p[0], p[1]);
+        if (d < dm) { dm = d; vicino = p; }
+      });
+      if (dm > 150) return;
+      if (dm < dmin) { dmin = dm; mig = { a: a, m: dm, p: vicino }; }
+    });
+    if (!mig) return null;
+    var parte = daCheParte(qui, mig.p[0], mig.p[1], direzione, buona);
+    var come = mig.a.nome ? (mig.a.cosa + ' ' + mig.a.nome) : ('un ' + mig.a.cosa);
+    if (mig.a.cosa === 'spiaggia' || mig.a.cosa === 'macchia' ||
+        mig.a.cosa === 'zona umida' || mig.a.cosa === 'riserva naturale') {
+      come = mig.a.nome ? (mig.a.cosa + ' ' + mig.a.nome) : ('una ' + mig.a.cosa);
+    }
+    return capo(come) + (parte ? ' ' + parte : '') + ', ' + passi(mig.m);
   }
 
   function attraversamenti(qui, punti) {
@@ -240,7 +290,16 @@ function Scena(opzioni) {
 
     var forma = laForma(qui, mappa.aree);
     if (forma) {
-      capo1 = 'Sei ' + (forma.nome ? 'in ' + forma.nome : 'in ' + unA(forma.cosa)) +
+      /* IL TIPO DAVANTI AL NOME. «Sei in Centrale del Lago» non dice
+         niente a chi non vede quel cartello: e' il PARCO Centrale del
+         Lago (01/11). Il tipo si mette sempre, tranne quando il nome lo
+         contiene gia' («piazza Venezia»). */
+      var giaDetto = forma.nome &&
+        forma.nome.toLowerCase().indexOf(String(forma.cosa).toLowerCase()) >= 0;
+      var dove1 = !forma.nome ? ('in ' + unA(forma.cosa))
+        : giaDetto ? ('in ' + forma.nome)            /* «in piazza Venezia» */
+        : ('nel' + (femmina(forma.cosa) ? 'la ' : ' ') + forma.cosa + ' ' + forma.nome);
+      capo1 = 'Sei ' + dove1 +
               (forma.largo >= 25 ? ', larg' + (femmina(forma.cosa) ? 'a' : 'o') + ' ' + passiNudi(forma.largo) : '');
       if (!fresco('forma', forma.nome || forma.cosa)) capo1 = null;
     } else if (s.strada) {
@@ -248,6 +307,10 @@ function Scena(opzioni) {
       if (!fresco('forma', s.strada)) capo1 = null;
     }
     if (capo1) pezzi.push(capo1);
+
+    /* il paesaggio prima degli alberi: il lago orienta piu' di un filare */
+    var pae = ilPaesaggio(qui, mappa.aree, d, buona);
+    if (pae && fresco('paesaggio', pae.replace(/\d+/g, ''))) pezzi.push(pae);
 
     var alb = alberi(qui, mappa.alberi, d, buona);
     if (alb && fresco('alberi', alb.replace(/\d+/g, ''))) pezzi.push(alb);
@@ -422,9 +485,21 @@ function Scena(opzioni) {
       var dopo = tre[(da + 1) % tre.length];
       if (tre.length > 1 && dopo && pezzi.length < 3) pezzi.push(dopo);
     } else {
-      /* nessun servizio: almeno com'e' fatto il posto */
-      var forma = laForma(qui, (s.mappa || {}).aree || []);
-      if (forma) pezzi.push(forma);
+      /* nessun servizio: il paesaggio, e almeno com'e' fatto il posto */
+      var paesaggio = ilPaesaggio(qui, (s.mappa || {}).aree || [],
+                                  s.direzione, s.direzioneBuona !== false);
+      if (paesaggio) pezzi.push(paesaggio);
+      else {
+        var forma = laForma(qui, (s.mappa || {}).aree || []);
+        if (forma) pezzi.push(forma);
+      }
+    }
+    /* e se c'e' posto, il paesaggio entra comunque: al laghetto dell'EUR
+       il ripasso diceva «Scalini davanti a te» e taceva il lago. */
+    if (pezzi.length < 3) {
+      var pae2 = ilPaesaggio(qui, (s.mappa || {}).aree || [],
+                             s.direzione, s.direzioneBuona !== false);
+      if (pae2 && pezzi.indexOf(pae2) < 0) pezzi.push(pae2);
     }
     if (!pezzi.length) return null;
     var testo = pezzi.length > 1
@@ -440,6 +515,7 @@ function Scena(opzioni) {
   var ultimoRipasso = '', ultimoRipassoQuando = 0, giroRipasso = 0;
 
   return { descrivi: descrivi, passi: passi, passiNudi: passiNudi, dimenticaTutto: dimenticaTutto, attraversamenti: attraversamenti,
+           ilPaesaggio: ilPaesaggio, alberi: alberi,
            laForma: laForma, dimentica: dimentica, comunqueQualcosa: comunqueQualcosa,
            aiLati: aiLati, dimenticaILati: dimenticaILati };
 }

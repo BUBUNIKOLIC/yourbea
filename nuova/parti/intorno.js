@@ -140,9 +140,23 @@ function Intorno(opzioni) {
     'tourism:attraction': 'luogo da vedere', 'tourism:gallery': 'galleria d\'arte',
     'historic:ruins': 'rovine', 'historic:archaeological_site': 'area archeologica',
     'historic:castle': 'castello', 'historic:church': 'chiesa',
-    'place:neighbourhood': 'quartiere'
+    'place:neighbourhood': 'quartiere',
+    /* ---------- L'ACQUA E IL VERDE ---------- 01/11/2026
+       «In modalita' utilita' non ha descritto ambiente circostante — ero
+       al laghetto dell'Eur, c'erano i ciliegi» (Vince). Il laghetto non
+       e' che lo tacevamo: NON C'ERA NEI DATI. Qui si guardavano solo i
+       canali leisure, amenity, tourism, historic, place, office,
+       railway — e un lago in OpenStreetMap e' `natural:water`. Mancavano
+       anche il fiume, il bosco, il prato: tutto quello che fa il
+       paesaggio, che per chi non vede e' meta' di dov'e'. */
+    'natural:water': 'lago', 'natural:wood': 'bosco', 'natural:scrub': 'macchia',
+    'natural:beach': 'spiaggia', 'natural:wetland': 'zona umida',
+    'landuse:forest': 'bosco', 'landuse:grass': 'prato',
+    'landuse:meadow': 'prato', 'landuse:village_green': 'prato',
+    'waterway:riverbank': 'fiume', 'leisure:nature_reserve': 'riserva naturale'
   };
-  var SENZA_NOME_VA_BENE = { parco: 1, piazza: 1, chiesa: 1, stazione: 1, mercato: 1, monumento: 1, museo: 1 };
+  var SENZA_NOME_VA_BENE = { parco: 1, piazza: 1, chiesa: 1, stazione: 1, mercato: 1, monumento: 1, museo: 1,
+                             lago: 1, bosco: 1, spiaggia: 1, fiume: 1, prato: 1, 'riserva naturale': 1 };
 
   function servizi(lat, lon) {
     var k = chiave(lat, lon, 3);
@@ -164,7 +178,28 @@ function Intorno(opzioni) {
         for (var j = 0; j < tg.length; j++) t[tg[j].getAttribute('k')] = tg[j].getAttribute('v');
         var la = parseFloat(n.getAttribute('lat')), lo = parseFloat(n.getAttribute('lon'));
         dove[n.getAttribute('id')] = [la, lo];
-        if (t.natural === 'tree') { fuori.alberi.push([la, lo]); continue; }
+        if (t.natural === 'tree') {
+          /* ---------- «C'ERANO I CILIEGI» ---------- 01/11/2026
+             Gli alberi si tenevano come due numeri e basta. In
+             OpenStreetMap molti hanno la specie: alla Passeggiata del
+             Giappone sono ciliegi, ed e' la cosa che uno racconta. Il
+             nome italiano, quando lo sappiamo; se no restano «alberi». */
+          var spec = (t['species:it'] || t.species || t.genus || '').toLowerCase();
+          var che = '';
+          if (/prunus|cerasus|serrulata|cilieg/.test(spec)) che = 'ciliegi';
+          else if (/pinus|pino/.test(spec)) che = 'pini';
+          else if (/quercus|querc/.test(spec)) che = 'querce';
+          else if (/platanus|platano/.test(spec)) che = 'platani';
+          else if (/tilia|tiglio/.test(spec)) che = 'tigli';
+          else if (/olea|ulivo|olivo/.test(spec)) che = 'ulivi';
+          else if (/citrus|arancio|limone/.test(spec)) che = 'agrumi';
+          else if (/palma|phoenix|washingtonia/.test(spec)) che = 'palme';
+          else if (/cupressus|cipress/.test(spec)) che = 'cipressi';
+          var albero = [la, lo];
+          if (che) albero.che = che;
+          fuori.alberi.push(albero);
+          continue;
+        }
         if (t.highway === 'crossing') {
           var sem = (t.crossing === 'traffic_signals' || t['crossing:signals'] === 'yes');
           /* IL SEMAFORO ACUSTICO. È la cosa più importante che la mappa
@@ -280,7 +315,8 @@ function Intorno(opzioni) {
           continue;
         }
         var tipoA = null;
-        ['leisure', 'amenity', 'tourism', 'historic', 'place', 'office', 'railway'].forEach(function (ch) {
+        ['leisure', 'amenity', 'tourism', 'historic', 'place', 'office', 'railway',
+         'natural', 'landuse', 'waterway'].forEach(function (ch) {
           if (!tipoA && tw[ch] && AREE[ch + ':' + tw[ch]]) tipoA = AREE[ch + ':' + tw[ch]];
         });
         if (!tipoA) continue;
