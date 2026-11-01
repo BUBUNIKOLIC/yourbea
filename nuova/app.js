@@ -874,7 +874,7 @@
      «come si mette sulla Home» su iPhone, che spiega i due tocchi. */
   /* il guscio la chiama quando avvicini il telefono alla faccia: chi fa
      quel gesto vuole parlare adesso, non aspettare la fine della frase. */
-  window.YBzitta = function () { voce.ferma(); };
+  window.YBzitta = function () { voce.ferma('il telefono alla bocca'); };
 
   /* ============================================================
      DOPO IL GESTO, BASTA DIRE LA COSA — 01/11/2026
@@ -905,7 +905,7 @@
   window.YBaltraRadio = function (acceso) {
     altraRadio = !!acceso;
     diario('ALTRA APP CON L\'AUDIO: ' + (altraRadio ? 'taccio' : 'posso riparlare'));
-    if (altraRadio) voce.ferma();
+    if (altraRadio) voce.ferma('un\'altra app ha preso l\'audio');
   };
 
   window.YBdillo = function (t) {
@@ -1178,6 +1178,31 @@
   }
 
   var COLORI = { oro: '#E7C65A', neon: '#5BE3FF', spento: '#8F98A3' };
+  /* il verde e' dei tester: quello che ha segnato una persona, non una
+     mappa. «Anche qui la mappa puo' prendere riferimento dal server»
+     (Vince, 01/11). */
+  var VERDE_TESTER = '#7CE3A5';
+  var segniTester = [], segniTesterDi = '';
+
+  /* i punti delle persone, sopra la mappa: si rifanno solo se cambiano. */
+  function disegnaITester(s) {
+    if (!LE || typeof dagliAltri === 'undefined') return;
+    var loro = dagliAltri.qui(s.lat, s.lon, 800);
+    var firma = loro.map(function (p) { return p.nome + p.lat; }).join('|');
+    if (firma === segniTesterDi) return;
+    segniTesterDi = firma;
+    segniTester.forEach(function (m) { try { LE.removeLayer(m); } catch (e) {} });
+    segniTester = loro.map(function (p) {
+      var m = L.circleMarker([p.lat, p.lon], {
+        radius: 6, color: '#fff', weight: 1.5,
+        fillColor: VERDE_TESTER, fillOpacity: .9
+      }).addTo(LE);
+      var come = p.nome || p.cosa || 'segnalato';
+      m.bindPopup('<b>' + come + '</b><br><small>segnalato da un tester</small>');
+      return m;
+    });
+    if (loro.length) diario('MAPPA: ' + loro.length + ' punti dei tester disegnati');
+  }
 
   function disegnaMappa(s, lista) {
     if (!s || !s.pronto) return;
@@ -1211,6 +1236,8 @@
         return m;
       });
     }
+
+    disegnaITester(s);
 
     if (laLinea) { LE.removeLayer(laLinea); laLinea = null; }
     if (laMeta) { LE.removeLayer(laMeta); laMeta = null; }
@@ -3950,7 +3977,7 @@
           arrivera' piu'. Adesso si dice.
        ============================================================ */
     if (ha('ferma') && /\b(?:ferma|fermati|basta|silenzio|zitto|zitta|stop)\b/.test(t)) {
-      fermaLeMosse(); voce.ferma();
+      fermaLeMosse(); voce.ferma('mi hai detto di fermarmi');
       var mollata = guida.lascia();
       if (mollata) dilloSubito(mollata);
       /* «ferma» durante una passeggiata la lascia, e si dice: se si zittisse
@@ -4969,7 +4996,7 @@
     this.textContent = acceso ? 'Ferma' : 'Avvia';
     if (acceso) { posizione.comincia(); apriAscolto(); }
     else {
-      voce.ferma(); chiudiAscolto(); ascoltoVoluto = false;
+      voce.ferma('chiudo l\'ascolto'); chiudiAscolto(); ascoltoVoluto = false;
       /* CHI NON VEDE SPEGNE L'APP E RESTA IN STRADA. Un «a dopo» dice che
          si è fermata lei, su richiesta, e non che è caduta: senza una
          parola, il silenzio dopo un tasto è indistinguibile da un guasto. */
@@ -4978,7 +5005,7 @@
     diario(acceso ? 'ACCESO' : 'SPENTO');
   });
   el('parla').addEventListener('click', function () {
-    voce.ferma();                       // chi preme vuole parlare adesso
+    voce.ferma('hai premuto per parlare');   // chi preme vuole parlare adesso
     apriAscolto();
     this.classList.add('ascolta');
     var b = this;
@@ -5170,7 +5197,7 @@
     voce.parla('Testo ' + prossimo + '.', { livello: voce.GUIDA, ancheSeUguale: true });
   });
   el('cambia-modo').addEventListener('click', function () {
-    el('porta').hidden = false; acceso = false; voce.ferma();
+    el('porta').hidden = false; acceso = false; voce.ferma('torno alla porta');
   });
   el('dimmi-dove').addEventListener('click', diciDove);
   el('chi-chiamare').addEventListener('click', function () {

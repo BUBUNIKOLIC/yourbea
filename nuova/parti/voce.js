@@ -513,7 +513,21 @@ function MotoreVoce(opzioni) {
     return true;
   }
 
-  function ferma() { zittisci(); parlando = false; livelloInCorso = 0; coda = []; microfono.apri(); }
+  /* ---------- OGNI VOLTA CHE LA VOCE SI TRONCA, SI SCRIVE ---------- 01/11/2026
+     «E' importante che la voce dell'app non s'interrompa mai» (Vince, due
+     volte in un'ora). Oggi sono state chiuse le due cause grosse — le 28
+     interruzioni che ci facevamo da soli chiudendo il microfono, e il
+     ciclo che lo apriva e chiudeva 532 volte in un'ora. Quello che resta
+     deve essere CONTATO, se no alla prossima camminata si torna a
+     indovinare: da qui in poi ogni troncatura lascia una riga nel
+     quaderno, con chi l'ha chiesta e che frase stava morendo. */
+  function ferma(perche) {
+    if (parlando && ultimoTesto) {
+      diario('VOCE TRONCATA (' + (perche || 'non detto da chi') + '): ' +
+             String(ultimoTesto).slice(0, 45));
+    }
+    zittisci(); parlando = false; livelloInCorso = 0; coda = []; microfono.apri();
+  }
 
   return {
     parla: parla,
