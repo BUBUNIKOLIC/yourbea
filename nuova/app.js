@@ -2153,13 +2153,35 @@
 
     /* E DOVE DEVE ANDARE: la frase intera e' la meta. */
     if (inAttesaDi && inAttesaDi.cosa === 'dove-vado') {
+      var inAtt0 = inAttesaDi;
       inAttesaDi = null;
-      if (!/^(?:lascia perdere|niente|annulla|non importa)$/.test(normalizza(t))) {
-        portamiA(grezzo || t); return true;
+      /* CASA NON E' UN INDIRIZZO DA CERCARE. 02/11, 14:44:26: alla domanda
+         «Dimmi dove devi andare» lui ha risposto «Portami a casa», la
+         frase intera e' finita nel cercatore di indirizzi e la risposta e'
+         stata «Questo indirizzo non l'ho trovato» — mentre il punto di
+         casa era segnato e due minuti dopo ci ha portato benissimo.
+         Casa e' il punto che ha segnato lui, e aCasa() lo sa.
+         La forma e' chiusa ai due estremi perche' «portami alla Casa del
+         Jazz» e' un posto vero e deve restare una ricerca. */
+      if (/^(?:portami |riportami |accompagnami |andiamo |torniamo |torna |vai |voglio tornare )?(?:a |in |alla )?casa(?: mia)?$/
+            .test(normalizza(t))) {
+        aCasa(); return true;
       }
-      voce.parla('Va bene. Quando vuoi dimmi dove andare.',
-                 { livello: voce.GUIDA, ancheSeUguale: true });
-      return true;
+      /* L'ATTESA NON DURA PER SEMPRE, e un comando vince comunque. Senza
+         questi due, l'attesa aperta dal «ripetimelo con la città» farebbe
+         diventare una meta la prima cosa detta dopo — anche «dove sono»,
+         mezz'ora più tardi. Trenta secondi è lo stesso numero di
+         ATTESA_VIVE, già usato per zittire l'ambiente mentre si aspetta
+         una risposta. */
+      var scaduta = !!(inAtt0 && inAtt0.da && Date.now() - inAtt0.da > ATTESA_VIVE);
+      if (/^(?:lascia perdere|niente|annulla|non importa)$/.test(normalizza(t))) {
+        voce.parla('Va bene. Quando vuoi dimmi dove andare.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+      if (!scaduta && !unComando(t)) { portamiA(grezzo || t); return true; }
+      /* era un comando, o ha aspettato troppo: cade l'attesa e il comando
+         continua la sua strada qui sotto, come negli altri rami. */
     }
 
     /* HO CHIESTO SE LO PORTO A CASA (il tasto toccato mentre una guida era
@@ -2651,6 +2673,14 @@
       ? 'Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.'
       : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
       { livello: voce.GUIDA, ancheSeUguale: true });
+    /* E SE CHIEDO DI RIPETERLO, DEVO ASCOLTARE LA RISPOSTA. 02/11,
+       14:44:39: subito dopo questa frase lui ha detto «Via dei Corazzieri
+       47 Roma» (sentito «Via decorazioni 47 Roma») e non e' successo
+       NIENTE — nemmeno un «non ho capito». La frase arrivava al comando
+       normale, dove un indirizzo senza «portami a» davanti non e' niente,
+       e veniva buttata in silenzio. Adesso la domanda lascia l'attesa
+       aperta, come «Dimmi dove devi andare»: la frase dopo e' la meta. */
+    if (!eCasa) { inAttesaDi = { da: Date.now(), cosa: 'dove-vado' }; }
   }
 
   var metaInDubbio = null;
@@ -4523,7 +4553,15 @@
      andare microfono e posizione, e lo dice. */
   function chiudiTutto() {
     voce.parla('Chiudo. A presto.', { livello: voce.GUIDA, ancheSeUguale: true });
-    setTimeout(function () {
+    /* L'ULTIMA FRASE LA TAGLIAVAMO NOI. 02/11, 14:49:34 → 14:49:35, la
+       sola troncatura di tutta la camminata: «VOCE TRONCATA: chiudo a
+       presto». Era questo timer — 1600 millesimi fissi e poi
+       voce.ferma() — e «Chiudo. A presto.» non ci sta dentro. Un tempo
+       piu' lungo non e' una risposta: la frase dura quanto dura (e in
+       un'altra lingua dura un'altra cosa). Si aspetta che la voce abbia
+       finito, col tetto di otto secondi per non restare appesi se il
+       motore della voce si pianta. */
+    var finisci = function () {
       try { suonaMusica({ suona: false }); } catch (e) {}
       try { faro.spegni(); spegniIlSuono(); } catch (e) {}
       try { miei.smetti(); } catch (e) {}
@@ -4533,7 +4571,15 @@
       if (window.urbeaChiudi) { window.urbeaChiudi(); return; }
       /* nel browser o dove non si puo' chiudere: resta ferma e muta */
       mostra({ titolo: 'Yourbea', testo: 'Chiusa. Premi Avvia per riaprirla.', dove: '', gradino: '' });
-    }, 1600);
+    };
+    var scadenza = Date.now() + 8000;
+    var aspetta = function () {
+      var ancora = false;
+      try { ancora = !!voce.staParlando(); } catch (e) {}
+      if (ancora && Date.now() < scadenza) { setTimeout(aspetta, 250); return; }
+      finisci();
+    };
+    setTimeout(aspetta, 250);
   }
 
   function diciDove() {

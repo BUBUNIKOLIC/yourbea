@@ -100,6 +100,13 @@ function Negozi(opzioni) {
   function articolo(parola) {
     var w = String(parola || '').toLowerCase();
     if (!w) return '';
+    /* L'ARTICOLO SEGUE LA PRIMA PAROLA, NON L'ULTIMA. 02/11, due volte:
+       «Il fermata dell'autobus Emanuelli». Qui arriva il tipo intero —
+       «fermata dell'autobus», «fermata del tram» — e la regola guardava
+       la fine della stringa: «autobus» non finisce per a, quindi «il».
+       Lo stesso valeva per «fermata del tram». «stazione di Roma» usciva
+       giusta per caso, perche' Roma finisce per a. */
+    w = w.split(/\s+/)[0];
     if (/^[aeiouàèéìòóù]/.test(w)) return "l'";
     if (/(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w)) return 'la ';
     return /^(s[bcdfglmnpqrtv]|z|ps|pn|gn|x|y)/.test(w) ? 'lo ' : 'il ';

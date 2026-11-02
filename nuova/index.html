@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Yourbea">
 <link rel="apple-touch-icon" href="../icons/icon-180.png">
 <title>Yourbea — la bellezza intorno a te</title>
-<link rel="stylesheet" href="mappa/leaflet.css?v=216">
-<link rel="stylesheet" href="stile.css?v=216">
+<link rel="stylesheet" href="mappa/leaflet.css?v=217">
+<link rel="stylesheet" href="stile.css?v=217">
 </head>
 <body data-modo="utilita" data-testo="normale">
 
@@ -220,40 +220,40 @@
   <button class="tasto tondo" id="altro" aria-label="Altri comandi" aria-expanded="false" aria-controls="cassetto"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg></button>
 </nav>
 
-<script src="parti/faro.js?v=216"></script>
-<script src="parti/percorsiMiei.js?v=216"></script>
-<script src="parti/postiMiei.js?v=216"></script>
-<script src="parti/contributi.js?v=216"></script>
-<script src="parti/dagliAltri.js?v=216"></script>
-<script src="parti/avanzamento.js?v=216"></script>
-<script src="parti/fermate.js?v=216"></script>
-<script src="parti/aChiServe.js?v=216"></script>
-<script src="parti/paesaggio.js?v=216"></script>
-<script src="parti/modi.js?v=216"></script>
-<script src="parti/pronuncia.js?v=216"></script>
-<script src="parti/lingua.js?v=216"></script>
-<script src="parti/voce.js?v=216"></script>
-<script src="parti/distanza.js?v=216"></script>
-<script src="parti/descrizione.js?v=216"></script>
-<script src="parti/racconto.js?v=216"></script>
-<script src="parti/clip.js?v=216"></script>
-<script src="parti/aggancio.js?v=216"></script>
-<script src="parti/posizione.js?v=216"></script>
-<script src="parti/intorno.js?v=216"></script>
-<script src="parti/emergenza.js?v=216"></script>
-<script src="parti/pulizia.js?v=216"></script>
-<script src="parti/dettatura.js?v=216"></script>
-<script src="parti/guida.js?v=216"></script>
-<script src="parti/lettura.js?v=216"></script>
-<script src="parti/passeggiata.js?v=216"></script>
-<script src="parti/musica.js?v=216"></script>
-<script src="mappa/leaflet.js?v=216"></script>
-<script src="parti/negozi.js?v=216"></script>
-<script src="parti/passaggi.js?v=216"></script>
-<script src="parti/incroci.js?v=216"></script>
-<script src="parti/scena.js?v=216"></script>
-<script src="parti/mappa.js?v=216"></script>
-<script src="app.js?v=216"></script>
+<script src="parti/faro.js?v=217"></script>
+<script src="parti/percorsiMiei.js?v=217"></script>
+<script src="parti/postiMiei.js?v=217"></script>
+<script src="parti/contributi.js?v=217"></script>
+<script src="parti/dagliAltri.js?v=217"></script>
+<script src="parti/avanzamento.js?v=217"></script>
+<script src="parti/fermate.js?v=217"></script>
+<script src="parti/aChiServe.js?v=217"></script>
+<script src="parti/paesaggio.js?v=217"></script>
+<script src="parti/modi.js?v=217"></script>
+<script src="parti/pronuncia.js?v=217"></script>
+<script src="parti/lingua.js?v=217"></script>
+<script src="parti/voce.js?v=217"></script>
+<script src="parti/distanza.js?v=217"></script>
+<script src="parti/descrizione.js?v=217"></script>
+<script src="parti/racconto.js?v=217"></script>
+<script src="parti/clip.js?v=217"></script>
+<script src="parti/aggancio.js?v=217"></script>
+<script src="parti/posizione.js?v=217"></script>
+<script src="parti/intorno.js?v=217"></script>
+<script src="parti/emergenza.js?v=217"></script>
+<script src="parti/pulizia.js?v=217"></script>
+<script src="parti/dettatura.js?v=217"></script>
+<script src="parti/guida.js?v=217"></script>
+<script src="parti/lettura.js?v=217"></script>
+<script src="parti/passeggiata.js?v=217"></script>
+<script src="parti/musica.js?v=217"></script>
+<script src="mappa/leaflet.js?v=217"></script>
+<script src="parti/negozi.js?v=217"></script>
+<script src="parti/passaggi.js?v=217"></script>
+<script src="parti/incroci.js?v=217"></script>
+<script src="parti/scena.js?v=217"></script>
+<script src="parti/mappa.js?v=217"></script>
+<script src="app.js?v=217"></script>
 
 <!-- LA CASSAFORTE: e' quello che fa partire l'app senza rete e la fa
      installare come app. Il ?v= qui sotto deve essere lo STESSO di tutti gli
@@ -352,7 +352,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (controllavaGia && !ricaricato) { ricaricato = true; location.reload(); }
     });
-    navigator.serviceWorker.register("sw.js?v=216", { updateViaCache: 'none' })
+    navigator.serviceWorker.register("sw.js?v=217", { updateViaCache: 'none' })
       .then(function (reg) { reg.update(); })
       .catch(function (e) {
         /* senza cassaforte l'app funziona comunque, con la rete: non si

@@ -369,7 +369,11 @@ function Scena(opzioni) {
      finiscono in -e tutte e due i generi: le desinenze che decidono sono
      poche e si contano. */
   function femmina(c) {
-    var t = String(c || '').toLowerCase();
+    /* IL GENERE STA NELLA PRIMA PAROLA. 02/11, nel ripasso: «Il fermata
+       dell'autobus Emanuelli». Il tipo arriva intero — «fermata
+       dell'autobus», «fermata del tram» — e qui si guardava la fine della
+       stringa, cioe' «autobus». Le parole singole non cambiano. */
+    var t = String(c || '').toLowerCase().split(/\s+/)[0];
     if (/(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(t)) return true;
     if (/a$/.test(t)) return true;
     return false;

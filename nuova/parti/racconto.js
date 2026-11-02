@@ -482,7 +482,10 @@ function Racconto(opzioni) {
   var FEMMINE_IN_E = { cattedrale: 1, torre: 1, pieve: 1, corte: 1, croce: 1,
                        valle: 1, fonte: 1, sede: 1, arte: 1, chiese: 1, parte: 1 };
   function femminile(t) {
-    var w = String(t || '').toLowerCase();
+    /* la prima parola, come in scena.js e in passaggi.js: su un tipo di
+       due parole («fermata dell'autobus») la fine della stringa non dice
+       il genere. */
+    var w = String(t || '').toLowerCase().split(/\s+/)[0];
     if (FEMMINE_IN_E[w]) return true;
     return /(zione|sione|gione|ione|tà|tù|trice|ice)$/.test(w) || /a$/.test(w);
   }
