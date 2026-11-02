@@ -132,6 +132,11 @@
      all'ultimo momento, perché il testo che si vede sullo schermo resti
      scritto come si scrive. */
   var pronuncia = Pronuncia();
+  /* ---------- IL CRONOMETRO DEL «DIMMI» ---------- 02/11/2026
+     il guscio ci passa quanti millesimi sono passati da quando il sensore
+     ha sentito il telefono vicino alla bocca; qui si aggiunge il pezzo
+     della pagina e si scrive il tempo intero, quello che Vince sente. */
+  var dimmiDalTocco = 0, dimmiChiesto = 0;
   var sintesi = {
     /* parla(testo, quandoFinisce): il secondo pezzo e' la cosa importante.
        Prima il motore NON sapeva quando la voce di sistema aveva finito: la
@@ -158,6 +163,16 @@
            che comincia: chi riceve la chiamata controlla il turno, e di
            quella vecchia non fa niente. */
         if (quandoFinisce) { u.onend = quandoFinisce; u.onerror = quandoFinisce; }
+        /* QUANDO LA VOCE PARTE DAVVERO, non quando l'abbiamo chiesta: fra
+           le due c'e' il motore della sintesi, ed e' proprio il pezzo che
+           non sapevamo misurare. Si scrive solo per il «Dimmi» del gesto:
+           su ogni frase sarebbe una riga di quaderno in piu' per niente. */
+        u.onstart = function () {
+          if (!dimmiChiesto) return;
+          diario('DIMMI: la voce parte ' + (dimmiDalTocco + (Date.now() - dimmiChiesto)) +
+                 ' ms dopo il tocco del sensore');
+          dimmiChiesto = 0;
+        };
         window.speechSynthesis.speak(u);
       } catch (e) { if (quandoFinisce) quandoFinisce(); }
     },
@@ -908,7 +923,10 @@
     if (altraRadio) voce.ferma('un\'altra app ha preso l\'audio');
   };
 
-  window.YBdillo = function (t) {
+  window.YBdillo = function (t, dalTocco) {
+    /* il guscio passa i millesimi dal tocco del sensore: da qui in poi il
+       tempo lo conta la pagina, e chi fa partire la voce scrive la somma. */
+    if (dalTocco) { dimmiDalTocco = Number(dalTocco) || 0; dimmiChiesto = Date.now(); }
     voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true });
   };
 
@@ -2195,6 +2213,22 @@
       /* non era un sì: non si butta niente, e il comando continua la sua
          strada qui sotto come se la domanda non ci fosse stata. */
     }
+    /* HO CHIESTO «VUOI CHE TE NE PARLI?» — 02/11/2026, solo in Utilita'.
+       «Si» e si racconta, con la stessa strada di «ancora». Un no non si
+       interpreta: qualunque altra cosa continua la sua strada qui sotto,
+       come per conferma-casa — se invece di rispondere chiede «dove
+       sono», vince la domanda. */
+    if (inAttesaDi && inAttesaDi.cosa === 'te-ne-parlo') {
+      inAttesaDi = null;
+      if (/^(si|si grazie|si dimmi|va bene|certo|ok|dimmi|parlamene|raccontami|raccontamelo|volentieri)$/.test(normalizza(t))) {
+        dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo }));
+        return true;
+      }
+      if (/^(no|no grazie|lascia perdere|niente|dopo|non adesso|no no)$/.test(normalizza(t))) {
+        voce.parla('Va bene.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+    }
     if (inAttesaDi && inAttesaDi.cosa === 'percorso-arrivato') {
       var ilSuo = inAttesaDi.percorso;
       inAttesaDi = null;
@@ -3074,6 +3108,28 @@
                                     rifai: rifaiLaDistanza(d, detto) });
     if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
     quandoHoParlato = Date.now();   /* il battito del silenzio parte da qui */
+    /* ---------- IN UTILITA' LO CHIEDE A VOCE ---------- 02/11/2026
+       «La chiesa in Utilita' adesso puo' funzionare in questo modo:
+       Yourbea chiede "vuoi che te ne parli?". Invece in Turismo basta
+       sostare» (Vince, dopo la camminata del pomeriggio).
+       In Utilita', fermo davanti alla chiesa di San Marco evangelista in
+       Agro Laurentino, `racconto.prossimo()` da' tipo «aCosaServe»:
+       «Qui c'e' la chiesa di San Marco evangelista in Agro Laurentino.»
+       e si fermava li'. L'invito a sentire il resto c'era — ma SCRITTO
+       sullo schermo, «Dimmi "ancora" se vuoi che te lo racconti», e chi
+       non vede non legge lo schermo: alle 17:10:02 lui ha indovinato la
+       parola giusta, e il quaderno ha risposto quattro volte «REGOLA:
+       scheda non va in servizi».
+       In Turismo non si chiede niente: da fermo lo stesso luogo esce
+       gia' come «scheda», cioe' la storia parte da sola.
+       Si chiede solo per i luoghi che hanno davvero qualcosa in piu':
+       una domanda a ogni portone sarebbe peggio del silenzio. */
+    if (modo === 'servizi' && d.tipo === 'aCosaServe' && d.luogo &&
+        (d.luogo.d || d.luogo.a || d.luogo.i || d.luogo.cf) && !staAspettando()) {
+      inAttesaDi = { da: Date.now(), cosa: 'te-ne-parlo' };
+      voce.parla('Vuoi che te ne parli?', { livello: voce.GUIDA, ancheSeUguale: true });
+      diario('OFFERTO a voce: vuoi che te ne parli? \u2014 ' + (d.luogo.n || ''));
+    }
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
        ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha
        perso il filo di dove si trova — e chi non vede non può recuperarlo
@@ -3127,7 +3183,11 @@
     alLettore(d.testo, true);        // la voce la sta gia dicendo
   }
   function gradinoScritto(d) {
-    if (d.tipo === 'aCosaServe') return 'Dimmi «ancora» se vuoi che te lo racconti.';
+    /* lo schermo dice le stesse parole che la voce ha chiesto (02/11):
+       chi accompagna legge la domanda a cui l'altro sta rispondendo. */
+    if (d.tipo === 'aCosaServe') return modo === 'servizi'
+      ? 'Vuoi che te ne parli? Dimmi «sì».'
+      : 'Dimmi «ancora» se vuoi che te lo racconti.';
     if (d.tipo === 'percorso-qui') return 'Dimmi «sì» per seguirlo, «continuo» per tirare dritto.';
     if (d.tipo === 'cenno') return modo === 'servizi'
       ? 'Dimmi «ancora» se vuoi sapere cos\u2019\u00e8.'

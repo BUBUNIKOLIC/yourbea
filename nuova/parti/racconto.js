@@ -853,6 +853,21 @@ function Racconto(opzioni) {
      da dire — anche in Utilità, dove di sua iniziativa l'app parla solo di
      servizi. Era il difetto di Gabri: chiedeva «approfondisci» e si sentiva
      rispondere «Farmacia Pirani». */
+  /* ---------- E CHI CHIEDE HA CHIESTO ---------- 02/11/2026
+     Il commento qui sopra dice «in qualunque modalità» dal 16/10, e per
+     sedici giorni non è stato vero. Vince, oggi, davanti alla chiesa di
+     San Marco evangelista in Agro Laurentino: «ho detto ancora, mi sono
+     fermato, ma non mi ha detto nulla sulla chiesa». Il quaderno dice
+     dove finiva: 17:10:02 «REGOLA: scheda non va in servizi», e di
+     nuovo alle 17:10:59. Quattro volte in un minuto.
+     La scheda di un luogo, in Utilità, l'app non la dice di sua
+     iniziativa — giusto, Utilità serve a camminare. Ma `aChiServe.serve()`
+     ha la sua eccezione scritta dal primo giorno: «chiesto vuol dire che
+     l'ha chiesto l'utente a voce: una richiesta non si filtra mai». La
+     risposta di qui dentro non la portava, quella marca, e quindi la
+     regola la trattava come una nostra chiacchiera e la buttava.
+     Si marca qui, non nel chiamante: approfondisci() ESISTE solo perché
+     qualcuno ha chiesto. */
   function approfondisci(situazione) {
     if (!inCorso) {
       var intorno = situazione.intorno || [];
@@ -860,10 +875,12 @@ function Racconto(opzioni) {
         var p = intorno[i].p;
         if (p.k >= 1 && (p.d || p.a) && intorno[i].m < 260) { inCorso = p; gradino[p.n] = 0; break; }
       }
-      if (!inCorso) return { tipo: 'niente', livello: 'guida',
+      if (!inCorso) return { tipo: 'niente', livello: 'guida', chiesto: true,
                              testo: 'Qui intorno non ho niente da raccontare.' };
     }
-    return ancora();
+    var r = ancora();
+    if (r) r.chiesto = true;
+    return r;
   }
 
   function salta() {
