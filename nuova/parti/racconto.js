@@ -270,6 +270,68 @@ function Racconto(opzioni) {
        il conto e' fatto sui candidati veri di questo giro, non sulla
        citta': la stessa riga tace in periferia, dove sono zero. */
     var fitto = candidati.length > FITTO;
+
+    /* ============================================================
+       NEI CENTRI STORICI LE OPERE NON SI SOVRAPPONGONO
+       04/11/2026, Vince: «e non devono sovrapporsi, nei centri storici,
+       le opere». Dario, da piazza Dante: «mi cambiava continuamente i
+       monumenti (chiese e palazzi), come se riscontrasse troppe cose da
+       raccontare... alla fine non capivo molto».
+       COM'ERA: il cenno nuovo sovrascriveva `inCorso` senza guardare se
+       di quello che stava raccontando avesse finito di dire qualcosa.
+       Camminando in centro: cenno sulla chiesa A, quarantacinque secondi
+       dopo cenno sul palazzo B, e di A non si sapeva piu' niente —
+       nemmeno chiedendo «ancora», perche' «ancora» riprende da `inCorso`.
+       Con trentasei candidati intorno succede a ogni giro.
+       ADESSO: dove e' fitto, finche' l'opera in corso ha ancora qualcosa
+       da dire, non se ne comincia un'altra. Non e' silenzio: fermandosi
+       si scende di gradino su QUELLA (e' il ramo qui sopra), chiedendo
+       «ancora» si ha il seguito di QUELLA, e appena ti allontani di
+       duecento metri `lasciaQuelloLontano` la lascia andare e la
+       prossima parte da se'.
+       E NON TOCCA LA PERIFERIA: fuori dai centri `fitto` e' falso — a
+       via dei Corazzieri i candidati sono zero — e qui non cambia nulla.
+       Una richiesta esplicita passa sempre: `situazione.chiesto`.
+       ============================================================ */
+    /* MA IL COLOSSEO NON ASPETTA LA FONTANELLA — Vince, 04/11:
+       «ovviamente se c'è il colosseo e la fontana... avevamo stabilito
+       le priorità». Senza questa parte la regola qui sotto avrebbe
+       fatto un danno nuovo: cominci a sentire una fontana, arrivi
+       davanti al Colosseo e l'app tace perche' «e' ancora sulla
+       fontana». Il rango e' quello che abbiamo stabilito (1, 2, 3):
+       un'opera di rango PIU' ALTO di quella in corso passa avanti e
+       prende il posto. A pari rango non si cambia — se no si tornerebbe
+       a saltare fra venti palazzi, che sono tutti rango 1. */
+    var ilMigliore = null;
+    for (var q = 0; q < candidati.length; q++) {
+      if (!ilMigliore || candidati[q].punti > ilMigliore.punti) ilMigliore = candidati[q];
+    }
+    /* E «PIU' IMPORTANTE» NON E' IL RANGO — trovato guardando il
+       quaderno della camminata di prova, non ragionandoci sopra: il
+       quaderno diceva «PRIORITA: Palazzo in via Atri 33 (rango 3) passa
+       avanti a Palazzo Firrao (rango 2)». Il rango viene da `k`, che e'
+       quanto e' ricca la scheda: un palazzo di cui Wikipedia scrive
+       molto diventa «rango 3» e scavalcava quello in corso a ogni giro.
+       Cosi' la regola di Vince si sarebbe svuotata da sola.
+       Chi passa avanti lo dice `eImportante()`, che e' il criterio che
+       Vince aveva gia' stabilito il 29/10 per i monumenti in macchina:
+       rango alto E grande almeno sessanta metri, oppure grande almeno
+       centocinquanta. Il Colosseo (188) passa; la fontanella no; e il
+       palazzo col rango gonfiato dalla scheda nemmeno. */
+    var piuImportante = !!(ilMigliore && inCorso &&
+                           eImportante(ilMigliore.p) && !eImportante(inCorso));
+    if (fitto && !situazione.chiesto && inCorso && daRaccontare(inCorso, modo) &&
+        (gradino[inCorso.n] || 0) < quantiGradini(inCorso)) {
+      if (piuImportante) {
+        diario('PRIORITA: «' + ilMigliore.p.n + '» (rango ' + rango(ilMigliore.p) +
+               ') passa avanti a «' + inCorso.n + '» (rango ' + rango(inCorso) + ')');
+      } else {
+        var restano = quantiGradini(inCorso) - (gradino[inCorso.n] || 0);
+        diario('UNA ALLA VOLTA: sto ancora su «' + inCorso.n + '» (' + restano +
+               ' da dire), non ne comincio un\'altra');
+        return null;
+      }
+    }
     if (fitto) {
       var stretti = [];
       for (var j = 0; j < candidati.length; j++) {

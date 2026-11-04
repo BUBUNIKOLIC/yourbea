@@ -64,7 +64,19 @@ function AChiServe() {
      se non sappiamo dove siamo, e si tace. */
   var REGOLA = {
     /*                     utilità  turismo  non-a-piedi  imprecisi */
-    'avviso':            [ true,    true,    true,        false ],
+    /* GLI AVVISI NON SONO TURISMO — 04/11/2026.
+       Dario, a piazza Dante: «in modalità turistica non ha senso che mi
+       dica che a un certo punto di piazza Dante ci sono dei gradini...
+       questa è un'informazione per un ipovedente non per un turista».
+       Vince: «turismo è arte storia ed architettura».
+       Il 28/10 questa riga era passata in tutt'e due i modi, col
+       ragionamento che un avviso e' «dove metti i piedi» e quindi serve
+       sempre. Vale per chi cammina senza vedere, e per quello c'e'
+       Utilita'; chi ha aperto Turismo ha aperto un'altra cosa.
+       COSA RESTA FUORI DAL TURISMO, da qui: scalini, paletti, lo
+       scivolo del marciapiede, ascensori, scale mobili, attraversamenti.
+       Tutto questo continua a passare in Utilita', dov'e' nato. */
+    'avviso':            [ true,    false,   true,        false ],
     'strada':            [ true,    true,    true,        true  ],
     /* la fermata serve PROPRIO quando non sei a piedi: e' il momento in
        cui conta, e senza precisione non si dice (sbagliare fermata e'

@@ -1483,7 +1483,8 @@
        cose». Il numero resta in `ultimaStrada` per chi lo CHIEDE («che
        numero siamo»), e non esce mai da solo. */
     var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
-                             direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI });
+                             direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI,
+                             modo: modo });
     if (d) { dillo(d); return; }
     /* se non dice niente deve restare scritto PERCHÉ: «all'andata non c'era
        una descrizione della realtà» (Vince, 16/10) e dal di fuori una
@@ -3782,7 +3783,7 @@
       fermoDetto = Date.now();
       var sc = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
                                 direzioneBuona: s.direzioneBuona, strada: ultimaVia,
-                                mappa: SERVIZI, fermo: true });
+                                mappa: SERVIZI, fermo: true, modo: modo });
       if (sc) { dillo(sc); return; }
       /* ---------- NON SI STA ZITTI ---------- 31/10/2026
          «Una app che descrive, che non parla» (Vince). Qui finiva: 13
@@ -4745,7 +4746,8 @@
     if (s.pronto) {
       scena.dimenticaTutto();
       var d = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
-                               direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI });
+                               direzioneBuona: s.direzioneBuona, strada: ultimaVia, mappa: SERVIZI,
+                               modo: modo });
       if (d) pezzi.push(d.testo);
     }
     var lista = vicini().filter(function (o) { return o.p.k; }).slice(0, 3);

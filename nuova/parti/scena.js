@@ -285,6 +285,15 @@ function Scena(opzioni) {
   function descrivi(s) {
     var qui = s.qui, d = s.direzione, buona = s.direzioneBuona !== false;
     var mappa = s.mappa || { punti: [], aree: [], alberi: [] };
+    /* IN TURISMO LA SCENA DICE SOLO QUELLO CHE E' ARTE, STORIA,
+       ARCHITETTURA — 04/11/2026, Vince, dopo piazza Dante con Dario.
+       Restano: dove sei (la piazza, la via, quanto e' larga) e il
+       paesaggio, che e' il golfo e i monti. Vanno via gli
+       ATTRAVERSAMENTI e i NEGOZI: il primo e' un avviso per i piedi, il
+       secondo e' la citta' che funziona, e nessuno dei due e' il motivo
+       per cui uno apre il Turismo. In Utilita' non cambia niente.
+       La scena non sapeva il modo: gliel'ho dovuto passare. */
+    var soloArte = s.modo === 'cultura';
     var pezzi = [];
     var capo1 = null;
 
@@ -315,13 +324,13 @@ function Scena(opzioni) {
     var alb = alberi(qui, mappa.alberi, d, buona);
     if (alb && fresco('alberi', alb.replace(/\d+/g, ''))) pezzi.push(alb);
 
-    var att = attraversamenti(qui, mappa.punti);
+    var att = soloArte ? null : attraversamenti(qui, mappa.punti);
     /* il senso, non le parole: cambia il numero ma la notizia è la stessa */
     var conAvviso = false;
     if (att && fresco('attraversamenti', att.replace(/\d+/g, 'n'))) { pezzi.push(att); conAvviso = true; }
 
     /* REGOLA 3: tre cose. I servizi entrano solo se c'è ancora posto. */
-    var quanti = Math.max(0, 4 - pezzi.length);
+    var quanti = soloArte ? 0 : Math.max(0, 4 - pezzi.length);
     if (quanti) {
       servizi(qui, mappa.punti, d, buona, quanti + 3).forEach(function (t) {
         if (pezzi.length >= 4) return;
