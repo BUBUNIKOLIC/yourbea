@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "경로가 클립보드에 있어요. 원하는 곳에 붙여 넣으세요.",
  "Il percorso è un file: scegli dove metterlo.": "경로는 파일이에요. 어디에 둘지 고르세요.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "보폭은 아직 재지 않았어요. 칠십오 센티미터로 계산하고 있어요. 걸으면서 경로를 기록하면 제가 직접 잽니다.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Turismo 에서는 «cosa vedi» 라고 하면 앞에 무엇이 있는지 알려 줍니다. «Passeggiate» 는 이미 준비된 산책로, «Ancora» 는 더 자세한 이야기. «Solo monumenti», 또는 «dimmi tutto». «Dove sono». «Leggi» 라고 하면 휴대폰으로 표지판이나 명판을 읽어 줍니다. «Utilità» 라고 하면 다른 모드로 넘어갑니다. «Chiedi aiuto» 라고 하면 먼저 위치를 말하고 구조를 부릅니다. «Avvisa» 와 연락처 이름. «Ferma» 라고 하면 조용히 합니다. 나머지는 «altri comandi» 라고 말하세요.",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "관광에서는 「passeggiate」로 구간 산책을, 「comincia la prima」로 첫 구간을 시작해요.",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Utilità 에서는 «portami a casa» 라고 할 수 있습니다. «Portami a» 와 주소. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi» 라고 하면 휴대폰으로 표지판, 인터폰, 버스 번호를 읽어 줍니다. «I miei posti», 또는 «crea un percorso». «Turismo» 라고 하면 다른 모드로 넘어갑니다. «Chiedi aiuto» 라고 하면 먼저 위치를 말하고 구조를 부릅니다. «Avvisa» 와 연락처 이름. «Ferma» 라고 하면 조용히 합니다. 나머지는 «altri comandi» 라고 말하세요.",
  "La strada non la so dire.": "길은 말씀드릴 수 없어요.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "「Leggi」라고 하면 카메라 앞에 있는 것을 읽어 드려요. 표지판, 초인종, 버스 번호.",
  "Mi serve l'indirizzo: via, numero e città.": "주소가 필요해요. 길, 번지, 도시.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "좋아요, 보내지 않을게요.",
  "Va bene, non lo tengo.": "좋아요, 보관하지 않을게요.",
  "Va bene, resta senza nome.": "좋아요, 이름 없이 두겠습니다.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "좋아요. 「crea un percorso」라고 하고 백 미터쯤 걸으세요. 걷는 동안 다시 잴게요.",
- "Va bene.": "좋아요."
+ "Va bene.": "좋아요.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "좋아요. 「crea un percorso」라고 하고 백 미터쯤 걸으세요. 걷는 동안 다시 잴게요."
 }

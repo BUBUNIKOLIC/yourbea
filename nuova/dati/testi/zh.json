@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "路线在剪贴板里：想粘到哪里都行。",
  "Il percorso è un file: scegli dove metterlo.": "路线是一个文件：选一个地方存放。",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "你的步幅我还没量过：我按七十五厘米算。边走边录一段路线，我自己就量出来了。",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "在 Turismo 模式里你可以说：«cosa vedi»，我就告诉你面前有什么。«Passeggiate»，听现成的散步路线。«Ancora»，了解更多。«Solo monumenti»，或者 «dimmi tutto»。«Dove sono»。«Leggi»，我用手机读出牌子或铭牌上的字。«Utilità»，切换到另一个模式。«Chiedi aiuto»，我会呼叫急救，并先说出你在哪里。«Avvisa»，再说你联系人的名字。«Ferma»，让我安静下来。其余的，说：«altri comandi»。",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "旅游模式里：说「passeggiate」听分段散步，说「comincia la prima」开始第一段。",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "在 Utilità 模式里你可以说：«portami a casa»。«Portami a»，再说一个地址。«Cammina libero»。«Intorno»。«Che numero siamo»。«Dove sono»。«Leggi»，我用手机读出牌子、门禁对讲机或公交车号。«I miei posti»，或者 «crea un percorso»。«Turismo»，切换到另一个模式。«Chiedi aiuto»，我会呼叫急救，并先说出你在哪里。«Avvisa»，再说你联系人的名字。«Ferma»，让我安静下来。其余的，说：«altri comandi»。",
  "La strada non la so dire.": "这条路我说不上来。",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "说「Leggi」，我就念出摄像头前面的东西：一块牌子、一个门铃、公交车的号码。",
  "Mi serve l'indirizzo: via, numero e città.": "我需要地址：街道、门牌号和城市。",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "好，我不发送。",
  "Va bene, non lo tengo.": "好，我不保存。",
  "Va bene, resta senza nome.": "好，就不起名字了。",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "好。说「crea un percorso」然后走大约一百米：我边走边重新量。",
- "Va bene.": "好的。"
+ "Va bene.": "好的。",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "好。说「crea un percorso」然后走大约一百米：我边走边重新量。"
 }

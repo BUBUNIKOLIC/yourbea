@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "O percurso está na área de transferência: cola-o onde quiseres.",
  "Il percorso è un file: scegli dove metterlo.": "O percurso é um ficheiro: escolhe onde o guardar.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "A tua passada ainda não a medi: uso setenta e cinco centímetros. Grava um percurso a andar e meço-a sozinho.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Em Turismo podes dizer: «cosa vedi», e digo-te o que tens à frente. «Passeggiate», para os passeios já prontos. «Ancora», para saberes mais. «Solo monumenti», ou «dimmi tutto». «Dove sono». «Leggi», e leio-te com o telefone uma placa ou uma lápide. «Utilità», para passar ao outro modo. «Chiedi aiuto», e chamo o socorro dizendo primeiro onde estás. «Avvisa», e o nome do teu contacto. «Ferma», para eu me calar. Para o resto, diz: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "No Turismo: «passeggiate» para os passeios por etapas, e «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Em Utilità podes dizer: «portami a casa». «Portami a», e uma morada. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», e leio-te com o telefone uma placa, um intercomunicador ou o número do autocarro. «I miei posti», ou «crea un percorso». «Turismo», para passar ao outro modo. «Chiedi aiuto», e chamo o socorro dizendo primeiro onde estás. «Avvisa», e o nome do teu contacto. «Ferma», para eu me calar. Para o resto, diz: «altri comandi».",
  "La strada non la so dire.": "O caminho não to sei dizer.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», e leio-te o que a câmara tem à frente: uma placa, um intercomunicador, o número do autocarro.",
  "Mi serve l'indirizzo: via, numero e città.": "Preciso da morada: rua, número e cidade.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Está bem, não o envio.",
  "Va bene, non lo tengo.": "Está bem, não o guardo.",
  "Va bene, resta senza nome.": "Está bem, fica sem nome.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Está bem. Diz «crea un percorso» e anda uns cem metros: volto a medi-la enquanto andas.",
- "Va bene.": "Está bem."
+ "Va bene.": "Está bem.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Está bem. Diz «crea un percorso» e anda uns cem metros: volto a medi-la enquanto andas."
 }

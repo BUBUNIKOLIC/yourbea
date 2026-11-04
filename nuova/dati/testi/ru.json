@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "Маршрут в буфере обмена: вставь его куда хочешь.",
  "Il percorso è un file: scegli dove metterlo.": "Маршрут — это файл: выбери, куда его положить.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Твой шаг я ещё не измерил: считаю семьдесят пять сантиметров. Запиши маршрут на ходу, и я измерю его сам.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "В режиме Turismo можно сказать: «cosa vedi», и я скажу, что перед тобой. «Passeggiate», чтобы услышать готовые маршруты. «Ancora», чтобы узнать больше. «Solo monumenti», или «dimmi tutto». «Dove sono». «Leggi», и я прочитаю телефоном табличку или вывеску. «Utilità», чтобы перейти в другой режим. «Chiedi aiuto», и я вызову помощь, сказав сначала, где ты. «Avvisa», и имя твоего контакта. «Ferma», чтобы я замолчала. Об остальном скажи: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "В Туризме: «passeggiate» для прогулок по этапам, и «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "В режиме Utilità можно сказать: «portami a casa». «Portami a», и адрес. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», и я прочитаю телефоном табличку, домофон или номер автобуса. «I miei posti», или «crea un percorso». «Turismo», чтобы перейти в другой режим. «Chiedi aiuto», и я вызову помощь, сказав сначала, где ты. «Avvisa», и имя твоего контакта. «Ferma», чтобы я замолчала. Об остальном скажи: «altri comandi».",
  "La strada non la so dire.": "Дорогу сказать не могу.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», и я прочитаю, что камера видит перед собой: табличку, домофон, номер автобуса.",
  "Mi serve l'indirizzo: via, numero e città.": "Мне нужен адрес: улица, номер и город.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Хорошо, не отправляю.",
  "Va bene, non lo tengo.": "Хорошо, не сохраняю.",
  "Va bene, resta senza nome.": "Хорошо, останется без имени.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Хорошо. Скажи «crea un percorso» и пройди метров сто: я измерю его заново, пока ты идёшь.",
- "Va bene.": "Хорошо."
+ "Va bene.": "Хорошо.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Хорошо. Скажи «crea un percorso» и пройди метров сто: я измерю его заново, пока ты идёшь."
 }

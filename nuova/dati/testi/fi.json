@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "Reitti on leikepöydällä: liitä se minne haluat.",
  "Il percorso è un file: scegli dove metterlo.": "Reitti on tiedosto: valitse, minne se tallennetaan.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Askeltasi en ole vielä mitannut: käytän seitsemääkymmentäviittä senttiä. Nauhoita reitti kävellen, niin mittaan sen itse.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Turismo-tilassa voit sanoa: «cosa vedi», niin kerron mitä edessäsi on. «Passeggiate», valmiita kävelykierroksia varten. «Ancora», jos haluat kuulla lisää. «Solo monumenti», tai «dimmi tutto». «Dove sono». «Leggi», niin luen puhelimella kyltin tai laatan. «Utilità», jos haluat siirtyä toiseen tilaan. «Chiedi aiuto», niin soitan apua ja kerron ensin missä olet. «Avvisa», ja yhteyshenkilösi nimi. «Ferma», jotta vaikenen. Muun saat sanomalla: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "Matkailussa: «passeggiate» etappikävelyihin, ja «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Utilità-tilassa voit sanoa: «portami a casa». «Portami a», ja osoite. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», niin luen puhelimella kyltin, ovipuhelimen tai bussin numeron. «I miei posti», tai «crea un percorso». «Turismo», jos haluat siirtyä toiseen tilaan. «Chiedi aiuto», niin soitan apua ja kerron ensin missä olet. «Avvisa», ja yhteyshenkilösi nimi. «Ferma», jotta vaikenen. Muun saat sanomalla: «altri comandi».",
  "La strada non la so dire.": "Reittiä en osaa sanoa.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», niin luen sinulle, mitä kamera näkee edessään: kyltin, ovipuhelimen, bussin numeron.",
  "Mi serve l'indirizzo: via, numero e città.": "Tarvitsen osoitteen: kadun, numeron ja kaupungin.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Hyvä on, en lähetä sitä.",
  "Va bene, non lo tengo.": "Hyvä on, en säilytä sitä.",
  "Va bene, resta senza nome.": "Hyvä on, se jää nimettömäksi.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Hyvä on. Sano «crea un percorso» ja kävele satakunta metriä: mittaan sen uudestaan samalla kun kävelet.",
- "Va bene.": "Hyvä on."
+ "Va bene.": "Hyvä on.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Hyvä on. Sano «crea un percorso» ja kävele satakunta metriä: mittaan sen uudestaan samalla kun kävelet."
 }

@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "The route is on the clipboard: paste it wherever you like.",
  "Il percorso è un file: scegli dove metterlo.": "The route is a file: choose where to put it.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "I haven't measured your stride yet: I'm using seventy-five centimetres. Record a route while walking and I'll measure it myself.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "In Turismo you can say: «cosa vedi», and I tell you what is in front of you. «Passeggiate», for the walks already prepared. «Ancora», to hear more. «Solo monumenti», or «dimmi tutto». «Dove sono». «Leggi», and I read a sign or a plaque with the phone. «Utilità», to move to the other mode. «Chiedi aiuto», and I call the emergency services telling them first where you are. «Avvisa», and the name of your contact. «Ferma», to make me stop talking. For the rest, say: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "In Tourism: say «passeggiate» for the routes with stops, and «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "In Utilità you can say: «portami a casa». «Portami a», and an address. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», and I read a sign, a doorbell panel or a bus number with the phone. «I miei posti», or «crea un percorso». «Turismo», to move to the other mode. «Chiedi aiuto», and I call the emergency services telling them first where you are. «Avvisa», and the name of your contact. «Ferma», to make me stop talking. For the rest, say: «altri comandi».",
  "La strada non la so dire.": "I can't tell you the way.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», and I'll read you what the camera has in front of it: a sign, a doorbell, the number of the bus.",
  "Mi serve l'indirizzo: via, numero e città.": "I need the address: street, number and town.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "All right, I won't send it.",
  "Va bene, non lo tengo.": "All right, I won't keep it.",
  "Va bene, resta senza nome.": "All right, it stays without a name.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "All right. Say «crea un percorso» and walk a hundred metres or so: I'll measure it again while you walk.",
- "Va bene.": "All right."
+ "Va bene.": "All right.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "All right. Say «crea un percorso» and walk a hundred metres or so: I'll measure it again while you walk."
 }

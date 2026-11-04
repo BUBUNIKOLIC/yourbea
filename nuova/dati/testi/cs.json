@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "Trasa je ve schránce: vlož ji, kam chceš.",
  "Il percorso è un file: scegli dove metterlo.": "Trasa je soubor: vyber, kam ho uložit.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Tvůj krok jsem ještě neměřil: počítám sedmdesát pět centimetrů. Nahraj trasu za chůze a změřím si ho sám.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "V Turismo můžeš říct: «cosa vedi», a řeknu ti, co máš před sebou. «Passeggiate», pro hotové procházky. «Ancora», abys věděl víc. «Solo monumenti», nebo «dimmi tutto». «Dove sono». «Leggi», a přečtu ti telefonem ceduli nebo desku. «Utilità», pro přechod do druhého režimu. «Chiedi aiuto», a zavolám záchranku a nejdřív řeknu, kde jsi. «Avvisa», a jméno tvého kontaktu. «Ferma», ať zmlknu. Pro zbytek řekni: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "V Turistice: «passeggiate» na procházky po zastávkách, a «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "V Utilità můžeš říct: «portami a casa». «Portami a», a adresu. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», a přečtu ti telefonem ceduli, zvonek nebo číslo autobusu. «I miei posti», nebo «crea un percorso». «Turismo», pro přechod do druhého režimu. «Chiedi aiuto», a zavolám záchranku a nejdřív řeknu, kde jsi. «Avvisa», a jméno tvého kontaktu. «Ferma», ať zmlknu. Pro zbytek řekni: «altri comandi».",
  "La strada non la so dire.": "Cestu ti říct neumím.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», a přečtu ti, co má kamera před sebou: ceduli, zvonek, číslo autobusu.",
  "Mi serve l'indirizzo: via, numero e città.": "Potřebuju adresu: ulici, číslo a město.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Dobře, neposílám ji.",
  "Va bene, non lo tengo.": "Dobře, nenechávám si ji.",
  "Va bene, resta senza nome.": "Dobře, zůstane bez jména.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Dobře. Řekni «crea un percorso» a ujdi tak sto metrů: změřím ho znovu, zatímco jdeš.",
- "Va bene.": "Dobře."
+ "Va bene.": "Dobře.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Dobře. Řekni «crea un percorso» a ujdi tak sto metrů: změřím ho znovu, zatímco jdeš."
 }

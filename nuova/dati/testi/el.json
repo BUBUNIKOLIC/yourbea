@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "Η διαδρομή είναι στο πρόχειρο: επικόλλησέ την όπου θέλεις.",
  "Il percorso è un file: scegli dove metterlo.": "Η διαδρομή είναι αρχείο: διάλεξε πού να το βάλω.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Το βήμα σου δεν το έχω μετρήσει ακόμη: υπολογίζω εβδομήντα πέντε εκατοστά. Κατέγραψε μια διαδρομή περπατώντας και το μετράω μόνος μου.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Στο Turismo μπορείς να πεις: «cosa vedi», και σου λέω τι έχεις μπροστά σου. «Passeggiate», για τους έτοιμους περιπάτους. «Ancora», για να μάθεις περισσότερα. «Solo monumenti», ή «dimmi tutto». «Dove sono». «Leggi», και σου διαβάζω με το τηλέφωνο μια πινακίδα ή μια πλάκα. «Utilità», για να περάσεις στην άλλη λειτουργία. «Chiedi aiuto», και καλώ βοήθεια λέγοντας πρώτα πού είσαι. «Avvisa», και το όνομα της επαφής σου. «Ferma», για να σωπάσω. Για τα υπόλοιπα πες: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "Στον Τουρισμό: «passeggiate» για τους περιπάτους με στάσεις, και «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Στο Utilità μπορείς να πεις: «portami a casa». «Portami a», και μια διεύθυνση. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», και σου διαβάζω με το τηλέφωνο μια πινακίδα, ένα θυροτηλέφωνο ή τον αριθμό του λεωφορείου. «I miei posti», ή «crea un percorso». «Turismo», για να περάσεις στην άλλη λειτουργία. «Chiedi aiuto», και καλώ βοήθεια λέγοντας πρώτα πού είσαι. «Avvisa», και το όνομα της επαφής σου. «Ferma», για να σωπάσω. Για τα υπόλοιπα πες: «altri comandi».",
  "La strada non la so dire.": "Τον δρόμο δεν ξέρω να σου τον πω.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», και σου διαβάζω τι έχει μπροστά της η κάμερα: μια πινακίδα, ένα θυροτηλέφωνο, τον αριθμό του λεωφορείου.",
  "Mi serve l'indirizzo: via, numero e città.": "Χρειάζομαι τη διεύθυνση: δρόμο, αριθμό και πόλη.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Εντάξει, δεν τη στέλνω.",
  "Va bene, non lo tengo.": "Εντάξει, δεν την κρατάω.",
  "Va bene, resta senza nome.": "Εντάξει, μένει χωρίς όνομα.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Εντάξει. Πες «crea un percorso» και περπάτα κάνα εκατό μέτρα: την ξαναμετράω όσο περπατάς.",
- "Va bene.": "Εντάξει."
+ "Va bene.": "Εντάξει.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Εντάξει. Πες «crea un percorso» και περπάτα κάνα εκατό μέτρα: την ξαναμετράω όσο περπατάς."
 }

@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "L'itinéraire est dans le presse-papiers : colle-le où tu veux.",
  "Il percorso è un file: scegli dove metterlo.": "L'itinéraire est un fichier : choisis où le mettre.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Je n'ai pas encore mesuré ton pas : j'utilise soixante-quinze centimètres. Enregistre un itinéraire en marchant et je le mesure tout seul.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "En Turismo tu peux dire : «cosa vedi», et je te dis ce que tu as devant toi. «Passeggiate», pour les promenades déjà prêtes. «Ancora», pour en savoir plus. «Solo monumenti», ou «dimmi tutto». «Dove sono». «Leggi», et je te lis avec le téléphone un panneau ou une plaque. «Utilità», pour passer à l’autre mode. «Chiedi aiuto», et j’appelle les secours en disant d’abord où tu es. «Avvisa», et le nom de ton contact. «Ferma», pour que je me taise. Pour le reste, dis : «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "En Tourisme : «passeggiate» pour les parcours à étapes, et «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "En Utilità tu peux dire : «portami a casa». «Portami a», et une adresse. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», et je te lis avec le téléphone un panneau, un interphone ou le numéro du bus. «I miei posti», ou «crea un percorso». «Turismo», pour passer à l’autre mode. «Chiedi aiuto», et j’appelle les secours en disant d’abord où tu es. «Avvisa», et le nom de ton contact. «Ferma», pour que je me taise. Pour le reste, dis : «altri comandi».",
  "La strada non la so dire.": "Je ne sais pas te dire le chemin.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», et je te lis ce que la caméra a devant elle : un panneau, un interphone, le numéro du bus.",
  "Mi serve l'indirizzo: via, numero e città.": "Il me faut l'adresse : rue, numéro et ville.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "D'accord, je ne l'envoie pas.",
  "Va bene, non lo tengo.": "D'accord, je ne le garde pas.",
  "Va bene, resta senza nome.": "D'accord, ça reste sans nom.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "D'accord. Dis «crea un percorso» et marche une centaine de mètres : je le remesure pendant que tu marches.",
- "Va bene.": "D'accord."
+ "Va bene.": "D'accord.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "D'accord. Dis «crea un percorso» et marche une centaine de mètres : je le remesure pendant que tu marches."
 }

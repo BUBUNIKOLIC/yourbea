@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "ルートはクリップボードにあります。好きなところに貼ってください。",
  "Il percorso è un file: scegli dove metterlo.": "ルートはファイルです。保存先を選んでください。",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "歩幅はまだ測っていません。七十五センチで計算しています。歩きながらルートを記録すれば、自分で測ります。",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Turismo では「«cosa vedi»」と言うと、目の前にあるものをお伝えします。「«Passeggiate»」で用意された散歩コース。「«Ancora»」でもっと詳しく。「«Solo monumenti»」または「«dimmi tutto»」。「«Dove sono»」。「«Leggi»」と言えば、携帯で看板やプレートを読み上げます。「«Utilità»」でもう一方のモードに切り替えます。「«Chiedi aiuto»」で、まず居場所を伝えてから救急に電話します。「«Avvisa»」と連絡先の名前。「«Ferma»」で黙ります。そのほかは「«altri comandi»」と言ってください。",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "観光では、区切りのある散歩は「passeggiate」、始めるときは「comincia la prima」。",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "Utilità では「«portami a casa»」と言えます。「«Portami a»」と住所。「«Cammina libero»」。「«Intorno»」。「«Che numero siamo»」。「«Dove sono»」。「«Leggi»」と言えば、携帯で看板やインターホン、バスの番号を読み上げます。「«I miei posti»」または「«crea un percorso»」。「«Turismo»」でもう一方のモードに切り替えます。「«Chiedi aiuto»」で、まず居場所を伝えてから救急に電話します。「«Avvisa»」と連絡先の名前。「«Ferma»」で黙ります。そのほかは「«altri comandi»」と言ってください。",
  "La strada non la so dire.": "道はお伝えできません。",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "「Leggi」と言えば、カメラの前にあるものを読み上げます。看板、インターホン、バスの番号など。",
  "Mi serve l'indirizzo: via, numero e città.": "住所が必要です。通り、番地、市名。",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "わかりました、送りません。",
  "Va bene, non lo tengo.": "わかりました、保存しません。",
  "Va bene, resta senza nome.": "わかりました、名前なしのままにします。",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "わかりました。「crea un percorso」と言って百メートルほど歩いてください。歩きながら測り直します。",
- "Va bene.": "わかりました。"
+ "Va bene.": "わかりました。",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "わかりました。「crea un percorso」と言って百メートルほど歩いてください。歩きながら測り直します。"
 }

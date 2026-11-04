@@ -26,7 +26,9 @@
  "Il percorso è negli appunti: incollalo dove vuoi.": "Ruten ligger på utklippstavlen: lim den inn hvor du vil.",
  "Il percorso è un file: scegli dove metterlo.": "Ruten er en fil: velg hvor du vil legge den.",
  "Il tuo passo non l'ho ancora misurato: uso settantacinque centimetri. Registra un percorso camminando e lo misuro da solo.": "Skrittlengden din har jeg ikke målt ennå: jeg regner med syttifem centimeter. Ta opp en rute mens du går, så måler jeg den selv.",
+ "In Turismo puoi dire: cosa c'è qui, e ti dico quello che hai davanti. Passeggiate, per i giri già pronti. Ancora, per saperne di più. Solo monumenti, oppure dimmi tutto. Dove sono. Leggi, e ti leggo col telefono un cartello o una targa. Utilità, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "I Turismo kan du si: «cosa vedi», så forteller jeg hva du har foran deg. «Passeggiate», for turene som allerede er klare. «Ancora», for å høre mer. «Solo monumenti», eller «dimmi tutto». «Dove sono». «Leggi», så leser jeg et skilt eller en plakett med telefonen. «Utilità», for å gå til den andre modusen. «Chiedi aiuto», så ringer jeg nødetatene og sier først hvor du er. «Avvisa», og navnet på kontakten din. «Ferma», for at jeg skal tie. For resten sier du: «altri comandi».",
  "In Turismo: «passeggiate» per i giri a tappe, e «comincia la prima».": "I Turisme: «passeggiate» for turene med etapper, og «comincia la prima».",
+ "In Utilità puoi dire: portami a casa. Portami a, e un indirizzo. Cammina libero. Cosa c'è intorno. Che numero siamo. Dove sono. Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell'autobus. I miei posti, oppure crea un percorso. Turismo, per passare all'altro modo. Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. Avvisa, e il nome del tuo contatto. Ferma, per farmi stare zitta. Per il resto, dimmi: altri comandi.": "I Utilità kan du si: «portami a casa». «Portami a», og en adresse. «Cammina libero». «Intorno». «Che numero siamo». «Dove sono». «Leggi», så leser jeg et skilt, en ringeklokketavle eller bussnummeret med telefonen. «I miei posti», eller «crea un percorso». «Turismo», for å gå til den andre modusen. «Chiedi aiuto», så ringer jeg nødetatene og sier først hvor du er. «Avvisa», og navnet på kontakten din. «Ferma», for at jeg skal tie. For resten sier du: «altri comandi».",
  "La strada non la so dire.": "Veien klarer jeg ikke å si.",
  "Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell'autobus.": "«Leggi», så leser jeg opp det kameraet har foran seg: et skilt, en ringeklokke, nummeret på bussen.",
  "Mi serve l'indirizzo: via, numero e città.": "Jeg trenger adressen: gate, nummer og sted.",
@@ -88,6 +90,6 @@
  "Va bene, non lo mando.": "Greit, jeg sender den ikke.",
  "Va bene, non lo tengo.": "Greit, jeg beholder den ikke.",
  "Va bene, resta senza nome.": "Greit, den blir uten navn.",
- "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Greit. Si «crea un percorso» og gå hundre meter eller så: jeg måler den på nytt mens du går.",
- "Va bene.": "Greit."
+ "Va bene.": "Greit.",
+ "Va bene. Dimmi «crea un percorso» e cammina un centinaio di metri: lo rimisuro mentre cammini.": "Greit. Si «crea un percorso» og gå hundre meter eller så: jeg måler den på nytt mens du går."
 }
