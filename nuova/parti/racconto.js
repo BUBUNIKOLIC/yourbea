@@ -266,6 +266,20 @@ function Racconto(opzioni) {
       if (o.m > raggio(p, modo, situazione.aPiedi)) continue;
       candidati.push({ o: o, p: p, dietro: dietro, punti: quantoVale(p, o, modo) });
     }
+    /* ---------- E SE SONO TROPPI, SI GUARDA PIU' VICINO ----------
+       il conto e' fatto sui candidati veri di questo giro, non sulla
+       citta': la stessa riga tace in periferia, dove sono zero. */
+    var fitto = candidati.length > FITTO;
+    if (fitto) {
+      var stretti = [];
+      for (var j = 0; j < candidati.length; j++) {
+        var c = candidati[j];
+        if (c.o.m <= raggio(c.p, modo, situazione.aPiedi, STRETTO)) stretti.push(c);
+      }
+      diario('FITTO: ' + candidati.length + ' candidati, guardo a ' + STRETTO +
+             ' volte invece di ' + LARGO + ' -> ' + stretti.length);
+      candidati = stretti;
+    }
     /* ============================================================
        SE QUI NON C'E' NIENTE, SI DICE CHE NON C'E' NIENTE
        «Oppure in turismo dice: in questa zona di rilevante non c'e'
@@ -280,6 +294,12 @@ function Racconto(opzioni) {
        quattrocento metri.
        ============================================================ */
     if (!candidati.length) {
+      /* «IN QUESTA ZONA NON C'E' MOLTO DI RILEVANTE» IN MEZZO A FIRENZE
+         sarebbe una bugia: se la lista si e' svuotata perche' l'abbiamo
+         stretta noi, di roba intorno ce n'era tanta — solo non addosso.
+         Senza questa riga la stretta avrebbe aggiunto un difetto nuovo,
+         e dallo schermo non si vedeva. */
+      if (fitto) return null;
       if (modo === 'cultura' && situazione.aPiedi !== false && qui) {
         if (!zonaScarica.da) { zonaScarica.da = { lat: qui.lat, lon: qui.lon, quando: adesso }; }
         var fattiSenzaNiente = fraPunti(qui, zonaScarica.da);
@@ -686,6 +706,46 @@ function Racconto(opzioni) {
      foro, le mura, un parco. Tutto il resto, in macchina, tace come
      prima: «deve essere tarata sul camminare sempre» resta vero per i
      palazzi e le chiesette. */
+  /* ============================================================
+     DOVE I MONUMENTI SONO ATTACCATI, SI GUARDA PIU' VICINO
+     04/11/2026. Dario, a piazza Dante, in Turismo: «mi cambiava
+     continuamente i monumenti (chiese e palazzi), come se riscontrasse
+     troppe cose da raccontare». Vince: «nei centri storici dovevamo
+     avere un raggio» piu' corto.
+     CONTATO, da un punto solo, sui dati veri:
+         Firenze, Duomo          145 candidati        (con 3x: 30)
+         Roma, Fori Imperiali     91                       23
+         Roma, Pantheon           71                       20
+         Napoli, Spaccanapoli     65                       12
+         Napoli, piazza Dante     36                        2
+         Venezia, San Marco       33                        5
+         Parma, centro            29                        9
+         Roma, Trastevere          7                        4
+         Latina, centro            4                        2
+         Roma, via dei Corazzieri  0                        0
+         Roma, Laurentina          0                        0
+     Il raggio e' otto volte la grandezza, e un palazzo senza misure
+     vale quaranta metri: raggio trecentoventi. In un centro storico i
+     palazzi sono uno accanto all'altro, quindi ne entrano venti
+     insieme e il «migliore» cambia a ogni giro — mentre in periferia
+     la stessa regola da' zero, e non c'e' niente da stringere.
+     ALLORA SI STRINGE SOLO DOVE E' FITTO, e «fitto» non e' un giudizio
+     mio: e' il conto dei candidati. Sopra DIECI si guarda a tre volte
+     la grandezza invece di otto. La soglia sta nel vuoto fra Trastevere
+     (7) e Parma (29): sotto restano fuori la periferia, Latina e i
+     paesi, che con la stretta diventerebbero muti.
+     E I CINQUE METRI NON ERANO LA LEVA: il minimo del raggio era 50, e
+     portarlo a 5 lasciava 36 candidati su 36 a piazza Dante. Misurato
+     prima di toccare niente.
+     ============================================================ */
+  /* il quaderno, se chi ci costruisce lo passa. Questa parte non ne
+     aveva uno: la prima riga di diario che ho scritto qui avrebbe fatto
+     morire l'app al primo centro storico, perche' `diario` non esisteva.
+     Senza, non si scrive niente e non si rompe niente. */
+  var diario = o.diario || function () {};
+  var LARGO = 8;                          // il raggio di sempre
+  var STRETTO = o.volteStretto || 3;      // dove i monumenti sono attaccati
+  var FITTO = o.fitto || 10;              // da quanti candidati si stringe
   var LONTANO_IN_MACCHINA = o.lontanoInMacchina || 800;
   var GRANDE_DA_LONTANO = 150;       // da solo basta se e' enorme
   /* CHI SI SENTE DAL FINESTRINO, E CHI NO. Primo tentativo: «rango 3
@@ -702,17 +762,21 @@ function Racconto(opzioni) {
     var g = quantoEGrande(p);
     return (rango(p) >= 3 && g >= 60) || g >= GRANDE_DA_LONTANO;
   }
-  function raggio(p, modo, aPiedi) {
+  function raggio(p, modo, aPiedi, volte) {
     if (aPiedi === false) {
       /* in macchina: i grandi si sentono da lontano, gli altri niente */
       return eImportante(p) ? LONTANO_IN_MACCHINA : 0;
     }
-    var m = quantoEGrande(p) * 8;
+    var m = quantoEGrande(p) * (volte || LARGO);
     /* IN UTILITA' NON SI STRINGE. «In utilita invece bisogna aumentare le
        descrizioni» (Vince, 25/10): a chi cammina senza vedere serve
        sapere cosa ha intorno PIU' che al turista, non meno. Prima qui
        c'era un meno venti per cento, ed era un'idea mia. */
-    return Math.max(50, Math.min(500, Math.round(m)));
+    /* il minimo scende col moltiplicatore: in centro storico «almeno
+       cinquanta metri» rimetterebbe dentro le cose che si vuole
+       togliere, e il numero tornerebbe quello di prima. */
+    var minimo = (volte && volte < LARGO) ? 15 : 50;
+    return Math.max(minimo, Math.min(500, Math.round(m)));
   }
   /* FIN DOVE SI GUARDA. Mezzo chilometro, e sta scritto qui dentro — non
      in app.js — perche' chi raccoglie i posti intorno deve guardare

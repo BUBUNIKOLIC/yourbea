@@ -245,7 +245,7 @@
      trappole: si passa quello invece di riscriverlo. Qui `racconto` non
      esiste ancora, ma la funzione viene CHIAMATA dopo, quando c'e'. */
   var descrizione = Descrizione({ distanza: laDistanza, conArticolo: function (p) { return racconto.conArticolo(p); } });
-  var racconto = Racconto({ descrizione: descrizione, distanza: laDistanza });
+  var racconto = Racconto({ descrizione: descrizione, distanza: laDistanza, diario: diario });
   /* IL PAESAGGIO: parti/paesaggio.js (10 prove). «Il non vedente vuole che
      sia descritta la realtà circostante: di fronte, davanti a te hai il
      golfo, Raito, i Due Fratelli… sennò numeri civici» (Vince, 18/10). */
