@@ -181,6 +181,22 @@ body[data-testo="enorme"]{--base:26px}
 }
 .cassetto.in-fondo{-webkit-mask-image:none;mask-image:none}
 .cassetto .tasto{flex:1 1 44%}
+/* ---------- LE DUE PAGINE, al posto del cassetto unico ---------- 03/11/2026
+   Quale si vede lo decide il modo, come per la mappa e il tasto di casa:
+   il CSS, non un giro di JS. Le voci sono quelle approvate il 31/10.
+   `[hidden]` va ridetto: display:flex qui sotto vincerebbe sull'attributo,
+   e le impostazioni resterebbero aperte sempre. */
+.cassetto .voci,.cassetto .riga-fondo{display:flex;gap:10px;flex-wrap:wrap;flex:1 1 100%;margin:0}
+.cassetto .voci[hidden],.cassetto .riga-fondo[hidden]{display:none}
+body[data-modo="utilita"] #voci-turismo{display:none}
+body[data-modo="turismo"] #voci-utilita{display:none}
+/* entrati nelle impostazioni, le due pagine si tolgono di mezzo: una
+   pagina per volta, se no si scorre in mezzo a trenta voci. */
+.cassetto.impostazioni #voci-turismo,
+.cassetto.impostazioni #voci-utilita{display:none}
+/* LA RIGA IN FONDO. Una riga sola, e si vede che e' un'altra cosa dalle
+   voci di sopra: un filo la separa. */
+.cassetto .riga-fondo{margin-top:4px;padding-top:12px;border-top:1px solid var(--filo)}
 .et{font-size:13px;color:var(--spento);letter-spacing:.04em}
 
 /* ---------- la porta: due scelte, e basta ---------- */

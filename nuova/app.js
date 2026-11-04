@@ -4999,6 +4999,8 @@
   function entra(quale, riprendendo) {
     modo = quale;
     document.body.dataset.modo = (quale === 'cultura' ? 'turismo' : 'utilita');
+    /* e il tasto in fondo dice dove porta, non dove sei (03/11) */
+    nomeDelCambioModo();
     el('porta').hidden = true;
     try {
       localStorage.setItem('yourbea2-modo', quale);
@@ -5148,11 +5150,85 @@
   /* e si chiude anche da dentro: col tasto «Indietro» e con Esc, che e'
      il tasto indietro di chi usa una tastiera o un lettore di schermo. */
   function chiudiIlCassetto() {
+    /* chiuso vuol dire chiuso: la prossima volta si riapre sui comandi,
+       non dentro le impostazioni dove l'avevi lasciato (03/11). */
+    impostazioni(false);
     el('cassetto').classList.remove('aperto');
     el('altro').setAttribute('aria-expanded', 'false');
     try { el('altro').focus(); } catch (e) {}
   }
   el('chiudi-cassetto').addEventListener('click', chiudiIlCassetto);
+
+  /* ============================================================
+     LE VOCI DELLE DUE PAGINE — 03/11/2026
+     Vince: «poi in base ai due menu... ora l'ingresso mi sembra quasi
+     diretto». Ogni voce fa ESATTAMENTE quello che fa la frase detta a
+     voce, perche' passa dalla stessa porta: comando(). Non c'e' un
+     secondo elenco di comportamenti da tenere allineato a mano — e' la
+     stessa scelta fatta il 23/10 per l'input «scrivi».
+     Le frasi qui sotto non sono a caso: sono quelle che la tabella
+     PAROLE riconosce davvero, e il banco (prove/menu-3-11.js) le prova
+     una per una contro la tabella, non contro la mia memoria. */
+  function vocePagina(id, frase) {
+    var b = el(id);
+    if (!b) return;
+    b.addEventListener('click', function () {
+      diario('MENU: ' + id + ' \u2192 \u00ab' + frase + '\u00bb');
+      chiudiIlCassetto();
+      comando(frase);
+    });
+  }
+  /* pagina Turismo */
+  vocePagina('v-cosa-vedere', 'cosa c\u2019\u00e8 qui');
+  vocePagina('v-ancora', 'ancora');
+  vocePagina('v-dove-t', 'dove sono');
+  vocePagina('v-leggi-t', 'leggi');
+  /* pagina Utilita' */
+  vocePagina('v-casa', 'portami a casa');
+  /* «Portami a...»: la meta' non si sa ancora, e la si chiede. E' la
+     stessa domanda che fa la porta quando rispondi «un percorso». */
+  vocePagina('v-portami', 'un percorso');
+  vocePagina('v-libero', 'camminare libero');
+  vocePagina('v-intorno', 'cosa c\u2019\u00e8 intorno');
+  vocePagina('v-civico', 'che numero siamo');
+  vocePagina('v-leggi-u', 'leggi');
+  vocePagina('v-miei', 'che posti ho');
+  /* la riga in fondo */
+  vocePagina('v-aiuto', 'aiuto');
+  /* «Avvisa qualcuno» non e' un comando da dire: e' il tasto che c'e'
+     gia', con la sua conferma. Si tocca quello, cosi' esiste un solo
+     comportamento e non due. */
+  if (el('v-avvisa')) {
+    el('v-avvisa').addEventListener('click', function () {
+      chiudiIlCassetto();
+      try { el('avvisa-contatto').click(); } catch (e) {}
+    });
+  }
+  /* ---------- LE IMPOSTAZIONI ----------
+     Si entra e si esce: una pagina per volta. Il tasto dice dove porta,
+     non dove sei — «Impostazioni» per entrare, «\u2039 Torna ai comandi»
+     per uscire: chi non vede ha solo questa riga per capirlo. */
+  function impostazioni(aperte) {
+    var c = el('cassetto');
+    c.classList.toggle('impostazioni', aperte);
+    el('voci-impostazioni').hidden = !aperte;
+    var b = el('v-impostazioni');
+    b.textContent = aperte ? '\u2039 Torna ai comandi' : 'Impostazioni';
+    b.setAttribute('aria-expanded', aperte ? 'true' : 'false');
+  }
+  if (el('v-impostazioni')) {
+    el('v-impostazioni').addEventListener('click', function () {
+      impostazioni(el('voci-impostazioni').hidden);
+    });
+  }
+  /* IL NOME DEL TASTO DICE DOVE PORTA, non in che modo sei: «Vai in
+     Utilita'» mentre sei in Turismo. «Cambia modo» non diceva niente a
+     chi non vede lo schermo. */
+  function nomeDelCambioModo() {
+    var b = el('cambia-modo');
+    if (!b) return;
+    b.textContent = (modo === 'cultura') ? 'Vai in Utilit\u00e0' : 'Vai in Turismo';
+  }
   /* arrivati in fondo la sfumatura si toglie, se no l'ultima riga resta
      sbiadita e sembra spenta. */
   el('cassetto').addEventListener('scroll', function () {
@@ -5165,6 +5241,9 @@
   el('altro').addEventListener('click', function () {
     var aperto = el('cassetto').classList.toggle('aperto');
     this.setAttribute('aria-expanded', aperto ? 'true' : 'false');
+    /* si apre sempre sulla pagina del modo in cui sei, mai sulle
+       impostazioni (03/11) */
+    if (aperto) { impostazioni(false); nomeDelCambioModo(); }
   });
 
   /* il tasto di casa, e il posto dove si scrive l'indirizzo */
@@ -5302,8 +5381,17 @@
     try { localStorage.setItem('yourbea2-testo', prossimo); } catch (e) {}
     voce.parla('Testo ' + prossimo + '.', { livello: voce.GUIDA, ancheSeUguale: true });
   });
+  /* ---------- IL TASTO IN FONDO PORTA ALL'ALTRA PAGINA ---------- 03/11/2026
+     «Come si passa da una pagina all'altra: sullo schermo, il bottone in
+     fondo (Vai in Turismo / Vai in Utilita')» (Vince, 31/10).
+     Fin qui questo tasto si chiamava «Cambia modo» e riapriva la PORTA:
+     tornavi all'inizio e dovevi scegliere da capo. Adesso cambia modo
+     davvero, con la stessa strada della voce — comando('turismo') — che
+     e' la sola che fa tutto quello che serve: il modo, la pagina, la
+     mappa, e cosa l'app racconta. */
   el('cambia-modo').addEventListener('click', function () {
-    el('porta').hidden = false; acceso = false; voce.ferma('torno alla porta');
+    chiudiIlCassetto();
+    comando(modo === 'cultura' ? 'utilita' : 'turismo');
   });
   el('dimmi-dove').addEventListener('click', diciDove);
   el('chi-chiamare').addEventListener('click', function () {
