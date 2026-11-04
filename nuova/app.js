@@ -2897,7 +2897,22 @@
      «Curve affermati»: il nome non arriva quasi mai intero, e davanti
      c'e' un «ok» che la regola non prevedeva. Due tentativi, zero
      chiusure — e la terza volta che succede. */
-  var SI_RIVOLGE_A_ME = '(?:(?:ok|okay|ehi|hey|ei|senti|scusa|ciao)[, ]+)?' +
+  /* IL NOME IN UN POSTO SOLO — 4/11/2026. Era scritto due volte, qui e
+     nel filtro «non era per me» piu' sotto: due elenchi che devono
+     restare uguali si scollano al primo ritocco, ed e' gia' successo coi
+     gradini. Adesso c'e' NOMI, e si allunga in un punto.
+     «EUROPEA» E' LA STORPIATURA DI OGGI. 4/11, in macchina: «Europea
+     stop» (13:54:09), «Europea» (13:54:20), «Europea fermati»
+     (13:54:25). Tre tentativi su quattro, e nessuno ha chiuso l'app:
+     il nome non era in lista. Contate tutte le storpiature nei quaderni
+     fino a oggi: bea 4, urbe 3, europea 3, rube 2, eubea 2, curve 1. */
+  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|bea';
+  /* E DAVANTI AL NOME CI PUO' STARE UNA PAROLINA. Il quarto tentativo
+     di oggi era «Di Urbe fermati» (13:54:04): il nome c'era, buono, ma
+     la regola lo voleva all'inizio della frase e quel «di» — che e'
+     l'apostrofo di «d'Yourbea» sentito dal riconoscitore — la faceva
+     cadere. */
+  var SI_RIVOLGE_A_ME = '(?:(?:ok|okay|ehi|hey|ei|senti|scusa|ciao|di)[, ]+)?' +
   /* «BEA» E' IL MODO IN CUI IL NOME ARRIVA PIU' SPESSO.
      30/10, 10:21:29: Vince ha detto «Yourbea, fermati» e la dettatura
      ha scritto «Bea fermati» — mangiata la prima meta' del nome. Non ha
@@ -2912,14 +2927,16 @@
      è andata perduta — Vince l'ha dovuta ripetere 29 secondi dopo, senza
      chiamarla per nome. Contati tutti i modi nei quaderni: bea 4, urbe 2,
      rube 2, eubea 1, curve 1. Sono SETTE scritture per un nome. */
-                        '(?:(?:yourbea|yourbe|your bea|urbea|urbe|eubea|curve|curbe|jurbea|iurbea|rube|bea)[, ]+)?';
+                        '(?:(?:' + NOMI + ')[, ]+)?';
   var CHIUDI_TUTTO = new RegExp(
     '^(?:' +
     /* il nome, davanti o dietro: «yourbea basta», «basta yourbea» */
     SI_RIVOLGE_A_ME +
     '(?:' +
       /* «affermati» e' «fermati» con la a attaccata dal riconoscitore */
-      '(?:chiudi|chiudete|chiudiamo|chiuditi|spegni|spegniti|spegnila|(?:af)?fermati|ferma tutto|smetti|basta|finito|ho finito|abbiamo finito)' +
+      /* «stop» c'e' dal 4/11: «Europea stop». Da sola resta esclusa
+         (l'elenco SOLE piu' sotto), col nome davanti chiude. */
+      '(?:chiudi|chiudete|chiudiamo|chiuditi|spegni|spegniti|spegnila|(?:af)?fermati|ferma tutto|smetti|basta|stop|finito|ho finito|abbiamo finito)' +
       '(?:\\s+(?:l[ae]?\\s*|il\\s+|la\\s+)?(?:app|applicazione|yourbea|tutto|adesso|cosi|qui))?' +
     '|esci|arrivederci|buonanotte|buona notte|ciao yourbea|addio|ti saluto|a domani|a dopo' +
     '|(?:siamo|sono)\\s+(?:arrivat[oi]|a casa|tornat[oi])' +
@@ -5013,7 +5030,7 @@
                       .filter(function (x) { return x; });
       var perMe = ipotesi.some(function (u) {
         if (unComando(u)) return true;
-        if (/\b(?:yourbea|yourbe|your bea|urbea|urbe|eubea|curve|curbe|jurbea|iurbea|rube|bea)\b/.test(u)) return true;
+        if (new RegExp('\\b(?:' + NOMI + ')\\b').test(u)) return true;
         if (/\b(?:portami|accompagnami|andiamo|voglio andare|devo andare|mi serve|ho bisogno|come arrivo|come ci arrivo|riportami)\b/.test(u)) return true;
         try { if (contributi.dallaVoce(u)) return true; } catch (e) {}
         return false;
