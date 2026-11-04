@@ -332,14 +332,57 @@ function Racconto(opzioni) {
         return null;
       }
     }
+    /* DIECI METRI DAL BORDO, NON DAL CENTRO — 4/11/2026 sera.
+       Vince: «nei centri storici avevo detto che era di 5 metri», poi
+       «io penso 10 metri». Dieci metri secchi non si possono prendere
+       dal punto del luogo, perche' NEI DATI UN LUOGO E' UN PUNTO SOLO,
+       il centro dell'edificio: in piazza San Marco sei addosso alla
+       Basilica e il suo centro e' a settanta metri. Contati su cinque
+       cammini veri, con dieci metri dal centro:
+           Napoli, piazza Dante     16 punti su 43,  8 cose
+           Firenze, dal Duomo        8 su 31,        4
+           Roma, Fori Imperiali      3 su 31,        3
+           Roma, Trastevere          0 su 31 — MUTA
+           Venezia, San Marco        0 su 31 — MUTA
+       Allora i dieci metri si contano DAL BORDO: meta' della grandezza
+       piu' dieci. Una statua 11 metri, una fontana 13, una chiesa 25,
+       piazza Dante 40, la Basilica quanto serve per nominarla quando ce
+       l'hai davanti. E' «dieci metri da quando ce l'hai davanti», che e'
+       quello che Vince intende, e taglia comunque piazza Bellini a 143. */
     if (fitto) {
       var stretti = [];
       for (var j = 0; j < candidati.length; j++) {
         var c = candidati[j];
-        if (c.o.m <= raggio(c.p, modo, situazione.aPiedi, STRETTO)) stretti.push(c);
+        if (c.o.m <= finoAlBordo(c.p)) stretti.push(c);
       }
-      diario('FITTO: ' + candidati.length + ' candidati, guardo a ' + STRETTO +
-             ' volte invece di ' + LARGO + ' -> ' + stretti.length);
+      /* MA SE NON RESTA NIENTE E HAI DAVANTI UNA COSA GRANDE, SI DICE.
+         Vince, 4/11: «fermo restando che se non c'e' nulla e sei davanti
+         ai Fori Imperiali ne puoi parlare». Dieci metri dal bordo sono
+         fatti per i vicoli, dove i palazzi sono uno addosso all'altro;
+         ma via dei Fori Imperiali passa ACCANTO all'area archeologica, e
+         il centro di un foro largo centocinquanta metri sta lontano dalla
+         strada da cui lo guardi. Quindi: quando la stretta non lascia
+         niente, torna in gioco quello che e' GRANDE DAVVERO — lo stesso
+         `eImportante` del 29/10, rango alto e almeno sessanta metri
+         oppure centocinquanta e basta — purche' tu sia dentro UNA VOLTA
+         la sua grandezza: i Fori da centocinquanta metri, il Colosseo da
+         centottantotto, una basilica da sessanta. Una chiesetta no, e un
+         palazzo col rango gonfiato dalla scheda nemmeno. */
+      if (!stretti.length) {
+        for (var g = 0; g < candidati.length; g++) {
+          var cg = candidati[g];
+          var gr = grandeDalTipo(cg.p);
+          if (gr >= GRANDE_DA_LONTANO && cg.o.m <= gr) stretti.push(cg);
+        }
+        if (stretti.length) {
+          diario('NIENTE ADDOSSO, MA C\'E\' IL GRANDE: «' + stretti[0].p.n +
+                 '» a ' + Math.round(stretti[0].o.m) + ' m (grande ' +
+                 quantoEGrande(stretti[0].p) + ')');
+        }
+      }
+      diario('FITTO: ' + candidati.length + ' candidati, ' + DAL_BORDO +
+             ' metri dal bordo invece di ' + LARGO + ' volte la grandezza -> ' +
+             stretti.length);
       candidati = stretti;
     }
     /* ============================================================
@@ -809,6 +852,16 @@ function Racconto(opzioni) {
   var STRETTO = o.volteStretto || 3;      // dove i monumenti sono attaccati
   var FITTO = o.fitto || 10;              // da quanti candidati si stringe
   var LONTANO_IN_MACCHINA = o.lontanoInMacchina || 800;
+  /* DIECI METRI, NON CINQUE. Vince, 4/11: «dal bordo non so se 5 o 10
+     metri». Misurati tutti e due su otto cammini veri: danno lo stesso
+     risultato esatto (stesse frasi, stesse cose, stessa distanza),
+     perche' vince comunque il piu' vicino. Quindi decide il telefono:
+     il GPS fra i palazzi sbaglia da 2 a 9 metri (±3m, ±4m, ±9m nei
+     quaderni), e cinque metri stanno sotto l'errore del telefono.
+     ATTENZIONE A DOVE STA QUESTA RIGA: dentro prossimo() il nome «o» e'
+     gia' preso (riga ~250, `var o = intorno[i]`), e la riga messa la'
+     leggeva l'oggetto sbagliato — e con l'intorno vuoto moriva. */
+  var DAL_BORDO = o.dalBordo || 10;
   var GRANDE_DA_LONTANO = 150;       // da solo basta se e' enorme
   /* CHI SI SENTE DAL FINESTRINO, E CHI NO. Primo tentativo: «rango 3
      oppure grande cento metri». Rifacendo una camminata vera in
@@ -823,6 +876,31 @@ function Racconto(opzioni) {
   function eImportante(p) {
     var g = quantoEGrande(p);
     return (rango(p) >= 3 && g >= 60) || g >= GRANDE_DA_LONTANO;
+  }
+  /* fin dove arriva una cosa misurata DAL SUO BORDO: meta' della
+     grandezza (il centro e' il punto che abbiamo nei dati) piu' i metri
+     che si vogliono. */
+  /* GRANDE DAVVERO LO DICE IL TIPO, NON LA MISURA NEI DATI — 4/11 sera.
+     Il primo giro di questa regola usava quantoEGrande, che si fida di
+     `h` quando c'e'. Sul Corso ha fatto dire «chiesa di Santo Stefano
+     del Cacco» a 195 METRI: nei dati quella chiesa ha h = 165, cioe'
+     centosessantacinque metri di altezza per una chiesetta romana (la
+     chiesa piu' alta del mondo e' 161). La media di quello di cui
+     parlava e' risalita da 23 a 74 metri: la regola nuova aveva
+     peggiorato il Corso invece di aiutare i Fori.
+     Quindi qui si guarda SOLO il tipo: un foro e' 150, le mura 200, un
+     anfiteatro 100. Una chiesa e' 30 e resta 30, qualunque cosa dica il
+     riquadro di Wikipedia. */
+  function grandeDalTipo(p) {
+    var t = String(p.t || '').toLowerCase();
+    if (GRANDE_COSI[t]) return GRANDE_COSI[t];
+    for (var k in GRANDE_COSI) {
+      if (t.indexOf(k) >= 0) return GRANDE_COSI[k];
+    }
+    return 0;
+  }
+  function finoAlBordo(p) {
+    return Math.round(quantoEGrande(p) / 2) + DAL_BORDO;
   }
   function raggio(p, modo, aPiedi, volte) {
     if (aPiedi === false) {
