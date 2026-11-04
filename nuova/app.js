@@ -4541,23 +4541,54 @@
                  { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
+    /* ---------- «COMANDI» E' IL MENU DI CHI NON VEDE ---------- 03/11/2026
+       Vince, appena costruite le due pagine sullo schermo: «ma per un
+       non vedente deve essere tutto vocale» — «una cosa e' turismo,
+       un'altra e' utilita'».
+       Aveva ragione, ed era un buco mio: le due pagine le avevo fatte
+       sullo schermo e qui era rimasta UNA lista sola, uguale nei due
+       modi, che e' esattamente il cassetto mescolato che avevamo appena
+       diviso. Chi non vede sentiva ancora il menu vecchio — e con dentro
+       cose che non c'entravano col modo in cui era, e senza le
+       passeggiate, «che numero siamo», «solo monumenti», «crea un
+       percorso».
+       Adesso si legge la pagina in cui sei, **nello stesso ordine della
+       pagina**: cosi' chi tocca e chi ascolta imparano la stessa cosa, e
+       quando una voce cambia su una cambia anche sull'altra. Il banco
+       (prove/comandi-a-voce-3-11.js) confronta le due liste coi bottoni
+       veri di index.html: se qualcuno aggiunge un tasto e si scorda la
+       voce, si accorge li'.
+       In coda, in tutt'e due, le tre cose della riga in fondo — l'altro
+       modo, aiuto, avvisa — e «ferma», che e' il modo di farla tacere.
+       La musica non c'e' piu': sta nelle impostazioni, e un elenco che
+       non finisce piu' non e' un menu. */
     if (ha('aiuto')) {
-      voce.parla('Puoi dire: dove sono. Cosa c\'è qui intorno. Ancora, per saperne di più. Avanti. Ferma. ' +
-                 'Portami a, e un indirizzo; oppure portami a casa. ' +
-                 'Leggi, e ti leggo quello che la fotocamera ha davanti: un cartello, un citofono, il numero dell\'autobus. ' +
-                 'Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. ' +
-                 'Avvisa, e il nome del tuo contatto. ' +
-                 'Musica, per accenderla o spegnerla. ' +
-                 /* ---------- COME SI CAMBIA MODO ---------- 01/11/2026
-                    «E la possibilita' vocalmente di passare da una
-                    funzione ad un'altra» (Vince). Si poteva da sempre —
-                    «turismo», «utilita'», «cambia modo» funzionano tutti
-                    e tre, provati al banco — ma in questo elenco non
-                    c'era scritto, e un comando che nessuno ti dice e'
-                    come se non ci fosse. */
-                 'Turismo, oppure utilità, per passare da una all\'altra. ' +
-                 'Per i tuoi posti e i percorsi, dimmi: altri comandi.',
-                 { livello: voce.GUIDA, ancheSeUguale: true });
+      voce.parla(modo === 'cultura'
+        ? 'In Turismo puoi dire: cosa c\'è qui, e ti dico quello che hai davanti. ' +
+          'Passeggiate, per i giri già pronti. ' +
+          'Ancora, per saperne di più. ' +
+          'Solo monumenti, oppure dimmi tutto. ' +
+          'Dove sono. ' +
+          'Leggi, e ti leggo col telefono un cartello o una targa. ' +
+          'Utilità, per passare all\'altro modo. ' +
+          'Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. ' +
+          'Avvisa, e il nome del tuo contatto. ' +
+          'Ferma, per farmi stare zitta. ' +
+          'Per il resto, dimmi: altri comandi.'
+        : 'In Utilità puoi dire: portami a casa. ' +
+          'Portami a, e un indirizzo. ' +
+          'Cammina libero. ' +
+          'Cosa c\'è intorno. ' +
+          'Che numero siamo. ' +
+          'Dove sono. ' +
+          'Leggi, e ti leggo col telefono un cartello, un citofono, il numero dell\'autobus. ' +
+          'I miei posti, oppure crea un percorso. ' +
+          'Turismo, per passare all\'altro modo. ' +
+          'Chiedi aiuto, e chiamo i soccorsi dicendoti prima dove sei. ' +
+          'Avvisa, e il nome del tuo contatto. ' +
+          'Ferma, per farmi stare zitta. ' +
+          'Per il resto, dimmi: altri comandi.',
+        { livello: voce.GUIDA, ancheSeUguale: true });
       return true;
     }
     /* ---------- DOPO IL GESTO, QUELLO CHE DICI LO SEGNO ----------
