@@ -13,11 +13,24 @@
        incompleta: e' la differenza fra un'app tradotta a meta' e
        un'app muta a meta'.
 
-   QUELLO CHE QUESTA PARTE NON PUO' FARE, e va detto chiaro: le frasi
-   che l'app COMPONE — «sulla destra, a novanta passi, Tempio del Divo
-   Giulio» — non sono stringhe fisse: sono regole. In tedesco l'ordine
-   delle parole e' un altro, e non basta tradurre i pezzi. Quelle vanno
-   riscritte parte per parte, ed e' un lavoro a se'.                  */
+   LE FRASI MONTATE — 04/11/2026, e prima qui c'era scritto che non si
+   potevano tradurre. Si puo', e senza toccare nessuna chiamata: una
+   chiave della tabella puo' avere dei BUCHI.
+       "Sei entrato in {}."  ->  "Du bist in {1} angekommen."
+   La frase che arriva («Sei entrato in Via dei Corazzieri.») non e' in
+   tabella, ma combacia col modello: i buchi si prendono da lei e si
+   rimettono dentro la traduzione. Nella traduzione i buchi sono
+   numerati, {1} {2} {3}, perche' in tedesco e in giapponese l'ordine
+   delle parole e' un altro e va poter cambiare.
+   E I PEZZI DENTRO AL BUCO si cercano a loro volta in tabella: cosi'
+   «davanti a te, a 170 passi» diventa tedesco in due passaggi, senza
+   che nessuno debba scrivere la frase intera con tutti i numeri
+   possibili. Un nome proprio — «Via dei Corazzieri» — non sta in
+   tabella e resta com'e': giusto cosi'.
+   LE DUE REGOLE CHE TENGONO IN PIEDI LA COSA:
+     — un modello con poco testo fisso non si usa (sotto i 6 caratteri
+       prenderebbe qualunque frase e la stravolgerebbe);
+     — il piu' specifico vince: i modelli si provano dal piu' lungo.    */
 (function (radice) {
   'use strict';
 
@@ -42,6 +55,7 @@
       tabella = testi || {};
       comandiSuoi = comandi || {};
       mancanti = {};
+      preparaIModelli();
       diario('LINGUA: ' + codice + ', ' + Object.keys(tabella).length + ' frasi, ' +
              Object.keys(comandiSuoi).filter(function (k) { return k.charAt(0) !== '_'; }).length + ' comandi');
     }
@@ -62,16 +76,92 @@
       return false;
     }
 
+    /* ---------- I MODELLI, le frasi montate ----------
+       FISSO_MINIMO: quanto testo fisso deve avere un modello per
+       potersi usare. Con «{}» da solo, o «a {}», un modello
+       combacerebbe con QUALUNQUE frase e la stravolgerebbe: sei
+       caratteri sono la misura sotto la quale non si rischia. */
+    var FISSO_MINIMO = 6;
+    var modelli = [];
+
+    function fuggi(t) { return String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    function preparaIModelli() {
+      modelli = [];
+      for (var k in tabella) {
+        if (!Object.prototype.hasOwnProperty.call(tabella, k)) continue;
+        if (k.indexOf('{}') < 0) continue;
+        var fisso = k.split('{}').join('');
+        if (fisso.length < FISSO_MINIMO) continue;
+        var pezzi = k.split('{}');
+        var re = [];
+        for (var i = 0; i < pezzi.length; i++) re.push(fuggi(pezzi[i]));
+        try {
+          modelli.push({ re: new RegExp('^' + re.join('([\\s\\S]*?)') + '$'),
+                         quanti: pezzi.length - 1, fisso: fisso.length, a: tabella[k] });
+        } catch (e) {}
+      }
+      /* il piu' specifico vince */
+      modelli.sort(function (a, b) { return b.fisso - a.fisso; });
+    }
+
+    /* daUnModello(): la frase montata, rifatta nella lingua del turista.
+       `giu` e' la profondita': un pezzo dentro un buco si puo' tradurre
+       a sua volta, ma non all'infinito. */
+    function daUnModello(frase, giu) {
+      if (giu > 3) return null;
+      for (var i = 0; i < modelli.length; i++) {
+        var mo = modelli[i];
+        var r = String(frase).match(mo.re);
+        if (!r) continue;
+        /* UN BUCO E' UN NOME, NON UN'ALTRA FRASE — e la misura viene
+           dai quaderni veri, non da un'idea: il buco piu' lungo che
+           l'app mette davvero in una frase e' un nome di via con la
+           mossa davanti, «svolta a destra su Via Antonio Cippico.»,
+           39 caratteri. Ottanta lascia respiro e tiene fuori il caso
+           che fa danno: «Sei in {}.» che si mangia «Sei in Via Roma,
+           ma il numero civico qui non e' segnato sulla mappa.».
+           La prima difesa resta l'ordine: il modello col testo fisso
+           piu' lungo si prova per primo, e quello giusto vince prima
+           che il generico ci arrivi.
+           PRIMA C'ERA il triplo del testo fisso, e scartava proprio la
+           frase della guida che si sente a ogni svolta. */
+        var buchi = [], troppo = false, j;
+        for (j = 1; j < r.length; j++) {
+          if (String(r[j]).length > 80) troppo = true;
+          buchi.push(dentro(r[j], giu + 1));
+        }
+        if (troppo) continue;
+        return String(mo.a).replace(/\{(\d+)\}/g, function (tutto, n) {
+          var v = buchi[Number(n) - 1];
+          return v === undefined || v === null ? '' : v;
+        });
+      }
+      return null;
+    }
+
+    /* dentro(): la traduzione di un pezzo, senza segnarlo fra i
+       mancanti — un nome di via non e' una frase da tradurre. */
+    function dentro(pezzo, giu) {
+      if (!pezzo) return pezzo;
+      var t = tabella[pezzo];
+      if (t) return t;
+      var m = daUnModello(pezzo, giu);
+      return m === null ? pezzo : m;
+    }
+
     /* la traduzione, o l'italiano. Mai niente. */
     function di(frase) {
       if (quale === 'it' || !frase) return frase;
       var t = tabella[frase];
       if (t) return t;
+      var m = daUnModello(frase, 0);
+      if (m !== null) return m;
       /* una frase che manca si segna una volta sola: serve a sapere
          cosa resta da tradurre, non a riempire il quaderno. */
       if (!mancanti[frase]) {
         mancanti[frase] = 1;
-        diario('LINGUA: manca in ' + quale + ' — ' + String(frase).slice(0, 40));
+        diario('LINGUA: manca in ' + quale + ' — ' + String(frase).slice(0, 160));
       }
       return frase;
     }
