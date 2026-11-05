@@ -24,7 +24,7 @@
    diverso (`/yourbea/nuova/` contro `/yourbea/`) e per le pagine della
    nuova vince il piu' preciso, cioe' questo.                              */
 
-const VERSIONE = 236;
+const VERSIONE = 237;
 const CASSAFORTE = 'yourbea-nuova-v' + VERSIONE;
 const MIO_PREFISSO = 'yourbea-nuova-v';
 const V = '?v=' + VERSIONE;
@@ -115,6 +115,7 @@ const ESSENZIALI = [
   './parti/musica.js' + V,
   './parti/sveglia.js' + V,
   './parti/parla.js' + V,
+  './parti/ilNome.js' + V,
   './parti/pulizia.js' + V,
   './parti/dettatura.js' + V,
   './parti/negozi.js' + V,

@@ -3007,6 +3007,21 @@
     '(?:[,.!]?\\s+.{0,40})?' +
     '[,.!]?)$');
   var ATTESA_VIVE = 30000;
+  /* SI OBBEDISCE SOLO A CHI CHIAMA «YOURBEA» — 05/11/2026, decisione di
+     Vince dopo «devi andare a firmare in questura» diventato un percorso.
+     Le regole e le prove stanno in parti/ilNome.js: qui solo da dove si
+     sa se sei alla porta, se lei aspetta una risposta, se hai toccato. */
+  var ilNome = IlNome({ nomi: NOMI, diario: diario });
+  function statoDelNome() {
+    var allaPorta = false;
+    try { allaPorta = !el('porta').hidden; } catch (e) {}
+    return {
+      allaPorta: allaPorta,
+      aspetta: staAspettando(),
+      toccato: Date.now() < alLaBoccaFino ||
+               !!(typeof toccaEParla !== 'undefined' && toccaEParla && toccaEParla.staAscoltando())
+    };
+  }
 
   /* ============================================================
      CHE COSA VUOI SENTIRE
@@ -3999,6 +4014,20 @@
      il riconoscitore ritiene piu' probabile, ed e' lei che deve arrivare
      a chi segna un contributo a voce («qui c'e' un albero») — li' contano
      le parole sue, non la somiglianza con un comando. */
+  /* ---------- NEL DIARIO NON FINISCONO LE CONVERSAZIONI ---------- 05/11/2026
+     Il diario di Vince del 5/11, 19:40-19:43: il microfono sempre aperto
+     ha scritto parola per parola quello che si diceva intorno — nomi,
+     un appuntamento in questura — e il diario si manda su WhatsApp.
+     Un comando e' corto, o comincia col nome dell'app: quello si scrive,
+     perche' e' cosi' che si trovano le storpiature («Europea stop»). Una
+     frase lunga senza il nome e' una conversazione: se ne scrive solo
+     quante parole aveva. */
+  function perIlDiario(testo) {
+    var t = String(testo || '').trim();
+    var parole = t.split(/\s+/).filter(Boolean).length;
+    if (parole <= 5 || /\b(you|ur|eu)\s*r?bea\b|yourbea|urbea|europea/i.test(t)) return t;
+    return '[una frase di ' + parole + ' parole, non per me: non la scrivo]';
+  }
   function comandoFraLeIpotesi(ipotesi) {
     var lista = (ipotesi || []).filter(function (x) { return String(x || '').trim(); });
     if (!lista.length) return false;
@@ -4007,7 +4036,7 @@
        sempre una sola, e nei diari di Maria e del tester di Latina non
        c'era MAI una riga SENTITO. Non si poteva sapere se il microfono
        era sordo o se capiva male. */
-    diario((lista.length > 1 ? 'SENTITO, le ipotesi: ' : 'SENTITO: ') + lista.join(' | '));
+    diario((lista.length > 1 ? 'SENTITO, le ipotesi: ' : 'SENTITO: ') + lista.map(perIlDiario).join(' | '));
     /* PRIMA si cercano i comandi in TUTTE e tre — compresa la prima:
        se la prima si prendesse anche la strada del «questa non l'ho
        capita», risponderebbe li' e la fila non arriverebbe mai alla
@@ -4060,7 +4089,7 @@
        le sue parole lavora su questo. */
     var grezzo = String(testo || '').trim();
     if (!t) return false;
-    if (!soloComandi) diario('COMANDO: ' + t.slice(0, 50));
+    if (!soloComandi) diario('COMANDO: ' + perIlDiario(t).slice(0, 60));
     /* ha(): o il nome di un gruppo di PAROLE, o le frasi scritte lì per lì —
        si usano tutt'e due gli stili qui sotto. Scritta che accettava solo i
        gruppi, `ha('portami a casa', ...)` cercava il gruppo «portami a casa»,
@@ -5007,7 +5036,8 @@
           for (var j = 0; j < e.results[i].length && j < 3; j++) {
             if (e.results[i][j] && e.results[i][j].transcript) ipotesi.push(e.results[i][j].transcript);
           }
-          comandoFraLeIpotesi(ipotesi);
+          ipotesi = ilNome.filtra(ipotesi, statoDelNome());   // parti/ilNome.js
+          if (ipotesi) comandoFraLeIpotesi(ipotesi);
         }
       };
       ascolto.onend = function () { ascolto = null; if (ascoltoVoluto && !micChiuso) apriAscolto(); };
@@ -5194,6 +5224,10 @@
        niente passano anche il proprio nome e le segnalazioni, che hanno
        le loro regole in parti/contributi.js. Fuori da quando parla non
        cambia niente: in silenzio l'app ascolta tutto come prima. */
+    /* era per me? Si obbedisce solo a chi chiama «Yourbea» (parti/ilNome.js).
+       Dopo l'eco, cosi' la propria voce resta scritta come ECO. */
+    testo = ilNome.filtra(testo, statoDelNome());
+    if (testo === null) return;
     if (voce.staParlando()) {
       /* IL RICONOSCITORE MANDA FINO A TRE IPOTESI, e il comando buono puo'
          essere la seconda: basta che UNA sia per me e passano tutte, che
@@ -5209,7 +5243,7 @@
         return false;
       });
       if (ipotesi.length && !perMe) {
-        diario('NON ERA PER ME (parlavo): ' + ipotesi[0]);
+        diario('NON ERA PER ME (parlavo): ' + perIlDiario(ipotesi[0]));
         return;
       }
       diario('comando mentre parlavo: lo eseguo comunque');
