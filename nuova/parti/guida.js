@@ -37,6 +37,9 @@ function Guida(opzioni) {
   var MI_STO_ALLONTANANDO = o.miStoAllontanando || 25;
   var SALTA_AVANTI = o.saltaAvanti || 50;
   var VICINO_COL_MOTORE = o.vicinoColMotore || 12;
+  /* quanto lontano puo' stare una meta di cui NON e' stata detta la citta'
+     (5/11/2026, il PalaBianchini finito a Terni) */
+  var LONTANO_SENZA_CITTA = o.lontanoSenzaCitta || 30000;
   var piuVicinoMai = null, quandoMisurata = -1;
   /* ============================================================
      L'ATTRAVERSAMENTO SI DICE SEMPRE CON L'AVVERTENZA
@@ -130,8 +133,15 @@ function Guida(opzioni) {
   /* parolePiene(): le parole che contano in una richiesta — via, piazza,
      numero e gli articoli non distinguono niente. */
   function parolePiene(testo) {
+    /* ---------- «PALA» NON DISTINGUE NIENTE ---------- 5/11/2026
+       «Pala bianchini» da Latina: il cercatore risponde Palazzo Rosci a
+       Terni (123 km), Palazzo Bianchini ad Agrigento, e il filtro li
+       faceva passare tutti perche' «palAZZO» contiene «pala». Poi vinceva
+       il piu' vicino: Terni. Queste parole dicono solo CHE COS'E' il
+       posto, non QUALE: a distinguerlo e' il nome che viene dopo. */
     var fuori = ['via', 'viale', 'piazza', 'corso', 'largo', 'vicolo', 'strada', 'numero',
-                 'civico', 'del', 'dei', 'della', 'degli', 'delle', 'portami', 'casa'];
+                 'civico', 'del', 'dei', 'della', 'degli', 'delle', 'portami', 'casa',
+                 'pala', 'palla', 'palo', 'pallo', 'palazzo', 'palazzetto', 'sport'];
     return normalizza(testo).split(' ').filter(function (w) {
       return w.length >= 4 && fuori.indexOf(w) < 0 && !/^\d+$/.test(w);
     });
@@ -212,6 +222,32 @@ function Guida(opzioni) {
         return null;
       }
       candidati = trovati;
+    }
+
+    /* ============================================================
+       SENZA UNA CITTA' DETTA, NON SI VA A CENTO CHILOMETRI — 5/11/2026
+       Qui sotto vince il candidato piu' vicino a chi cammina, e non c'era
+       nessun tetto: da Latina, «pala bianchini» finiva a Terni, 123 km,
+       e l'app si metteva a guidarci A PIEDI. Chi dice una meta senza
+       nominare la citta' la intende QUI: se il cercatore non ha niente
+       qui intorno, e' meglio dire «non l'ho trovato» — che poi fa
+       riprovare con le altre scritture del nome — che portare uno a
+       centoventi chilometri. Chi vuole andare lontano la citta' la dice,
+       e allora questo tetto non si applica. */
+    if (!parole.length && qui && typeof qui.lat === 'number') {
+      var qui_vicini = candidati.filter(function (c) {
+        return dist(qui.lat, qui.lon, c.lat, c.lon) <= LONTANO_SENZA_CITTA;
+      });
+      if (!qui_vicini.length) {
+        diario('SCELTA: nessun candidato entro ' + Math.round(LONTANO_SENZA_CITTA / 1000) +
+               ' km, e la citta\' non l\'ha detta');
+        return null;
+      }
+      if (qui_vicini.length !== candidati.length) {
+        diario('SCELTA: scartati ' + (candidati.length - qui_vicini.length) +
+               ' candidati oltre i ' + Math.round(LONTANO_SENZA_CITTA / 1000) + ' km');
+      }
+      candidati = qui_vicini;
     }
 
     /* ============================================================
