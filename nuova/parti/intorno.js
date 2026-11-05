@@ -599,7 +599,13 @@ function Intorno(opzioni) {
     'pronto soccorso': 'amenity=hospital', fermata: 'highway=bus_stop',
     supermercato: 'shop=supermarket', bagno: 'amenity=toilets',
     bancomat: 'amenity=atm', 'ufficio postale': 'amenity=post_office',
-    bar: 'amenity=cafe', ristorante: 'amenity=restaurant'
+    bar: 'amenity=cafe', ristorante: 'amenity=restaurant',
+    /* LA METRO E LA STAZIONE — 05/11/2026. app.js le riconosceva dal 21/10
+       («portami alla metro»), ma qui non c'erano: la ricerca tornava vuota
+       e l'app diceva «non l'ho trovato». Per la metro si cerca l'INGRESSO,
+       che e' dove si entra davvero; provato a Roma, Colosseo: Colosseo,
+       Porta Metronia, Vittorio Emanuele, Repubblica, Barberini. */
+    metropolitana: 'railway=subway_entrance', stazione: 'railway=station'
   };
   function cercaServizio(tipo, qui) {
     var e = ETICHETTE[tipo];
