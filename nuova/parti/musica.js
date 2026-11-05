@@ -27,6 +27,14 @@
       secondo, finché la strada non è passata.
    6. NON RIPARTE DI SCATTO. Si risale piano, se no il ritorno della musica
       sembra un errore dell'app.
+   7. MENTRE PARLI TU, NIENTE MUSICA. Latina, 5/11/2026: in ventisette
+      minuti col tappeto acceso l'orecchio ha consegnato 49 frasi e la
+      pagina ne ha capite ZERO, contro 12 su 12 nei due minuti prima.
+      Il microfono sente anche noi. La v233 spegneva la musica ogni volta
+      che il microfono era aperto — ma nell'app installata e' aperto
+      SEMPRE, e la musica non suonava piu': la v234 l'ha tolta. Adesso
+      vale solo quando parli: dopo «Tocca e parla» e nei dieci secondi
+      del telefono alla bocca.
 */
 
 'use strict';
@@ -63,13 +71,14 @@ function Musica(opzioni) {
   }
 
   /* decide(): la risposta, in una volta sola.
-     stato = { modo, staParlando, livello, inPasseggiata } */
+     stato = { modo, staParlando, livello, inPasseggiata, parliTu } */
   function decide(stato) {
     var s = stato || {};
     var perche = '';
     var obiettivo = BASSO;
 
     if (s.modo !== 'cultura') { obiettivo = 0; perche = 'utilità: niente musica'; }   // REGOLA 1
+    else if (s.parliTu) { obiettivo = 0; perche = 'stai parlando tu'; }             // REGOLA 7
     else if (!accesa) { obiettivo = 0; perche = 'spenta dall\'utente'; }              // REGOLA 2
     else if (ora() < zittaFino) { obiettivo = 0; perche = 'la strada viene prima'; }  // REGOLA 5
     else if (s.staParlando && s.livello === 'emergenza') { obiettivo = 0; perche = 'emergenza'; }  // REGOLA 4

@@ -292,6 +292,9 @@ body[data-modo="utilita"] #vai-a-casa{display:block}
 /* LEGGERE I CARTELLI: il tasto sta in Utilità, dove si cammina per arrivare
    da qualche parte e un numero di autobus o un citofono si leggono di
    fretta. A voce («leggi») si può chiedere anche in Turismo. */
+#tocca-parla{display:none}
+body.nel-browser[data-modo] #tocca-parla{display:block;width:100%;min-height:30vh;margin:16px 0 0;font-size:1.6em}
+body.nel-browser #tocca-parla.ascolta{outline:4px solid currentColor}
 #leggi-cartello{display:none}
 body[data-modo="utilita"] #leggi-cartello{display:block}
 .tasto.avvisa{border-color:rgba(224,81,63,.5);color:#F6C3BB;background:rgba(224,81,63,.1)}

@@ -1285,7 +1285,7 @@
   /* quello che passi, mentre lo passi — e in TUTTE E DUE le modalità:
      «lo stesso sia per utilità che per turismo» (Vince, 16/10). Una
      fermata o uno scalino servono anche a chi sta guardando una chiesa. */
-  var passaggi = Passaggi({ dist: posizione.dist, verso: posizione.verso });
+  var passaggi = Passaggi({ dist: posizione.dist, verso: posizione.verso, diario: diario });
 
   /* ---------- i negozi della nostra mappa ----------
      Scaricati una volta da Overture, filtrati a quello che si incontra
@@ -2113,6 +2113,7 @@
   setInterval(function () {
     if (!acceso) { suonaMusica({ suona: false }); suonaIlSilenzio({ suona: false, perche: 'spenta' }); return; }
     suonaMusica(musica.decide({ modo: modo, staParlando: voce.staParlando(),
+                                parliTu: toccaEParla.staAscoltando() || Date.now() < alLaBoccaFino,
                                 livello: voce.livello() === voce.EMERGENZA ? 'emergenza' : 'guida' }));
     /* e nello stesso giro: la teniamo sveglia se e' in tasca */
     suonaIlSilenzio(sveglia.decidi({
@@ -3475,7 +3476,11 @@
        valgono anche da fermi, e li gestisce `inArrivo` qui sopra).
        ============================================================ */
     var pass = (inViaggio || s.fermo) ? null
-             : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon }, punti: SERVIZI.punti || [],
+             /* la PRECISIONE va passata: senza, parti/passaggi.js non puo'
+                sapere se il lato che calcola e' vero o sorteggiato — la
+                panchina «a sinistra» che era a destra (Vince, 5/11). */
+             : passaggi.prossimo({ qui: { lat: s.lat, lon: s.lon, prec: s.prec },
+                                   punti: SERVIZI.punti || [],
                                    direzione: s.direzione, direzioneBuona: s.direzioneBuona,
                                    quando: Date.now() });
     if (pass) dillo(pass);
@@ -3850,6 +3855,29 @@
      centocinquanta metri — cioè finché non sei in un altro posto. */
   var NIENTE_DA_DIRE_DA = 150;
   var nienteDaDireDove = null;
+  /* ---------- LO STESSO PALAZZO NON SI DESCRIVE DUE VOLTE ---------- 05/11/2026
+     Latina, 17:08:39 → 17:33:45: «La chiesa dell'Immacolata Concezione:
+     bassa, meno di due piani» detta QUARANTASEI volte su 59 frasi, una
+     ogni 33 secondi per venticinque minuti. E il 4/11, in Utilita', una
+     frase ripetuta 119 volte: il difetto non era nuovo, ripeteva roba di
+     servizio e non si notava.
+     Il riposo di mezzo minuto c'era e funzionava; quello che mancava era
+     la memoria di COSA si e' già descritto. Qui sotto si scorrevano i
+     cinque vicini e si prendeva il primo con le misure: a ogni sosta,
+     sempre lui.
+     Adesso i luoghi già descritti si segnano e si salta al prossimo.
+     L'elenco si svuota quando ti sei spostato di centocinquanta metri,
+     come per il «niente da raccontare»: in un altro posto e' un'altra
+     cosa, e tornando domani te la racconta di nuovo. */
+  var giaDescritti = {};
+  var giaDescrittiDove = null;
+  function nomeDelLuogo(p) { return String((p && (p.id || p.n)) || ''); }
+  function scordaIDescritti(s) {
+    if (giaDescrittiDove &&
+        posizione.dist(giaDescrittiDove.lat, giaDescrittiDove.lon, s.lat, s.lon) < NIENTE_DA_DIRE_DA) return;
+    giaDescrittiDove = { lat: s.lat, lon: s.lon };
+    giaDescritti = {};
+  }
   function rispondiAlFermo(s) {
     if (!acceso || !hoLaParola || staAspettando()) return;
     if (guida.meta()) return;                 // in viaggio comanda la guida
@@ -3876,17 +3904,22 @@
     }
     /* TURISMO: com'e' fatto quello che hai davanti. */
     var vicini0 = vicini();
+    scordaIDescritti(s);
     for (var i = 0; i < vicini0.length && i < 5; i++) {
       var p = vicini0[i].p;
       /* i dati di com'e' fatto: altezza, piani, larghezza, materiali,
          forme. Senza quelli non c'e' una descrizione da dare. */
       if (!(p.h || p.pi || p.l || (p.mat && p.mat.length) || (p.frm && p.frm.length))) continue;
+      if (giaDescritti[nomeDelLuogo(p)]) continue;   // già descritto in questa sosta
       var f = descrizione.frase({ n: p.n, t: p.t, dove: '', metri: 0,
                                   altezza: p.h, piani: p.pi, larghezza: p.l,
                                   materiali: p.mat, forme: p.frm,
                                   catalogo: p.cf, pianta: p.pl });
       if (f && f.testo) {
         fermoDetto = Date.now();
+        giaDescritti[nomeDelLuogo(p)] = true;
+        diario('FERMO: descrivo ' + p.n + ' (già descritti qui: ' +
+               Object.keys(giaDescritti).length + ')');
         dillo({ tipo: 'scheda-orientativa', luogo: p, livello: 'guida', testo: f.testo });
         return;
       }
@@ -3969,7 +4002,12 @@
   function comandoFraLeIpotesi(ipotesi) {
     var lista = (ipotesi || []).filter(function (x) { return String(x || '').trim(); });
     if (!lista.length) return false;
-    if (lista.length > 1) diario('SENTITO, le ipotesi: ' + lista.join(' | '));
+    /* OGNI FRASE SENTITA VA NEL DIARIO — 05/11/2026. Prima si scriveva
+       solo quando le ipotesi erano piu' d'una: Safari ne da' quasi
+       sempre una sola, e nei diari di Maria e del tester di Latina non
+       c'era MAI una riga SENTITO. Non si poteva sapere se il microfono
+       era sordo o se capiva male. */
+    diario((lista.length > 1 ? 'SENTITO, le ipotesi: ' : 'SENTITO: ') + lista.join(' | '));
     /* PRIMA si cercano i comandi in TUTTE e tre — compresa la prima:
        se la prima si prendesse anche la strada del «questa non l'ho
        capita», risponderebbe li' e la fila non arriverebbe mai alla
@@ -4060,6 +4098,13 @@
       fi: /\b(suomi|finlandese|finnish)\b/, el: /(ελλην|greco|greek)/,
       ar: /(العربية|arabo|arabic)/
     };
+    /* «MANDA IL DIARIO» A VOCE — 05/11/2026. Il tasto stava in fondo al
+       cassetto, e chi non vede il cassetto non lo apre. Il browser apre
+       la condivisione solo dopo un tocco: quindi si chiede quello. */
+    if (/\b(manda|mandami|invia|spedisci|condividi)\b.*\bdiario\b/.test(t)) {
+      mandaIlDiario(true);
+      return true;
+    }
     if (/\b(parla|parlare|lingua|speak|sprich|sprache|language|parle|habla|idioma)\b/.test(t)) {
       for (var qq in CHIESTA) {
         if (!Object.prototype.hasOwnProperty.call(CHIESTA, qq)) continue;
@@ -4085,13 +4130,13 @@
     if (ha('turismo')) {
       if (modo === 'cultura' && acceso) {
         voce.parla('Sei già in Turismo.', { livello: voce.GUIDA, ancheSeUguale: true });
-      } else { entra('cultura'); }
+      } else { diario('MODO A VOCE: Turismo'); entra('cultura'); }
       return true;
     }
     if (ha('utilita')) {
       if (modo === 'servizi' && acceso) {
         voce.parla('Sei già in Utilità.', { livello: voce.GUIDA, ancheSeUguale: true });
-      } else { entra('servizi'); }
+      } else { diario('MODO A VOCE: Utilità'); entra('servizi'); }
       return true;
     }
     /* «annulla»: ferma la chiamata al 112 nei cinque secondi che ha di
@@ -4842,6 +4887,18 @@
      riconoscimento del testo sta dentro iOS. Qui si chiede lo scatto al
      guscio e si dice quello che ha letto. Le regole stanno in
      parti/lettura.js (18 prove). */
+  /* ---------- IL GUAIO SI DICE UNA VOLTA ---------- 05/11/2026
+     Dal diario di Jacopo (iPhone, Safari, fuori dal guscio): UNDICI
+     «LEGGO: niente porta urbeaLeggi», e alle 17:03:50-55 cinque in sei
+     secondi, con cinque «GIÀ IN CODA» dietro. Nel browser la fotocamera
+     non si apre mai: la risposta e' sempre la stessa, e ridirla a ogni
+     tocco riempie la coda — cioe' fa arrivare in ritardo tutto il resto,
+     che e' il difetto di cui si lamentava Vince il 30/10.
+     La lettura VERA resta come era, e si ridice sempre anche se e' la
+     stessa riga (due cartelli identici esistono): qui si frena solo il
+     guaio, quello che non cambiera' al prossimo tocco. */
+  var guaioLetturaQuando = 0;
+  var GUAIO_LETTURA_RIPOSO = 20000;
   function leggiIlCartello() {
     if (!window.urbeaLeggi) {
       /* DUE SITUAZIONI, DUE FRASI. Nel browser la fotocamera non si apre:
@@ -4852,6 +4909,13 @@
          Che si sia in un guscio lo dice urbeaHaPosizione, che è l'unica
          cosa che tutt'e due i gusci mettono sempre. */
       var nelGuscio = !!window.urbeaHaPosizione;
+      var daQuanto = Date.now() - guaioLetturaQuando;
+      if (guaioLetturaQuando && daQuanto < GUAIO_LETTURA_RIPOSO) {
+        diario('LEGGO: niente porta urbeaLeggi, ma l\'ho già detto ' +
+               Math.round(daQuanto / 1000) + ' s fa: non lo ripeto');
+        return;
+      }
+      guaioLetturaQuando = Date.now();
       diario('LEGGO: niente porta urbeaLeggi (' + (nelGuscio ? 'guscio senza lettura' : 'non siamo nel guscio') + ')');
       diciLaLettura(nelGuscio ? lettura.nonSaLeggere() : lettura.senzaGuscio());
       return;
@@ -4947,11 +5011,59 @@
         }
       };
       ascolto.onend = function () { ascolto = null; if (ascoltoVoluto && !micChiuso) apriAscolto(); };
-      ascolto.onerror = function (ev) { if (ev.error === 'not-allowed') ascoltoVoluto = false; };
+      /* IL MICROFONO CHE NON SI APRE SI DICE — 05/11/2026.
+         Prima l'errore si buttava senza una riga: nei diari dei tester
+         il microfono risultava «aperto» e poi niente, per minuti. E con
+         'not-allowed' l'ascolto si spegneva per sempre: la rete di
+         sicurezza del primo tocco era gia' stata spesa dal tentativo
+         «da sola» della porta. Adesso si scrive perche', e il prossimo
+         tocco sullo schermo riprova. */
+      ascolto.onstart = function () { diario('MICROFONO: ascolta (' + ascolto.lang + ')'); };
+      ascolto.onerror = function (ev) {
+        var perche = (ev && ev.error) || 'errore ignoto';
+        if (perche === 'no-speech' || perche === 'aborted') return;   // normali, non guasti
+        diario('MICROFONO: non ascolta — ' + perche);
+        if (perche === 'not-allowed' || perche === 'service-not-allowed') {
+          ascoltoVoluto = false;
+          ['pointerdown', 'touchstart', 'keydown'].forEach(function (q) {
+            document.addEventListener(q, function () {
+              if (micChiuso || ascolto) return;
+              diario('MICROFONO: riprovo col tocco');
+              apriAscolto();
+            }, { once: true, passive: true });
+          });
+        }
+      };
       ascoltoVoluto = true;
       ascolto.start();
-    } catch (e) { ascolto = null; }
+    } catch (e) { ascolto = null; diario('MICROFONO: non parte — ' + ((e && (e.name || e.message)) || 'motivo ignoto')); }
   }
+  /* ---------- TOCCA E PARLA ---------- 05/11/2026
+     La scorta del browser: le regole e le prove stanno in parti/parla.js.
+     Qui solo i fili: con cosa si ascolta, cosa si fa della frase, e come
+     si sospende l'ascolto sempre aperto mentre lavora lui. */
+  var eraInAscolto = false;
+  var toccaEParla = Parla({
+    crea: function () {
+      var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+      return R ? new R() : null;
+    },
+    lingua: function () { return laLinguaDellAscolto(); },
+    dice: function (t) { voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true }); },
+    alSentito: function (ipotesi) { comandoFraLeIpotesi(ipotesi); },
+    zittisci: function () { voce.ferma('tocca e parla'); },
+    prima: function () {
+      eraInAscolto = !!ascolto || ascoltoVoluto;
+      chiudiAscolto();
+      try { el('tocca-parla').classList.add('ascolta'); } catch (e) {}
+    },
+    dopo: function () {
+      try { el('tocca-parla').classList.remove('ascolta'); } catch (e) {}
+      if (eraInAscolto && acceso) apriAscolto();
+    },
+    segnale: function () { vibra('piano'); },
+    diario: diario
+  });
   function chiudiAscolto() {
     micChiuso = true;
     if (window.urbeaChiudiAscolto) { try { window.urbeaChiudiAscolto(); } catch (e) {} return; }
@@ -5120,6 +5232,15 @@
     acceso = true;
     el('avvia').textContent = 'Ferma';
     diario('ENTRATO in ' + (quale === 'cultura' ? 'Turismo' : 'Utilità'));
+    /* IL TASTO CHE NON PUO' FUNZIONARE NON SI MOSTRA — 05/11/2026.
+       Fuori dall'app installata la fotocamera non si apre: nel diario
+       del tester di Latina il tasto grande «Leggi» premuto cinque volte,
+       e cinque volte «mi serve l'app installata». Per chi non vede e'
+       il tasto piu' facile da trovare: deve fare qualcosa, o non esserci.
+       Si guarda qui, all'ingresso: il guscio mette urbeaLeggi prima. */
+    try { el('leggi-cartello').style.display = window.urbeaLeggi ? '' : 'none'; } catch (e) {}
+    /* e al suo posto, nel browser, il tasto per parlare (parti/parla.js) */
+    document.body.classList.toggle('nel-browser', !window.urbeaAscolta);
     posizione.comincia();
     apriAscolto();
     /* L'APERTURA È UNA DOMANDA, NON UN ELENCO DI FUNZIONI.
@@ -5208,8 +5329,45 @@
     mostra({ titolo: 'Ci siamo', testo: 'Cerco la posizione…', attesa: true, dove: '—', gradino: '' });
   }
 
-  el('scelta-utilita').addEventListener('click', function () { entra('servizi'); });
-  el('scelta-turismo').addEventListener('click', function () { entra('cultura'); });
+  /* ---------- IL MODO NON LO SCEGLIE UN TOCCO A CASO ---------- 05/11/2026
+     «NON SONO ENTRATO IN TURISMO» (Vince). Il quaderno del 5/11 gli da'
+     ragione, e non era il suo telefono soltanto: TRE su tre, e tutti e
+     tre volevano l'Utilita'.
+         Vince      17:06:41 la porta parla → 17:06:42 ENTRATO in Turismo
+         Jacopo     15:15:32 la porta parla → 15:15:42 ENTRATO in Turismo
+         Mariolina  17:18:39 la porta parla → 17:18:42 ENTRATO in Turismo
+     In nessuno dei tre c'e' un DETTO o un COMANDO prima: non l'ha detto
+     nessuno. Resta il tocco — e un tocco ci vuole, perche' la pagina
+     stessa dice «basta sfiorare lo schermo in qualunque punto» per far
+     partire il microfono (vedi allaPorta, la rete di sicurezza). Chi non
+     vede lo sfiora, e sotto il dito c'e' il bottone Turismo, che e' il
+     primo della porta e occupa mezzo schermo.
+     Un tocco arrivato prima che la domanda sia finita non e' una
+     risposta alla domanda: e' il tocco che accende il microfono. Quindi
+     per i primi due secondi i due bottoni non scelgono niente — e la
+     riga nel quaderno dice da dove viene la scelta, che prima non si
+     sapeva: era l'unica cosa che mancava per capirlo.
+     Il tocco si ignora in due casi, e sono la stessa cosa detta due
+     volte: nei primi due secondi, e finche' la domanda non e' finita —
+     chi non l'ha sentita per intero non le sta rispondendo. Dura circa
+     tre secondi: e' quello che prende anche il caso di Mariolina. */
+  var PORTA_DA = Date.now();
+  var TOCCO_TROPPO_PRESTO = 2000;
+  function sceltoAllaPorta(quale, come) {
+    var da = Date.now() - PORTA_DA;
+    if (come === 'bottone' && (da < TOCCO_TROPPO_PRESTO || voce.staParlando())) {
+      diario('PORTA: tocco su ' + (quale === 'cultura' ? 'Turismo' : 'Utilità') +
+             ' ignorato, troppo presto (' + da + ' ms' +
+             (voce.staParlando() ? ', la domanda non è finita' : '') +
+             '): e\' il tocco che apre il microfono');
+      return;
+    }
+    diario('PORTA: scelto ' + (quale === 'cultura' ? 'Turismo' : 'Utilità') + ' ' +
+           (come === 'bottone' ? 'col bottone' : 'a voce') + ', ' + da + ' ms dopo l\'apertura');
+    entra(quale);
+  }
+  el('scelta-utilita').addEventListener('click', function () { sceltoAllaPorta('servizi', 'bottone'); });
+  el('scelta-turismo').addEventListener('click', function () { sceltoAllaPorta('cultura', 'bottone'); });
   el('avvia').addEventListener('click', function () {
     acceso = !acceso;
     this.textContent = acceso ? 'Ferma' : 'Avvia';
@@ -5556,7 +5714,31 @@
     });
   }());
 
-  el('manda-diario').addEventListener('click', function () {
+  /* mandaIlDiario(): dal tasto o dalla voce. Dalla voce manca il tocco
+     che il browser vuole per aprire la condivisione: allora si chiede
+     un tocco, dovunque, e la condivisione si apre con quello. */
+  function mandaIlDiario(daVoce) {
+    if (daVoce && !window.urbeaHaPosizione) {
+      diario('DIARIO: chiesto a voce, aspetto un tocco');
+      voce.parla('Per mandare il diario tocca lo schermo una volta, dove vuoi.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      document.addEventListener('click', function () { mandaIlDiario(false); },
+                                { once: true, capture: true });
+      return;
+    }
+    diario('DIARIO: lo mando');
+    if (navigator.share) {
+      voce.parla('Ti apro la condivisione: scegli WhatsApp e mandalo a Vince.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+    }
+    laCondivisione();
+  }
+  el('manda-diario').addEventListener('click', function () { mandaIlDiario(false); });
+  el('tocca-parla').addEventListener('click', function () {
+    diario('PARLA: tocco sul tasto');
+    toccaEParla.tocca();
+  });
+  function laCondivisione() {
     var s = posizione.leggi();
     var capo = 'Yourbea nuova — diario\n' + (navigator.userAgent || '') +
                '\nmodo: ' + modo + ' | posizione: ' + (s.pronto ? s.lat.toFixed(5) + ',' + s.lon.toFixed(5) : 'no') + '\n\n';
@@ -5567,7 +5749,7 @@
     if (navigator.clipboard) navigator.clipboard.writeText(testo).then(function () {
       voce.parla('Il diario è negli appunti.', { livello: voce.GUIDA, ancheSeUguale: true });
     });
-  });
+  }
 
   /* ---------- i dati, e si parte ---------- */
   try {

@@ -53,6 +53,10 @@ function Passaggi(opzioni) {
   var ora = o.ora || function () { return Date.now(); };
   var TRAVERSO = o.traverso || 15;
   var OGNI = o.ogni || 8000;
+  /* il diario, se chi mi costruisce me lo passa. Senza la riga di sotto
+     una sola chiamata a diario() farebbe morire l'app al primo passaggio:
+     e' lo stesso sbaglio del 4/11 in racconto.js, e qui non si rifa'. */
+  var diario = o.diario || function () {};
 
   var detti = {};
   var ultimaVolta = 0;
@@ -86,8 +90,38 @@ function Passaggi(opzioni) {
     return (p.nome || p.cosa || '?') + '@' + Math.round((p.lat || 0) * 100000) + ',' + Math.round((p.lon || 0) * 100000);
   }
 
-  function daCheParte(qui, p, direzione, buona) {
+  /* ---------- UN LATO CHE IL GPS NON PUO' SAPERE NON SI DICE ----------
+     5/11/2026, Latina. Vince, ascoltando la camminata: «mi diceva
+     panchina a sinistra e invece era a destra — TUTTO COSI'».
+     Quaderno: «16:32:13 In questo momento stai passando Panchina, sulla
+     sinistra», col GPS a ±4 metri.
+     NON ERA IL VERSO: confrontato il verso dichiarato col verso vero fra
+     posizioni consecutive, 101 confronti nella camminata, scarto mediano
+     7 gradi e solo 2 sopra 90. Il verso e' buono.
+     E' LA GEOMETRIA. Un passaggio si dice quando la cosa e' entro
+     TRAVERSO = 15 metri, e il lato si calcola da dove credi di stare: un
+     errore di 4 metri trasversali, su una cosa a 4 metri, sposta l'angolo
+     di NOVANTA gradi. Il lato non e' impreciso: e' sorteggiato.
+     Contate tutte le frasi «stai passando … sulla destra/sinistra» dei
+     venti quaderni del telefono: 120, e in 36 l'errore del GPS da solo
+     copriva il cono dei trenta gradi. Una su tre.
+     E a chi non vede un lato sbagliato non e' un'imprecisione: e' un
+     ordine, e lo esegue (→ la regola del 21/10 sulla precisione).
+     Quindi: si calcola l'incertezza vera — l'angolo che l'errore del GPS
+     sottende a quella distanza — e se arriva a coprire il cono, il lato
+     NON si dice. La frase resta: «Stai passando Panchina.» Meglio senza
+     lato che col lato sbagliato. */
+  function daCheParte(qui, p, direzione, buona, quantoLontano) {
     if (typeof direzione !== 'number' || buona === false) return null;   // REGOLA 5
+    var d = typeof quantoLontano === 'number' ? quantoLontano
+          : dist(qui.lat, qui.lon, p.lat, p.lon);
+    var prec = typeof qui.prec === 'number' ? qui.prec : 0;
+    if (prec > 0 && d > 0) {
+      var incerto = Math.asin(Math.min(1, prec / d)) * 180 / Math.PI;
+      if (incerto >= 30) { diario('LATO: non lo dico, il GPS a ±' + Math.round(prec) +
+                                  'm su ' + Math.round(d) + 'm sbaglia fino a ' +
+                                  Math.round(incerto) + ' gradi'); return null; }
+    }
     var g = verso(qui.lat, qui.lon, p.lat, p.lon);
     var r = ((g - direzione + 540) % 360) - 180;
     if (Math.abs(r) <= 30) return 'davanti a te';
@@ -239,7 +273,7 @@ function Passaggi(opzioni) {
 
     detti[chiave(mig)] = true;
     ultimaVolta = ora();
-    var parte = daCheParte(qui, mig, s.direzione, s.direzioneBuona);
+    var parte = daCheParte(qui, mig, s.direzione, s.direzioneBuona, dmin);
     var nome = mig.nome || capo(mig.cosa);
     /* di una scala la cosa che conta sono i gradini e il corrimano; di uno
        scivolo, se c'è il percorso tattile. Il resto è contorno. */
