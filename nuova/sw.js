@@ -24,7 +24,7 @@
    diverso (`/yourbea/nuova/` contro `/yourbea/`) e per le pagine della
    nuova vince il piu' preciso, cioe' questo.                              */
 
-const VERSIONE = 230;
+const VERSIONE = 231;
 const CASSAFORTE = 'yourbea-nuova-v' + VERSIONE;
 const MIO_PREFISSO = 'yourbea-nuova-v';
 const V = '?v=' + VERSIONE;
@@ -113,6 +113,7 @@ const ESSENZIALI = [
   './parti/lettura.js' + V,
   './parti/passeggiata.js' + V,
   './parti/musica.js' + V,
+  './parti/sveglia.js' + V,
   './parti/pulizia.js' + V,
   './parti/dettatura.js' + V,
   './parti/negozi.js' + V,
@@ -141,6 +142,7 @@ const ESSENZIALI = [
    essenziali perché l'app senza musica funziona benissimo, e chi naviga a
    dati non deve pagarseli per forza alla prima apertura. */
 const CONTORNO = [
+  './musica/silenzio.m4a' + V,   /* i trenta secondi che la tengono sveglia in tasca */
   './musica/cammino.m4a' + V,
   './musica/chiostro.m4a' + V,
   './musica/notturno.m4a' + V,

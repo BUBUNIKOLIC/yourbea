@@ -1736,6 +1736,58 @@
      parti/musica.js (8 prove). Qui c'è solo l'elemento audio. */
   var musica = Musica({});
   try { musica.accendi(localStorage.getItem('yourbea2-musica') !== 'no'); } catch (e) {}
+
+  /* ============================================================
+     IL SILENZIO CHE LA TIENE SVEGLIA — 5/11/2026
+     Col telefono in tasca il sistema spegne una pagina che non fa
+     rumore: il diario di MARIA-0002 segna cinquanta secondi di niente e
+     poi un avvio da capo. Un'app che suona invece vive. Quindi, quando
+     nessuno la guarda, si fa girare trenta secondi di silenzio in
+     cerchio: nessuno lo sente, e al telefono basta.
+     Le regole stanno in parti/sveglia.js (si provano senza altoparlanti);
+     qui c'e' solo l'elemento audio, come per la musica. */
+  var sveglia = Sveglia({});
+  var silenzio = null, silenzioDetto = false;
+
+  function suonaIlSilenzio(d) {
+    if (!d.suona) {
+      if (silenzio && !silenzio.paused) {
+        try { silenzio.pause(); } catch (e) {}
+        diario('SVEGLIA: spengo il silenzio (' + d.perche + ')');
+      }
+      return;
+    }
+    if (silenzio && !silenzio.paused) return;       /* gia' va */
+    if (!silenzio) {
+      try { silenzio = new Audio('musica/silenzio.m4a' + VER); } catch (e) {
+        diario('SVEGLIA: non riesco a preparare il silenzio'); return;
+      }
+      silenzio.loop = true;
+      silenzio.volume = 1;   /* e' silenzio inciso: il volume non si sente,
+                                ma a zero il telefono non lo conta come
+                                qualcosa che suona, ed e' tutto il punto */
+      silenzio.onerror = function () { diario('SVEGLIA: il file del silenzio non si carica'); };
+    }
+    var p;
+    try { p = silenzio.play(); } catch (e) { diario('SVEGLIA: non parte'); return; }
+    /* il telefono mostra una notifica di «sta suonando»: che almeno dica
+       Yourbea, e che i tasti del volume non comandino il vuoto */
+    try {
+      if (navigator.mediaSession) {
+        if (!silenzioDetto && window.MediaMetadata) {
+          navigator.mediaSession.metadata = new MediaMetadata({ title: 'Yourbea', artist: 'ti racconta quello che hai intorno' });
+          silenzioDetto = true;
+        }
+        navigator.mediaSession.playbackState = 'playing';
+      }
+    } catch (e) {}
+    if (p && p.then) {
+      p.then(function () { diario('SVEGLIA: silenzio acceso, resto viva in tasca'); })
+       .catch(function (e) { diario('SVEGLIA: il silenzio non parte — ' + ((e && e.name) || 'motivo ignoto')); });
+    } else {
+      diario('SVEGLIA: silenzio acceso');
+    }
+  }
   var tappeto = null, tappetoQuale = '';
   var ultimoAvvioMusica = 0;
   /* ============================================================
@@ -2059,9 +2111,17 @@
   /* il giro della musica: una volta ogni mezzo secondo, così l'abbassata
      sotto la voce si sente morbida e non a scatti. */
   setInterval(function () {
-    if (!acceso) { suonaMusica({ suona: false }); return; }
+    if (!acceso) { suonaMusica({ suona: false }); suonaIlSilenzio({ suona: false, perche: 'spenta' }); return; }
     suonaMusica(musica.decide({ modo: modo, staParlando: voce.staParlando(),
                                 livello: voce.livello() === voce.EMERGENZA ? 'emergenza' : 'guida' }));
+    /* e nello stesso giro: la teniamo sveglia se e' in tasca */
+    suonaIlSilenzio(sveglia.decidi({
+      accesa: acceso,
+      nascosta: (typeof document !== 'undefined' && document.hidden),
+      staParlando: voce.staParlando(),
+      emergenza: voce.livello() === voce.EMERGENZA,
+      giaSuona: !!(silenzio && !silenzio.paused)
+    }));
   }, 500);
 
   /* le passeggiate: i giri a tappe della vecchia app. Le regole stanno in
@@ -4672,6 +4732,7 @@
        motore della voce si pianta. */
     var finisci = function () {
       try { suonaMusica({ suona: false }); } catch (e) {}
+      try { suonaIlSilenzio({ suona: false, perche: 'chiusa' }); } catch (e) {}
       try { faro.spegni(); spegniIlSuono(); } catch (e) {}
       try { miei.smetti(); } catch (e) {}
       try { passeggiata.ferma && passeggiata.ferma(); } catch (e) {}
