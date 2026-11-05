@@ -27,15 +27,6 @@
       secondo, finché la strada non è passata.
    6. NON RIPARTE DI SCATTO. Si risale piano, se no il ritorno della musica
       sembra un errore dell'app.
-   7. MENTRE IL MICROFONO ASCOLTA, NIENTE MUSICA. Latina, 5/11/2026: in
-      ventisette minuti col tappeto sonoro acceso l'orecchio ha consegnato
-      49 frasi e la pagina ne ha capite ZERO, mentre nei due minuti prima
-      che la musica partisse ne aveva capite 12. Vince: «non mi sentiva
-      all'inizio», «poi gli ho detto portami in via Gioberti, ma nulla»,
-      «ho provato a fare delle segnalazioni ma niente». Il microfono del
-      telefono sente anche noi, e sopra il nostro suono non distingue piu'
-      la voce. Un'app che non ti sente non e' un'app col sottofondo: e'
-      un'app rotta. Quindi la voce viene prima, sempre.
 */
 
 'use strict';
@@ -72,14 +63,13 @@ function Musica(opzioni) {
   }
 
   /* decide(): la risposta, in una volta sola.
-     stato = { modo, staParlando, livello, inPasseggiata, ascolta } */
+     stato = { modo, staParlando, livello, inPasseggiata } */
   function decide(stato) {
     var s = stato || {};
     var perche = '';
     var obiettivo = BASSO;
 
     if (s.modo !== 'cultura') { obiettivo = 0; perche = 'utilità: niente musica'; }   // REGOLA 1
-    else if (s.ascolta) { obiettivo = 0; perche = 'il microfono ascolta'; }           // REGOLA 7
     else if (!accesa) { obiettivo = 0; perche = 'spenta dall\'utente'; }              // REGOLA 2
     else if (ora() < zittaFino) { obiettivo = 0; perche = 'la strada viene prima'; }  // REGOLA 5
     else if (s.staParlando && s.livello === 'emergenza') { obiettivo = 0; perche = 'emergenza'; }  // REGOLA 4
