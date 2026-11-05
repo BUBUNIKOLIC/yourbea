@@ -2113,6 +2113,7 @@
   setInterval(function () {
     if (!acceso) { suonaMusica({ suona: false }); suonaIlSilenzio({ suona: false, perche: 'spenta' }); return; }
     suonaMusica(musica.decide({ modo: modo, staParlando: voce.staParlando(),
+                                ascolta: microfonoAscolta(),
                                 livello: voce.livello() === voce.EMERGENZA ? 'emergenza' : 'guida' }));
     /* e nello stesso giro: la teniamo sveglia se e' in tasca */
     suonaIlSilenzio(sveglia.decidi({
@@ -4894,6 +4895,12 @@
 
   /* ---------- l'ascolto ---------- */
   var ascolto = null, ascoltoVoluto = false, micChiuso = false;
+  /* microfonoAscolta(): lo chiede parti/musica.js, per la sua regola 7.
+     Il tappeto sonoro del Turismo entra nel microfono insieme alla voce,
+     e sopra il nostro suono il riconoscitore non capisce piu' niente:
+     a Latina, il 5/11, 49 frasi consegnate e zero capite in 27 minuti,
+     contro 12 su 12 nei due minuti prima che la musica partisse. */
+  function microfonoAscolta() { return !!ascoltoVoluto && !micChiuso; }
   var ascoltoItaliano = true;
   var LINGUA_ASCOLTO = { de: 'de-DE', en: 'en-GB', fr: 'fr-FR', es: 'es-ES', nl: 'nl-NL',
                          pl: 'pl-PL', cs: 'cs-CZ', zh: 'zh-CN', ro: 'ro-RO', pt: 'pt-PT',
