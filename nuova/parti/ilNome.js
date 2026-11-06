@@ -18,6 +18,12 @@
       - ti ha appena fatto una domanda e la risposta e' corta.
    3. «ZITTO», «SILENZIO», «BASTA» DA SOLI PASSANO SEMPRE: farla tacere
       deve costare una parola, non due.
+   5. LA SUA DOMANDA NON E' LA TUA RISPOSTA. 6/11, 07:53:44: il microfono
+      ha consegnato con 45 secondi di ritardo la sua stessa domanda,
+      «buongiorno vuoi entrare in turismo», senza «Vincenzo» in mezzo:
+      il controllo dell'eco (cinque parole di fila) non l'ha riconosciuta
+      e la porta e' entrata in Turismo da sola. Alla porta la risposta e'
+      una parola o due; chi dice «vuoi entrare» sta ripetendo la domanda.
    4. TUTTO IL RESTO NON E' PER LEI: si scrive nel diario quante parole
       erano, non le parole (le conversazioni degli altri non si tengono).
    ============================================================ */
@@ -36,9 +42,14 @@ function IlNome(o) {
   function parole(t) { return String(t || '').split(/\s+/).filter(Boolean).length; }
 
   /* una frase sola: torna la frase da eseguire, o null */
+  var LA_DOMANDA = /\b(?:vuoi entrare|entrare in|in turismo o|turismo o in|vuoi utilit|utilit\S* o turismo)/i;   // REGOLA 5
   function una(frase, stato) {
     var t = String(frase || '').trim();
     if (!t) return null;
+    if (stato.allaPorta && LA_DOMANDA.test(t)) {
+      diario('ECO ALLA PORTA: era la mia domanda, non la tua risposta');
+      return null;
+    }
     if (DAVANTI.test(t) || DIETRO.test(t)) return t;      // REGOLA 1
     if (stato.toccato) return t;                          // REGOLA 2
     if (stato.allaPorta && parole(t) <= RISPOSTA_CORTA) return t;

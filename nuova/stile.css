@@ -201,6 +201,11 @@ body[data-modo="turismo"] #voci-utilita{display:none}
 
 /* ---------- la porta: due scelte, e basta ---------- */
 #porta[hidden]{display:none}
+#avvio{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0E1319;color:#EFEEEA;text-align:center}
+#avvio[hidden]{display:none}
+#avvio img{width:38vw;max-width:220px;border-radius:22%}
+#avvio .nome{font-size:2.2em;letter-spacing:.18em;font-weight:700}
+#avvio .motto{opacity:.8}
 #porta{
   position:fixed;inset:0;z-index:4000;
   background:

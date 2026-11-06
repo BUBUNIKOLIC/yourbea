@@ -2812,13 +2812,23 @@
       return;
     }
 
-    // 1. un luogo nostro col nome che somiglia
+    // 1. un luogo nostro col nome che somiglia — ma VICINO
+    /* 06/11/2026, via dei Corazzieri: «la farmacia più vicina» era a 107
+       km. Fra i nostri 950 luoghi c'e' qualcosa che si chiama «Farmacia...»
+       lontano, e il nome bastava: la farmacia di via Laurentina, a 300
+       metri, non veniva nemmeno cercata. Un luogo nostro vale solo entro
+       tre chilometri; oltre si cerca sulla mappa intorno a te. */
+    var VICINO_NOSTRO = 3000;
     var mio = null, dmin = Infinity;
     LUOGHI.forEach(function (p) {
       if (p.n.toLowerCase().indexOf(cerca) < 0) return;
       var d = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
       if (d < dmin) { dmin = d; mio = p; }
     });
+    if (mio && dmin > VICINO_NOSTRO) {
+      diario('PORTAMI A: «' + mio.n + '» è nostro ma a ' + Math.round(dmin / 1000) + ' km, cerco qui intorno');
+      mio = null;
+    }
     if (mio) { partiVerso({ n: mio.n, lat: mio.lat, lon: mio.lon }, qui); return; }
 
     // 2. un servizio (farmacia, commissariato, fermata...)
@@ -4588,6 +4598,13 @@
       { parole: ['supermercato'], cerca: 'supermercato' }
     ];
     var vuoleAndare = /(portami|accompagnami|andiamo|voglio andare|devo andare|come arrivo|come ci arrivo|dove sta|dov e|dove si trova|la piu vicina|il piu vicino|piu vicina|piu vicino|cerco|trovami)/.test(chiesto);
+    /* «MAGICO SORRISO NON È UNA FARMACIA» non e' una richiesta di andarci
+       (06/11/2026): e' una correzione. Una frase con «non» e senza un
+       «portami» esplicito non fa partire nessun percorso. */
+    if (vuoleAndare && /\bnon\b/.test(chiesto) && !/(portami|accompagnami|voglio andare|devo andare)/.test(chiesto)) {
+      diario('NON PARTO: la frase dice «non», non e\' una richiesta di andare');
+      vuoleAndare = false;
+    }
     if (vuoleAndare) {
       for (var ci = 0; ci < cose.length; ci++) {
         var c = cose[ci];
@@ -5888,8 +5905,23 @@
     function apri(perche) {
       if (giaFatto) return;
       giaFatto = true;
-      diario('PORTA: apro il microfono (' + perche + ')');
-      apriAscolto();
+      finisciAvvio();
+      /* PRIMA LA DOMANDA, POI IL MICROFONO — 06/11/2026. Aperto insieme
+         alla voce, il microfono sentiva lei: alle 07:53:44 ha consegnato
+         «buongiorno vuoi entrare in turismo» e la porta e' entrata in
+         Turismo da sola. Nell'app installata si aspetta che abbia finito
+         di parlare. Nel browser no: li' il microfono si apre solo dentro
+         il tocco, e aspettare vorrebbe dire perderlo. */
+      if (perche === 'col tocco' && !window.urbeaAscolta) {
+        diario('PORTA: apro il microfono (col tocco)');
+        apriAscolto();
+      } else {
+        (function quandoHaFinito(n) {
+          if (n < 48 && voce.staParlando()) { setTimeout(function () { quandoHaFinito(n + 1); }, 250); return; }
+          diario('PORTA: apro il microfono (' + perche + ', dopo la domanda)');
+          apriAscolto();
+        })(0);
+      }
       /* la frase solo se NON c'e' un lettore di schermo: con VoiceOver o
          TalkBack acceso la pagina viene gia' letta, e due voci sopra la
          stessa cosa e' quello che Dario ha chiamato «troppo frenetico». */
@@ -5908,12 +5940,19 @@
            utilita'» — «non che inizia a balbettare sin dall'inizio».
            Una frase, un nome, una domanda. Niente altro, finche' non
            risponde. */
-        voce.parla('Buongiorno' + (ioSonoIo ? ' ' + ioSonoIo : '') +
-                   ', vuoi entrare in turismo o in utilità?',
+        /* 06/11/2026, di nuovo parole sue: «ciao Vincenzo vuoi utilità o turismo» */
+        voce.parla('Ciao' + (ioSonoIo ? ' ' + ioSonoIo : '') +
+                   ', vuoi utilità o turismo?',
                    { livello: voce.GUIDA, ancheSeUguale: true });
       }
     }
-    setTimeout(function () { apri('da sola'); }, 1200);
+    /* cinque secondi di schermata Yourbea, poi la domanda (06/11/2026) */
+    var AVVIO = (typeof window.YB_AVVIO_MS === 'number') ? window.YB_AVVIO_MS : 5000;   // le prove la accorciano
+    function finisciAvvio() {
+      var a = el('avvio');
+      if (a && !a.hidden) { a.hidden = true; diario('AVVIO: finita la schermata'); }
+    }
+    setTimeout(function () { apri('da sola'); }, AVVIO);
     /* la rete di sicurezza: il primo tocco, dovunque sia */
     ['pointerdown', 'touchstart', 'keydown'].forEach(function (q) {
       document.addEventListener(q, function () { apri('col tocco'); }, { once: true, passive: true });
