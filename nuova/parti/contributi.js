@@ -214,6 +214,10 @@ function Contributi(opzioni) {
        «qui c'e'» e finirebbe nel ramo sbagliato. */
     var smentita = laSmentita(grezzo, t);
     if (smentita) return smentita;
+    /* «MAGICO SORRISO NON E' UNA FARMACIA» (Vince, 06/11/2026) e' una
+       correzione, non un posto: sul server era finito un «posto» con quel
+       nome intero. Una frase che dice cosa una cosa NON e' non si segna. */
+    if (/\bnon (?:e|è|e')\b/.test(t) && !/\bnon (?:c'e|c’e|ce)\b/.test(t)) return null;
 
     /* «qui ferma il 671», «qui passano il 30 e il 671»: una fermata si
        dice anche cosi', senza «c'e'». */

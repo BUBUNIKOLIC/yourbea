@@ -2259,6 +2259,23 @@
                    { livello: voce.GUIDA, ancheSeUguale: true });
         return true;
       }
+      /* LA RISPOSTA A «RIPETIMELO CON LA CITTA'» (06/11/2026). «Roma» da
+         sola e' la citta' della ricerca di prima, non una meta: si
+         rimettono insieme. «Siamo in via ...» dice dove sei, non dove
+         vuoi andare. */
+      var rispostaN = normalizza(t);
+      if (!scaduta && /^(?:siamo|sono|sto|stiamo)\b/.test(rispostaN)) {
+        diario('DOVE VADO: «' + rispostaN.slice(0, 30) + '» dice dove sei, non e\' una meta');
+        voce.parla('Ho capito. Dimmi il posto e la città, per esempio: via Roma 10, Latina.',
+                   { livello: voce.GUIDA, ancheSeUguale: true });
+        inAttesaDi = { da: Date.now(), cosa: 'dove-vado' };
+        return true;
+      }
+      if (!scaduta && ultimaCercata && rispostaN.split(' ').length <= 2 && !unComando(t)) {
+        diario('DOVE VADO: «' + rispostaN + '» e\' la citta\' di «' + ultimaCercata + '»');
+        portamiA(ultimaCercata + ', ' + (grezzo || t));
+        return true;
+      }
       if (!scaduta && !unComando(t)) { portamiA(grezzo || t); return true; }
       /* era un comando, o ha aspettato troppo: cade l'attesa e il comando
          continua la sua strada qui sotto, come negli altri rami. */
@@ -2757,7 +2774,19 @@
     }, function () { provaInFila(elenco.slice(1), qui, eCasa); });
   }
 
-  function diCheNonLhoTrovato(eCasa) {
+  var ultimaCercata = '';
+  function diCheNonLhoTrovato(eCasa, tipo) {
+    /* UNA FARMACIA NON SI RIPETE «CON LA CITTA'» (06/11/2026): la
+       richiesta era chiara, e chiedere la citta' ha fatto prendere come
+       meta «siamo in via de Corazzieri» e poi «roma» — e via verso la
+       stazione Ostiense, a 6,6 km. Per un tipo di posto si dice solo che
+       qui vicino non c'e', e non si apre nessuna attesa. */
+    if (tipo && !eCasa) {
+      voce.parla('Non trovo ' + (/^[aeiou]/.test(tipo) ? 'un ' : (tipo === 'stazione' || tipo === 'farmacia' || tipo === 'fermata' || tipo === 'metropolitana' ? 'una ' : 'un ')) +
+                 tipo + ' qui vicino, entro un chilometro e mezzo.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      return;
+    }
     /* E QUANDO NON LO TROVA, SI DICE LA VIA D'USCITA.
        Provato il 20/10 con l'indirizzo vero di Vince: Photon, a «Via
        dei Corazzieri 47 Latina», risponde «Via dei Marrucini 47» —
@@ -2786,6 +2815,16 @@
   var ultimoRicalcolo = 0, ultimoFuoriMetri = 0;
   function portamiA(cosa, eCasa, giaRiprovato) {
     metaInDubbio = null;
+    /* CHIEDERE UN POSTO DALLA PORTA E' SCEGLIERE UTILITA' (06/11/2026).
+       Alle 08:55:21 «portami alla farmacia più vicina» detto alla porta ha
+       fatto partire la ricerca con la porta ancora aperta: poi i tocchi su
+       Utilità venivano ignorati perche' l'app stava parlando. Si entra. */
+    try {
+      if (!el('porta').hidden) {
+        diario('PORTA: chiede un posto, entro in Utilità');
+        entra('servizi', false, true);
+      }
+    } catch (e) {}
     var s = posizione.leggi();
     if (!s.pronto) { voce.parla('Prima devo sapere dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
     /* alla guida serve anche come sei girato: senza, non può dire
@@ -2800,6 +2839,7 @@
                              .replace(/\s+/g, ' ').trim();
     var cerca = pulita.toLowerCase();
     diario('PORTAMI A: ' + cerca);
+    ultimaCercata = pulita;
     voce.parla("Cerco l'indirizzo, un momento.", { livello: voce.GUIDA, ancheSeUguale: true });
 
     /* 0. UN POSTO SUO. Viene prima di tutto: l'ha segnato lui stando
@@ -2844,7 +2884,35 @@
     if (tipo === 'metro') tipo = 'metropolitana';
     var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(pulita, qui);
     cercatore.then(function (candidati) {
-      var scelto = guida.scegli(candidati, parole, qui, tipo ? '' : pulita);
+      /* E QUELLI CHE SAPPIAMO GIA' (06/11/2026). La mappa pubblica non ha
+         tutte le farmacie: quella che Vince ha all'angolo con via
+         Laurentina non c'e'. Per un tipo di posto si aggiungono i nostri
+         negozi del quadretto e i posti segnati dai tester col tipo nel
+         nome: vince comunque il piu' vicino. */
+      if (tipo) {
+        var giaNostri = [];
+        try {
+          (NOSTRI || []).forEach(function (x) {
+            if (x && x.t === tipo && x.lat) giaNostri.push({ nome: x.n, citta: '', frazione: '', provincia: '', regione: '', lat: x.lat, lon: x.lon });
+          });
+          dagliAltri.qui(qui.lat, qui.lon, 1500).forEach(function (x) {
+            var n = String((x && (x.n || x.nome)) || '');
+            if (x && x.lat && n.toLowerCase().indexOf(tipo) >= 0 && !/\bnon\b/i.test(n)) {
+              giaNostri.push({ nome: n, citta: '', frazione: '', provincia: '', regione: '', lat: x.lat, lon: x.lon });
+            }
+          });
+        } catch (e) {}
+        if (giaNostri.length) diario('CERCO ' + tipo + ': anche ' + giaNostri.length + ' dei nostri');
+        candidati = (candidati || []).concat(giaNostri);
+      }
+      /* «FARMACIA» NON E' UNA CITTA' — 06/11/2026, via dei Corazzieri.
+         cittaNelTesto() prende le ultime parole della frase come comune:
+         per «farmacia» il comune diventava «farmacia», e le tre farmacie
+         trovate (Corsetti a 600 m, Fonte Ostiense, Ghetaldi) si buttavano
+         tutte perche' «non erano nella citta' Farmacia». Lo stesso per
+         metro e stazione. Quando si cerca un TIPO di posto, la citta' non
+         si guarda: il cercatore cerca gia' solo intorno a te. */
+      var scelto = guida.scegli(candidati, tipo ? [] : parole, qui, tipo ? '' : pulita);
       if (!scelto && !giaRiprovato && !tipo) {
         /* un'altra scrittura dello stesso posto, prima di arrendersi
            (vedi altriModi(): i palazzetti). */
@@ -2855,7 +2923,7 @@
           return;
         }
       }
-      if (!scelto) { diCheNonLhoTrovato(eCasa); return; }
+      if (!scelto) { diCheNonLhoTrovato(eCasa, tipo); return; }
       /* SI DICE CHE E' APPROSSIMATO, invece di far finta di niente.
          «Via dei Corazzieri 47, Roma»: il civico 47 in OpenStreetMap non
          c'e' — verificato con Photon e con Nominatim — e la via arriva a
@@ -5278,7 +5346,7 @@
     diario('POSIZIONE: comincio a cercarla');
     posizione.comincia();
   }
-  function entra(quale, riprendendo) {
+  function entra(quale, riprendendo, senzaParlare) {
     modo = quale;
     document.body.dataset.modo = (quale === 'cultura' ? 'turismo' : 'utilita');
     /* e il tasto in fondo dice dove porta, non dove sei (03/11) */
@@ -5322,6 +5390,12 @@
     if (riprendendo) {
       voce.parla('Riprendo.', { livello: voce.GUIDA, ancheSeUguale: true });
       mostra({ titolo: 'Riprendo', testo: 'Cerco la posizione\u2026', attesa: true, dove: '\u2014', gradino: '' });
+      return;
+    }
+    /* entrati per chiedere subito un posto (vedi portamiA): niente
+       domande di benvenuto sopra la ricerca */
+    if (senzaParlare) {
+      mostra({ titolo: 'Ci siamo', testo: 'Cerco\u2026', attesa: true, dove: '\u2014', gradino: '' });
       return;
     }
     if (!ioSonoIo && !nienteNome) { chiediIlNome(quale); return; }
@@ -5414,7 +5488,10 @@
   var TOCCO_TROPPO_PRESTO = 2000;
   function sceltoAllaPorta(quale, come) {
     var da = Date.now() - PORTA_DA;
-    if (come === 'bottone' && (da < TOCCO_TROPPO_PRESTO || voce.staParlando())) {
+    /* il tocco si ignora solo mentre si fa LA DOMANDA della porta, non
+       per sempre: alle 08:55:57 quattro tocchi su Utilità, 53 secondi
+       dopo, buttati perche' l'app intanto parlava d'altro (06/11/2026) */
+    if (come === 'bottone' && (da < TOCCO_TROPPO_PRESTO || (voce.staParlando() && da < 15000))) {
       diario('PORTA: tocco su ' + (quale === 'cultura' ? 'Turismo' : 'Utilità') +
              ' ignorato, troppo presto (' + da + ' ms' +
              (voce.staParlando() ? ', la domanda non è finita' : '') +
