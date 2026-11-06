@@ -2817,7 +2817,9 @@
      «la farmacia più vicina» → [] */
   var NON_NOMI = { la:1, il:1, lo:1, le:1, i:1, gli:1, l:1, al:1, alla:1, allo:1, ai:1, alle:1, del:1, della:1,
     dello:1, di:1, da:1, a:1, in:1, piu:1, 'più':1, vicina:1, vicino:1, vicini:1, vicine:1, qui:1, qua:1,
-    una:1, un:1, uno:1, portami:1, accompagnami:1, metro:1, fermata:1, stazione:1, dove:1, 'c\'è':1, ce:1, e:1, 'è':1 };
+    una:1, un:1, uno:1, lla:1, llo:1, lle:1, dei:1, degli:1, delle:1, dell:1, dal:1, dalla:1, per:1,
+    autobus:1, bus:1, tram:1, treno:1, treni:1, ferroviaria:1, ferrovia:1, linea:1, numero:1,
+    portami:1, accompagnami:1, metro:1, fermata:1, stazione:1, dove:1, 'c\'è':1, ce:1, e:1, 'è':1 };
   function ilNomeOltreIlTipo(cerca, tipo) {
     return String(cerca || '').toLowerCase().replace(tipo, ' ').split(/[\s,.'’]+/)
       .filter(function (w) { return w.length >= 3 && !NON_NOMI[w]; });
@@ -2889,6 +2891,7 @@
                 'stazione', 'fermata', 'supermercato', 'bagno', 'bancomat',
                 'ufficio postale', 'bar', 'ristorante']
       .find(function (x) { return cerca.indexOf(x) >= 0; });
+    var detto = tipo;
     /* «metro» e «metropolitana» sono la stessa cosa per il cercatore */
     if (tipo === 'metro') tipo = 'metropolitana';
     var cercatore = tipo ? intorno.cercaServizio(tipo, qui) : intorno.cercaIndirizzo(pulita, qui);
@@ -2926,7 +2929,7 @@
          Perrone: del nome si guardava solo il tipo. Se oltre al tipo c'e'
          un nome, si tengono solo i posti che lo hanno; se nessuno ce l'ha,
          lo si dice e si propone il piu' vicino di quel tipo. */
-      var nomeDato = tipo ? ilNomeOltreIlTipo(cerca, tipo) : [];
+      var nomeDato = tipo ? ilNomeOltreIlTipo(cerca, detto || tipo) : [];
       if (nomeDato.length) {
         var col = (candidati || []).filter(function (x) {
           var n = String(x && x.nome || '').toLowerCase();
