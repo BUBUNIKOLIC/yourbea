@@ -5270,6 +5270,14 @@
   };
 
   /* ---------- la porta e i tasti ---------- */
+  /* la posizione si avvia UNA volta: dalla schermata d'avvio, o entrando */
+  var posizioneAvviata = false;
+  function avviaLaPosizione() {
+    if (posizioneAvviata) return;
+    posizioneAvviata = true;
+    diario('POSIZIONE: comincio a cercarla');
+    posizione.comincia();
+  }
   function entra(quale, riprendendo) {
     modo = quale;
     document.body.dataset.modo = (quale === 'cultura' ? 'turismo' : 'utilita');
@@ -5292,7 +5300,7 @@
     try { el('leggi-cartello').style.display = window.urbeaLeggi ? '' : 'none'; } catch (e) {}
     /* e al suo posto, nel browser, il tasto per parlare (parti/parla.js) */
     document.body.classList.toggle('nel-browser', !window.urbeaAscolta);
-    posizione.comincia();
+    avviaLaPosizione();
     apriAscolto();
     /* L'APERTURA È UNA DOMANDA, NON UN ELENCO DI FUNZIONI.
        Parole di Vince, 16/10: «per i non vedenti, secondo me, una voce che
@@ -5948,6 +5956,9 @@
     }
     /* cinque secondi di schermata Yourbea, poi la domanda (06/11/2026) */
     var AVVIO = (typeof window.YB_AVVIO_MS === 'number') ? window.YB_AVVIO_MS : 5000;   // le prove la accorciano
+    /* «che in quei 5 secondi trova anche la posizione» (Vince, 06/11):
+       si comincia a cercarla adesso, cosi' entrando e' gia' pronta. */
+    avviaLaPosizione();
     function finisciAvvio() {
       var a = el('avvio');
       if (a && !a.hidden) { a.hidden = true; diario('AVVIO: finita la schermata'); }
