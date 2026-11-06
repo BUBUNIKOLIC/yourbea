@@ -2813,6 +2813,15 @@
      fuori: servono al ramo del fuori strada, che senza questi rifaceva la
      strada ogni venti secondi (Latina, 30/10). */
   var ultimoRicalcolo = 0, ultimoFuoriMetri = 0;
+  /* le parole di un nome dopo il tipo: «la farmacia Corsetti» → [corsetti],
+     «la farmacia più vicina» → [] */
+  var NON_NOMI = { la:1, il:1, lo:1, le:1, i:1, gli:1, l:1, al:1, alla:1, allo:1, ai:1, alle:1, del:1, della:1,
+    dello:1, di:1, da:1, a:1, in:1, piu:1, 'più':1, vicina:1, vicino:1, vicini:1, vicine:1, qui:1, qua:1,
+    una:1, un:1, uno:1, portami:1, accompagnami:1, metro:1, fermata:1, stazione:1, dove:1, 'c\'è':1, ce:1, e:1, 'è':1 };
+  function ilNomeOltreIlTipo(cerca, tipo) {
+    return String(cerca || '').toLowerCase().replace(tipo, ' ').split(/[\s,.'’]+/)
+      .filter(function (w) { return w.length >= 3 && !NON_NOMI[w]; });
+  }
   function portamiA(cosa, eCasa, giaRiprovato) {
     metaInDubbio = null;
     /* CHIEDERE UN POSTO DALLA PORTA E' SCEGLIERE UTILITA' (06/11/2026).
@@ -2912,6 +2921,24 @@
          tutte perche' «non erano nella citta' Farmacia». Lo stesso per
          metro e stazione. Quando si cerca un TIPO di posto, la citta' non
          si guarda: il cercatore cerca gia' solo intorno a te. */
+      /* «FARMACIA CORSETTI» NON E' «LA FARMACIA PIU' VICINA» — 06/11/2026,
+         17:02. Vince ha chiesto la Corsetti e l'app l'ha portato alla
+         Perrone: del nome si guardava solo il tipo. Se oltre al tipo c'e'
+         un nome, si tengono solo i posti che lo hanno; se nessuno ce l'ha,
+         lo si dice e si propone il piu' vicino di quel tipo. */
+      var nomeDato = tipo ? ilNomeOltreIlTipo(cerca, tipo) : [];
+      if (nomeDato.length) {
+        var col = (candidati || []).filter(function (x) {
+          var n = String(x && x.nome || '').toLowerCase();
+          return nomeDato.every(function (w) { return n.indexOf(w) >= 0; });
+        });
+        diario('CERCO ' + tipo + ' col nome «' + nomeDato.join(' ') + '»: ' + col.length + ' su ' + (candidati || []).length);
+        if (col.length) candidati = col;
+        else voce.parla(/^(?:farmacia|stazione|fermata|metropolitana)$/.test(tipo)
+                          ? 'Non trovo la ' + tipo + ' ' + nomeDato.join(' ') + ' qui vicino. Ti porto alla ' + tipo + ' più vicina.'
+                          : 'Non trovo ' + nomeDato.join(' ') + ' qui vicino. Ti porto al ' + tipo + ' più vicino.',
+                        { livello: voce.GUIDA, ancheSeUguale: true });
+      }
       var scelto = guida.scegli(candidati, tipo ? [] : parole, qui, tipo ? '' : pulita);
       if (!scelto && !giaRiprovato && !tipo) {
         /* un'altra scrittura dello stesso posto, prima di arrendersi
