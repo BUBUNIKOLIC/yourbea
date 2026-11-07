@@ -2820,9 +2820,16 @@
     una:1, un:1, uno:1, lla:1, llo:1, lle:1, dei:1, degli:1, delle:1, dell:1, dal:1, dalla:1, per:1,
     autobus:1, bus:1, tram:1, treno:1, treni:1, ferroviaria:1, ferrovia:1, linea:1, numero:1,
     portami:1, accompagnami:1, metro:1, fermata:1, stazione:1, dove:1, 'c\'è':1, ce:1, e:1, 'è':1 };
+  /* le parole che dicono il tipo, non il nome */
+  var TIPI_DETTI = { farmacia:1, farmacie:1, polizia:1, carabinieri:1, questura:1, commissariato:1, caserma:1,
+    ospedale:1, pronto:1, soccorso:1, yourbea:1, urbea:1, europea:1, ehi:1, okay:1, voglio:1, andare:1,
+    devo:1, andiamo:1, cerco:1, trovami:1, subito:1, aiuto:1, primo:1,
+    dov:1, dove:1, aperta:1, aperto:1, aperte:1, turno:1, notturna:1, chiama:1, chiamare:1, serve:1,
+    bisogno:1, vai:1, vado:1, cerca:1, trova:1, mostrami:1, qualche:1, quale:1, mia:1, mio:1, sto:1,
+    male:1, nostra:1, solita:1, solito:1, adesso:1, ora:1, presto:1 };
   function ilNomeOltreIlTipo(cerca, tipo) {
     return String(cerca || '').toLowerCase().replace(tipo, ' ').split(/[\s,.'’]+/)
-      .filter(function (w) { return w.length >= 3 && !NON_NOMI[w]; });
+      .filter(function (w) { return w.length >= 3 && !NON_NOMI[w] && !TIPI_DETTI[w]; });
   }
   function portamiA(cosa, eCasa, giaRiprovato) {
     metaInDubbio = null;
@@ -4363,7 +4370,19 @@
     var dove0 = { via: ultimaStrada, lat: s0.lat, lon: s0.lon, accanto: cosaHoIntorno() };
     var em = emergenza.comando(t, dove0);
     if (em) {
-      if (em.tipo === 'cerca') { portamiA(em.cosa); dilloSubito(em); return true; }
+      if (em.tipo === 'cerca') {
+        /* «FARMACIA CORSETTI» (diario del 6/11, 17:02): la frase arriva qui,
+           e qui si teneva solo il tipo — il nome si perdeva prima ancora di
+           cercare. Se oltre al tipo c'e' un nome, si cerca col nome e non si
+           annuncia «la piu' vicina». */
+        var nomeEm = ilNomeOltreIlTipo(t, em.cosa).filter(function (w) { return !TIPI_DETTI[w]; });
+        if (nomeEm.length) {
+          diario('CHIESTO: ' + em.cosa + ' — «' + nomeEm.join(' ') + '»');
+          portamiA(em.cosa + ' ' + nomeEm.join(' '));
+          return true;
+        }
+        portamiA(em.cosa); dilloSubito(em); return true;
+      }
       /* chiede di avvisare qualcuno di cui non ho il numero: lo dico e apro
          subito il posto dove scriverlo, se no resta una frase e basta. */
       if (em.tipo === 'chi-e') {
