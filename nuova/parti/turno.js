@@ -50,6 +50,15 @@ function Turno(o) {
      frase che comincia proprio con «Yourbea» — non «ciao bea» detto a chi
      e' al telefono. */
   var INTERRUZIONE_MAX = o.interruzioneMax || 120000;
+  /* ---------- E NEANCHE «PARLI TU» E' PER SEMPRE ---------- 7/11/2026
+     Chi dice «stai parlando» e' il guscio (iPhone: il primo pezzo di
+     frase; Android: onBeginningOfSpeech). Se il «hai finito» non arriva
+     — app messa in tasca, riconoscitore ammazzato da iOS, guscio vecchio
+     — qui si resterebbe in «parli tu» per sempre, cioe' app muta e
+     microfono che non si riavvia mai. I gusci hanno la loro guardia, ma
+     la rete sta anche qui, che vale per tutti e tre (regola 9). */
+  var PARLI_MAX = o.parliMax || 15000;
+  var tuDa = 0;
   var interrottaDa = 0;
   var TOCCO_VALE = 12000;                  // un tocco vale per la frase che segue, non per sempre
 
@@ -136,6 +145,9 @@ function Turno(o) {
       if (stato === 'interrotto' && ora() - interrottaDa > INTERRUZIONE_MAX) {
         cambia(base(), 'l\'interruzione non ha detto di essere finita: riprendo da sola');
       }
+      if (stato === 'parliTu' && ora() - tuDa > PARLI_MAX) {
+        cambia(prima || 'ascolto', 'quindici secondi senza la fine della frase: la chiudo io');
+      }
       if (stato === 'aspetta' && !aspettaViva()) cambia('ascolto', 'nessuna risposta');
       if (stato === 'ascolto' && aspettaViva()) cambia('aspetta', 'ha fatto una domanda');
       return stato;
@@ -169,6 +181,7 @@ function Turno(o) {
     tuInizi: function () {
       if (stato === 'interrotto') return;
       if (stato !== 'parliTu') prima = base();
+      tuDa = ora();
       cambia('parliTu');
     },
     tuFinisci: function () {

@@ -941,6 +941,21 @@
     diario('ALLA BOCCA: dieci secondi in cui quello che dici lo segno');
   };
 
+  /* ============================================================
+     IL GUSCIO DICE QUANDO PARLI TU — 7/11/2026, regole 2 e 4
+     Il riconoscitore del telefono sa due cose che la pagina da sola non
+     puo' sapere: quando hai COMINCIATO a parlare (il primo pezzo di
+     frase) e quando hai FINITO (la frase consegnata). Senza queste due il
+     vigile del turno non puo' farla tacere sopra di te (regola 2) ne'
+     tenere fermo il microfono mentre parli (regola 4).
+     Il guscio chiama queste, e non deve sapere nient'altro.
+     ============================================================ */
+  window.YBtuInizi = function () { turno.tuInizi(); };
+  window.YBtuFinisci = function () { turno.tuFinisci(); };
+  /* e il guscio chiede se puo' riavviare il microfono: se stai parlando,
+     no — e' la regola 4, «nessuna frase persa». */
+  window.YBpossoRiavviare = function () { return turno.puoRiavviareIlMicrofono(); };
+
   /* SE UN'ALTRA APP STA SUONANDO, YOURBEA TACE — scelta di Vince, 21/10,
      dopo aver scoperto che l'app si addormentava proprio quando apriva
      Radio 24. Tace, ma resta viva e continua a seguire la strada: appena
@@ -2261,6 +2276,16 @@
        - qualunque altra cosa → era un comando, e vince il comando. */
     if (inAttesaDi && inAttesaDi.cosa === 'percorso-o-libero') {
       var r0 = normalizza(t);
+      /* «PORTAMI A CASA» NON E' «UN PERCORSO, DOVE?» — 7/11, 12:42. Alla
+         domanda «percorso o libero?» Vince ha risposto «portami a casa», e
+         l'app ha richiesto «Dimmi dove devi andare»: la meta l'aveva gia'
+         detta. Se nella risposta c'e' gia' dove andare, si lascia la frase
+         ai comandi, che sanno portare a casa e ai posti. */
+      if (/\b(?:portami|riportami|accompagnami|andiamo|voglio andare|devo andare)\b\s+\S/.test(r0) &&
+          !/^(?:(?:fammi |fai )?(?:un |il )?percorso|portami)$/.test(r0)) {
+        inAttesaDi = null;
+        return false;
+      }
       if (/\b(?:percorso|un percorso|il percorso|percorsi|guidami|portami)\b/.test(r0)) {
         inAttesaDi = { da: Date.now(), cosa: 'dove-vado' };
         voce.parla('Dimmi dove devi andare.', { livello: voce.GUIDA, ancheSeUguale: true });
@@ -2308,6 +2333,18 @@
          rimettono insieme. «Siamo in via ...» dice dove sei, non dove
          vuoi andare. */
       var rispostaN = normalizza(t);
+      /* IL SUO NOME NON E' UNA META — 7/11, 12:38. Alla domanda «dimmi dove
+         devi andare» sono arrivati «un percorso», «corso urbe», «urbe»,
+         «europea»: lui la chiamava, e l'app ha cercato «un percorso, corso
+         urbe, urbe, urbe, europea». Il nome da solo (o il nome e
+         «percorso») vuol dire «sto per dirtelo»: si aspetta ancora. */
+      var senzaNome = rispostaN.replace(new RegExp('\\b(?:' + NOMI + ')\\b', 'g'), ' ')
+                               .replace(/\b(?:un|il|corso|percorso|ok|ehi|allora|dunque)\b/g, ' ').trim();
+      if (!scaduta && !senzaNome) {
+        diario('DOVE VADO: «' + rispostaN.slice(0, 30) + '» non e\' una meta, aspetto ancora');
+        inAttesaDi = { da: Date.now(), cosa: 'dove-vado' };
+        return true;
+      }
       if (!scaduta && /^(?:siamo|sono|sto|stiamo)\b/.test(rispostaN)) {
         diario('DOVE VADO: «' + rispostaN.slice(0, 30) + '» dice dove sei, non e\' una meta');
         voce.parla('Ho capito. Dimmi il posto e la città, per esempio: via Roma 10, Latina.',
@@ -2728,7 +2765,8 @@
       return;
     }
     if (!casa) {
-      voce.parla('Non so ancora dove abiti. Aprimi il cassetto, «dove abito», e scrivi la via: poi ti ci porto quando vuoi.',
+      /* a voce prima di tutto: chi non vede non scrive nel cassetto (7/11) */
+      voce.parla('Non so ancora dove abiti. Quando sei sulla porta di casa, dimmi: Yourbea, casa è qui. Me lo segno, e da allora ti ci porto. Se vuoi, la via la puoi anche scrivere nel cassetto.',
                  { livello: voce.GUIDA, ancheSeUguale: true });
       apriCassetto(true);
       var r = el('riga-casa'); r.hidden = false; el('casa-indirizzo').focus();
@@ -3966,6 +4004,13 @@
        è più fatta sentire. */
     if (aPiedi && preciso && hoLaParola && !staAspettando()) {
       var rif = posti.quiVicino({ lat: s.lat, lon: s.lon }, Date.now());
+      /* il tuo posto si dice una volta: «casa, qui» quattro volte, seduto
+         a casa (7/11). Si ridice solo dopo che te ne sei allontanato. */
+      if (rif) {
+        var giaQui = mioDettoDove[rif.posto.n];
+        if (giaQui && posizione.dist(giaQui.lat, giaQui.lon, s.lat, s.lon) < 30) rif = null;
+        else mioDettoDove[rif.posto.n] = { lat: s.lat, lon: s.lon };
+      }
       if (rif) diario('MIO: ' + rif.posto.n + ' a ' + Math.round(rif.metri) + ' m');
       /* SEMPRE dilloSubito, anche per la panchina. quiVicino() si segna
          che l'ha detto e poi tace due minuti su quel riferimento: se
@@ -4039,6 +4084,14 @@
      minuto. ============================================================ */
   var fermoDetto = 0;
   var FERMO_RIPOSO = 30000;
+  /* DA FERMO SI DICE UNA VOLTA, POI SI TACE — Vince, 7/11: alla domanda
+     «quante volte deve descriverti quello che hai intorno, da fermo?» ha
+     scelto «una volta, poi tace». Il diario delle 12:39–12:46: seduto a
+     casa, «sei sempre in via dei Corazzieri» QUINDICI volte in sette
+     minuti. Riparla quando ti sei spostato di 25 metri, o se glielo
+     chiedi. */
+  var fermoDettoDove = null, mioDettoDove = {};
+  var FERMO_SPOSTATO = 25;
   /* «QUI INTORNO NON HO NIENTE DA RACCONTARE» SI DICE UNA VOLTA.
      29/10, Laurentina: su 34 frasi, QUINDICI erano questa, una ogni
      trenta secondi. «Non può stare zitta» voleva dire che fermandosi
@@ -4078,11 +4131,12 @@
     if (Date.now() - fermoDetto < FERMO_RIPOSO) return;
     if (s.prec > 50) return;                  // senza sapere dove sei, non si descrive
     if (modo === 'servizi') {
+      if (fermoDettoDove && posizione.dist(fermoDettoDove.lat, fermoDettoDove.lon, s.lat, s.lon) < FERMO_SPOSTATO) return;
       fermoDetto = Date.now();
       var sc = scena.descrivi({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
                                 direzioneBuona: s.direzioneBuona, strada: ultimaVia,
                                 mappa: SERVIZI, fermo: true, modo: modo });
-      if (sc) { dillo(sc); return; }
+      if (sc) { fermoDettoDove = { lat: s.lat, lon: s.lon }; dillo(sc); return; }
       /* ---------- NON SI STA ZITTI ---------- 31/10/2026
          «Una app che descrive, che non parla» (Vince). Qui finiva: 13
          volte in quindici minuti, con 110 punti intorno. Adesso, se la
@@ -4091,7 +4145,11 @@
       var rip = scena.comunqueQualcosa({ qui: { lat: s.lat, lon: s.lon }, direzione: s.direzione,
                                          direzioneBuona: s.direzioneBuona, strada: ultimaVia,
                                          mappa: SERVIZI });
-      if (rip) { diario('FERMO: niente di nuovo, faccio un ripasso'); dillo(rip); return; }
+      if (rip) {
+        fermoDettoDove = { lat: s.lat, lon: s.lon };
+        diario('FERMO: niente di nuovo, faccio un ripasso (una volta sola, finche\' non ti sposti)');
+        dillo(rip); return;
+      }
       diario('FERMO: in Utilita non c\'era niente da descrivere');
       return;
     }
