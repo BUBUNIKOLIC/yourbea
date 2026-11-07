@@ -49,6 +49,15 @@ function MotoreVoce(opzioni) {
   var annulla = o.annulla || function (id) { clearTimeout(id); };
   var diario = o.diario || function () {};
   var microfono = o.microfono || { chiudi: function () {}, apri: function () {} };
+  /* IL VIGILE DEL TURNO (parti/turno.js, Yourbea 2.0, 7/11/2026): se c'e',
+     e' lui che decide se una frase si puo' dire adesso e se il microfono
+     resta aperto mentre si parla. Senza, il motore fa come prima. */
+  var vigile = o.vigile || null;
+  function nomeDelLivello(livello, avviso) {
+    if (livello >= 3 || avviso) return 'pericolo';
+    if (livello >= 2) return 'percorso';
+    return 'normale';
+  }
   /* lo dice il guscio, scrivendolo nella pagina quando apre il microfono */
   function nonSenteSeStessa() {
     if (typeof o.nonSenteSeStessa === 'function') return !!o.nonSenteSeStessa();
@@ -172,6 +181,7 @@ function MotoreVoce(opzioni) {
     if (prossima) { avvia(prossima); return; }
     // niente più da dire: il microfono torna ad ascoltare, ma non subito —
     // l'ultima sillaba sta ancora uscendo dall'altoparlante
+    if (vigile) vigile.leiFinisce();
     fra(function () { if (!parlando) microfono.apri(); }, 900);
   }
 
@@ -339,7 +349,10 @@ function MotoreVoce(opzioni) {
        microfono non sente l'altoparlante e puo' restare aperto: si
        parla e si ascolta insieme, come al telefono. Senza quella —
        browser, Android vecchi — si chiude come prima. */
-    if (!nonSenteSeStessa()) microfono.chiudi();
+    if (vigile) {
+      vigile.leiInizia(f.testo);
+      if (vigile.microfono() === 'chiuso') microfono.chiudi();
+    } else if (!nonSenteSeStessa()) microfono.chiudi();
     diario('PARLA (' + f.livello + '): ' + String(f.testo).slice(0, 60));
 
     // il tetto: qualunque cosa vada storta, entro il tetto si va avanti
@@ -436,6 +449,13 @@ function MotoreVoce(opzioni) {
 
     if (!testo) return false;
 
+    /* il turno: quando parli tu tace, quando aspetta una risposta dice
+       solo il percorso, quando l'audio e' preso da fuori non dice niente */
+    if (vigile && !vigile.puoParlare(nomeDelLivello(livello, !!p.avviso))) {
+      diario('TURNO: non e\' il mio turno (' + vigile.stato() + '), non dico: ' + String(testo).slice(0, 40));
+      return false;
+    }
+
     // REGOLA 5: la stessa frase non due volte
     if (!ancheSeUguale && normalizza(daConfrontare) === ultimoTesto && ora() - ultimoQuando < DOPPIONE) {
       diario('GIÀ DETTA: ' + String(testo).slice(0, 40));
@@ -526,7 +546,9 @@ function MotoreVoce(opzioni) {
       diario('VOCE TRONCATA (' + (perche || 'non detto da chi') + '): ' +
              String(ultimoTesto).slice(0, 45));
     }
-    zittisci(); parlando = false; livelloInCorso = 0; coda = []; microfono.apri();
+    zittisci(); parlando = false; livelloInCorso = 0; coda = [];
+    if (vigile) vigile.leiFinisce();
+    microfono.apri();
   }
 
   return {

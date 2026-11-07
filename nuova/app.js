@@ -76,17 +76,38 @@
   if (VER.indexOf('?v=') !== 0) VER = '';
 
   /* ---------- il diario: resta nel telefono, si può mandare ---------- */
+  /* IL DIARIO TIENE TUTTA LA GIORNATA — 07/11/2026. «Prima teneva tutto
+     il diario» (Vince): 300 righe, ma riempite da righe uguali — la
+     posizione aggiustata ogni 3 secondi, 55 «silenzio acceso» nello stesso
+     secondo — e il diario mandato copriva sette minuti. Adesso le righe
+     uguali (a meno dei numeri) di fila diventano una riga sola con «×N», e
+     se ne tengono 3000. */
+  /* Solo le righe di servizio che arrivano a raffica si riassumono anche
+     se cambia un numero (revisione del 7/11: «fra 50 metri gira» e «fra 10
+     metri gira» sono due cose diverse, e non vanno fuse). Tutte le altre
+     si riassumono solo se sono identiche. Si tiene l'ora della prima e
+     dell'ultima. */
+  var DIARIO_MAX = 3000, ultimaUguale = '', quanteUguali = 0, primaOra = '';
+  var A_RAFFICA = /^(?:AGGANCIO|POSIZIONE|SVEGLIA|MUSICA|PASSOMETRO|AL BUIO|DAGLI ALTRI|MAPPA|FERMO|CONTRIBUTI|NOSTRI|MISURE|MONUMENTI|ZITTO|REGOLA|RADIO|TURNO: non e)/;
   function diario(t) {
     var d = new Date();
     var hh = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2);
-    DIARIO.push(hh + ' ' + t);
-    if (DIARIO.length > 300) DIARIO.shift();
+    var testo = String(t);
+    var chiave = A_RAFFICA.test(testo) ? testo.replace(/[0-9.,]+/g, '#') : testo;
+    if (chiave === ultimaUguale && DIARIO.length) {
+      quanteUguali++;
+      DIARIO[DIARIO.length - 1] = primaOra + '–' + hh + ' ' + testo + '  ×' + quanteUguali;
+    } else {
+      ultimaUguale = chiave; quanteUguali = 1; primaOra = hh;
+      DIARIO.push(hh + ' ' + testo);
+      if (DIARIO.length > DIARIO_MAX) DIARIO.shift();
+    }
     if (window.urbeaDiario) try { window.urbeaDiario(t); } catch (e) {}
   }
   try {
     var vecchio = localStorage.getItem('yourbea2-diario');
-    if (vecchio) { DIARIO = vecchio.split('\n').slice(-150); DIARIO.push('— sessione precedente, sopra —'); }
-    setInterval(function () { try { localStorage.setItem('yourbea2-diario', DIARIO.slice(-300).join('\n')); } catch (e) {} }, 15000);
+    if (vecchio) { DIARIO = vecchio.split('\n').slice(-2000); DIARIO.push('— sessione precedente, sopra —'); }
+    setInterval(function () { try { localStorage.setItem('yourbea2-diario', DIARIO.slice(-2000).join('\n')); } catch (e) {} }, 15000);
   } catch (e) {}
   window.YB = { diario: function () { return DIARIO.join('\n'); } };
 
@@ -222,8 +243,15 @@
     }
   });
 
+  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|bea';
+  /* IL VIGILE DEL TURNO — Yourbea 2.0 (parti/turno.js). Decide lui chi
+     parla e quando il microfono ascolta: le 9 regole approvate da Vince
+     il 7/11. La voce gli chiede il permesso; ogni frase sentita, da
+     qualunque strada arrivi, passa da lui. */
+  var turno = Turno({ diario: diario, nomi: NOMI,
+                      eco: function () { return !!window.urbeaNonSenteSeStessa; } });
   var voce = MotoreVoce({ sintesi: sintesi, diario: diario, microfono: microfono,
-                          cartellaClip: '../voce/clip/it/' });
+                          cartellaClip: '../voce/clip/it/', vigile: turno });
 
   /* ---------- il racconto, la posizione, le fonti ---------- */
   /* LA REGOLA, in un posto solo: parti/aChiServe.js (10 prove). «Non
@@ -728,11 +756,13 @@
      cinque ore, zero «interruzione finita». La pagina restava a credere
      di parlare. Adesso l'inizio dell'interruzione si sa subito. */
   window.urbeaAudioInterrotto = function () {
+    turno.interruzioneInizia('audio preso da fuori');
     diario('AUDIO: interrotto da fuori, chiudo la frase in corso');
     voce.interrotta();
   };
 
   window.urbeaAudioTornato = function () {
+    turno.interruzioneFinisce();     // regola 7: finita l'interruzione si riprende
     try { voce.riprendi(); } catch (e) {}
   };
   /* ============================================================
@@ -906,6 +936,7 @@
      la cosa che volevi segnare. */
   var alLaBoccaFino = 0;
   window.YBalLaBocca = function () {
+    turno.boccaVicina();
     alLaBoccaFino = Date.now() + 10000;
     diario('ALLA BOCCA: dieci secondi in cui quello che dici lo segno');
   };
@@ -1768,8 +1799,15 @@
                                 qualcosa che suona, ed e' tutto il punto */
       silenzio.onerror = function () { diario('SVEGLIA: il file del silenzio non si carica'); };
     }
+    /* UNA PARTENZA ALLA VOLTA — 07/11/2026. In tasca iOS lascia la
+       richiesta di play() in sospeso e l'elemento resta «paused»: ogni giro
+       ne chiedeva un'altra, e al ritorno in mano partivano tutte insieme
+       (55 «silenzio acceso» nello stesso secondo, diario delle 10:10). Se
+       una partenza e' gia' in volo, si aspetta lei. */
+    if (silenzioInVolo && Date.now() - silenzioInVolo < 15000) return;
     var p;
     try { p = silenzio.play(); } catch (e) { diario('SVEGLIA: non parte'); return; }
+    silenzioInVolo = Date.now();
     /* il telefono mostra una notifica di «sta suonando»: che almeno dica
        Yourbea, e che i tasti del volume non comandino il vuoto */
     try {
@@ -1782,14 +1820,15 @@
       }
     } catch (e) {}
     if (p && p.then) {
-      p.then(function () { diario('SVEGLIA: silenzio acceso, resto viva in tasca'); })
-       .catch(function (e) { diario('SVEGLIA: il silenzio non parte — ' + ((e && e.name) || 'motivo ignoto')); });
+      p.then(function () { silenzioInVolo = 0; diario('SVEGLIA: silenzio acceso, resto viva in tasca'); })
+       .catch(function (e) { silenzioInVolo = 0; diario('SVEGLIA: il silenzio non parte — ' + ((e && e.name) || 'motivo ignoto')); });
     } else {
+      silenzioInVolo = 0;
       diario('SVEGLIA: silenzio acceso');
     }
   }
   var tappeto = null, tappetoQuale = '';
-  var ultimoAvvioMusica = 0;
+  var ultimoAvvioMusica = 0, musicaInVolo = 0, silenzioInVolo = 0;
   /* ============================================================
      LA MUSICA NON PARTE MENTRE L'APP PARLA
      «All'inizio balbettava come ieri, poi è andata» (Vince, 22/10, in
@@ -1835,12 +1874,17 @@
       /* ma riattaccare no, non mentre l'app parla o sta per parlare */
       if (voce.staParlando()) { diario('MUSICA: aspetto, sta parlando'); return; }
       if (Date.now() - ultimoAvvioMusica < 3000) return;
+      /* una partenza alla volta (vedi la sveglia qui sopra): 25 «suona» di
+         fila alle 10:16:45 erano 25 play() rimasti in sospeso in tasca */
+      if (musicaInVolo && Date.now() - musicaInVolo < 15000) return;
       ultimoAvvioMusica = Date.now();
       var p = tappeto.play();
+      musicaInVolo = Date.now();
       if (p && p.then) {
-        p.then(function () { diario('MUSICA: suona ' + tappetoQuale + ', volume ' + d.volume); })
-         .catch(function (e) { diario('MUSICA: non parte — ' + ((e && e.name) || 'motivo ignoto')); });
+        p.then(function () { musicaInVolo = 0; diario('MUSICA: suona ' + tappetoQuale + ', volume ' + d.volume); })
+         .catch(function (e) { musicaInVolo = 0; diario('MUSICA: non parte — ' + ((e && e.name) || 'motivo ignoto')); });
       } else {
+        musicaInVolo = 0;
         diario('MUSICA: avviata ' + tappetoQuale);
       }
     }
@@ -3082,7 +3126,7 @@
      (13:54:25). Tre tentativi su quattro, e nessuno ha chiuso l'app:
      il nome non era in lista. Contate tutte le storpiature nei quaderni
      fino a oggi: bea 4, urbe 3, europea 3, rube 2, eubea 2, curve 1. */
-  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|bea';
+  /* NOMI: la lista sta piu' in alto, accanto al vigile del turno */
   /* E DAVANTI AL NOME CI PUO' STARE UNA PAROLINA. Il quarto tentativo
      di oggi era «Di Urbe fermati» (13:54:04): il nome c'era, buono, ma
      la regola lo voleva all'inizio della frase e quel «di» — che e'
@@ -3127,6 +3171,19 @@
      Le regole e le prove stanno in parti/ilNome.js: qui solo da dove si
      sa se sei alla porta, se lei aspetta una risposta, se hai toccato. */
   var ilNome = IlNome({ nomi: NOMI, diario: diario });
+  /* YOURBEA 2.0: ogni frase sentita, da qualunque strada (guscio, browser,
+     Tocca e parla), passa dal vigile del turno — una sola regola per
+     l'eco e per il nome (regole 3 e 5, approvate il 7/11). */
+  function perIlTurno(testo) {
+    var allaPorta = false;
+    try { allaPorta = !el('porta').hidden; } catch (e) {}
+    if (Date.now() < alLaBoccaFino) turno.boccaVicina();
+    if (typeof toccaEParla !== 'undefined' && toccaEParla && toccaEParla.staAscoltando()) turno.tocco();
+    var r = turno.consegna(testo, { allaPorta: allaPorta, aspetta: staAspettando() });
+    /* la domanda della porta ripetuta lunga resta un'eco anche per ilNome */
+    if (r !== null && allaPorta) r = ilNome.filtra(r, statoDelNome());
+    return r;
+  }
   function statoDelNome() {
     var allaPorta = false;
     try { allaPorta = !el('porta').hidden; } catch (e) {}
@@ -3233,7 +3290,13 @@
       }
       if (!d.avviso) ultimoSegnoDiVita = Date.now();
     }
-    if (staAspettando() && d.livello !== 'emergenza') {
+    /* REGOLA 6 di Yourbea 2.0 (Vince, 7/11): mentre aspetta una risposta,
+       le cose urgenti del percorso si dicono lo stesso — uno scalino, un
+       attraversamento, la svolta. Prima taceva tutto per trenta secondi. */
+    var urgente = d.livello === 'emergenza' || d.avviso ||
+                  d.tipo === 'svolta' || d.tipo === 'preavviso' || d.tipo === 'arrivato' ||
+                  d.tipo === 'parto' || d.tipo === 'manca';
+    if (staAspettando() && !urgente) {
       diario('ZITTO: sto aspettando una risposta (' + inAttesaDi.cosa + ')');
       return;
     }
@@ -5170,7 +5233,7 @@
           for (var j = 0; j < e.results[i].length && j < 3; j++) {
             if (e.results[i][j] && e.results[i][j].transcript) ipotesi.push(e.results[i][j].transcript);
           }
-          ipotesi = ilNome.filtra(ipotesi, statoDelNome());   // parti/ilNome.js
+          ipotesi = perIlTurno(ipotesi);   // parti/turno.js
           if (ipotesi) comandoFraLeIpotesi(ipotesi);
         }
       };
@@ -5214,9 +5277,12 @@
     },
     lingua: function () { return laLinguaDellAscolto(); },
     dice: function (t) { voce.parla(t, { livello: voce.GUIDA, ancheSeUguale: true }); },
-    alSentito: function (ipotesi) { comandoFraLeIpotesi(ipotesi); },
+    /* anche Tocca e parla passa dal vigile (prima non aveva filtri): il
+       tocco dice che la frase e' per lei, l'eco resta un'eco */
+    alSentito: function (ipotesi) { var x = perIlTurno(ipotesi); if (x) comandoFraLeIpotesi(x); },
     zittisci: function () { voce.ferma('tocca e parla'); },
     prima: function () {
+      turno.tocco();
       eraInAscolto = !!ascolto || ascoltoVoluto;
       chiudiAscolto();
       try { el('tocca-parla').classList.add('ascolta'); } catch (e) {}
@@ -5360,7 +5426,7 @@
        cambia niente: in silenzio l'app ascolta tutto come prima. */
     /* era per me? Si obbedisce solo a chi chiama «Yourbea» (parti/ilNome.js).
        Dopo l'eco, cosi' la propria voce resta scritta come ECO. */
-    testo = ilNome.filtra(testo, statoDelNome());
+    testo = perIlTurno(testo);
     if (testo === null) return;
     if (voce.staParlando()) {
       /* IL RICONOSCITORE MANDA FINO A TRE IPOTESI, e il comando buono puo'
