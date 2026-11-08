@@ -189,8 +189,29 @@ function Contributi(opzioni) {
   /* e il taglio del nome conosce il plurale come la regola di sopra:
      senza, «a sinistra ci sono le cascate» finiva sulla mappa di tutti
      scritta cosi', tutta intera (01/11). */
-  var TAGLIA_NOME = new RegExp('^.*?(?:(?:qui|qua)' + LATO +
-    '[,\\s]*)?(?:c[\'\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sono|stanno|sta|si trova|si trovano|abbiamo)\\s+', 'i');
+  /* ---------- «QUI E' LARGO GIULIO ONESTI» ---------- 8/11/2026
+     Acqua Acetosa, 12:27:45: la segnalazione e' arrivata, ma sul server
+     il posto si chiama «qui e' Largo Giulio onesti». Il perche': chi
+     riconosce la frase (QUI_CE) accetta anche la «e» nuda — «qui E'
+     Largo…» — e chi taglia il nome, qui sotto, pretendeva la «c» di
+     «c'e'». Riconosciuta e non tagliata: il nome si portava dietro il
+     «qui e'». Adesso le due liste sono la stessa. */
+  var VERBI = '(?:c[\'\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sono|stanno|sta|si trova|si trovano|abbiamo|e|\u00e8)';
+  /* ATTENZIONE: il verbo deve cominciare a INIZIO PAROLA. Mettendo la «e»
+     nuda fra i verbi senza questo, «davanti a me c'e una rotonda» si
+     tagliava dentro «me» e il posto si chiamava «c'e una rotonda» (preso
+     dalle prove, 8/11). Il «(?:.*?\s)?» garantisce che prima del verbo ci
+     sia uno spazio o l'inizio della frase. */
+  var TAGLIA_NOME = new RegExp('^(?:.*?\\s)?(?:(?:qui|qua)' + LATO +
+    '[,\\s]*)?' + VERBI + '\\s+', 'i');
+  /* e se la frase lo dice DUE VOLTE si taglia all'ultima: «Qui c'e'
+     ingresso Urbe qui c'e' ingresso centro preparazione olimpica Giulio
+     onesti» (8/11) e' uno che ricomincia la frase, non due cose. Col
+     taglio alla prima, il nome restava «ingresso Urbe qui c'e'
+     ingresso centro…». */
+  var TAGLIA_ULTIMO = new RegExp('^(?:.*\\s)?(?:(?:qui|qua)' + LATO +
+    '[,\\s]*)' + VERBI + '\\s+', 'i');
+  var QUANTE_VOLTE = new RegExp('(?:^|\\s)(?:qui|qua)' + LATO + '[,\\s]*' + VERBI + '\\s', 'gi');
   var QUI_IN_CODA = /[,\s]+(?:qui|qua)\s*$/i;
 
   function dallaVoce(testo) {
@@ -208,6 +229,12 @@ function Contributi(opzioni) {
        storpiato in testa e la segnalazione perduta. I sette modi stanno
        in SI_RIVOLGE_A_ME (app.js); qui serve la stessa lista. */
     grezzo = grezzo.replace(/^(?:ehi|hey|ei|senti|scusa|ciao)?\s*(?:yourbea|yourbe|urbea|urbe|eubea|rube|bea)\s*[,:]?\s*/i, '').trim();
+    /* ---------- E IL NOME IN MEZZO ---------- 8/11/2026
+       «Qui c'e' ingresso Urbe qui c'e' ingresso…»: il nome gli esce
+       dove capita, e dentro il posto non ci deve finire. Si toglie solo
+       quando sta attaccato a un «qui c'e'» — se no un bar che si chiama
+       «Bea» perderebbe il nome. */
+    grezzo = grezzo.replace(/\s*\b(?:yourbea|yourbe|urbea|urbe|urbania|eubea|jurbea|iurbea|rube)\b(?=[,\s]*(?:qui|qua)\b)/gi, '').trim();
     var t = sbassa(grezzo);
     if (!t) return null;
     /* la smentita prima: «qui NON c'e' piu' il ferramenta» comincia come
@@ -246,7 +273,14 @@ function Contributi(opzioni) {
       }
     }
 
+    /* ---------- UN PEZZO DI FRASE PRIMA DEL «QUI» ---------- 8/11/2026
+       «In Urbania qui c'e' un semaforo» (12:25:11): perduta, perche' la
+       regola voleva «qui» come PRIMA parola. Lui stava chiamando l'app e
+       il riconoscitore ha scritto «In Urbania». Adesso si guarda anche
+       dentro la frase, e il «qui c'e'» vale da dove comincia. */
+    var dentro = t.match(new RegExp('(?:^|\\s)((?:qui|qua)' + LATO + '[,\\s]*' + VERBI + '\\s+.+)$', 'i'));
     var m = t.match(QUI_CE) ||
+            (dentro ? dentro[1].match(QUI_CE) : null) ||
             /* ---------- E AL PLURALE ---------- 01/11/2026
                «A sinistra ci sono le cascate» (Vince, EUR): detta cosi'
                alle 08:33:58 e persa, perche' si conosceva solo il
@@ -268,8 +302,9 @@ function Contributi(opzioni) {
     /* IL NOME SI TAGLIA DAL PARLATO VERO, con gli accenti come li scrive
        il riconoscimento: «qui c'\u00e8 Elite» ha la e ACCENTATA, e il primo
        taglio cercava «c'e» — cosi' il nome restava tutta la frase. */
+    var volte = (grezzo.match(QUANTE_VOLTE) || []).length;
     var nome = grezzo
-      .replace(TAGLIA_NOME, '')
+      .replace(volte > 1 ? TAGLIA_ULTIMO : TAGLIA_NOME, '')
       .replace(QUI_IN_CODA, '')
       .replace(/^(?:segnala|segna|aggiungi|metti)\s+(?:qui\s+)?/i, '')
       .replace(/^(?:un|uno|una|il|lo|la|i|gli|le)\s+/i, '')

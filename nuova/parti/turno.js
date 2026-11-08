@@ -87,6 +87,31 @@ function Turno(o) {
   var NOME_FORTE = /^(?:yourbea|your bea|yourbe|urbea|iurbea|jurbea)\b/i;
   var SILENZIO = /^(?:yourbea\s+)?(?:zitto|zitta|zitti|silenzio|basta|fermati)[.!]?$/i;
 
+  /* ============================================================
+     «QUI C'E' …» E' UNA SEGNALAZIONE, ANCHE SENZA IL NOME — 8/11/2026
+     Acqua Acetosa, stamattina. Tre segnalazioni perse e una passata:
+       12:24:44  «Qui c'e' un attraversamento pedonale con semaforo»  senza nome
+       12:25:11  «In Urbania qui c'e' un semaforo»                   nome storpiato
+       12:27:37  «Qui c'e' ingresso Urbe qui c'e' ingresso centro...»  nome IN MEZZO
+       12:27:45  «Urbe qui e' Largo Giulio onesti»                   -> segnata
+     «Qui c'e' …» non e' una chiacchiera: nessuno lo dice a un altro
+     cristiano mentre cammina. E il nome, quando lo dice, gli esce dove
+     capita: in mezzo, storpiato, o non gli esce.
+     CONTATO sui quaderni veri del 7 e dell'8/11 prima di scriverlo: su
+     136 frasi consegnate, queste due regole fanno entrare OTTO frasi, e
+     sono tutte e otto segnalazioni vere o comandi. Le 115 chiacchiere di
+     Venafro e di Acqua Acetosa («Offerta quattro euro», «No no che ha
+     comprato la titina») restano fuori tutte.
+     L'eco si guarda PRIMA, perche' «Qui c'e' il percorso Venafro — il
+     centro» lo dice lei.
+     ============================================================ */
+  var SEGNALAZIONE = /\bqu[ia]\b.{0,24}?\b(?:c['\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sta|stanno|e|\u00e8)\s+\S/i;
+  /* il nome in mezzo alla frase: solo quelli che NON sono parole italiane.
+     «curve», «bea» ed «europea» stanno nella lista dei nomi perche' la
+     dettatura li scrive cosi', ma in mezzo a una chiacchiera sono parole
+     normali, e aprirebbero la porta a tutto. */
+  var NOME_IN_MEZZO = /\b(?:yourbea|yourbe|your bea|urbea|urbe|urbania|eubea|jurbea|iurbea|rube)\b/i;
+
   /* REGOLA 3. Una frase sentita e' la sua voce se le sue parole stanno,
      quasi tutte e nello stesso ordine, in qualcosa che lei ha detto nel
      minuto prima. Niente piu' «almeno cinque parole» o «almeno 25
@@ -204,6 +229,8 @@ function Turno(o) {
          passava per un comando (revisione del 7/11) */
       if (eSuaVoce(t)) return { perLei: false, perche: 'eco: era la sua voce' };               // 3
       if (colNome) return { perLei: true, perche: 'col nome' };                               // 5
+      if (NOME_IN_MEZZO.test(t)) return { perLei: true, perche: 'il nome, in mezzo alla frase' };
+      if (SEGNALAZIONE.test(t)) return { perLei: true, perche: 'e\' una segnalazione: «qui c\'e\'…»' };
       if (dalTocco) return { perLei: true, perche: 'tocco' };
       if (ora() < boccaFino) return { perLei: true, perche: 'telefono alla bocca' };
       /* le parole si contano a spazi, come le conta chi parla: «c'è»
