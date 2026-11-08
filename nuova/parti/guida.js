@@ -130,6 +130,24 @@ function Guida(opzioni) {
     return true;
   }
 
+  /* unaLettera(a, b): vero se da a si arriva a b cambiando, togliendo o
+     aggiungendo UNA lettera sola (Levenshtein 1). Serve per il
+     riconoscitore che si mangia una lettera: «nesti» per «onesti». */
+  function unaLettera(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    var i = 0, j = 0, sbagli = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++sbagli > 1) return false;
+      if (a.length === b.length) { i++; j++; }
+      else if (a.length > b.length) i++;
+      else j++;
+    }
+    if (i < a.length || j < b.length) sbagli++;
+    return sbagli <= 1;
+  }
+
   /* parolePiene(): le parole che contano in una richiesta — via, piazza,
      numero e gli articoli non distinguono niente. */
   function parolePiene(testo) {
@@ -159,6 +177,70 @@ function Guida(opzioni) {
     if (!candidati || !candidati.length) return null;
 
     /* ============================================================
+       «LARGO GIULIO ONESTI» NON E' UNA CITTA' — 8/11/2026
+       Acqua Acetosa, 12:23:34. «Urbe portami in Largo Giulio Nesti»:
+       il comando era capito (PORTAMI A: largo giulio nesti) e la
+       risposta e' stata «questo indirizzo non l'ho trovato».
+       Il perche' non era la lettera mangiata (Onesti -> Nesti): provato
+       col nome GIUSTO, «largo giulio onesti», scegli() torna null
+       uguale. cittaNelTesto() prende le ULTIME DUE PAROLE e le chiama
+       citta' — «giulio onesti» — e poi la scala delle citta' butta ogni
+       candidato che non abiti in un comune che si chiama cosi'. Cioe'
+       **qualunque posto di due parole chiesto senza citta' veniva
+       buttato**: Largo Giulio Onesti, Villa Borghese, Ponte Milvio.
+       E' lo stesso difetto del 6/11, quando «farmacia» veniva preso per
+       il nome di una citta'.
+       La cura: una parola e' una citta' solo se QUALCHE CANDIDATO ci
+       abita davvero (comune, frazione, provincia o regione). Se nessuno
+       ci abita, non era una citta': era il nome del posto, e si lascia
+       lavorare il filtro del nome qui sotto. «Latina» resta una citta'
+       (i candidati ce l'hanno), quindi la protezione del 20/10 sui tre
+       «Via dei Corazzieri» a Roma non si tocca.
+       ============================================================ */
+    if (parole && parole.length) {
+      /* ATTENZIONE, QUI SI SBAGLIA FACILE (e ci sono cascato al primo
+         giro): «non e' la citta' di nessun candidato» NON basta per
+         buttare la parola. «Via dei Corazzieri Latina», coi tre
+         Corazzieri che stanno tutti a ROMA: «latina» non e' la citta' di
+         nessuno, ma e' una citta' chiesta per davvero, e buttarla
+         riportava il difetto del 20/10 — una via giusta nella citta'
+         sbagliata.
+         La differenza e' che «giulio» e «onesti» stanno nel NOME dei
+         candidati, «latina» non sta in nessun nome. Quindi si butta solo
+         la parola che si ritrova nel nome di qualcuno: quella non era
+         una citta', era il posto. */
+      var tolte = [];
+      var restano = parole.filter(function (w) {
+        var n = normalizza(w);
+        var ciAbita = candidati.some(function (c) {
+          return normalizza([c.citta, c.frazione, c.provincia, c.regione].join(' '))
+                   .split(' ').indexOf(n) >= 0;
+        });
+        if (ciAbita) return true;
+        /* e qui serve il perdono di una lettera, se no non si arriva
+           nemmeno a usarlo: «via onesta» per «Via Onesti» ha UNA SOLA
+           parola piena, quindi se la prendiamo per una citta' il filtro
+           del nome non gira nemmeno, e la scala delle citta' butta tutto.
+           Una parola che e' a una lettera dal nome di un candidato non e'
+           una citta': e' quel nome, sentito male. */
+        var nelNome = candidati.some(function (c) {
+          var suo = normalizza(c.nome || '');
+          if (suo.indexOf(n) >= 0) return true;
+          if (n.length < 5) return false;
+          return suo.split(' ').some(function (x) {
+            return x.length >= 5 && unaLettera(n, x);
+          });
+        });
+        if (nelNome) { tolte.push(w); return false; }
+        return true;      // non e' ne' citta' di qualcuno ne' nome: resta, e la scala decide
+      });
+      if (tolte.length) {
+        diario('SCELTA: «' + tolte.join(' ') + '» non e\' una citta\': e\' il nome del posto');
+        parole = restano;
+      }
+    }
+
+    /* ============================================================
        IL NOME DELLA VIA DEVE COMBACIARE, NON UNA PAROLA QUALSIASI
        Provato il 20/10 col suo indirizzo vero, chiedendolo a Photon:
          «Via dei Corazzieri 47 Latina» → Via dei MARRUCINI 47, a due
@@ -185,6 +267,35 @@ function Guida(opzioni) {
           var suo = normalizza(c.nome || '');
           return dellaVia.some(function (w) { return suo.indexOf(w) >= 0; });
         });
+        /* ---------- UNA LETTERA MANGIATA ---------- 8/11/2026
+           Il riconoscitore ha sentito «Nesti» al posto di «Onesti»: una
+           lettera, e il posto era a quindici metri. Se NIENTE combacia
+           alla lettera si riprova perdonando un errore solo (una lettera
+           in piu', in meno o cambiata) sulle parole lunghe — cinque
+           lettere almeno, se no «rosa» e «rose» diventano la stessa cosa.
+           Si perdona solo per TROVARE, non per scegliere: se con il
+           perdono resta piu' di un posto, si lascia perdere e si dice
+           «non l'ho trovato», perche' portare un cieco al posto sbagliato
+           e' peggio che non portarlo. */
+        if (!pertinenti.length) {
+          var lunghe = dellaVia.filter(function (w) { return w.length >= 5; });
+          var quasi = !lunghe.length ? [] : candidati.filter(function (c) {
+            var sue = normalizza(c.nome || '').split(' ');
+            return lunghe.some(function (w) {
+              return sue.some(function (x) { return x.length >= 5 && unaLettera(w, x); });
+            });
+          });
+          var nomi = {};
+          quasi.forEach(function (c) { nomi[normalizza(c.nome || '')] = 1; });
+          if (quasi.length && Object.keys(nomi).length === 1) {
+            diario('SCELTA: «' + lunghe.join(' ') + '» non c\'e\', ma «' +
+                   normalizza(quasi[0].nome || '') + '» e\' a una lettera: lo prendo');
+            pertinenti = quasi;
+          } else if (quasi.length) {
+            diario('SCELTA: a una lettera da «' + lunghe.join(' ') + '» ce ne sono ' +
+                   Object.keys(nomi).length + ': non indovino');
+          }
+        }
         if (!pertinenti.length) {
           diario('SCELTA: nessun candidato ha «' + dellaVia.join(' ') + '» nel nome');
           return null;
@@ -692,7 +803,7 @@ function Guida(opzioni) {
     vaiA: vaiA, passo: passo, lascia: lascia, dalComando: dalComando,
     scegli: scegli, cittaNelTesto: cittaNelTesto, cittaCombacia: cittaCombacia,
     leStrade: leStrade, elencoStrade: elencoStrade,
-    parolePiene: parolePiene,
+    parolePiene: parolePiene, unaLettera: unaLettera,
     /* esportata perche' il banco possa provarla: «poi puoi attraversa
        il ponte» non si vede finche' non si guarda la frase intera. */
     puoi: puoi,
