@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yourbea</title>
+<style>
+  :root { --sfondo: #0a0d17; --inchiostro: #eef2ff; --vivo: #7aa2ff; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--sfondo); color: var(--inchiostro);
+               font: 17px/1.45 -apple-system, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; padding: max(16px, env(safe-area-inset-top)) 16px
+         max(16px, env(safe-area-inset-bottom)); gap: 14px; }
+  h1 { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; opacity: .55;
+       margin: 0; font-weight: 600; }
+  /* LA PORTA: due bottoni grossi, e si puo' anche dire «utilità» o «turismo» */
+  .porta { display: flex; gap: 12px; }
+  .porta button { flex: 1; min-height: 120px; font-size: 22px; font-weight: 600;
+                  border-radius: 18px; border: 2px solid #26304d; background: #121832;
+                  color: var(--inchiostro); }
+  .porta button:active { background: #1b2447; }
+  /* QUELLO CHE DICE: serve a chi vede (Vince che prova), non a chi non vede */
+  #dice { flex: 1; overflow: auto; border-radius: 16px; background: #0e1226;
+          border: 1px solid #1d2545; padding: 14px; font-size: 18px; }
+  #dice p { margin: 0 0 10px; }
+  #dice p:first-child { color: var(--vivo); font-weight: 600; }
+  /* TOCCA E PARLA: grosso, in fondo, raggiungibile col pollice */
+  #parla { min-height: 92px; font-size: 21px; font-weight: 700; border-radius: 20px;
+           border: none; background: var(--vivo); color: #08101f; }
+  #parla[aria-pressed="true"] { background: #ffd479; }
+  .riga { display: flex; gap: 10px; }
+  .riga button { flex: 1; min-height: 54px; border-radius: 14px; border: 1px solid #26304d;
+                 background: #121832; color: var(--inchiostro); font-size: 16px; }
+  #stato { font-size: 14px; opacity: .6; min-height: 20px; }
+</style>
+</head>
+<body>
+  <h1>Yourbea</h1>
+  <div class="porta" id="porta">
+    <button id="b-utilita">Utilità</button>
+    <button id="b-turismo">Turismo</button>
+  </div>
+  <div id="dice" role="log" aria-live="polite" aria-atomic="false"></div>
+  <div id="stato"></div>
+  <button id="parla" aria-pressed="false">Tocca e parla</button>
+  <div class="riga">
+    <button id="b-dove">Dove sono</button>
+    <button id="b-intorno">Qui intorno</button>
+    <button id="b-fermati">Fermati</button>
+  </div>
+
+  <!-- i motori buoni, quelli con un banco dietro -->
+  <script src="../nuova/parti/turno.js"></script>
+  <script src="../nuova/parti/posizione.js"></script>
+  <script src="../nuova/parti/voce.js"></script>
+  <script src="../nuova/parti/guida.js"></script>
+  <script src="../nuova/parti/intorno.js"></script>
+  <script src="../nuova/parti/contributi.js"></script>
+  <script src="../nuova/parti/postiMiei.js"></script>
+  <script src="../nuova/parti/aggancio.js"></script>
+  <script src="../nuova/parti/distanza.js"></script>
+  <!-- il cuore, e la colla col telefono -->
+  <script src="app.js"></script>
+  <script src="avvio.js"></script>
+</body>
+</html>
