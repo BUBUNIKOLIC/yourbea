@@ -943,10 +943,23 @@
      secondi una frase che non e' un comando non e' una chiacchiera: e'
      la cosa che volevi segnare. */
   var alLaBoccaFino = 0;
+  var zittaFinoA = 0;
   window.YBalLaBocca = function () {
     turno.boccaVicina();
     alLaBoccaFino = Date.now() + 10000;
-    diario('ALLA BOCCA: dieci secondi in cui quello che dici lo segno');
+    /* ---------- IL GESTO LA FA TACERE ---------- 10/11/2026
+       «Quando metto il telefono alla bocca capisce che sto per fare una
+       segnalazione e smette di parlare» (Vince). Prima si fermava la
+       frase in corso ma la coda ripartiva subito, e si parlava sopra a
+       chi detta. Adesso per dieci secondi il turno e' TUO: lei tace,
+       tranne un pericolo immediato. */
+    voce.ferma('il telefono alla bocca');
+    turno.tuInizi();
+    zittaFinoA = Date.now() + 10000;
+    diario('ALLA BOCCA: taccio, e per dieci secondi quello che dici lo segno');
+    setTimeout(function () {
+      if (Date.now() >= zittaFinoA) { turno.tuFinisci(); diario('ALLA BOCCA: finita'); }
+    }, 10100);
   };
 
   /* ============================================================

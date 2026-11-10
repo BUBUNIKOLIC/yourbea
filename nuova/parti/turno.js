@@ -92,7 +92,11 @@ function Turno(o) {
   var NOME_DIETRO = new RegExp('(?:^|\\s)(?:' + NOMI + ')[.!?]?$', 'i');
   /* «stop» da solo per scelta non passa (5/11): si dice per tante cose */
   var NOME_FORTE = /^(?:yourbea|your bea|yourbe|urbea|iurbea|jurbea)\b/i;
-  var SILENZIO = /^(?:yourbea\s+)?(?:zitto|zitta|zitti|silenzio|basta|fermati)[.!]?$/i;
+  /* ---------- «FIRMATI» E' «FERMATI» ---------- 10/11/2026
+     Dal banco sul telefono: «Io e bea firmati». La parola che DEVE
+     funzionare sempre non puo' cadere per una lettera: si accettano le
+     storpiature che il riconoscitore scrive davvero. */
+  var SILENZIO = /^(?:(?:ok|ehi|io|e|ho|oh)\s+){0,2}(?:yourbea|urbea|urbe|bea|rube)?\s*(?:zitto|zitta|zitti|silenzio|basta|fermati|firmati|fermato|fermate|fermami|ferma|fermi)[.!]?$/i;
 
   /* ============================================================
      «QUI C'E' …» E' UNA SEGNALAZIONE, ANCHE SENZA IL NOME — 8/11/2026
