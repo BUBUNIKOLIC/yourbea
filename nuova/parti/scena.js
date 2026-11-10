@@ -33,6 +33,15 @@ function Scena(opzioni) {
   var ora = o.ora || function () { return Date.now(); };
   var PASSO = 0.75;                       // metri
   var VICINO = o.vicino || 60;            // oltre, non orienta più
+  /* ---------- «INTORNO» VUOL DIRE INTORNO ---------- 10/11/2026
+     San Gemini, 21:09:16: «Intorno a te, bar Centrale davanti a te, a 75
+     passi. Municipio...», e prima «Fontanella, a 65 passi». Vince: «deve
+     descrivere quello che è intorno, non quello che non c'è a 75 passi».
+     Un bar a cinquantasei metri non è intorno a te: è in fondo alla via,
+     e per chi non vede è rumore. **Dieci metri** (scelta di Vince).
+     Gli attraversamenti e il paesaggio restano a 60: un attraversamento
+     detto a dieci metri è detto troppo tardi. */
+  var VICINO_COSE = o.vicinoCose || 10;   // le cose intorno: bar, negozi, panchine
   var DI_NUOVO = o.diNuovo || 90000;      // la stessa scena non prima di così
 
   var ultima = '', ultimaQuando = 0;
@@ -248,7 +257,8 @@ function Scena(opzioni) {
 
   function servizi(qui, punti, direzione, buona, quanti) {
     var buoni = (punti || []).filter(function (p) {
-      return p.servizio && p.cosa !== 'attraversamento' && dist(qui.lat, qui.lon, p.lat, p.lon) < VICINO;
+      return p.servizio && p.cosa !== 'attraversamento' &&
+             dist(qui.lat, qui.lon, p.lat, p.lon) < VICINO_COSE;
     });
     buoni.sort(function (a, b) {
       return dist(qui.lat, qui.lon, a.lat, a.lon) - dist(qui.lat, qui.lon, b.lat, b.lon);
