@@ -239,6 +239,24 @@ function Turno(o) {
          vere («curve», «bea»), e «qui la strada fa due curve» detto da lei
          passava per un comando (revisione del 7/11) */
       if (eSuaVoce(t)) return { perLei: false, perche: 'eco: era la sua voce' };               // 3
+      /* ---------- MENTRE PARLA, SENTE SE STESSA ---------- 10/11/2026
+         Dal telefono di Vince, 22:39:23:
+
+             SENTITO: Se vuoi Urbe no        <- un pezzo della SUA frase
+             COMANDO: se vuoi urbe no
+             PARLA: Questa non l'ho capita.  <- risponde a se stessa
+             TU: stai parlando, io taccio    <- e si imbavaglia da sola
+
+         Senza la pulizia dell'eco il microfono prende la voce
+         dell'altoparlante, e i pezzi storpiati della sua frase («se vuoi
+         urbe no») non somigliano abbastanza all'originale per essere
+         riconosciuti come eco.
+         Regola: **mentre sta parlando lei**, si accetta solo quello che
+         comincia col nome per intero o che e' un «fermati». Tutto il
+         resto, in quel mezzo secondo, e' quasi sempre la sua voce. */
+      if (stato === 'parlaLei' && !NOME_FORTE.test(t)) {
+        return { perLei: false, perche: 'mentre parla lei: quasi sempre e\' la sua voce' };
+      }
       if (colNome) return { perLei: true, perche: 'col nome' };                               // 5
       if (NOME_IN_MEZZO.test(t)) return { perLei: true, perche: 'il nome, in mezzo alla frase' };
       if (SEGNALAZIONE.test(t)) return { perLei: true, perche: 'e\' una segnalazione: «qui c\'e\'…»' };
