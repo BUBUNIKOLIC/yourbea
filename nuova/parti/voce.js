@@ -182,6 +182,7 @@ function MotoreVoce(opzioni) {
     // niente più da dire: il microfono torna ad ascoltare, ma non subito —
     // l'ultima sillaba sta ancora uscendo dall'altoparlante
     if (vigile) vigile.leiFinisce();
+    if (typeof window !== 'undefined' && window.urbeaParlaLei) { try { window.urbeaParlaLei(false); } catch (e) {} }
     fra(function () { if (!parlando) microfono.apri(); }, 900);
   }
 
@@ -351,6 +352,9 @@ function MotoreVoce(opzioni) {
        browser, Android vecchi — si chiude come prima. */
     if (vigile) {
       vigile.leiInizia(f.testo);
+      /* e il guscio accorcia i pezzi dell'orecchio: mentre parla,
+         «fermati» deve arrivare in due secondi, non in cinque (9/11) */
+      if (typeof window !== 'undefined' && window.urbeaParlaLei) { try { window.urbeaParlaLei(true); } catch (e) {} }
       if (vigile.microfono() === 'chiuso') microfono.chiudi();
     } else if (!nonSenteSeStessa()) microfono.chiudi();
     diario('PARLA (' + f.livello + '): ' + String(f.testo).slice(0, 60));
@@ -548,6 +552,7 @@ function MotoreVoce(opzioni) {
     }
     zittisci(); parlando = false; livelloInCorso = 0; coda = [];
     if (vigile) vigile.leiFinisce();
+    if (typeof window !== 'undefined' && window.urbeaParlaLei) { try { window.urbeaParlaLei(false); } catch (e) {} }
     microfono.apri();
   }
 

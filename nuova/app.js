@@ -748,6 +748,14 @@
   /* il passometro del telefono: fermo, cammina, corre, bici, mezzo. Vale
      piu' della velocita' del GPS, e da sottoterra arriva lo stesso. */
   window.urbeaAttivita = function (come, sicuro) { posizione.comeMiMuovo(come, sicuro); };
+  /* ---------- LA BUSSOLA ---------- 9/11/2026
+     Da che parte hai la faccia. Il guscio la manda ogni volta che gira
+     di qualche grado; `prec` e' la precisione dichiarata da iOS
+     (negativa = non lo sa). Senza questa, da fermo «davanti a te» era
+     un sorteggio: 155 gradi di ballo a San Gemini. */
+  window.urbeaBussola = function (gradi, prec) {
+    posizione.laBussola(gradi, prec);
+  };
   /* L'AUDIO E' TORNATO DOPO UNA TELEFONATA. «Ieri mi hanno chiamato e dopo
      non si e' riattaccata» (Vince, 24/10): iOS mette in pausa l'audio, la
      frase resta ferma a meta' e la coda non riparte piu'. */

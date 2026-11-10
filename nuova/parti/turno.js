@@ -81,7 +81,14 @@ function Turno(o) {
     return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
   }
-  var NOME_RE = new RegExp('^(?:(?:ok|okay|ehi|hey|ei|senti|scusa|ciao|di)\\s+)?(?:' + NOMI + ')\\b', 'i');
+  /* ---------- «IO BEA FERMATI» ---------- 10/11/2026
+     Primo giro del banco sul telefono: l'orecchio ha sentito benissimo
+     («Io bea portami alla farmacia piu' vicina», «Io Bea fermati») e
+     l'app non ha risposto, perche' davanti al nome il riconoscitore ci
+     mette una parolina — «io», «e», «ho», «oh» — e la lista delle
+     parole ammesse davanti non le aveva. Una frase che comincia con una
+     di queste e poi col nome e' per lei. */
+  var NOME_RE = new RegExp('^(?:(?:ok|okay|ehi|hey|ei|senti|scusa|ciao|di|io|e|ho|oh|allora|ma|va)\\s+){0,2}(?:' + NOMI + ')\\b', 'i');
   var NOME_DIETRO = new RegExp('(?:^|\\s)(?:' + NOMI + ')[.!?]?$', 'i');
   /* «stop» da solo per scelta non passa (5/11): si dice per tante cose */
   var NOME_FORTE = /^(?:yourbea|your bea|yourbe|urbea|iurbea|jurbea)\b/i;

@@ -187,6 +187,10 @@ function Posizione(opzioni) {
     velocitaAlta: 0, velocitaAltaQuando: 0,
     /* il corso che dice il telefono, se lo dice */
     corsoSuo: null, corsoSuoPrec: null, corsoSuoQuando: 0,
+    /* la bussola: da che parte hai la FACCIA. Il corso dice da che parte
+       ti MUOVI, e da fermo non vuol dire niente (9/11, San Gemini). */
+    bussola: null, bussolaPrec: null, bussolaQuando: 0, direzioneDa: null,
+    corsoPrima: null, corsoPrimaQuando: 0,
     comeVa: 'spenta'                        // spenta | cerco | attiva | negata | assente
   };
   var ascoltatori = [];
@@ -236,6 +240,7 @@ function Posizione(opzioni) {
       attivita: attivitaFresca() ? stato.attivita : null,
       viaAgganciata: stato.viaAgganciata,
       direzione: stato.direzione, direzioneBuona: direzioneBuona(),
+      direzioneDa: stato.direzioneDa,
       fermo: stato.fermo, fermoDa: stato.fermo ? ora() - stato.fermoDa : 0,
       comeVa: stato.comeVa
     };
@@ -464,20 +469,67 @@ function Posizione(opzioni) {
       /* IL CORSO DEL TELEFONO VIENE PRIMA DEL NOSTRO, se c'e' ed e'
          fresco: lui lo fonde coi sensori, noi lo deduciamo da due punti.
          Vale mezzo minuto come il nostro, e solo mentre ci si muove. */
-      var suo = (stato.corsoSuo !== null && (ora() - stato.corsoSuoQuando) < 3000);
+      /* ============================================================
+         DA FERMO IL CORSO NON VUOL DIRE NIENTE — 9/11/2026, San Gemini
+         Il commento qui sotto nel file diceva gia' «il corso si crede
+         solo se ci stiamo muovendo: fermi non vuol dire niente». Il
+         codice NON lo faceva: bastava che fosse fresco. E il quaderno
+         del 9/11, Vince fermo davanti a una chiesa:
+
+             13:36:32  1 km/h  verso 324 gradi
+             13:36:42  0 km/h  verso 249 gradi
+             13:37:00  0 km/h  verso 249 gradi
+             13:37:06  0 km/h  verso 169 gradi
+             13:37:10  «Davanti a te hai Chiesa di San Gemine»
+
+         155 gradi di ballo stando fermo, e un «davanti» sorteggiato:
+         quella che aveva davvero davanti era un'altra chiesa.
+         Adesso: il corso vale solo se ti sei spostato per davvero; da
+         fermo la direzione la da' la BUSSOLA, che e' l'unica che sa da
+         che parte guardi, e solo se il telefono dichiara di saperlo.
+         Se non c'e' ne' l'uno ne' l'altra, la direzione scade e il lato
+         non si dice (→ direzioneBuona).
+         ============================================================ */
+      /* COME SI CAPISCE SE IL CORSO VALE, senza fidarsi del GPS.
+         «Passo piu' di cinque metri» non basta: fermo davanti a una
+         chiesa il GPS salta da solo di cinque metri, ed e' esattamente
+         il caso di San Gemini. Due misure invece reggono:
+         - i PASSI: se non ne fai, sei fermo (regola 5 di questo file);
+         - il corso che E' D'ACCORDO CON SE STESSO: a San Gemini ha fatto
+           324 -> 249 -> 169, settantacinque e ottanta gradi di scarto.
+           Un corso che balla cosi' non e' una direzione, e' rumore. */
+      var fermoPerIPassi = stato.passiQuando > 0 &&
+                           (ora() - stato.passiQuando) < ATTIVITA_VALE &&
+                           (ora() - stato.passiCambiati) > 3000;
+      var siMuove = !fermoPerIPassi &&
+                    (passo > PASSO_BUONO ||
+                     (typeof stato.velocita === 'number' && stato.velocita > 0.5));
+      var suo = (stato.corsoSuo !== null && (ora() - stato.corsoSuoQuando) < 3000 &&
+                 siMuove && corsoCoerente());
+      if (stato.corsoSuo !== null && siMuove && !corsoCoerente()) {
+        diario('CORSO: balla di ' + Math.round(quantoGira(stato.corsoSuo, stato.corsoPrima)) +
+               ' gradi, non lo uso');
+      }
       if (suo) {
         stato.direzione = stato.corsoSuo;
         stato.direzioneQuando = ora();
+        stato.direzioneDa = 'corso';
         segnaLaDirezione(stato.direzione);
+      } else if (!siMuove && bussolaFresca()) {
+        stato.direzione = stato.bussola;
+        stato.direzioneQuando = ora();
+        stato.direzioneDa = 'bussola';
       } else if (daDove) {
         stato.direzione = verso(daDove.lat, daDove.lon, lat, lon);
         stato.direzioneQuando = ora();
+        stato.direzioneDa = 'tratto';
         segnaLaDirezione(stato.direzione);
       } else if (passo > PASSO_BUONO) {
         /* appena partito, il filo e' corto: meglio una direzione
            approssimata che nessuna. */
         stato.direzione = verso(prima.lat, prima.lon, lat, lon);
         stato.direzioneQuando = ora();
+        stato.direzioneDa = 'due punti';
         segnaLaDirezione(stato.direzione);
       }
       /* REGOLA 5: FERMO LO DICONO I PASSI, NON IL GPS.
@@ -683,12 +735,56 @@ function Posizione(opzioni) {
          e' la regola 4 di questo file, e non cambia).
      Quando c'e', e' meglio del nostro dedotto da due punti — che mentre
      giri l'angolo sta in mezzo fra la vecchia strada e la nuova. */
+  /* ---------- LA BUSSOLA ---------- 9/11/2026
+     «Davanti a un monumento, a destra o a sinistra» (Vince): per dirlo
+     servono due cose, dove sei e DA CHE PARTE GUARDI. La seconda la sa
+     solo la bussola, e il guscio non la mandava affatto.
+     Si crede solo se il telefono dichiara la sua precisione e questa e'
+     decente: `headingAccuracy` negativa vuol dire «non lo so», e sopra i
+     venticinque gradi non serve a niente — meglio tacere il lato. */
+  var BUSSOLA_PREC_BUONA = o.bussolaPrecBuona || 25;
+  var BUSSOLA_VALE = o.bussolaVale || 5000;
+  /* corsoCoerente(): il corso di adesso e quello di prima devono andare
+     d'accordo entro trenta gradi. Se non c'e' un «prima» recente, si
+     crede a quello che c'e'. */
+  var CORSO_BALLA = o.corsoBalla || 30;
+  function corsoCoerente() {
+    if (stato.corsoPrima === null) return true;
+    if ((ora() - stato.corsoPrimaQuando) > 12000) return true;
+    return quantoGira(stato.corsoSuo, stato.corsoPrima) <= CORSO_BALLA;
+  }
+
+  function bussolaFresca() {
+    return stato.bussola !== null && (ora() - stato.bussolaQuando) < BUSSOLA_VALE;
+  }
+  function laBussola(gradi, prec) {
+    var g = Number(gradi), p = Number(prec);
+    if (!isFinite(g) || g < 0 || !isFinite(p) || p < 0 || p > BUSSOLA_PREC_BUONA) {
+      stato.bussola = null;
+      return;
+    }
+    stato.bussola = g; stato.bussolaPrec = p; stato.bussolaQuando = ora();
+    /* e se sei fermo, la direzione cambia ADESSO: da fermo non arrivano
+       posizioni nuove (iOS ne manda una solo ogni cinque metri), quindi
+       se aspettassimo la prossima posizione la faccia girata non la
+       saprebbe mai nessuno. */
+    var fermo = !(typeof stato.velocita === 'number' && stato.velocita > 0.5);
+    if (fermo) {
+      stato.direzione = g;
+      stato.direzioneQuando = ora();
+      stato.direzioneDa = 'bussola';
+    }
+  }
+
   var CORSO_PREC_BUONA = o.corsoPrecBuona || 25;
   function corsoDalTelefono(a) {
     var c = Number(a.corso), p = Number(a.corsoPrec);
     if (!isFinite(c) || c < 0 || !isFinite(p) || p < 0 || p > CORSO_PREC_BUONA) {
       stato.corsoSuo = null;
       return;
+    }
+    if (stato.corsoSuo !== null) {
+      stato.corsoPrima = stato.corsoSuo; stato.corsoPrimaQuando = stato.corsoSuoQuando;
     }
     stato.corsoSuo = c; stato.corsoSuoPrec = p; stato.corsoSuoQuando = ora();
   }
@@ -710,7 +806,7 @@ function Posizione(opzioni) {
 
   return {
     quantiPassi: quantiPassi,
-    comeMiMuovo: comeMiMuovo,
+    comeMiMuovo: comeMiMuovo, laBussola: laBussola,
     comincia: comincia, dalGuscio: dalGuscio, leggi: leggi,
     quando: function (f) { ascoltatori.push(f); },
     vigila: vigila,
