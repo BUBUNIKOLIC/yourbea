@@ -3466,9 +3466,21 @@
        una domanda a ogni portone sarebbe peggio del silenzio. */
     if (modo === 'servizi' && d.tipo === 'aCosaServe' && d.luogo &&
         (d.luogo.d || d.luogo.a || d.luogo.i || d.luogo.cf) && !staAspettando()) {
-      inAttesaDi = { da: Date.now(), cosa: 'te-ne-parlo' };
-      voce.parla('Vuoi che te ne parli?', { livello: voce.GUIDA, ancheSeUguale: true });
-      diario('OFFERTO a voce: vuoi che te ne parli? \u2014 ' + (d.luogo.n || ''));
+      /* ---------- SE TI FERMI, TE LO RACCONTA ---------- 11/11/2026
+         «Se mi fermo lo racconta, o glielo chiedo» (Vince). Fermarsi
+         davanti a una cosa E' la domanda: nessuno si ferma davanti a una
+         chiesa per sentirsi chiedere se gli interessa. Camminando invece
+         si chiede, perche' interrompere chi cammina con una storia lunga
+         e' un'altra cosa. */
+      var fermoAdesso = !!(posizione.leggi() || {}).fermo;
+      if (fermoAdesso) {
+        diario('FERMO DAVANTI: lo racconto \u2014 ' + (d.luogo.n || ''));
+        dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo }));
+      } else {
+        inAttesaDi = { da: Date.now(), cosa: 'te-ne-parlo' };
+        voce.parla('Vuoi che te ne parli?', { livello: voce.GUIDA, ancheSeUguale: true });
+        diario('OFFERTO a voce: vuoi che te ne parli? \u2014 ' + (d.luogo.n || ''));
+      }
     }
     /* DOPO IL RACCONTO, DOVE SEI. «Quando ha finito il racconto ti dice:
        ora ti trovi qui» (Vince, 16/10). Dopo mezzo minuto di storia uno ha
