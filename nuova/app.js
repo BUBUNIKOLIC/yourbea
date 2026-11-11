@@ -2072,7 +2072,16 @@
 
     function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
-      if (d < 30 || d > 400) return;
+      /* ---------- «A 475 PASSI» NON E' DAVANTI A TE ---------- 11/11/2026
+         San Gemini, 13:50:56: «Davanti a te hai Chiesa di San Gemine, a
+         475 passi» — trecentocinquantasei metri. Per chi non vede non
+         e' «davanti»: e' in fondo al paese.
+         In UTILITA' si dice solo quello che puoi raggiungere in un
+         minuto di cammino (sessanta metri, come il resto della scena);
+         in TURISMO resta com'era, perche' li' «davanti a te c'e' il
+         Duomo a trecento metri» e' una notizia buona. */
+      var finDove = perUtilita ? 60 : 400;
+      if (d < 30 || d > finDove) return;
       var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
       if (Math.abs(rel) > 40) return;
       var peso = d / Math.max(1, quanto);
