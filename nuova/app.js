@@ -1935,6 +1935,49 @@
   var ultimoGiro = '';        // di che cosa ho parlato l'ultima volta
   var ultimoCivico = 0;       // «qualche numero civico», non a raffica
   function aPiediOra() { return posizione.leggi().aPiedi !== false; }
+
+  /* ============================================================
+     IL NUMERO CIVICO CHE HAI ADDOSSO
+     Era scritto dentro il giro di parole; adesso sta qui perche' lo
+     usano in due (il giro, e l'annuncio da solo qui sotto).
+     Il numero puo' venire da due posti:
+     - la scritta dell'indirizzo che arriva dalla rete, se finisce con un
+       numero E se la via di quella scritta e' la via dove sei: la
+       scritta resta in memoria finche' non ne arriva un'altra, e
+       intanto l'aggancio locale puo' averti portato in una via nuova.
+       Dire quel numero vorrebbe dire mandarti al civico di un'altra
+       strada;
+     - i civici della mappa, che sono i nostri: il piu' vicino entro
+       venti metri e della via dove sei. Se il civico non porta scritta
+       la via, si tiene solo se ce l'hai addosso (dodici metri).
+     ============================================================ */
+  function ilCivicoQui(qui) {
+    if (!qui) return null;
+    var trovato = ultimaStrada ? /(?:^|[\s,])(\d{1,4}[a-zA-Z]?)\s*$/.exec(ultimaStrada.trim()) : null;
+    var numero = trovato ? trovato[1] : '';
+    var viaDellaScritta = ultimaStrada
+      ? (ultimaStrada.replace(/(?:^|[\s,])\d{1,4}[a-zA-Z]?\s*$/, '')).trim() : '';
+    if (numero && ultimaVia && viaDellaScritta && !uguali(ultimaVia, viaDellaScritta)) {
+      numero = '';
+    }
+    if (!numero) {
+      var vicinoCiv = null, dCiv = 20;
+      (SERVIZI.civici || []).forEach(function (c) {
+        if (!c.n) return;
+        var dd = posizione.dist(qui.lat, qui.lon, c.lat, c.lon);
+        if (dd >= dCiv) return;
+        if (c.via) { if (!ultimaVia || !uguali(ultimaVia, c.via)) return; }
+        else if (dd > 12) return;
+        dCiv = dd; vicinoCiv = c;
+      });
+      if (vicinoCiv) {
+        numero = vicinoCiv.n;
+        viaDellaScritta = vicinoCiv.via || viaDellaScritta;
+      }
+    }
+    if (!numero) return null;
+    return { n: numero, via: ultimaVia || viaDellaScritta || '' };
+  }
   /* ============================================================
      IL GIRO DI PAROLE — ogni minuto e mezzo, e mai la stessa cosa
      «Dice sempre le stesse cose: stai percorrendo questa strada, incrocio,
@@ -2033,42 +2076,14 @@
        ============================================================ */
     if (perUtilita && aPiediOra() && ultimaStrada &&
         Date.now() - ultimoCivico > 40000) {
-      var trovato = /(?:^|[\s,])(\d{1,4}[a-zA-Z]?)\s*$/.exec(ultimaStrada.trim());
-      var numero = trovato ? trovato[1] : '';
-      /* E IL CIVICO DEVE ESSERE DI QUESTA VIA. La scritta intera arriva
-         dalla rete e resta finche' non ne arriva un'altra: se intanto
-         l'aggancio locale ti ha portato in una via nuova, dire il numero
-         di quella scritta vuol dire mandare qualcuno al civico di
-         un'altra strada. Se le due vie non combaciano, si tace. */
-      var viaDellaScritta = (ultimaStrada.replace(/(?:^|[\s,])\d{1,4}[a-zA-Z]?\s*$/, '')).trim();
-      if (numero && ultimaVia && viaDellaScritta && !uguali(ultimaVia, viaDellaScritta)) {
-        numero = '';
-      }
-      /* la scritta non ha dato un numero: lo cerco nei civici della mappa,
-         il piu' vicino entro venti metri e della via dove sono. Se il
-         civico non porta scritta la via si tiene solo se e' addosso. */
-      if (!numero) {
-        var vicinoCiv = null, dCiv = 20;
-        (SERVIZI.civici || []).forEach(function (c) {
-          if (!c.n) return;
-          var dd = posizione.dist(qui.lat, qui.lon, c.lat, c.lon);
-          if (dd >= dCiv) return;
-          if (c.via) { if (!ultimaVia || !uguali(ultimaVia, c.via)) return; }
-          else if (dd > 12) return;
-          dCiv = dd; vicinoCiv = c;
-        });
-        if (vicinoCiv) {
-          numero = vicinoCiv.n;
-          viaDellaScritta = vicinoCiv.via || viaDellaScritta;
-        }
-      }
-      if (numero) {
-        var viaDelCivico = ultimaVia || viaDellaScritta;
+      var civ = ilCivicoQui(qui);
+      if (civ) {
         fatte.push({ che: 'civico',
-                     testo: viaDelCivico ? ('Siamo a ' + viaDelCivico + ' ' + numero + '.')
-                                         : ('Siamo al numero ' + numero + '.') });
+                     testo: civ.via ? ('Siamo a ' + civ.via + ' ' + civ.n + '.')
+                                    : ('Siamo al numero ' + civ.n + '.') });
       }
     }
+
 
     function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
@@ -2080,8 +2095,14 @@
          minuto di cammino (sessanta metri, come il resto della scena);
          in TURISMO resta com'era, perche' li' «davanti a te c'e' il
          Duomo a trecento metri» e' una notizia buona. */
+      /* ---------- E ANCHE A VENTICINQUE METRI ---------- 11/11/2026
+         Vince: «davanti a te anche a 25 metri». Sotto i trenta metri non
+         diceva niente — era il resto della scena a doverlo coprire, ma la
+         scena si fermava a dieci (le cose intorno, chieste stamattina).
+         Fra dieci e trenta metri non parlava nessuno: proprio la distanza
+         di un portone sul marciapiede di fronte. */
       var finDove = perUtilita ? 60 : 400;
-      if (d < 30 || d > finDove) return;
+      if (d < 25 || d > finDove) return;
       var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
       if (Math.abs(rel) > 40) return;
       var peso = d / Math.max(1, quanto);
@@ -2129,6 +2150,52 @@
   }
 
   setInterval(stradaERiepilogo, 20000);
+
+  /* ============================================================
+     QUALCHE NUMERO CIVICO IN PIU' — 11/11/2026
+     Vince, tornato da San Gemini: «e forse serve qualche numero civico
+     in piu'». Contato sul quaderno di oggi, e il conto spiega tutto:
+       - letture della posizione: 114
+       - letture con un civico DICIBILE addosso (entro venti metri e
+         della via dove stava): 41, e 28 numeri diversi
+       - numeri che ha sentito: QUATTRO, e due diversi.
+     Il dato c'era. Lo fermava il giro di parole: il giro parla una
+     volta ogni novanta secondi, dice UNA cosa sola fra cinque, e
+     soprattutto non parte affatto se la direzione non e' buona
+     (`!s.direzioneBuona` → return). In un'ora ha girato dieci volte, e
+     il civico ha vinto il turno due volte.
+     Ma un numero civico non ha bisogno di sapere da che parte guardi:
+     e' sotto il portone, non «davanti a te». Quindi esce da solo, senza
+     aspettare il turno e senza chiedere la direzione.
+     E NON TORNA LA RAFFICA DEL 18/10 («numeri civici mai»: un numero
+     diverso ogni venti secondi), perche':
+       - SESSANTA secondi fra uno e l'altro, contati sullo stesso orologio
+         del giro, cosi' i due non si sommano. Uno al minuto di cammino:
+         sul cammino di oggi fanno quattro numeri invece di uno nei sei
+         minuti in cui si e' mosso davvero. La raffica era un numero ogni
+         VENTI secondi, e non e' questa;
+       - lo stesso numero non si ridice;
+       - mentre «portami a» e' acceso tace, che li' c'e' gia' il conto
+         dei civici degli ultimi cento metri.
+     ============================================================ */
+  var civicoDettoDaSolo = '';
+  setInterval(function () {
+    if (!acceso || modo !== 'servizi') return;
+    if (guida.meta()) return;
+    var s = posizione.leggi();
+    if (!s.pronto || s.fermo || !aPiediOra()) return;
+    if (Date.now() - ultimoCivico < 60000) return;
+    if (voce.staParlando() || voce.inCoda().length || staAspettando()) return;
+    var civ = ilCivicoQui({ lat: s.lat, lon: s.lon });
+    if (!civ) return;
+    if (String(civ.n) === civicoDettoDaSolo) return;
+    civicoDettoDaSolo = String(civ.n);
+    ultimoCivico = Date.now();
+    diario('CIVICO da solo: ' + civ.via + ' ' + civ.n);
+    dillo({ tipo: 'strada', livello: 'cenno',
+            testo: civ.via ? ('Siamo a ' + civ.via + ' ' + civ.n + '.')
+                           : ('Siamo al numero ' + civ.n + '.') });
+  }, 20000);
 
   /* IL SEGNO DI VITA. Chi non vede non può dare un'occhiata allo schermo
      per sapere se l'app sta ancora lavorando: se tace per minuti, non sa

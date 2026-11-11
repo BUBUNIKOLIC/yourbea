@@ -46,7 +46,13 @@ function Pronuncia(opzioni) {
     'cupole': 'cùpole',
     'portico': 'pòrtico',
     'portici': 'pòrtici',
-    'nuvola': 'nùvola'
+    'nuvola': 'nùvola',
+    /* ---------- I NOMI DI POSTO ---------- 11/11/2026
+       Vince, che ci abita: «San Gemini, la pronuncia è con accento sulla
+       e». La voce diceva «Gemìni». Vale anche per «San Gemine», che è
+       come si chiama la chiesa nei dati della mappa. */
+    'gemini': 'gèmini',
+    'gemine': 'gèmine'
     /* NON si mettono qui: facciata, altare, navata, campanile, chiostro,
        statua, edificio. La voce le legge bene, e ogni accento scritto in
        più è un modo di peggiorare una parola che andava. Era la regola

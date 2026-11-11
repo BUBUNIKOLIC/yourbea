@@ -64,6 +64,33 @@ function Aggancio(opzioni) {
   var FISSO_PER = o.fissoPer || 8000;             // da quanto deve essere cosi'
   var FISSO_ENTRO = o.fissoEntro || 7;            // e di quanto puo' variare
   var TIENE = o.tiene || 25000;                   // la via di prima vale mezzo minuto
+  /* ---------- NON PUOI ESSERE A VENTIDUE METRI DALLA TUA VIA ---------- 11/11/2026
+     Vince, San Gemini: «oggi leggermente in ritardo quando ho girato su
+     via Guglielmo Marconi». Il quaderno dice quanto, e perche'.
+     Ha girato alle 13:58:27 (il corso passa da 197 a 103 gradi) e ha
+     sentito «sei entrato in Via Guglielmo Marconi» alle 13:58:56:
+     VENTINOVE SECONDI. In mezzo, l'aggancio l'ha trascinato lungo via
+     Roma allontanandosi a ogni lettura: 6, 8, 10, 12, 15, 16, 17, 18,
+     20, 21, 22 metri.
+     Misurato sui dati OSM nel punto delle 13:58:42:
+       Via Guglielmo Marconi   1,2 m   verso 118
+       Via Roma               22,8 m   verso  22
+     Un metro contro ventitre, e teneva via Roma. Lo faceva la regola 7:
+     Marconi risultava «di traverso» perche' la direzione non e' il corso
+     del telefono (a 2 km/h lo dichiara inaffidabile) ma quella dedotta
+     sugli ultimi DIECI METRI di cammino — che all'angolo stanno metà
+     sulla vecchia strada e metà sulla nuova. Venti secondi a 2 km/h.
+     La direzione, in una svolta, arriva sempre tardi: non ci si puo'
+     appoggiare. La distanza no. E una cosa e' certa: la tua strada ce
+     l'hai SOTTO I PIEDI. A Latina, dov'e' nata la regola 7, la via era a
+     un metro mentre la trasversale passava a zero; qui era a ventidue.
+     Quindi la regola 7 tiene la via di prima solo se quella via e'
+     ancora sotto i piedi — dodici metri, la mediana del nostro errore.
+     Oltre, vince la piu' vicina, direzione o no.
+     NON vale per la regola 6 (le parallele): la' la tua via e' lontana
+     per definizione, ed e' la geometria a dire che senza girare non ci
+     arrivi. Vedi il commento sulla regola 6. */
+  var SOTTO_I_PIEDI = o.sottoIPiedi || 12;
   var ora = o.ora || function () { return Date.now(); };
   var dist = o.dist || function (a, b, c, d) {
     var R = 6371000, P = Math.PI / 180;
@@ -231,6 +258,12 @@ function Aggancio(opzioni) {
         typeof s.direzione === 'number' && s.direzioneBuona) {
       if (parallele(scelto.verso, versoDiPrima)) {
         var giratoDaPoco = giratoQuando && (ora() - giratoQuando) < TIENE;
+        /* qui NON si guarda se la via e' sotto i piedi, e il perche' e'
+           tutto il senso della regola 6: quando il GPS scivola su una
+           parallela, la tua via e' per forza LONTANA — quindici o venti
+           metri, la larghezza di un isolato. Chiedere che sia vicina
+           spegnerebbe la regola proprio quando serve. Per le parallele
+           basta la geometria: senza girare non ci arrivi. */
         if (!giratoDaPoco && suDiPrima && suDiPrima.m <= QUANTO_LONTANO) {
           scelto = suDiPrima;
         }
@@ -269,7 +302,7 @@ function Aggancio(opzioni) {
       var diTraverso = quantoGira(s.direzione, migliore.verso);
       diTraverso = Math.min(diTraverso, 180 - diTraverso);
       /* oltre 50 gradi dalla direzione in cui stai andando: la tagli */
-      if (diTraverso > 50 && suDiPrima && suDiPrima.m <= QUANTO_LONTANO) {
+      if (diTraverso > 50 && suDiPrima && suDiPrima.m <= SOTTO_I_PIEDI) {
         incrocia = migliore.nome;
         scelto = suDiPrima;
       }
