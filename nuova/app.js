@@ -2085,6 +2085,13 @@
     }
 
 
+    /* quanti monumenti ci sono qui intorno: sopra dieci il centro e'
+       «fitto» e il raggio si stringe. Lo stesso conto di racconto.js. */
+    var volteQui = racconto.volteSeFitto(vicini().filter(function (x) {
+      return x.p && x.p.n && racconto.daRaccontare(x.p, modo);
+    }).length);
+    var laSuaScheda = null;
+
     function guarda(lat, lon, nome, quanto) {
       var d = posizione.dist(qui.lat, qui.lon, lat, lon);
       /* ---------- «A 475 PASSI» NON E' DAVANTI A TE ---------- 11/11/2026
@@ -2101,7 +2108,23 @@
          scena si fermava a dieci (le cose intorno, chieste stamattina).
          Fra dieci e trenta metri non parlava nessuno: proprio la distanza
          di un portone sul marciapiede di fronte. */
-      var finDove = perUtilita ? 60 : 400;
+      /* ---------- IN TURISMO IL RAGGIO LO DECIDE IL MONUMENTO ----------
+         12/11/2026. Vince: «quattrocento metri in turismo dipende» —
+         «se è il colosseo» — «il pantheon si» — «ma per arrivare a
+         questi monumenti la città è piena di monumenti».
+         Il 400 era uguale per tutti: una cappella a trecentocinquanta
+         metri valeva come il Colosseo. La regola giusta era gia' dentro
+         racconto.js e la usa tutto il resto del Turismo — OTTO VOLTE la
+         grandezza, TRE dove i monumenti sono attaccati uno all'altro,
+         che e' la risposta alla sua seconda frase: in un centro pieno
+         si parla di quello che hai addosso.
+         Qui si chiama la stessa funzione, non se ne scrive un'altra.
+         Il Colosseo (48 m di altezza nei dati) arriva a 500; una
+         cappella a 96; in centro fitto 216 e 36. */
+      var finDove;
+      if (perUtilita) finDove = 60;
+      else if (laSuaScheda) finDove = racconto.raggio(laSuaScheda, modo, s.aPiedi, volteQui);
+      else finDove = 400;
       if (d < 25 || d > finDove) return;
       var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
       if (Math.abs(rel) > 40) return;
@@ -2112,7 +2135,9 @@
     vicini().forEach(function (x) {
       if (!x.p.n || !racconto.daRaccontare(x.p, modo)) return;
       var quanto = aChiServe.quantoConta(x.p, modo);
+      laSuaScheda = x.p;
       guarda(x.p.lat, x.p.lon, racconto.conArticolo(x.p), quanto);
+      laSuaScheda = null;
     });
     (SERVIZI.punti || []).forEach(function (p) {
       if (!p.nome || !p.servizio) return;

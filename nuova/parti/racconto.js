@@ -1106,6 +1106,19 @@ function Racconto(opzioni) {
        app.js: adesso c'e' prove/chiamate.js. */
     daRaccontare: daRaccontare,
     finDove: finDove, rango: rango,
+    /* IL RAGGIO DI UN MONUMENTO, chiesto anche da app.js — 12/11/2026
+       Vince: «quattrocento metri in turismo dipende» — «se è il
+       colosseo» — «il pantheon si» — «ma per arrivare a questi
+       monumenti la città è piena di monumenti».
+       Qui dentro la regola c'era gia': otto volte la grandezza, tre
+       volte dove i monumenti sono attaccati. Il «davanti a te hai…»
+       del giro di parole invece usava un 400 fisso per tutti, e cosi'
+       una cappella a trecentocinquanta metri valeva come il Colosseo.
+       Esportare la stessa funzione e' l'unico modo perche' non ci siano
+       due numeri che si scollano al primo ritocco. */
+    raggio: raggio,
+    volteSeFitto: function (quanti) { return quanti > FITTO ? STRETTO : LARGO; },
+    quantoEGrande: quantoEGrande,
     fermoDaQuanto: fermoDaQuanto,
     inCorso: function () { return inCorso; },
     gradinoDi: function (p) { return gradino[p.n] || 0; },
