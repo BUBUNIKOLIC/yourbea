@@ -2121,10 +2121,24 @@
          Qui si chiama la stessa funzione, non se ne scrive un'altra.
          Il Colosseo (48 m di altezza nei dati) arriva a 500; una
          cappella a 96; in centro fitto 216 e 36. */
+      /* ---------- IN CENTRO STORICO, CINQUE O DIECI METRI ----------
+         12/11/2026. Vince: «nei centri storici tutto va ridotto
+         nell'arco di 5/10 metri». E ha ragione per una ragione che si
+         vede dai numeri: entro cinquecento metri da piazza Venezia ci
+         sono VENTISEI monumenti da raccontare, diciassette attorno al
+         Pantheon — e zero alla Laurentina. Dove sono venticinque,
+         nominare quello a duecento metri e' rumore.
+         «Fitto» non e' un giudizio: e' il conto dei candidati di questo
+         giro, sopra dieci. Li' il raggio diventa il BORDO della cosa
+         piu' dieci metri: una statua 12, una fontana 13, una chiesa 25.
+         E quello che in centro non si nomina piu' non si perde: i
+         monumenti grandi tornano come RIFERIMENTO, con «vuoi che ti ci
+         porto?» (vedi ilRiferimento, qui sotto). */
       var finDove;
       if (perUtilita) finDove = 60;
-      else if (laSuaScheda) finDove = racconto.raggio(laSuaScheda, modo, s.aPiedi, volteQui);
-      else finDove = 400;
+      else if (!laSuaScheda) finDove = 400;
+      else if (volteQui < 8) finDove = racconto.finoAlBordo(laSuaScheda);
+      else finDove = racconto.raggio(laSuaScheda, modo, s.aPiedi, volteQui);
       if (d < 25 || d > finDove) return;
       var rel = ((posizione.verso(qui.lat, qui.lon, lat, lon) - s.direzione + 540) % 360) - 180;
       if (Math.abs(rel) > 40) return;
@@ -2175,6 +2189,101 @@
   }
 
   setInterval(stradaERiepilogo, 20000);
+
+  /* ============================================================
+     I MONUMENTI CHE SONO UN RIFERIMENTO — 12/11/2026
+     Vince: «per monumenti come il colosseo od il pantheon o altare
+     della patria ci può essere un riferimento e dire Vuoi che ti ci
+     porto?» — e poi gli altri suoi esempi: «la gran madre a torino»,
+     «la mole antonelliana», «cappella san severo a napoli e cristo
+     velato». «Poi può agganciarsi ad un percorso culturale gia
+     presente.»
+
+     CHI E' UN RIFERIMENTO, e non l'ho deciso io: l'ho cercato nei suoi
+     sei esempi. Non e' la grandezza — la Mole e' altissima e la
+     cappella Sansevero e' minuscola. Guardati nei dati, tutti e sei
+     hanno DUE cose insieme: la scheda piena (settecento caratteri, cioe'
+     un articolo lungo) e la scheda del turista (`i`). I vicini
+     ordinari no: Santa Maria della Neve al Colosseo ha 141 caratteri,
+     San Tommaso al Pantheon 157, la Pieta' al Colosseo 130.
+       Colosseo          700, i   |  Vittoriano        700, i
+       Pantheon          700, i   |  cappella Sansevero 700, i
+       Gran Madre di Dio 700, i   |  Mole Antonelliana  700, i
+     In tutta Italia sono 844 luoghi su 25.325: il 3,3%. Entro
+     cinquecento metri sono 26 a piazza Venezia, 17 al Pantheon, 4 al
+     Colosseo, ZERO alla Laurentina — quindi se ne offre UNO, il piu'
+     importante, e non se ne riparla per dieci minuti.
+
+     IL PERCORSO CULTURALE: le passeggiate ce l'hanno gia' dentro —
+     «Roma antica — Campidoglio, Fori, Colosseo» ha il Colosseo a otto
+     metri dalla tappa, «Roma barocca — Trevi, Pantheon, Navona» il
+     Pantheon a nove, «Torino — da piazza San Carlo al Po» la Mole a
+     sei. Se c'e', lo si dice dopo il «si»: una domanda per volta.
+     ============================================================ */
+  var RIFERIMENTO_FIN_DOVE = 500;
+  var RIFERIMENTO_OGNI = 600000;          // dieci minuti fra un'offerta e l'altra
+  var offertoQuando = 0;
+  var riferimentiOfferti = {};
+
+  /* chi e' un riferimento e quanto vale: la regola sta in
+     parti/racconto.js, dove la prova puo' misurarla sui dati veri. */
+  /* la passeggiata che ci passa, se c'e' */
+  function laPasseggiataDi(p) {
+    try {
+      var vic = passeggiata.vicine({ lat: p.lat, lon: p.lon }, 12) || [];
+      for (var i = 0; i < vic.length; i++) {
+        var pa = vic[i].pa;
+        var tappe = (pa && pa.tappe) || [];
+        for (var j = 0; j < tappe.length; j++) {
+          if (posizione.dist(p.lat, p.lon, tappe[j].lat, tappe[j].lon) <= 60) return pa;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  setInterval(function () {
+    if (!acceso || modo !== 'cultura') return;
+    if (guida.meta() || staAspettando()) return;
+    if (passeggiata.inCorso && passeggiata.inCorso()) return;
+    var s = posizione.leggi();
+    if (!s.pronto || !aPiediOra()) return;
+    if (Date.now() - offertoQuando < RIFERIMENTO_OGNI) return;
+    if (voce.staParlando() || voce.inCoda().length) return;
+    var meglio = null, valeDi = -1;
+    vicini().forEach(function (x) {
+      var p = x.p;
+      if (!racconto.eUnRiferimento(p)) return;
+      if (riferimentiOfferti[p.n]) return;
+      var d = posizione.dist(s.lat, s.lon, p.lat, p.lon);
+      /* sotto il bordo non e' un riferimento: ce l'hai addosso, e di
+         quello parla il racconto. */
+      if (d < racconto.finoAlBordo(p) || d > RIFERIMENTO_FIN_DOVE) return;
+      var v = racconto.quantoValeRiferimento(p);
+      if (v > valeDi) { valeDi = v; meglio = { p: p, m: d }; }
+    });
+    if (!meglio) return;
+    var p = meglio.p;
+    riferimentiOfferti[p.n] = Date.now();
+    offertoQuando = Date.now();
+    /* IL LATO SOLO SE SI SA DA CHE PARTE GUARDI: senza direzione buona
+       un «sulla destra» sorteggiato manda una persona dall'altra parte.
+       Le stesse soglie del racconto: 25 gradi e' davanti, oltre 145 e'
+       dietro. */
+    var lato = '';
+    if (s.direzioneBuona) {
+      var rel = ((posizione.verso(s.lat, s.lon, p.lat, p.lon) - s.direzione + 540) % 360) - 180;
+      lato = Math.abs(rel) <= 25 ? ', davanti a te'
+           : Math.abs(rel) > 145 ? ', dietro di te'
+           : (rel > 0 ? ', sulla destra' : ', sulla sinistra');
+    }
+    inAttesaDi = { da: Date.now(), cosa: 'ti-ci-porto',
+                   meta: { n: p.n, lat: p.lat, lon: p.lon } };
+    diario('RIFERIMENTO offerto: ' + p.n + ' a ' + Math.round(meglio.m) + ' m');
+    voce.parla(racconto.conArticolo(p) + ' è ' + scena.passi(meglio.m) + lato +
+               '. Vuoi che ti ci porto?',
+               { livello: voce.GUIDA, ancheSeUguale: true });
+  }, 30000);
 
   /* ============================================================
      QUALCHE NUMERO CIVICO IN PIU' — 11/11/2026
@@ -2504,6 +2613,32 @@
       inAttesaDi = null;
       if (/^(si|si grazie|si dimmi|va bene|certo|ok|dimmi|parlamene|raccontami|raccontamelo|volentieri)$/.test(normalizza(t))) {
         dillo(racconto.approfondisci({ qui: posizione.leggi(), intorno: vicini(), modo: modo }));
+        return true;
+      }
+      if (/^(no|no grazie|lascia perdere|niente|dopo|non adesso|no no)$/.test(normalizza(t))) {
+        voce.parla('Va bene.', { livello: voce.GUIDA, ancheSeUguale: true });
+        return true;
+      }
+    }
+    if (inAttesaDi && inAttesaDi.cosa === 'ti-ci-porto') {
+      var dove = inAttesaDi.meta;
+      inAttesaDi = null;
+      if (/^(si|si grazie|si dai|va bene|certo|ok|portami|portamici|andiamo|volentieri)$/.test(normalizza(t))) {
+        var s2 = posizione.leggi();
+        /* e qui si attacca al percorso culturale, se ce n'e' uno che ci
+           passa: non si fa partire la passeggiata al posto suo — gli si
+           dice che c'e', e la comincia lui quando arriva. Una cosa per
+           volta. */
+        var pa = laPasseggiataDi(dove);
+        if (pa && pa.n) {
+          voce.parla('Ti ci porto. Da lì passa anche la passeggiata «' + pa.n +
+                     '»: quando arrivi, dimmi «comincia la passeggiata».',
+                     { livello: voce.GUIDA, ancheSeUguale: true });
+          diario('RIFERIMENTO: si, e c\'e la passeggiata «' + pa.n + '»');
+        } else {
+          diario('RIFERIMENTO: si, lo porto a ' + dove.n);
+        }
+        partiVerso(dove, { lat: s2.lat, lon: s2.lon }, false);
         return true;
       }
       if (/^(no|no grazie|lascia perdere|niente|dopo|non adesso|no no)$/.test(normalizza(t))) {

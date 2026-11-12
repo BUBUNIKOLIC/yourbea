@@ -1117,6 +1117,35 @@ function Racconto(opzioni) {
        Esportare la stessa funzione e' l'unico modo perche' non ci siano
        due numeri che si scollano al primo ritocco. */
     raggio: raggio,
+    /* IN CENTRO STORICO TUTTO SI RIDUCE A 5-10 METRI (Vince, 12/11):
+       questa e' la distanza «da quando ce l'hai davanti» — meta' della
+       grandezza, che e' il bordo, piu' dieci metri. Una statua 11, una
+       fontana 13, una chiesa 25. La usa anche app.js per il «davanti a
+       te hai», cosi' il numero sta scritto in un posto solo. */
+    finoAlBordo: finoAlBordo,
+    /* ---------- CHI E' UN RIFERIMENTO ---------- 12/11/2026
+       Vince: «per monumenti come il colosseo od il pantheon o altare
+       della patria ci può essere un riferimento e dire Vuoi che ti ci
+       porto?», e poi «la gran madre a torino», «la mole antonelliana»,
+       «cappella san severo a napoli e cristo velato».
+       La regola non l'ho decisa io: l'ho cercata nei suoi sei esempi.
+       NON e' la grandezza — la Mole e' altissima, la cappella Sansevero
+       e' minuscola. Tutti e sei hanno invece due cose INSIEME: la scheda
+       piena (700 caratteri, cioe' un articolo lungo) e la scheda del
+       turista (`i`). I loro vicini ordinari no: Santa Maria della Neve
+       al Colosseo 141 caratteri, San Tommaso al Pantheon 157, la Pieta'
+       al Colosseo 130.
+       In tutta Italia sono 844 luoghi su 25.325, il 3,3%.
+       Sta qui e non in app.js perche' la prova possa misurarla sui dati
+       veri: prove/riferimenti-12-11.js. */
+    eUnRiferimento: function (p) {
+      return !!(p && p.n && p.i && String(p.d || '').length >= 600);
+    },
+    /* fra due riferimenti vicini si offre quello che conta di piu': il
+       rango prima di tutto, poi quanti capitoli ha la scheda. */
+    quantoValeRiferimento: function (p) {
+      return (Number(p && p.k) || 0) * 10 + ((p && p.cap && p.cap.length) || 0);
+    },
     volteSeFitto: function (quanti) { return quanti > FITTO ? STRETTO : LARGO; },
     quantoEGrande: quantoEGrande,
     fermoDaQuanto: fermoDaQuanto,
