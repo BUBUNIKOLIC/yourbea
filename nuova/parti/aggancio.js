@@ -55,6 +55,11 @@ function Aggancio(opzioni) {
   var QUANTO_LONTANO = o.quantoLontano || 25;     // metri: oltre, non e' la tua via
   var PRECISIONE_MINIMA = o.precisioneMinima || 40;
   var PER_CAMBIARE = o.perCambiare || 8;          // metri di vantaggio per cambiare via
+  /* REGOLA 4-bis (13/11/2026) — in macchina si aggancia, ma solo alla
+     strada che va nella TUA direzione, e da piu' lontano: su un
+     raccordo la carreggiata dove stai e' a venti-trenta metri dalla
+     linea che OpenStreetMap disegna, e venticinque metri non bastano. */
+  var QUANTO_LONTANO_IN_AUTO = o.quantoLontanoInAuto || 40;
   /* REGOLA 5: quanto si puo' stare lontani dal percorso perche' sia ancora
      rumore del GPS e non una strada sbagliata */
   var LONTANO_DAL_PERCORSO = o.lontanoDalPercorso || 12;
@@ -153,7 +158,26 @@ function Aggancio(opzioni) {
      linea = il tracciato del «portami a», se la guida e' accesa: [[la,lo],…] */
   function aggancia(s, vie, linea) {
     if (!s) return null;
-    if (s.aPiedi === false) return null;                       // REGOLA 4
+    /* ============================================================
+       REGOLA 4-bis: IN MACCHINA SI AGGANCIA ALLA STRADA CHE VA COME TE
+       (13/11/2026) Vince in bus verso Fiumicino: «ora stai percorrendo
+       via Cassia» — «no siamo ancora sul gra». E prima: «si riconosce
+       delle cose intorno ma e' come se non riconoscesse il percorso che
+       sto facendo». Aveva ragione e stava scritto qui: la regola 4
+       spegneva l'aggancio appena non cammini, quindi in macchina l'app
+       non sapeva su che strada fosse e prendeva il nome di quella piu'
+       vicina — la Cassia, che al GRA passa sotto.
+       Perche' adesso si puo': sul raccordo la direzione la sappiamo
+       (vai a sessanta all'ora, non ballonzoli come a piedi), e il GRA e
+       la Cassia la' si incrociano quasi ad angolo retto. Allora fra le
+       strade candidate si tengono solo quelle che vanno nel tuo stesso
+       verso: la trasversale sotto il cavalcavia esce da sola.
+       Senza direzione buona resta la regola 4 di prima: non si aggancia.
+       Vince: «magari aggancio e le fermate piu' vicine».
+       ============================================================ */
+    var inAuto = (s.aPiedi === false);
+    var direzioneUtile = (typeof s.direzione === 'number' && s.direzioneBuona);
+    if (inAuto && !direzioneUtile) return null;                // REGOLA 4
     if (s.prec > PRECISIONE_MINIMA) return null;               // REGOLA 1
 
     /* REGOLA 5 — il percorso, se c'e', viene prima di tutto il resto. */
@@ -224,17 +248,20 @@ function Aggancio(opzioni) {
       if (!v || !v.punti || v.punti.length < 2) continue;
       var q = puntoPiuVicino(s.lat, s.lon, v);
       if (!q) continue;
+      /* REGOLA 4-bis: in macchina una strada di traverso non e' la tua */
+      if (inAuto && !parallele(q.verso, s.direzione)) continue;
       q.nome = v.nome || '';
       if (!migliore || q.m < migliore.m) migliore = q;
       if (viaDiPrima && q.nome && q.nome === viaDiPrima) {
         if (!suDiPrima || q.m < suDiPrima.m) suDiPrima = q;
       }
     }
-    if (!migliore || migliore.m > QUANTO_LONTANO) { return null; }   // REGOLA 2
+    var limite = inAuto ? QUANTO_LONTANO_IN_AUTO : QUANTO_LONTANO;
+    if (!migliore || migliore.m > limite) { return null; }   // REGOLA 2
 
     /* REGOLA 3: si resta sulla propria strada, se e' ancora ragionevole */
     var scelto = migliore;
-    if (suDiPrima && (ora() - quando) < TIENE && suDiPrima.m <= QUANTO_LONTANO &&
+    if (suDiPrima && (ora() - quando) < TIENE && suDiPrima.m <= limite &&
         suDiPrima.m - migliore.m < PER_CAMBIARE) {
       scelto = suDiPrima;
     }

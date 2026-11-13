@@ -81,9 +81,13 @@ function Fermate(opzioni) {
       if (peso > meglio) { meglio = peso; mig = { p: x, m: d }; }
     });
     if (!mig) return '';
-    /* in passi, come tutto il resto: parti/distanza.js. Qui erano rimasti
-       i metri, ed era l'ultimo posto che parlava un'altra lingua. */
-    var quanto = mig.m < 120 ? '' : (', ' + (laMisura ? laMisura.passi(mig.m) : 'a ' + Math.round(mig.m) + ' metri'));
+    /* QUI I PASSI NON VANNO — 13/11/2026. Dal telefono di Vince, in bus
+       verso Fiumicino: «Appena esci, Centro di preparazione olimpica, a
+       425 passi». Quattrocentoventicinque passi sono 320 metri, e uno
+       seduto in autobus i passi non li fa: e' una misura per chi
+       cammina. Questa funzione parla SOLO su un mezzo (prossima() torna
+       subito se vai a piedi), quindi qui i metri sono sempre giusti. */
+    var quanto = mig.m < 120 ? '' : (', ' + (laMisura ? laMisura.inMetri(mig.m) : 'a ' + Math.round(mig.m) + ' metri'));
     return ' Appena esci, ' + mig.p.n + quanto + '.';
   }
 
@@ -107,6 +111,14 @@ function Fermate(opzioni) {
 
     var nome = mig.nome;
     var adesso = ora();
+    if (nonCiScendi(situazione.via)) {
+      if (adesso - (avvisate[nome] || 0) < RIPOSO) return null;
+      avvisate[nome] = adesso;
+      return { tipo: 'fermata', livello: 'guida', fermata: mig, nonCiScendi: true,
+               testo: 'La ' + conFermata(nome) + ' è la più vicina, ' +
+                      (laMisura ? laMisura.inMetri(dmin)
+                                : 'a ' + Math.round(dmin) + ' metri') + '.' };
+    }
     if (dmin > CI_SEI) {
       /* REGOLA 2: l'avviso, mentre si rallenta */
       if (adesso - (avvisate[nome] || 0) < RIPOSO) return null;
@@ -140,6 +152,23 @@ function Fermate(opzioni) {
     if (/^[0-9\s.\-\/]+$/.test(t)) return false;        // «13», «14», «7/A»
     return true;
   }
+  /* ---------- SU UN RACCORDO NON CI SCENDI ----------
+     13/11/2026, Vince in bus sul Grande Raccordo Anulare: in nove
+     minuti l'app gli ha annunciato VENTINOVE fermate — Cassia, Boccea,
+     Casal del Marmo, l'Ipogeo degli Ottavi — tutte strade che passano
+     SOTTO il raccordo. «Stai per arrivare alla stazione» a uno che non
+     vede, chiuso in un bus che va a settanta all'ora sopra un
+     cavalcavia, e' un invito a prepararsi a scendere da una porta che
+     non si apre.
+     Vince: «oppure potrebbe dire semplicemente... la fermata piu'
+     vicina e'», e poi «magari aggancio e le fermate piu' vicine».
+     Quindi sul raccordo la fermata si dice lo stesso — serve, per
+     orientarsi, e in taxi serve pure di piu' — ma cambia la frase: non
+     «stai per arrivare», ma «la piu' vicina e', a tot metri». */
+  function nonCiScendi(via) {
+    return /raccordo|autostrad|tangenzial|superstrad|^A\s?\d{1,3}\b/i.test(String(via || '').trim());
+  }
+
   function conFermata(n) {
     var t = String(n || '').trim();
     if (/fermata|stazione|metro|capolinea|terminal/i.test(t)) return t;

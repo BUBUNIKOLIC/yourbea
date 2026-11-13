@@ -3947,8 +3947,12 @@
        che conta — e per chi non vede e' la parte piu' difficile di un
        viaggio in citta'. */
     if (!aPiedi) {
+      /* LA STRADA DOVE SEI, perche' su un raccordo la fermata si dice in
+         un altro modo: non «stai per arrivare» ma «la piu' vicina e'»
+         (13/11, il bus sul GRA e le 29 fermate in nove minuti). */
       var fe = fermate.prossima({ qui: { lat: s.lat, lon: s.lon },
                                   punti: SERVIZI.punti || [], luoghi: LUOGHI,
+                                  via: s.viaAgganciata || ultimaVia || '',
                                   aPiedi: false, preciso: !(s.prec > 50) });
       if (fe) dillo(fe);
     }
@@ -4094,6 +4098,14 @@
            nuova. Adesso si guarda solo il nome; il civico si porta dietro
            per chi lo chiede, ma non fa parlare nessuno. */
         var viaOra = (v.via || '').trim();
+        /* IN MACCHINA VALE LA STRADA AGGANCIATA, NON QUELLA PIU' VICINA
+           (13/11) «ora stai percorrendo via Cassia» — «no siamo ancora
+           sul gra». Il cercatore risponde con la strada piu' vicina al
+           punto, e sul cavalcavia la piu' vicina e' quella di sotto.
+           L'aggancio invece adesso in macchina sceglie la strada che va
+           nella tua direzione (aggancio.js, regola 4-bis): quando c'e',
+           quella e' la buona. */
+        if (!aPiediOra() && s.viaAgganciata) viaOra = s.viaAgganciata;
         ultimaStrada = dove;
         if (!viaOra || uguali(viaOra, ultimaVia)) { viaInProva = ''; return; }
 

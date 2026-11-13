@@ -96,6 +96,24 @@ function Scena(opzioni) {
 
   /* laForma(): la piazza, il parco, il cortile in cui sei — e quanto è
      grande, misurato sul suo contorno. */
+/* IL TIPO NON SI DICE DUE VOLTE — 13/11/2026
+   Dal diario del telefono di Vince, 11:55:21: «Sei in Via del Foro
+   Italico. PARCO PARCO TOR DI QUINTO dietro di te», e alle 11:50:33
+   «sei nel CENTRO SPORTIVO CENTRO di Preparazione Olimpica». Il
+   controllo c'era in un punto solo (la forma sotto i piedi) e cercava
+   il tipo intero dentro il nome: «centro sportivo» dentro «Centro di
+   Preparazione Olimpica» non si trova, e il tipo ci finiva davanti due
+   volte. Adesso vale anche la prima parola del tipo, e lo usano tutti e
+   due i posti che mettono il tipo davanti al nome. */
+function tipoGiaNelNome(cosa, nome) {
+  var n = String(nome || '').toLowerCase();
+  var c = String(cosa || '').toLowerCase();
+  if (!n || !c) return false;
+  if (n.indexOf(c) >= 0) return true;
+  var testa = c.split(' ')[0];
+  return testa.length > 3 && n.split(' ')[0] === testa;
+}
+
   function laForma(qui, aree) {
     var dentro = null;
     (aree || []).forEach(function (a) {
@@ -189,10 +207,13 @@ function Scena(opzioni) {
     });
     if (!mig) return null;
     var parte = daCheParte(qui, mig.p[0], mig.p[1], direzione, buona);
-    var come = mig.a.nome ? (mig.a.cosa + ' ' + mig.a.nome) : ('un ' + mig.a.cosa);
+    var gia = tipoGiaNelNome(mig.a.cosa, mig.a.nome);
+    var come = mig.a.nome ? (gia ? mig.a.nome : (mig.a.cosa + ' ' + mig.a.nome))
+                          : ('un ' + mig.a.cosa);
     if (mig.a.cosa === 'spiaggia' || mig.a.cosa === 'macchia' ||
         mig.a.cosa === 'zona umida' || mig.a.cosa === 'riserva naturale') {
-      come = mig.a.nome ? (mig.a.cosa + ' ' + mig.a.nome) : ('una ' + mig.a.cosa);
+      come = mig.a.nome ? (gia ? mig.a.nome : (mig.a.cosa + ' ' + mig.a.nome))
+                        : ('una ' + mig.a.cosa);
     }
     return capo(come) + (parte ? ' ' + parte : '') + ', ' + passi(mig.m);
   }
@@ -313,13 +334,7 @@ function Scena(opzioni) {
          niente a chi non vede quel cartello: e' il PARCO Centrale del
          Lago (01/11). Il tipo si mette sempre, tranne quando il nome lo
          contiene gia' («piazza Venezia»). */
-      var giaDetto = forma.nome &&
-        forma.nome.toLowerCase().indexOf(String(forma.cosa).toLowerCase()) >= 0;
-      var dove1 = !forma.nome ? ('in ' + unA(forma.cosa))
-        : giaDetto ? ('in ' + forma.nome)            /* «in piazza Venezia» */
-        : ('nel' + (femmina(forma.cosa) ? 'la ' : ' ') + forma.cosa + ' ' + forma.nome);
-      capo1 = 'Sei ' + dove1 +
-              (forma.largo >= 25 ? ', larg' + (femmina(forma.cosa) ? 'a' : 'o') + ' ' + passiNudi(forma.largo) : '');
+      capo1 = formaDetta(forma);
       if (!fresco('forma', forma.nome || forma.cosa)) capo1 = null;
     } else if (s.strada) {
       capo1 = 'Sei in ' + s.strada;
@@ -491,11 +506,40 @@ function Scena(opzioni) {
      ripasso — «sei sempre in...» — e almeno la via sotto i piedi.
      Qui NON si guarda `fresco`: questa funzione si chiama solo quando
      l'app e' stata zitta, e il suo mestiere e' non starlo. */
+  /* LA FORMA DIVENTA UNA FRASE QUI, E SOLO QUI — 13/11/2026
+     Alle 11:50:51 il telefono ha detto: «Sei sempre in Largo Giulio
+     Onesti. [OBJECT OBJECT].» Il ripasso prendeva l'oggetto che torna
+     da laForma() — {cosa, nome, largo} — e lo infilava fra le frasi:
+     detto ad alta voce diventa «object object». La frase si faceva solo
+     piu' su, dentro la scena. Adesso si fa qui, e la usano tutti e due. */
+  function formaDetta(forma) {
+    if (!forma) return null;
+    var gia = forma.nome && tipoGiaNelNome(forma.cosa, forma.nome);
+    var dove = !forma.nome ? ('in ' + unA(forma.cosa))
+      : gia ? ('in ' + forma.nome)                 /* «in piazza Venezia» */
+      : ('nel' + (femmina(forma.cosa) ? 'la ' : ' ') + forma.cosa + ' ' + forma.nome);
+    return 'Sei ' + dove +
+           (forma.largo >= 25
+             ? ', larg' + (femmina(forma.cosa) ? 'a' : 'o') + ' ' + passiNudi(forma.largo)
+             : '');
+  }
+
   function comunqueQualcosa(s) {
     var qui = s.qui, mappa = s.mappa || { punti: [] };
     var via = s.strada ? String(s.strada).replace(/\s+\d+[a-z]?$/i, '') : '';
     var pezzi = [];
-    if (via) pezzi.push('Sei sempre in ' + via);
+    /* UNA SOLA APERTURA, NON DUE «SEI» DI FILA. Sistemato l'oggetto che
+       finiva nella frase, il ripasso diceva «Sei sempre in Largo Giulio
+       Onesti. Sei in Centro di Preparazione Olimpica». Dove sei dentro
+       qualcosa, quello E' dove sei: la via non serve ripeterla. */
+    var dentro = laForma(qui, (s.mappa || {}).aree || []);
+    var forma0 = formaDetta(dentro);
+    if (forma0) pezzi.push(forma0.replace(/^Sei /, 'Sei sempre '));
+    else if (via) pezzi.push('Sei sempre in ' + via);
+    /* e il posto dove sei NON si ridice come paesaggio: «Sei sempre in
+       Parco Tor di Quinto, largo 75 passi. Parco Tor di Quinto sulla
+       destra» e' la stessa cosa detta due volte. */
+    var suoNome = dentro && dentro.nome ? String(dentro.nome).toLowerCase() : '';
 
     /* IL RIPASSO GIRA. Con trenta secondi di silenzio massimo (il numero
        di Vince) la stessa frase tornerebbe due volte al minuto: allora
@@ -511,10 +555,8 @@ function Scena(opzioni) {
       /* nessun servizio: il paesaggio, e almeno com'e' fatto il posto */
       var paesaggio = ilPaesaggio(qui, (s.mappa || {}).aree || [],
                                   s.direzione, s.direzioneBuona !== false);
-      if (paesaggio) pezzi.push(paesaggio);
-      else {
-        var forma = laForma(qui, (s.mappa || {}).aree || []);
-        if (forma) pezzi.push(forma);
+      if (paesaggio && !(suoNome && paesaggio.toLowerCase().indexOf(suoNome) >= 0)) {
+        pezzi.push(paesaggio);
       }
     }
     /* e se c'e' posto, il paesaggio entra comunque: al laghetto dell'EUR
@@ -522,7 +564,8 @@ function Scena(opzioni) {
     if (pezzi.length < 3) {
       var pae2 = ilPaesaggio(qui, (s.mappa || {}).aree || [],
                              s.direzione, s.direzioneBuona !== false);
-      if (pae2 && pezzi.indexOf(pae2) < 0) pezzi.push(pae2);
+      if (pae2 && pezzi.indexOf(pae2) < 0 &&
+          !(suoNome && pae2.toLowerCase().indexOf(suoNome) >= 0)) pezzi.push(pae2);
     }
     if (!pezzi.length) return null;
     var testo = pezzi.length > 1
