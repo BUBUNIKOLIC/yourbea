@@ -129,6 +129,26 @@ function Passaggi(opzioni) {
     return 'sulla sinistra';
   }
 
+  /* ============================================================
+     SE NON SO DA CHE PARTE, LO DICO — 12/11/2026
+     Vince, tornato dalla prova in Utilita': «il paletto che mi dicevi
+     che c'era era sulla sinistra, ma il non vedente non poteva saperlo».
+     Il lato c'era gia' (daCheParte), ma quella funzione torna NULL in
+     due casi buoni: quando non si sa da che parte guardi, e quando il
+     GPS e' troppo incerto per la distanza (sopra i trenta gradi di
+     incertezza). In quei casi la frase usciva senza parte — «Fra venti
+     passi, un paletto» — e chi non vede non ha modo di saperlo.
+     Tacere il lato e' giusto (un lato sorteggiato manda una persona
+     dall'altra parte); tacere CHE NON LO SAPPIAMO non lo e'. E' la
+     stessa regola del 21/10 sulle vie senza nome: al posto del silenzio
+     si dicono i lati.
+     ============================================================ */
+  var NON_SO_LA_PARTE = o.nonSoLaParte || ', da che parte non lo so';
+
+  function conLaParte(parte) {
+    return parte ? ' ' + parte : NON_SO_LA_PARTE;
+  }
+
   function vaDetto(p) {
     if (!p || !p.servizio) return false;
     if (p.cosa === 'attraversamento') return false;      // li dice la scena, riassunti
@@ -252,7 +272,7 @@ function Passaggi(opzioni) {
     return {
     tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
              testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) +
-                    (parteSua ? ' ' + parteSua : '') + '.' };
+                    conLaParte(parteSua) + '.' };
   }
 
   /* prossimo(): la cosa che stai passando adesso, o null. */
@@ -289,7 +309,7 @@ function Passaggi(opzioni) {
                               String(mig.linee).replace(/;/g, ', ');
       return { tipo: 'passaggio', livello: 'guida', cosa: mig,
                avviso: eUnAvviso(mig.cosa),
-               testo: nome + (parte ? ', ' + parte : '') + '.' };
+               testo: nome + (parte ? ', ' + parte : NON_SO_LA_PARTE) + '.' };
     }
     /* se il nome non dice che cosa è, si aggiunge il tipo: «Da Mario» da
        solo non fa capire che è un bar */
@@ -303,7 +323,7 @@ function Passaggi(opzioni) {
     var stato = statoDi(mig.cosa || '', aperto);
     return { tipo: 'passaggio', livello: eUnAvviso(mig.cosa) ? 'guida' : 'cenno', cosa: mig,
              avviso: eUnAvviso(mig.cosa),
-             testo: 'Stai passando ' + nome + tipo + stato + (parte ? ', ' + parte : '') + '.' };
+             testo: 'Stai passando ' + nome + tipo + stato + (parte ? ', ' + parte : NON_SO_LA_PARTE) + '.' };
   }
 
   function capo(t) { return String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1); }

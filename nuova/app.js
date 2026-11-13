@@ -2303,8 +2303,12 @@
      aspettare il turno e senza chiedere la direzione.
      E NON TORNA LA RAFFICA DEL 18/10 («numeri civici mai»: un numero
      diverso ogni venti secondi), perche':
-       - SESSANTA secondi fra uno e l'altro, contati sullo stesso orologio
-         del giro, cosi' i due non si sommano. Uno al minuto di cammino:
+       - QUARANTACINQUE secondi fra uno e l'altro, contati sullo stesso
+         orologio del giro, cosi' i due non si sommano. Erano sessanta: il
+         12/11 Vince l'ha chiesto una seconda volta, «qualche numero
+         civico in più come riferimento», e un civico e' proprio questo —
+         un riferimento fermo, l'unico che non si muove.
+         Uno ogni tre quarti di minuto di cammino:
          sul cammino di oggi fanno quattro numeri invece di uno nei sei
          minuti in cui si e' mosso davvero. La raffica era un numero ogni
          VENTI secondi, e non e' questa;
@@ -2318,7 +2322,7 @@
     if (guida.meta()) return;
     var s = posizione.leggi();
     if (!s.pronto || s.fermo || !aPiediOra()) return;
-    if (Date.now() - ultimoCivico < 60000) return;
+    if (Date.now() - ultimoCivico < 45000) return;
     if (voce.staParlando() || voce.inCoda().length || staAspettando()) return;
     var civ = ilCivicoQui({ lat: s.lat, lon: s.lon });
     if (!civ) return;
