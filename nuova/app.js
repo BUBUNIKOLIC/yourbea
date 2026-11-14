@@ -2224,6 +2224,7 @@
   var RIFERIMENTO_OGNI = 600000;          // dieci minuti fra un'offerta e l'altra
   var offertoQuando = 0;
   var riferimentiOfferti = {};
+  var percorsiAnnunciati = false;   // la riga dei percorsi si dice una volta
 
   /* chi e' un riferimento e quanto vale: la regola sta in
      parti/racconto.js, dove la prova puo' misurarla sui dati veri. */
@@ -4329,6 +4330,35 @@
        Solo in Turismo e solo a piedi: le regole di quando si offre e di
        quante volte stanno in parti/passeggiata.js. Esce come cenno, quindi
        una svolta o un'emergenza gli passano sopra. */
+    /* ============================================================
+       IL TURISTA NON SA CHE I PERCORSI ESISTONO — 14/11/2026
+       Vince: «immagina sei un turista che gira per roma e ha il suo
+       telefono con le cuffie e vuole conoscere roma», e «trovare il
+       modo per rendere agevole per un turista trovarli e seguirli».
+       A Roma di percorsi ce ne sono 31 e si chiedono dicendo
+       «percorsi» — ma la domanda «vuoi fare un percorso?» si fa solo
+       in Utilita' (in Turismo non si chiede niente, si racconta), e
+       «qui c'e' il percorso» parte solo se hai una tappa entro 150
+       metri. Un turista appena sceso in piazza Venezia non lo sapeva.
+       Allora una riga sola, la prima volta, e NON una domanda: quanti
+       ce n'e' qui intorno e come si chiedono. Poi tace: chi vuole,
+       chiede. */
+    if (modo === 'cultura' && !percorsiAnnunciati && s.aPiedi !== false) {
+      percorsiAnnunciati = true;
+      try {
+        var qui2 = (passeggiata.vicine({ lat: s.lat, lon: s.lon }) || [])
+                     .filter(function (x) { return x.m <= 2000; });
+        if (qui2.length) {
+          voce.parla('Qui ci sono ' +
+                     (qui2.length === 1 ? 'un percorso d\'arte'
+                                        : qui2.length + ' percorsi d\'arte') +
+                     ', il più vicino è «' + qui2[0].pa.n +
+                     '». Quando vuoi, dimmi: percorsi.',
+                     { livello: voce.GUIDA });
+          diario('PERCORSI: ' + qui2.length + ' entro due chilometri, annunciati una volta');
+        }
+      } catch (e) {}
+    }
     if (modo === 'cultura' && s.aPiedi !== false) {
       var off = passeggiata.quiCeIlPercorso({ lat: s.lat, lon: s.lon }, Date.now());
       if (off) { dillo(off); return; }

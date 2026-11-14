@@ -75,21 +75,99 @@ function Passeggiata(opzioni) {
      Croce» c'è a Torre del Greco e a Firenze. Se una tappa non si ritrova
      fra i luoghi, o non è un luogo da raccontare (REGOLA 9), si butta: una
      tappa muta è peggio di una tappa che non c'è. */
+  /* IL NOME SCRITTO NELLA TAPPA E IL NOME NEI DATI NON SONO UGUALI
+     — 14/11/2026. Vince: «trovare il modo per rendere agevole per un
+     turista trovarli e seguirli». Contato prima di toccare niente: su
+     956 tappe scritte ne arrivavano al turista 309, e 57 giri su 137
+     non partivano nemmeno. Il Duomo di Parma: 0 tappe su 12.
+     La causa non era nei dati, era qui: la tappa si cercava per nome
+     ESATTO («Basilica di Santa Croce» === «Basilica di Santa Croce»),
+     e i nostri luoghi si chiamano come li chiama Wikidata — «basilica
+     di Santa Croce», «chiesa di Santa Maria Assunta» dove la tappa dice
+     «Chiesa di Maria SS. Assunta». Un accento, un «SS.», una maiuscola,
+     e la tappa spariva in silenzio.
+     Adesso: prima il nome esatto; se non c'è, il nome spogliato
+     (minuscole, senza accenti, senza le parole di servizio); se non c'è
+     ancora, il luogo PIÙ VICINO al punto della tappa entro quaranta
+     metri, che a quella distanza è quello. E se non c'è nessun luogo ma
+     la tappa si porta il suo testo, la tappa vale da sé: un testo
+     scritto per quel punto è un luogo da raccontare per definizione. */
+  function osso(n) {
+    return String(n || '').toLowerCase()
+      .replace(/[àáâä]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôö]/g, 'o').replace(/[ùúûü]/g, 'u')
+      .replace(/[^a-z0-9 ]+/g, ' ')
+      .replace(/\b(?:il|lo|la|i|gli|le|dei|del|della|delle|degli|di|da|a|al|alla|e|ss|san|santa|santo|santi)\b/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  var TIPI_GENERICI = {
+    chiesa: 1, chiesetta: 1, basilica: 1, cattedrale: 1, duomo: 1, santuario: 1,
+    cappella: 1, museo: 1, palazzo: 1, villa: 1, piazza: 1, castello: 1, torre: 1,
+    porta: 1, teatro: 1, monumento: 1, parco: 1, giardino: 1, fontana: 1, ponte: 1,
+    convento: 1, monastero: 1, abbazia: 1, oratorio: 1, galleria: 1, foro: 1,
+    nazionale: 1, comunale: 1, antica: 1, antico: 1, vecchio: 1, nuovo: 1
+  };
+  function unaParolaInComune(a, b) {
+    var ua = osso(a).split(' '), ub = {}, i;
+    osso(b).split(' ').forEach(function (w) { ub[w] = 1; });
+    for (i = 0; i < ua.length; i++) {
+      if (ua[i].length >= 4 && !TIPI_GENERICI[ua[i]] && ub[ua[i]]) return true;
+    }
+    return false;
+  }
+
   function conDati(passeggiate, luoghi) {
-    var perNome = {};
+    var perNome = {}, perOsso = {};
     (luoghi || []).forEach(function (p) {
       if (!perNome[p.n]) perNome[p.n] = [];
       perNome[p.n].push(p);
+      var o2 = osso(p.n);
+      if (o2) { if (!perOsso[o2]) perOsso[o2] = []; perOsso[o2].push(p); }
     });
+    function ilPiuVicino(fra, t, quanto) {
+      var mig = null, dm = Infinity;
+      (fra || []).forEach(function (p) {
+        var d = dist(p.lat, p.lon, t.la, t.lo);
+        if (d < dm) { dm = d; mig = p; }
+      });
+      return (mig && dm <= quanto) ? mig : null;
+    }
     tutte = (passeggiate || []).map(function (pa) {
       var tappe = [];
       (pa.t || []).forEach(function (t) {
-        var fra = perNome[t.n] || [], mig = null, dm = Infinity;
-        fra.forEach(function (p) {
-          var d = dist(p.lat, p.lon, t.la, t.lo);
-          if (d < dm) { dm = d; mig = p; }
-        });
-        if (!mig || dm > 150) return;               // non si ritrova: si butta
+        var mig = ilPiuVicino(perNome[t.n], t, 150) ||
+                  ilPiuVicino(perOsso[osso(t.n)], t, 150);
+        if (!mig) {
+          /* NESSUN NOME CHE COMBACIA: CHI STA PROPRIO LI', MA DEVE DIRE
+             LA STESSA COSA. Guardando i 238 attacchi fatti solo col
+             punto, uno su due era un altro posto: «Galleria Alberto
+             Sordi» diventava «antica chiesa di Santo Stefano del
+             Trullo» a dodici metri, «Foro di Nerva e le Colonnacce» il
+             Museo del presepio a sedici. E' il difetto del 22/10 — le
+             437 schede che parlavano di un altro posto — rifatto da
+             capo. Quindi serve una parola in comune che non sia il tipo
+             («chiesa», «museo»): «Castello Pandone» e «Museo nazionale
+             di Castello Pandone» hanno «pandone», «Villa romana di
+             Sora» e «Villa Sora» hanno «sora». Senza, si lascia stare:
+             una tappa in meno e' meglio di una tappa che racconta
+             un'altra cosa. */
+          var vicini = [];
+          (luoghi || []).forEach(function (p) {
+            if (p.k >= 1 && Math.abs(p.lat - t.la) < 0.0005 &&
+                Math.abs(p.lon - t.lo) < 0.0007 && unaParolaInComune(t.n, p.n)) vicini.push(p);
+          });
+          mig = ilPiuVicino(vicini, t, 40);
+        }
+        if (!mig) {
+          /* e se la tappa ha il suo testo, la tappa basta a se stessa */
+          if (t.d || t.i || t.a) {
+            tappe.push({ n: t.n, lat: t.la, lon: t.lo, k: 2, t: t.t || '',
+                         d: t.d || '', i: t.i || '', a: t.a || '',
+                         poi: t.poi || null, come: t.come || '' });
+          }
+          return;
+        }
         if (!(mig.k >= 1)) return;                  // REGOLA 9: non è un luogo
         tappe.push(suoTesto(t, mig));
       });
