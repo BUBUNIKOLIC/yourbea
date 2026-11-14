@@ -2225,6 +2225,7 @@
   var offertoQuando = 0;
   var riferimentiOfferti = {};
   var percorsiAnnunciati = false;   // la riga dei percorsi si dice una volta
+  var raccontiDetti = 0;            // quante volte ha gia' raccontato un posto
 
   /* chi e' un riferimento e quanto vale: la regola sta in
      parti/racconto.js, dove la prova puo' misurarla sui dati veri. */
@@ -4343,7 +4344,12 @@
        Allora una riga sola, la prima volta, e NON una domanda: quanti
        ce n'e' qui intorno e come si chiedono. Poi tace: chi vuole,
        chiede. */
-    if (modo === 'cultura' && !percorsiAnnunciati && s.aPiedi !== false) {
+    /* E PRIMA SI PARLA DEL POSTO DOVE SEI. Vince: «ma davanti alla
+       fontana di trevi descrive la fontana di trevi o parla dei
+       percorsi?». Davanti a Trevi la prima cosa e' Trevi: la riga dei
+       percorsi aspetta che l'app abbia gia' raccontato qualcosa. */
+    if (modo === 'cultura' && !percorsiAnnunciati && raccontiDetti > 0 &&
+        s.aPiedi !== false) {
       percorsiAnnunciati = true;
       try {
         var qui2 = (passeggiata.vicine({ lat: s.lat, lon: s.lon }) || [])
@@ -4373,8 +4379,11 @@
                                 /* fermo lo decide il contapassi, non il GPS */
                                 fermo: s.fermo,
                                 cardinale: null });
-    if (d) { dillo(d); fermoDetto = s.fermo ? Date.now() : fermoDetto; }
-    else if (s.fermo) rispondiAlFermo(s);
+    if (d) {
+      dillo(d);
+      if (modo === 'cultura') raccontiDetti++;
+      fermoDetto = s.fermo ? Date.now() : fermoDetto;
+    } else if (s.fermo) rispondiAlFermo(s);
   });
 
   /* ============================================================
