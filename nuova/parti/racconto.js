@@ -849,8 +849,16 @@ function Racconto(opzioni) {
      Senza, non si scrive niente e non si rompe niente. */
   var diario = o.diario || function () {};
   var LARGO = 8;                          // il raggio di sempre
-  var STRETTO = o.volteStretto || 3;      // dove i monumenti sono attaccati
-  var FITTO = o.fitto || 10;              // da quanti candidati si stringe
+  /* PIU' STRETTO ANCORA NEI CENTRI STORICI — 14/11/2026
+     Vince: «nei centri storici il raggio deve essere ridottissimo».
+     Era tre volte la grandezza da dieci candidati in su; cosi' a
+     Trastevere (7 candidati) non si stringeva affatto, e dove si
+     stringeva un palazzo da 40 metri si sentiva ancora da 120.
+     Adesso: una volta e mezza, e si stringe gia' da sei candidati —
+     sotto i sei restano fuori la periferia e i paesi, che con la
+     stretta diventerebbero muti (Latina centro ne ha 4, Laurentina 0). */
+  var STRETTO = o.volteStretto || 1.5;    // dove i monumenti sono attaccati
+  var FITTO = o.fitto || 6;               // da quanti candidati si stringe
   var LONTANO_IN_MACCHINA = o.lontanoInMacchina || 800;
   /* DIECI METRI, NON CINQUE. Vince, 4/11: «dal bordo non so se 5 o 10
      metri». Misurati tutti e due su otto cammini veri: danno lo stesso
