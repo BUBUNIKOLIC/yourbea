@@ -88,6 +88,12 @@
          padding:20px}
   .piede{margin-top:40px;padding-top:18px;border-top:1px solid var(--filo);
          color:var(--spento);font-size:.95rem}
+    .sotto-mappa { margin: .5rem 0 0; text-align: right; }
+    #stringi {
+      font: inherit; font-size: .9rem; color: #0B1424; background: #E3B64B;
+      border: 0; border-radius: 999px; padding: .45rem 1rem; cursor: pointer;
+    }
+    #stringi:hover { background: #F0C868; }
 </style>
 </head>
 <body>
@@ -98,6 +104,7 @@
   in nessuna mappa al mondo: li mette solo chi ci passa.</p>
 
   <div id="italia" aria-hidden="true"></div>
+  <p class="sotto-mappa" aria-hidden="true"><button type="button" id="stringi" hidden></button></p>
   <ul class="legenda" id="legenda" aria-hidden="true"></ul>
 
   <p class="conto" id="conto">Sto guardando…</p>
@@ -194,9 +201,15 @@
   function disegnaLaMappa(punti) {
     var dove = document.getElementById('italia');
     if (!dove || typeof L === 'undefined') { if (dove) dove.style.display = 'none'; return; }
-    /* si parte dall Italia intera: il centro e' piu' o meno l Umbria */
+    /* SI PARTE DALL ITALIA INTERA, inquadrata davvero. Con uno zoom
+       fisso («5», centrato sull Umbria) nel riquadro ci finiva mezza
+       Europa e l Italia era un pezzetto in mezzo: si inquadrano i
+       suoi quattro angoli — Lampedusa sotto, il Brennero sopra, il
+       Moncenisio a sinistra, Otranto a destra — e ci sta dentro
+       tutta, grande quanto il riquadro lo permette. */
     LA_MAPPA = L.map('italia', { zoomControl: true, attributionControl: true });
-    LA_MAPPA.setView([42.2, 12.6], 5);
+    var L_ITALIA = [[35.45, 6.55], [47.10, 18.55]];
+    LA_MAPPA.fitBounds(L_ITALIA, { padding: [6, 6] });
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 { maxZoom: 19, attribution: '\u00a9 OpenStreetMap' }).addTo(LA_MAPPA);
 
@@ -229,10 +242,28 @@
       SEGNI[i] = segno;
       dentro.push([p.lat, p.lon]);
     });
-    /* e si stringe su quello che c e' davvero, ma senza incollarsi
-       addosso a un punto solo: da li' si scende a mano */
-    if (dentro.length > 1) LA_MAPPA.fitBounds(dentro, { padding: [40, 40], maxZoom: 14 });
-    else if (dentro.length === 1) LA_MAPPA.setView(dentro[0], 15);
+    /* SI APRE SU TUTTA ITALIA, E CI RESTA — Vince, 15/11/2026:
+       «sul sito deve esserci la mappa delle segnalazioni in tutta
+       Italia». Prima la mappa si stringeva da sola su dove stanno i
+       punti: con tutte le segnalazioni di adesso intorno a Latina si
+       apriva su Latina, e chi arriva sul sito non vedeva l'Italia ma
+       un pezzo di provincia. La mappa d'Italia e' il senso della
+       pagina: si vede dove la rete e' arrivata e dove non c'e'
+       ancora nessuno. Per stringere c'e' il bottone qui sotto, e
+       toccando una riga dell'elenco ci si scende sopra comunque. */
+    if (dentro.length) {
+      var stringi = document.getElementById('stringi');
+      if (stringi) {
+        stringi.hidden = false;
+        stringi.textContent = dentro.length > 1
+          ? 'Stringi sulle ' + dentro.length + ' segnalazioni'
+          : 'Vai alla segnalazione';
+        stringi.onclick = function () {
+          if (dentro.length > 1) LA_MAPPA.fitBounds(dentro, { padding: [40, 40], maxZoom: 14 });
+          else LA_MAPPA.setView(dentro[0], 15);
+        };
+      }
+    }
 
     var legenda = document.getElementById('legenda');
     if (legenda) {
