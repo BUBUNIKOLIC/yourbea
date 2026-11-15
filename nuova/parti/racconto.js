@@ -916,6 +916,13 @@ function Racconto(opzioni) {
     return CAPITOLO_D_ARTE.test(String(titolo || '').trim());
   }
 
+  function comeSiEntra(p) {
+    var fuori = '';
+    if (p.pz) fuori += ' Ingresso: ' + String(p.pz).replace(/\s+/g, ' ').trim() + '.';
+    if (p.or) fuori += ' Orari: ' + String(p.or).replace(/\s+/g, ' ').trim() + '.';
+    return fuori;
+  }
+
   function finoAlBordo(p) {
     return Math.round(quantoEGrande(p) / 2) + DAL_BORDO;
   }
@@ -1031,7 +1038,18 @@ function Racconto(opzioni) {
       if (g === 0) return { tipo: 'scheda-orientativa', luogo: p, testo: fatta, livello: 'guida' };
       g = g - 1;             // da qui in poi i gradini sono quelli di sempre
     }
-    if (g === 0 && p.d) return { tipo: 'scheda', luogo: p, testo: colNomeDavanti(p, p.d), livello: 'guida' };
+    /* IL PREZZO E GLI ORARI, SE LI SAPPIAMO — 15/11/2026
+       Vengono da Wikivoyage e si attaccano col codice Wikidata, quindi
+       sono di QUESTO posto e non di uno vicino. Si dicono con la
+       scheda, perche' e' li' che servono: chi non vede non legge il
+       cartello della biglietteria, e il turista che arriva davanti a un
+       prezzo che non si aspettava ha gia' perso il giro (regola di
+       Vince del 16/10). Si dicono come li scrive la guida — «7 €»,
+       «Ingresso libero» — senza aggiungere parole nostre. */
+    if (g === 0 && p.d) {
+      return { tipo: 'scheda', luogo: p, livello: 'guida',
+               testo: colNomeDavanti(p, p.d) + comeSiEntra(p) };
+    }
     /* E SE LA SCHEDA NON C'E', C'E' QUELLA DEL MINISTERO. 227 luoghi
        hanno la descrizione del Catalogo generale dei Beni Culturali nel
        campo `cf` e l'app non la diceva MAI: `cf` si usava solo dentro
