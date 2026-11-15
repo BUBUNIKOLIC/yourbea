@@ -907,6 +907,15 @@ function Racconto(opzioni) {
     }
     return 0;
   }
+  /* QUALI CAPITOLI SONO «COSA STAI GUARDANDO». Gli stessi titoli che
+     strumenti/capitoli.py mette per primi, ma qui servono di nuovo:
+     l'app non puo' fidarsi dell'ordine in cui sono scritti nei dati,
+     perche' i dati vecchi hanno l'ordine vecchio. */
+  var CAPITOLO_D_ARTE = /^(descrizione|interno|interni|l.interno|esterno|l.esterno|facciata|la facciata|architettura|struttura|navata|navate|cappella|cappelle|le cappelle|altare|altari|abside|cupola|la cupola|campanile|il campanile|cripta|chiostro|opere|opere d.arte|opere conservate|decorazione|decorazioni|apparato decorativo|affreschi|mosaici|sculture|dipinti|pronao|portale|portali|sagrestia|coro|organo|pavimento|il tema|arte|stile)/i;
+  function eCapitoloDArte(titolo) {
+    return CAPITOLO_D_ARTE.test(String(titolo || '').trim());
+  }
+
   function finoAlBordo(p) {
     return Math.round(quantoEGrande(p) / 2) + DAL_BORDO;
   }
@@ -1034,22 +1043,42 @@ function Racconto(opzioni) {
     if (g === 0 && p.cf) return { tipo: 'scheda', luogo: p, testo: colNomeDavanti(p, p.cf), livello: 'guida' };
     if (g === 0) return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
     if (g === 1 && p.i) return { tipo: 'cosa-vedere', luogo: p, testo: 'Cosa vedere: ' + p.i, livello: 'guida' };
-    /* quanti gradini stanno PRIMA dei capitoli: la scheda, cosa vedere e
-       l'approfondimento (com'e' fatta l'ha gia' tolta la riga sopra). */
-    var prima = 1 + (p.i ? 1 : 0) + (p.a ? 1 : 0);
-    if (p.a && g === prima - 1) {
+    /* ============================================================
+       PRIMA L'ARTE E L'ARCHITETTURA, POI LA STORIA — 15/11/2026
+       Vince, davanti a un monumento: «si ma deve descrivere il
+       monumento», «dal punto di vista artistico architettonico e
+       storico». In quest'ordine: chi sta li' davanti vuole sapere cosa
+       sta guardando, e dopo da dove viene.
+       Prima i gradini erano: scheda, cosa vedere, approfondimento, poi
+       i capitoli — e l'approfondimento quasi sempre e' storia. Alla
+       Fontana di Trevi si sentiva l'acquedotto dell'Aqua Virgo prima
+       della «Descrizione» con Nettuno e i Tritoni.
+       Adesso i capitoli si dividono in due: quelli che dicono com'e'
+       fatto e cosa c'e' dentro vengono subito, la storia viene dopo. */
+    var dArte = [], diStoria = [];
+    (p.cap || []).forEach(function (c) {
+      (eCapitoloDArte(c.t) ? dArte : diStoria).push(c);
+    });
+    /* quanti gradini stanno PRIMA: la scheda, cosa vedere e i capitoli
+       d'arte (com'e' fatta l'ha gia' tolta la riga sopra). */
+    var prima = 1 + (p.i ? 1 : 0);
+    if (g >= prima && g < prima + dArte.length) {
+      var ca = dArte[g - prima];
+      return { tipo: 'approfondimento', luogo: p, livello: 'guida',
+               testo: ca.t ? (ca.t.replace(/\.$/, '') + '. ' + ca.d) : colNomeDavanti(p, ca.d) };
+    }
+    prima += dArte.length;
+    if (p.a && g === prima) {
       return { tipo: 'approfondimento', luogo: p, testo: colNomeDavanti(p, p.a), livello: 'guida' };
     }
-    /* I CAPITOLI, uno per «ancora». Si dice anche di COSA parlano: chi
-       non vede non ha un indice da guardare, e «la facciata» prima del
-       testo e' il modo di sapere dove sei nel racconto. */
+    if (p.a) prima += 1;
+    if (g >= prima && g < prima + diStoria.length) {
+      var cs2 = diStoria[g - prima];
+      return { tipo: 'approfondimento', luogo: p, livello: 'guida',
+               testo: cs2.t ? (cs2.t.replace(/\.$/, '') + '. ' + cs2.d) : colNomeDavanti(p, cs2.d) };
+    }
     if (p.cap && p.cap.length) {
-      var quale = g - prima;
-      if (quale >= 0 && quale < p.cap.length) {
-        var c = p.cap[quale];
-        return { tipo: 'approfondimento', luogo: p, livello: 'guida',
-                 testo: c.t ? (c.t.replace(/\.$/, '') + '. ' + c.d) : colNomeDavanti(p, c.d) };
-      }
+      return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };
     }
     if (p.a && !p.cap) return { tipo: 'approfondimento', luogo: p, testo: colNomeDavanti(p, p.a), livello: 'guida' };
     return { tipo: 'finito', luogo: p, livello: 'guida', testo: 'Di questo ti ho detto tutto.' };

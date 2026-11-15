@@ -4477,6 +4477,32 @@
       diario('FERMO: in Utilita non c\'era niente da descrivere');
       return;
     }
+    /* ============================================================
+       PIU' STAI FERMO, PIU' TI RACCONTA — 14-15/11/2026
+       Vince: «ma più sto fermo davanti ad un monumento più in
+       automatico continua a parlare», «si ma deve descrivere il
+       monumento», «e non deve accavallarsi con quello che c'è intorno».
+       Davanti al Colosseo uno sta venti minuti, e dover dire «ancora»
+       ogni volta non e' una visita: e' un'interrogazione.
+       E VIENE PRIMA DI TUTTO IL RESTO: finche' il monumento che stai
+       guardando ha qualcosa da dire, l'app continua QUELLO. Le altre
+       cose intorno aspettano: accavallare la chiesa di fianco mentre
+       racconti la facciata e' il modo di non far capire niente.
+       L'ordine dentro il monumento e' arte e architettura prima, storia
+       dopo: lo decide parti/racconto.js. */
+    if (racconto.inCorso()) {
+      var piu = null;
+      try {
+        piu = racconto.approfondisci({ qui: { lat: s.lat, lon: s.lon },
+                                       intorno: vicini(), modo: modo });
+      } catch (e) { piu = null; }
+      if (piu && piu.testo && piu.tipo !== 'finito' && piu.tipo !== 'niente') {
+        diario('FERMO: stai fermo davanti a ' +
+               ((piu.luogo && piu.luogo.n) || 'un monumento') + ', continuo con quello');
+        dillo(piu);
+        return;
+      }
+    }
     /* TURISMO: com'e' fatto quello che hai davanti. */
     var vicini0 = vicini();
     scordaIDescritti(s);
@@ -4500,26 +4526,6 @@
       }
     }
     fermoDetto = Date.now();
-    /* ============================================================
-       PIU' STAI FERMO, PIU' TI RACCONTA — 14/11/2026
-       Vince: «ma più sto fermo davanti ad un monumento più in
-       automatico continua a parlare». Davanti al Colosseo uno sta
-       venti minuti, e dover dire «ancora» ogni volta non e' una visita:
-       e' un'interrogazione. Finita la descrizione di com'e' fatto,
-       restando li' l'app scende da sola di gradino — cosa vedere, la
-       storia, i capitoli dell'articolo — uno ogni trenta secondi.
-       Resta tutto com'era per chi si muove: questo vale solo da fermi,
-       solo in Turismo, e «ferma» lo interrompe come sempre. */
-    var piu = null;
-    try {
-      piu = racconto.approfondisci({ qui: { lat: s.lat, lon: s.lon },
-                                     intorno: vicini(), modo: modo });
-    } catch (e) { piu = null; }
-    if (piu && piu.testo && !/non ho|niente/i.test(piu.testo.slice(0, 40))) {
-      diario('FERMO: stai fermo, continuo a raccontare');
-      dillo(piu);
-      return;
-    }
     if (nienteDaDireDove &&
         posizione.dist(nienteDaDireDove.lat, nienteDaDireDove.lon, s.lat, s.lon) < NIENTE_DA_DIRE_DA) {
       diario('FERMO: niente da raccontare, e l\'ho già detto qui');
