@@ -165,7 +165,7 @@ function Racconto(opzioni) {
 
     // 1. SE SONO FERMO DAVANTI A QUALCOSA: si scende di gradino
     if (fermo) {
-      var vicino = (inCorso && daRaccontare(inCorso, modo)) ? inCorso : primoBuono(intorno, modo);
+      var vicino = (inCorso && daRaccontare(inCorso, modo)) ? inCorso : miglioreAddosso(intorno, modo);
       if (vicino) {
         /* UTILITA' NON E' TURISMO, E FIN QUI NON SI VEDEVA.
            «Non c'è differenza tra modalità utilità e modalità turismo»
@@ -425,6 +425,13 @@ function Racconto(opzioni) {
     /* appena c'e' qualcosa da dire, il conto del niente ricomincia */
     zonaScarica.da = null;
     candidati.sort(function (a, b) { return b.punti - a.punti; });
+    /* CHI VINCE E PERCHE', scritto nel quaderno: senza questa riga la
+       scelta era una scatola chiusa e le cause si indovinavano. */
+    for (var dq = 0; dq < Math.min(5, candidati.length); dq++) {
+      diario('  scelta ' + (dq + 1) + ': ' + candidati[dq].punti + ' punti  ' +
+             Math.round(candidati[dq].o.m) + ' m  rango ' + rango(candidati[dq].p) +
+             '  ' + candidati[dq].p.n);
+    }
     var scelto = candidati[0];
     var o = scelto.o, p = scelto.p, dietro = scelto.dietro;
 
@@ -671,6 +678,155 @@ function Racconto(opzioni) {
       if (daRaccontare(intorno[i].p, modo)) return intorno[i].p;
     }
     return null;
+  }
+
+  /* ============================================================
+     FERMO IN UN CENTRO STORICO: VINCE L'OPERA, NON IL METRO
+     15/11/2026. Vince, fermo alla Fontana di Trevi: «ma ora se sono in
+     un centro storico cosa mi descrive?». Gli raccontava «piazza di
+     Trevi» — due metri, nessun capitolo — e si lasciava dietro la
+     FONTANA DI TREVI, che sta a tre metri e ha dieci capitoli. Tre
+     centri storici su tre facevano lo stesso:
+         Fontana di Trevi   «piazza di Trevi» (2 m, rango 2)
+                            invece della Fontana (3 m, rango 3, 10 cap)
+         Piazza Navona      «obelisco Agonale» (22 m, rango 1)
+                            invece della fontana dei Quattro Fiumi
+                            (28 m, rango 3, 2 cap)
+         Piazza del Campo   «Cappella di Palazzo» (17 m, rango 1)
+                            invece di piazza del Campo (23 m, 6 cap)
+     LA CAUSA era una riga sola: fermandosi si prendeva primoBuono(),
+     cioe' il PRIMO dell'elenco, che arriva ordinato per distanza. Un
+     metro in meno batteva un monumento.
+     MA NON SI VA A PESCARE LONTANO. Vince, subito dopo: «non e' che mi
+     dice che ho il Colosseo a 500 metri e non mi dice cosa incontro».
+     Quindi la gara si fa SOLO fra quelli che hai addosso — dentro il
+     loro bordo, la stessa misura di finoAlBordo() che usa il resto —
+     e li' dentro vince il rango; a pari rango, il piu' vicino. Se non
+     hai niente addosso, resta come prima: il primo buono.
+     ============================================================ */
+  /* DAVANTI A UNA CERCHIA DI MURA NON CI STAI MAI.
+     Al Duomo di Firenze vinceva «Mura di Firenze»: rango 3, nove
+     capitoli, e nei dati un punto solo a ventotto metri da piazza del
+     Duomo — ma le mura sono un anello intorno alla citta', e il loro
+     centro cade dove non c'e' niente. Lo stesso per l'acquedotto (alla
+     Fontana di Trevi si sentiva l'Aqua Virgo, 21/10) e per un centro
+     storico o un comune, che sono zone, non cose da guardare. Restano
+     nei dati e servono: in Utilita' dire «sei nel centro storico» e'
+     giusto. Qui, fermo davanti a un monumento, non competono. */
+  var NON_CI_STAI_DAVANTI = /^(mura|acquedotto|cinta|quartiere|rione|comune|citt|frazione|zona|area urbana)/i;
+  function unAnello(p) {
+    return NON_CI_STAI_DAVANTI.test(String(p.t || '')) ||
+           /^(mura|cinta muraria|centro storico)\b/i.test(String(p.n || ''));
+  }
+
+  /* ============================================================
+     DAVANTI A UN PALAZZO SI DESCRIVE IL PALAZZO — Vince, 15/11 sera
+     Fermo al Colosseo l'app partiva con «I giochi inaugurali
+     dell'anfiteatro Flavio si tennero a Roma nell'80...»: nei dati il
+     Colosseo e' rango 2 e quel testo e' rango 3. Al Duomo di Milano
+     partiva con «la basilica di Santa Tecla, oggi non piu' esistente».
+     Sono tre generi di schede che NON sono la cosa che hai davanti, e
+     contate in tutta Italia sono:
+         56      eventi      «battaglia di Palermo», «Giochi inaugurali»
+        408      sparite     la scheda stessa dice «non piu' esistente»,
+                             «fu demolita», «distrutto nel»
+        350      ex          segnate nei dati (le stazioni chiuse)
+      14.311     pezzi       organo, pulpito, portale, tesoro, e
+                             soprattutto le BIBLIOTECHE dentro un palazzo
+     Non si buttano: in Utilita' una biblioteca e' un servizio, e «dove
+     c'era la chiesa di San Carlo» e' una frase che Vince ha voluto.
+     Perdono solo la gara di «cosa ho davanti», con centocinquanta
+     punti in meno: se non c'e' altro, le dicono ancora. */
+  var UN_EVENTO = /^(giochi|battaglia|assedio|concilio|incoronazione|sacco|congiura|rivolta|eccidio|strage|processo|conclave)\b/i;
+  var UN_PEZZO = /^(organo|organi|pulpito|portale|portali|tabernacolo|altare|coro ligneo|tesoro|quadreria|collezione|archivio|biblioteca)\b/i;
+  var SPARITA = /non pi\u00f9 esistente|oggi scomparsa|oggi scomparso|fu demolit|venne demolit|\u00e8 stata demolit|distrutta nel|distrutto nel|non esiste pi\u00f9/i;
+  /* E LA SCHEDA CHE COMINCIA AL PASSATO. «Il battistero di San Giovanni
+     alle Fonti FU uno dei primi battisteri della citta'»: sta sotto il
+     Duomo di Milano, scavato, e vinceva lui. Contate in tutta Italia
+     sono 1.765 schede su 43.776, e guardandole sono proprio quella
+     roba: stazioni chiuse, castelli distrutti, templi greci che non ci
+     sono piu'. Se una scheda non riesce a dire «e'», davanti non ce
+     l'hai. */
+  var AL_PASSATO = /^(il |lo |la |l'|i |le |gli )?[^.]{0,60}?\b(fu un|fu uno|fu una|fu il|fu la|fu lo|era un|era uno|era una|furono)\b/i;
+  function nonEQuelloCheVedi(p) {
+    if (UN_EVENTO.test(String(p.n || ''))) return true;
+    if (UN_PEZZO.test(String(p.n || ''))) return true;
+    if (p.ex) return true;
+    if (AL_PASSATO.test(String(p.d || '').trim())) return true;
+    return SPARITA.test(String(p.d || '') + ' ' + String(p.i || ''));
+  }
+
+  function miglioreAddosso(intorno, modo) {
+    /* UNA PESATA SOLA PER TUTTI, e non due.
+       Il primo tentativo faceva una gara fra quelli che hai ADDOSSO
+       (dentro il loro bordo) e solo se non c'era nessuno pesava gli
+       altri. In piazza del Duomo a Milano quella porta si chiudeva
+       sulla piazza stessa — rango 2, tre metri, zero capitoli — e il
+       DUOMO, cinquantadue metri, rango 3, nove capitoli, non entrava
+       nemmeno in gara. Stessa cosa a Firenze e a San Marco.
+       Adesso si pesa come fa il cenno camminando: cento punti di rango
+       contro un punto per metro, piu' dieci punti per capitolo (fino a
+       cinquanta) perche' a pari rango vince chi ha davvero qualcosa da
+       raccontare. Il Colosseo a cinquecento metri resta fuori da se':
+       trecento meno cinquecento e' sotto zero, e perde contro qualunque
+       cosa tu abbia vicino. */
+    var meglio = null, suoPeso = -1e9;
+    for (var i = 0; i < intorno.length; i++) {
+      var o = intorno[i];
+      if (!o || !o.p || !daRaccontare(o.p, modo)) continue;
+      if (unAnello(o.p)) continue;
+      /* SENZA SCHEDA NON C'E' NIENTE DA DESCRIVERE. In piazza Dante a
+         Napoli vinceva la «Biblioteca dell'Istituto Pontano», che nei
+         dati e' un nome e nient'altro: scelta lei, l'app restava muta
+         in mezzo a sedici luoghi. In Turismo chi non ha una scheda
+         non entra in gara — in Utilita' invece il nome basta e serve
+         («davanti hai la biblioteca»), e li' non cambia niente. */
+      if (modo === 'cultura' && !o.p.d && !o.p.i && !(o.p.cap || []).length) continue;
+      /* QUATTRO PUNTI AL METRO, NON UNO. Con un punto al metro il
+         rango dei dati pesava cento metri, e il rango dei dati non e'
+         affidabile: al Pantheon vinceva la «Basilica di Nettuno» (39 m,
+         segnata rango 3) sul Pantheon stesso (3 m, segnato rango 2), e
+         in piazza dei Miracoli il «Museo dell'Opera del Duomo» (55 m)
+         sulla Torre (2 m). A quattro punti il metro, venticinque metri
+         valgono un rango: l'importanza decide fra cose vicine fra loro,
+         non fra una che hai addosso e una in fondo alla piazza. */
+      /* PROVATO E BUTTATO: contare i metri dal bordo invece che dal
+         centro (max(0, m - grandezza/2)). Sulle venti piazze non
+         rimetteva a posto ne' i Fori ne' Rialto — la grandezza nei
+         dati quasi nessuno ce l'ha — e peggiorava piazza di Spagna
+         («Casa Museo di Giorgio de Chirico» al posto della Barcaccia)
+         e il Duomo di Firenze. Misurato, non immaginato. */
+      /* I CAPITOLI PESANO QUANTO IL RANGO, e ci sono ragioni contate:
+         il rango lo ricaviamo dalla lunghezza della scheda e sbaglia
+         (il Colosseo era 2, il ponte di Rialto 1), mentre i capitoli
+         sono il materiale vero che quel monumento ha. Venticinque
+         punti l'uno, fino a cento. Ai Fori il Foro Romano (otto
+         capitoli) passa davanti al «sacello di Venere Cloacina»
+         (nessuno) che lo batteva per due punti, e a Rialto il ponte
+         (uno) passa davanti al Palazzo dei Camerlenghi (nessuno). */
+      var peso = rango(o.p) * 100 - o.m * 4 +
+                 Math.min(160, (o.p.cap || []).length * 40);
+      /* E LA PIAZZA NON E' IL MONUMENTO. «Turismo e' arte» (Vince,
+         12/11): fermo in piazza del Duomo a Milano la piazza vinceva
+         per tre metri e il Duomo, cinquantadue metri, rango 3 e nove
+         capitoli, non lo diceva nessuno. Lo spazio dove stai cede il
+         passo a quello che ci sta dentro — ma solo in Turismo: in
+         Utilita' «sei in piazza Garibaldi» e' proprio quello che
+         serve, e li' la piazza pesa come tutto il resto. */
+      if (modo === 'cultura' && !(o.p.cap || []).length &&
+          /^(piazza|piazzale|largo|via|viale|corso|strada)\b/i.test(String(o.p.t || o.p.n || ''))) {
+        /* SOLO LA PIAZZA CHE NON HA NIENTE DA DIRE. Il «Foro Romano»
+           nei dati e' di tipo «piazza» e ha otto capitoli: togliendogli
+           cento punti ai Fori Imperiali vinceva il «sacello di Venere
+           Cloacina» per tre punti. Una piazza con i capitoli e' un
+           monumento e resta in gara; «Piazza del Duomo (Milano)», zero
+           capitoli, cede il passo a quello che ci sta dentro. */
+        peso -= 100;
+      }
+      if (modo === 'cultura' && nonEQuelloCheVedi(o.p)) peso -= 150;
+      if (peso > suoPeso) { meglio = o.p; suoPeso = peso; }
+    }
+    return meglio || primoBuono(intorno, modo);
   }
 
   /* IL RANGO — e perche' fino al 22/10 non esisteva.
