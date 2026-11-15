@@ -1802,7 +1802,29 @@
   /* la musica sotto il racconto: solo in Turismo e piano, con le regole in
      parti/musica.js (8 prove). Qui c'è solo l'elemento audio. */
   var musica = Musica({});
-  try { musica.accendi(localStorage.getItem('yourbea2-musica') !== 'no'); } catch (e) {}
+  /* ============================================================
+     LA MUSICA E' TOLTA — Vince, 16/11/2026: «togli la musica allora».
+     Era gia' scritto nella regola 7 di parti/musica.js, col numero: a
+     Latina il 5/11, in ventisette minuti col tappeto acceso l'orecchio
+     ha consegnato 49 frasi e la pagina ne ha capite ZERO, contro 12 su
+     12 nei due minuti prima. Stanotte a Vienna e' andata peggio: dal
+     quaderno del suo telefono, la musica parte alle 23:51:45 e da li'
+     in poi l'orecchio non consegna piu' NIENTE — zero pezzi d'ascolto
+     per quattro minuti e quarantotto secondi, mentre lui provava a
+     chiuderla dicendo «yourbea fermati».
+     La ragione sta sotto, nel telefono: la sessione audio e' una sola e
+     la condividono chi suona e chi ascolta. Quando il nostro tappeto
+     parte, iOS annuncia un'interruzione — nel quaderno e' la riga un
+     secondo dopo — e il registratore muore. Il guscio a quella notifica
+     non reagisce apposta (10/11: reagendo, l'app si spegneva da sola
+     ogni dodici secondi), quindi non lo riaccende nessuno.
+     Il tappeto restava un gusto; sentire quello che gli si dice no.
+     COME SI TORNA INDIETRO: il tasto «Musica» c'e' ancora e funziona,
+     e questa riga e' una sola. Chi la rivuole la accende a mano.
+     E LA CHIAVE CAMBIA NOME («musica2»): sul telefono di Vince quella
+     vecchia puo' valere «si» da prima, e la musica tornerebbe da sola
+     senza che nessuno l'abbia riaccesa. */
+  try { musica.accendi(localStorage.getItem('yourbea2-musica2') === 'si'); } catch (e) {}
 
   /* ============================================================
      IL SILENZIO CHE LA TIENE SVEGLIA — 5/11/2026
@@ -6227,7 +6249,7 @@
   function cambiaMusica(accendere) {
     var ora = accendere === undefined ? !musica.eAccesa() : !!accendere;
     musica.accendi(ora);
-    try { localStorage.setItem('yourbea2-musica', ora ? 'si' : 'no'); } catch (e) {}
+    try { localStorage.setItem('yourbea2-musica2', ora ? 'si' : 'no'); } catch (e) {}
     scriviTastoMusica();
     voce.parla(ora
       ? (modo === 'cultura' ? 'Musica accesa, piano, sotto il racconto.'

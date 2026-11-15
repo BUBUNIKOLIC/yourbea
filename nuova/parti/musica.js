@@ -47,6 +47,13 @@ function Musica(opzioni) {
   var DOPO_STRADA = o.dopoStrada || 8000;  // quanto tace dopo una svolta
   var SALITA = o.salita || 0.08;           // quanto può crescere a ogni passo
 
+  /* QUI RESTA ACCESA, E NON E' UNA DIMENTICANZA — 16/11/2026.
+     «Togli la musica allora» (Vince, dopo il quaderno di Vienna). Ma
+     questo file DECIDE soltanto, e le sue dieci prove servono a chi la
+     musica ce l'ha accesa: spegnendola qui diventavano tutte verdi
+     senza provare niente (4 su 10 passavano «perche' non suona»).
+     A toglierla e' l'app, in una riga sola: in nuova/app.js la musica
+     parte spenta e si accende solo col tasto. */
   var accesa = true;                       // la vuole l'utente?
   var zittaFino = 0;
   var volume = 0;
