@@ -916,11 +916,29 @@ function Racconto(opzioni) {
     return CAPITOLO_D_ARTE.test(String(titolo || '').trim());
   }
 
+  /* IL PREZZO NON SI DICE — Vince, 15/11/2026 sera.
+     «Secondo me i prezzi non sono necessari»: dei 284 che avevamo, 32
+     si portavano dietro una data del 2023 o prima, il piu' vecchio del
+     2013. Un prezzo vecchio e' peggio di nessun prezzo, perche' chi
+     non vede ci arriva contando su quello. Gli orari restano:
+     invecchiano meno, e servono a sapere se e' aperto. */
+  /* E GLI ORARI SI DICONO AL CONDIZIONALE — Vince, 15/11 sera:
+     «per gli orari dici sempre dovrebbe essere». Vengono da
+     Wikivoyage e nessuno ci garantisce che siano di oggi: chi non
+     vede ci arriva contando su quello, e deve sapere che e' una
+     indicazione, non il cartello sulla porta. */
   function comeSiEntra(p) {
-    var fuori = '';
-    if (p.pz) fuori += ' Ingresso: ' + String(p.pz).replace(/\s+/g, ' ').trim() + '.';
-    if (p.or) fuori += ' Orari: ' + String(p.or).replace(/\s+/g, ' ').trim() + '.';
-    return fuori;
+    if (!p.or) return '';
+    var q = String(p.or).replace(/\s+/g, ' ').trim().replace(/\.$/, '');
+    /* NOVANTAQUATTRO DEI 428 «ORARI» NON SONO ORARI: sono «accesso
+       libero», «su appuntamento», «non visitabile causa restauri».
+       «Gli orari dovrebbero essere accesso libero» non si puo' sentire. */
+    if (/\d{1,2}[:.]\d{2}|\d{1,2}\s*[-–]\s*\d{1,2}\b/.test(q)) {
+      return ' Gli orari dovrebbero essere ' + q + '.';
+    }
+    /* «dovrebbe essere il fortino e' chiuso» non e' italiano: con
+       «questo:» davanti la nota si cita e regge qualunque frase. */
+    return ' Sulla visita, dovrebbe valere questo: ' + q + '.';
   }
 
   function finoAlBordo(p) {
