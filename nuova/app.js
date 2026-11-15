@@ -5814,8 +5814,30 @@
         return voce.hoDettoIo(x);
       });
       if (tutteMie) {
-        diario('ECO: era la mia voce — ' + String(ipotesiMie[0]).slice(0, 60));
-        return;
+        /* ---------- MA LA CODA PUO' ESSERE TUA ---------- 16/11/2026
+           Vienna, 00:27:43, dal quaderno di Vince:
+             SENTITO: Qui intorno non ho niente da raccontare Bea fermati
+             ECO: era la mia voce — Qui intorno non ho niente da raccontare...
+           Il riconoscitore cuce insieme la mia frase e la sua, e qui si
+           buttava tutto: dentro c'era «Bea fermati», il comando che lui
+           provava a dare da due giorni. Adesso si toglie il pezzo mio e
+           si guarda cosa resta: se e' un comando, vale.
+           E SE NON RESTA NIENTE si butta come prima — e' il caso di via
+           dei Corazzieri (31/10), dove dentro una frase mia c'era
+           «farmacia» e sono partiti cinque percorsi mai chiesti. */
+        var coda = '';
+        if (typeof voce.senzaLaMiaVoce === 'function') {
+          for (var cm = 0; cm < ipotesiMie.length && !coda; cm++) {
+            var resto = voce.senzaLaMiaVoce(ipotesiMie[cm]);
+            if (resto && resto.split(' ').length <= 6 && unComando(resto)) coda = resto;
+          }
+        }
+        if (!coda) {
+          diario('ECO: era la mia voce — ' + String(ipotesiMie[0]).slice(0, 60));
+          return;
+        }
+        diario('ECO: la mia voce davanti, ma la coda e tua — ' + coda);
+        testo = [coda];
       }
     }
     /* ---------- LA PROPRIA VOCE NON E' UN COMANDO ---------- 29/10/2026

@@ -600,6 +600,42 @@ function MotoreVoce(opzioni) {
       }
       return false;
     },
+    /* ============================================================
+       LA MIA VOCE SI TOGLIE, LA TUA RESTA — 16/11/2026, Vienna
+       Vince, dal suo quaderno alle 00:27:43:
+           SENTITO: Qui intorno non ho niente da raccontare Bea fermati
+           ECO: era la mia voce — Qui intorno non ho niente...
+       Il riconoscitore consegna a voce finita e cuce insieme quello che
+       ha detto l'app e quello che ha detto lui. hoDettoIo() trovava la
+       mia frase e buttava via TUTTO: dentro c'era «Bea fermati», cioe'
+       il comando che Vince stava provando a dare da due giorni.
+       Qui invece si taglia via il pezzo che e' mio e si restituisce la
+       coda. Se la coda e' vuota — la frase era tutta mia — si torna
+       stringa vuota, e chi chiama butta come prima: e' il caso di via
+       dei Corazzieri (31/10), dove dentro una frase mia c'era
+       «farmacia» e sono partiti cinque percorsi mai chiesti.
+       ============================================================ */
+    senzaLaMiaVoce: function (testo) {
+      var n = normalizza(testo || '');
+      if (!n) return '';
+      var p = n.split(' ').filter(function (x) { return x; });
+      var adesso = ora();
+      var tagliato = 0;
+      for (var i = 0; i < ultimeDette.length; i++) {
+        if (adesso - ultimeDette[i].quando > RICORDO) continue;
+        var mia = ' ' + ultimeDette[i].t + ' ';
+        /* il pezzo PIU' LUNGO, dall'inizio, che sta dentro una mia
+           frase: l'eco arriva davanti e la voce di chi parla dopo. */
+        for (var k = p.length; k >= 3; k--) {
+          if (mia.indexOf(' ' + p.slice(0, k).join(' ') + ' ') >= 0) {
+            if (k > tagliato) tagliato = k;
+            break;
+          }
+        }
+      }
+      if (!tagliato) return n;
+      return p.slice(tagliato).join(' ');
+    },
     staParlando: function () {
       if (parlando && tettoInCorso && ora() - inizioFrase > tettoInCorso * 2) {
         diario('SBLOCCO: dicevo di parlare da ' + Math.round((ora() - inizioFrase) / 1000) +
