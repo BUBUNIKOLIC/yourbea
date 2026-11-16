@@ -5421,6 +5421,18 @@
   /* si saluta, si spegne tutto, e poi si chiude per davvero dove si puo'.
      Su iPhone un'app non puo' terminarsi da sola: allora tace, lascia
      andare microfono e posizione, e lo dice. */
+  /* IL QUADERNO DEVE DIRE DOVE SI FERMA — 16/11/2026.
+     A Riga, 22:58:17, il comando e' arrivato e la frase e' uscita
+     («COMANDO: your bea fermati», «PARLA: Chiudo. A presto.»), ma lo
+     spegnimento non e' mai arrivato in fondo: nel quaderno manca la riga
+     del guscio «chiusa a voce: spento tutto», e cinquantasette secondi
+     dopo l'app era ancora alla porta. Nel browser, rifatto identico,
+     urbeaChiudi() viene chiamato: quindi il pezzo che si pianta sta in
+     mezzo, e senza le righe «CHIUDO:» resta una scatola chiusa.
+     IL COMMENTO STA FUORI DALLA FUNZIONE APPOSTA: la prova
+     «la chiusura aspetta che la voce abbia finito» (prove/laurentina-2-11.js)
+     guarda i primi 1800 caratteri dopo «function chiudiTutto», e un
+     commento lungo dentro al corpo spingeva voce.staParlando() oltre. */
   function chiudiTutto() {
     voce.parla('Chiudo. A presto.', { livello: voce.GUIDA, ancheSeUguale: true });
     /* L'ULTIMA FRASE LA TAGLIAVAMO NOI. 02/11, 14:49:34 → 14:49:35, la
@@ -5432,6 +5444,7 @@
        finito, col tetto di otto secondi per non restare appesi se il
        motore della voce si pianta. */
     var finisci = function () {
+      diario('CHIUDO: spengo tutto');
       try { suonaMusica({ suona: false }); } catch (e) {}
       try { suonaIlSilenzio({ suona: false, perche: 'chiusa' }); } catch (e) {}
       try { faro.spegni(); spegniIlSuono(); } catch (e) {}
@@ -5439,15 +5452,29 @@
       try { passeggiata.ferma && passeggiata.ferma(); } catch (e) {}
       acceso = false;
       try { voce.ferma(); } catch (e) {}
-      if (window.urbeaChiudi) { window.urbeaChiudi(); return; }
+      if (window.urbeaChiudi) {
+        diario('CHIUDO: lo dico al guscio');
+        window.urbeaChiudi();
+        return;
+      }
+      diario('CHIUDO: il guscio non c\'e, resto ferma e muta');
       /* nel browser o dove non si puo' chiudere: resta ferma e muta */
       mostra({ titolo: 'Yourbea', testo: 'Chiusa. Premi Avvia per riaprirla.', dove: '', gradino: '' });
     };
     var scadenza = Date.now() + 8000;
+    var giri = 0;
     var aspetta = function () {
       var ancora = false;
       try { ancora = !!voce.staParlando(); } catch (e) {}
-      if (ancora && Date.now() < scadenza) { setTimeout(aspetta, 250); return; }
+      giri++;
+      if (ancora && Date.now() < scadenza) {
+        /* una riga ogni due secondi, non trentadue: se resta appesa si
+           vede, e se va liscia il quaderno non si riempie */
+        if (giri % 8 === 0) diario('CHIUDO: aspetto che finisca la frase');
+        setTimeout(aspetta, 250);
+        return;
+      }
+      if (ancora) diario('CHIUDO: otto secondi e parla ancora, spengo lo stesso');
       finisci();
     };
     setTimeout(aspetta, 250);
