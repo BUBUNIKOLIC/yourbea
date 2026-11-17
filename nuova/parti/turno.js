@@ -117,6 +117,26 @@ function Turno(o) {
      centro» lo dice lei.
      ============================================================ */
   var SEGNALAZIONE = /\bqu[ia]\b.{0,24}?\b(?:c['\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sta|stanno|e|\u00e8)\s+\S/i;
+  /* ---------- «PORTAMI AL PALAZZETTO» E' PER LEI ---------- 17/11/2026
+     Riga, la sera. Il quaderno, due righe attaccate:
+
+         16:57:29 SENTITO: Portami al palazzetto
+         16:57:29 TURNO: una frase di 3 parole non e' per me
+                         (senza nome, non era per lei)
+
+     Il microfono l'aveva capita perfettamente. L'ha buttata questa
+     regola: senza il nome passano solo le segnalazioni, un tocco, il
+     telefono alla bocca o una risposta corta a una domanda aperta. Una
+     richiesta di tre parole non era nessuna delle quattro, e Vince ha
+     avuto «zero».
+     Ma «portami al palazzetto» non si dice a nessun altro: e' della
+     stessa pasta di «qui c'e'», che passa senza nome da sempre. Si
+     tengono solo i verbi che non vogliono dire altro — «andiamo» e
+     «vai» no, quelli si dicono fra persone — e deve seguirci qualcosa:
+     «portami» da solo e' la voce di chi pensa, non un comando.
+     L'eco e il «mentre parla lei» sono guardati PRIMA di qui, quindi
+     questa porta non riapre quella del 10/11. */
+  var PORTAMI = /^(?:(?:ok|ehi|e|eh|allora|senti)\s+){0,2}(?:portami|riportami|riaccompagnami|accompagnami)\b\s+\S/i;
   /* il nome in mezzo alla frase: solo quelli che NON sono parole italiane.
      «curve», «bea» ed «europea» stanno nella lista dei nomi perche' la
      dettatura li scrive cosi', ma in mezzo a una chiacchiera sono parole
@@ -260,6 +280,7 @@ function Turno(o) {
       if (colNome) return { perLei: true, perche: 'col nome' };                               // 5
       if (NOME_IN_MEZZO.test(t)) return { perLei: true, perche: 'il nome, in mezzo alla frase' };
       if (SEGNALAZIONE.test(t)) return { perLei: true, perche: 'e\' una segnalazione: «qui c\'e\'…»' };
+      if (PORTAMI.test(t)) return { perLei: true, perche: 'chiede di essere portato: non si dice ad altri' };
       if (dalTocco) return { perLei: true, perche: 'tocco' };
       if (ora() < boccaFino) return { perLei: true, perche: 'telefono alla bocca' };
       /* le parole si contano a spazi, come le conta chi parla: «c'è»
