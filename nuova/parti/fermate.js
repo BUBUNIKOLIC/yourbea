@@ -30,6 +30,17 @@
       cosa più grossa lì intorno, una sola.
    5. SENZA PRECISIONE NON SI DICE NIENTE. Sbagliare fermata e' peggio che
       non dirla: uno scende dove non deve.
+   6. LO STESSO POSTO NON SI RIDICE A OGNI FERMATA. Riga, 17/11/2026, in
+      filobus su Brivibas iela: su diciassette fermate annunciate, il
+      «Museo ebrei in Lettonia» e' uscito a QUATTRO di fila in due minuti
+      e mezzo (10:32:38, 10:32:54, 10:34:57, 10:35:03). Nel raggio di
+      quattrocento metri da quattro fermate vicine c'e' lo stesso museo,
+      e per ognuna era la cosa piu' grossa: la regola 4 funzionava, ed
+      era il problema. Chi non vede sente una filastrocca e smette di
+      ascoltare proprio la parte che serve, il nome della fermata.
+      Quindi: un posto detto «appena esci» riposa qualche minuto, e alla
+      fermata dopo si dice il secondo della lista. Se non c'e' un
+      secondo, il nome della fermata basta: meglio corto che ripetuto.
 */
 
 'use strict';
@@ -43,9 +54,12 @@ function Fermate(opzioni) {
   var CI_SEI = o.ciSei || 120;         // sotto: ci sei
   var RIPOSO = o.riposo || 240000;     // REGOLA 3
   var FUORI = o.fuori || 400;          // REGOLA 4: cosa c'è appena esci
+  var RIPOSO_FUORI = o.riposoFuori || 480000;   // REGOLA 6: otto minuti
 
   var dette = {};
   var avvisate = {};
+  /* e cosa si e' gia' detto «appena esci»: vedi REGOLA 6 */
+  var fuoriDette = {};
 
   function senzaAccenti(t) {
     return String(t || '').toLowerCase()
@@ -68,11 +82,14 @@ function Fermate(opzioni) {
        esci, Colosseo» fa ridere. Se il nome e' lo stesso, il nome della
        fermata basta gia'. */
     var suo = senzaAccenti(fermata.nome);
+    var adesso = ora();
     var mig = null, meglio = -1;
     (luoghi || []).forEach(function (x) {
       if (!x || !x.n || !(x.k >= 1)) return;
       var n = senzaAccenti(x.n);
       if (n === suo || n.indexOf(suo) >= 0 || suo.indexOf(n) >= 0) return;
+      /* REGOLA 6: se l'ho appena detto a un'altra fermata, salta */
+      if (adesso - (fuoriDette[n] || 0) < RIPOSO_FUORI) return;
       var d = dist(fermata.lat, fermata.lon, x.lat, x.lon);
       if (d > FUORI) return;
       /* conta quanto è raccontato: una scheda lunga vuol dire che la gente
@@ -81,6 +98,7 @@ function Fermate(opzioni) {
       if (peso > meglio) { meglio = peso; mig = { p: x, m: d }; }
     });
     if (!mig) return '';
+    fuoriDette[senzaAccenti(mig.p.n)] = adesso;
     /* QUI I PASSI NON VANNO — 13/11/2026. Dal telefono di Vince, in bus
        verso Fiumicino: «Appena esci, Centro di preparazione olimpica, a
        425 passi». Quattrocentoventicinque passi sono 320 metri, e uno
@@ -175,7 +193,7 @@ function Fermate(opzioni) {
     return 'fermata ' + t;
   }
 
-  function dimentica() { dette = {}; avvisate = {}; }
+  function dimentica() { dette = {}; avvisate = {}; fuoriDette = {}; }
 
   return { prossima: prossima, eUnaFermata: eUnaFermata, dimentica: dimentica };
 }

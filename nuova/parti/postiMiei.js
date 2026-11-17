@@ -101,6 +101,45 @@ function PostiMiei(o) {
 
   /* trova(): per nome, com'e' stato detto. Prima l'uguale, poi chi
      contiene: «medico» trova «medico», «dal medico» trova «medico». */
+  /* ---------- «PALAZZO» E «PALAZZETTO» SONO LA STESSA COSA ----------
+     17/11/2026, Riga. Alle 10:42:51 Vince ha segnato «palazzetto dello
+     sport»; poco dopo ha chiesto «portami al palazzo dello sport». Per
+     trova() erano due posti diversi: nessuno dei due nomi contiene
+     l'altro, e il confronto era tutto qui.
+     Nessuno si ricorda a voce la parola esatta che ha usato mezz'ora
+     prima, e chi non vede non puo' andare a rileggersela. Quindi le
+     parole si confrontano TRONCATE alle prime cinque lettere
+     («palazz»→«palaz», «palazzetto»→«palaz») e gli articoli non
+     contano. Ma devono esserci TUTTE: «pala» da sola non deve pescare
+     «palazzo», che e' l'errore del 9/11 — «portami al pala bianchini»
+     fini' a Terni perche' bastava un pezzo di parola.
+     Questa non misura distanze: chi la chiama mette il suo tetto in
+     metri, perche' un nome che somiglia a dieci chilometri non e' il
+     posto che ti serve. */
+  var ARTICOLI = { il:1, lo:1, la:1, i:1, gli:1, le:1, di:1, del:1, dello:1, della:1,
+                   dei:1, degli:1, delle:1, al:1, allo:1, alla:1, ai:1, agli:1,
+                   alle:1, a:1, da:1, in:1, su:1, per:1, e:1, un:1, uno:1, una:1 };
+  function radici(t) {
+    var fuori = [];
+    sbassa(t).split(' ').forEach(function (w) {
+      if (!w || ARTICOLI[w]) return;
+      fuori.push(w.length > 5 ? w.slice(0, 5) : w);
+    });
+    return fuori;
+  }
+  function somiglia(nome, chiesto) {
+    var a = radici(chiesto), b = radici(nome);
+    if (!a.length || !b.length) return false;
+    /* chi chiede puo' dire meno parole del nome segnato («palazzo dello
+       sport» per «palazzetto dello sport di Riga»), ma non di piu' */
+    var corte = a.length <= b.length ? a : b;
+    var lunghe = a.length <= b.length ? b : a;
+    for (var i = 0; i < corte.length; i++) {
+      if (lunghe.indexOf(corte[i]) < 0) return false;
+    }
+    return true;
+  }
+
   function trova(nome) {
     var t = sbassa(nudo(nome));
     if (!t) return null;
@@ -109,6 +148,17 @@ function PostiMiei(o) {
     for (i = 0; i < tutti.length; i++) {
       var n = sbassa(tutti[i].n);
       if (n && (n.indexOf(t) >= 0 || t.indexOf(n) >= 0)) return tutti[i];
+    }
+    /* «PalaBianchini» detto e' «pala bianchini»: a voce gli spazi non
+       esistono, e un nome attaccato non deve diventare introvabile. */
+    var senzaSpazi = t.replace(/ /g, '');
+    for (i = 0; i < tutti.length; i++) {
+      var m = sbassa(tutti[i].n).replace(/ /g, '');
+      if (m && (m === senzaSpazi || m.indexOf(senzaSpazi) >= 0 || senzaSpazi.indexOf(m) >= 0)) return tutti[i];
+    }
+    /* e per ultimo le parole troncate */
+    for (i = 0; i < tutti.length; i++) {
+      if (somiglia(tutti[i].n, t)) return tutti[i];
     }
     return null;
   }
@@ -357,7 +407,8 @@ function PostiMiei(o) {
            perMandare: perMandare, daUnLink: daUnLink, unisci: unisci,
            quiVicino: quiVicino, scordaDetti: scordaDetti, pericolo: pericolo,
            registra: registra, trova: trova, butta: butta, elenco: elenco,
-           dueNomi: dueNomi, dallaVoce: dallaVoce, aPosto: aPosto, conArticolo: conArticolo };
+           dueNomi: dueNomi, dallaVoce: dallaVoce, aPosto: aPosto, conArticolo: conArticolo,
+           somiglia: somiglia };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = PostiMiei;

@@ -400,9 +400,22 @@ function Contributi(opzioni) {
          rimedia dopo, col link, percio' i punti RESTANO in coda e
          ripartono da soli. Buttarli e' perdere per sempre quello che una
          persona ha camminato e detto. */
-      if (ok && typeof ok === 'object' && ok.presi === 0 &&
-          (ok.scartati || []).some(function (s) { return s.perche === 'tester sconosciuto'; })) {
-        diario('CONTRIBUTI: il server non mi conosce come tester, restano in coda (' + quanti + ')');
+      /* NON SOLO «TESTER SCONOSCIUTO» — 17/11/2026, Riga. Alle 10:42:51
+         Vince ha detto «qui c'e' il palazzetto dello sport», l'app ha
+         risposto «Segnato» e il quaderno ha scritto «CONTRIBUTI
+         mandati: 1». Sul server non c'era: 71 punti, l'ultimo del 12
+         novembre, ZERO sopra il cinquantesimo parallelo. Lo scartava il
+         server (worker.js: lat fuori da 35-48, «fuori dall Italia») e
+         noi svuotavamo la coda lo stesso, perche' guardavamo solo il
+         motivo «tester sconosciuto». Un punto perso per sempre, e un
+         «mandati» falso scritto nel quaderno.
+         La regola giusta non elenca i motivi: SE NON NE HA PRESO
+         NEANCHE UNO, LA CODA NON SI SVUOTA. Il motivo si scrive, cosi'
+         la prossima volta si sa perche'. */
+      if (ok && typeof ok === 'object' && typeof ok.presi === 'number' && ok.presi === 0) {
+        var perche = ((ok.scartati || [])[0] || {}).perche || 'non ha detto perche';
+        diario('CONTRIBUTI: il server non ne ha preso nessuno (' + perche +
+               '), restano in coda (' + quanti + ')');
         return 0;
       }
       if (ok) {

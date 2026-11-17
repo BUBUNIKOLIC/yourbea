@@ -3236,6 +3236,34 @@
       partiVerso({ n: suo0.n, lat: suo0.lat, lon: suo0.lon }, qui, true);
       return;
     }
+    /* 0-bis. QUELLO CHE HA SEGNALATO LUI, O UN ALTRO TESTER.
+       17/11/2026, Riga: alle 10:42:51 Vince ha detto «qui c'e' il
+       palazzetto dello sport» e l'app ha risposto «Segnato». Poi:
+       «portami al palazzo dello sport» — e non lo trovava. I punti dei
+       tester entravano nella ricerca solo quando il nome conteneva uno
+       dei tredici TIPI («farmacia», «stazione»...): un palazzetto dello
+       sport non e' un tipo, e quindi non esisteva.
+       Non ha senso: un punto segnato da chi era li' a piedi e' il
+       riferimento piu' preciso che abbiamo — e' la lezione dei 400
+       metri (20/10). Vale entro tre chilometri, come i luoghi nostri:
+       un nome che somiglia a dieci chilometri non e' quello che serve. */
+    try {
+      var VICINO_TESTER = 3000;
+      var loro0 = null, dLoro = Infinity;
+      dagliAltri.qui(qui.lat, qui.lon, VICINO_TESTER).forEach(function (x) {
+        var n = String((x && (x.n || x.nome)) || '');
+        if (!n || !x.lat || /\bnon\b/i.test(n)) return;
+        if (n.toLowerCase().indexOf(cerca) < 0 && !posti.somiglia(n, cerca)) return;
+        var d = posizione.dist(qui.lat, qui.lon, x.lat, x.lon);
+        if (d < dLoro) { dLoro = d; loro0 = { n: n, lat: x.lat, lon: x.lon }; }
+      });
+      if (loro0) {
+        diario('PORTAMI A: l\'ha segnalato un tester, ' + loro0.n +
+               ' a ' + Math.round(dLoro) + ' m');
+        partiVerso(loro0, qui, true);
+        return;
+      }
+    } catch (e) {}
 
     // 1. un luogo nostro col nome che somiglia — ma VICINO
     /* 06/11/2026, via dei Corazzieri: «la farmacia più vicina» era a 107
@@ -3698,8 +3726,34 @@
                                 d.tipo === 'prossima' ||
                                 d.tipo === 'fuori')) ? 'guida' : null;
     if (genere === 'guida' || d.tipo === 'arrivato' || d.tipo === 'manca') quandoHoGuidato = Date.now();
+    /* ---------- UNA FERMATA PASSATA NON SI ANNUNCIA ---------- 17/11/2026
+       Riga, in filobus su Brivibas iela: cinque frasi sono uscite dalla
+       coda fino a DIECI secondi dopo essere state decise (la fermata
+       Baznicas messa in coda alle 10:34:50 e detta alle 10:34:57, la
+       Gertrudes alle 10:34:53 e detta alle 10:35:03). A 46 all'ora —
+       tredici metri al secondo, misurati: media 22,8 km/h su 102
+       letture — dieci secondi sono centotrenta metri: «stai per
+       arrivare» arriva quando la fermata e' alle spalle, e a chi non
+       vede dice di prepararsi a scendere da una porta che non c'e' piu'.
+       La coda sapeva gia' buttare una frase diventata falsa (`valida`,
+       parti/voce.js): mancava chi gliela desse per le fermate. Il metro
+       e' in metri, non in secondi: vale finche' non ti sei allontanato
+       di piu' di sessanta metri da quando l'ho decisa. */
+    var valeAncora = null;
+    if (d.tipo === 'fermata' && d.fermata && typeof d.fermata.lat === 'number') {
+      var feLat = d.fermata.lat, feLon = d.fermata.lon;
+      var eraA = posizione.dist(qui0.lat, qui0.lon, feLat, feLon);
+      valeAncora = function () {
+        var adesso = posizione.leggi();
+        if (!adesso || !adesso.pronto) return true;
+        var oraA = posizione.dist(adesso.lat, adesso.lon, feLat, feLon);
+        if (oraA <= eraA + 60) return true;
+        diario('FERMATA: l\'ho passata di ' + Math.round(oraA - eraA) + ' m, non la dico piu');
+        return false;
+      };
+    }
     var preso = voce.parla(detto, { clip: clipDi(d), livello: liv, uguale: d.testo,
-                                    sostituisce: genere,
+                                    sostituisce: genere, valida: valeAncora,
                                     rifai: rifaiLaDistanza(d, detto) });
     if (!preso) { diario('non detta: ' + String(detto).slice(0, 40)); return; }
     quandoHoParlato = Date.now();   /* il battito del silenzio parte da qui */
