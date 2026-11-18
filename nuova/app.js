@@ -3248,9 +3248,20 @@
        metri (20/10). Vale entro tre chilometri, come i luoghi nostri:
        un nome che somiglia a dieci chilometri non e' quello che serve. */
     try {
+      /* MA NON PER UN TIPO DI POSTO — controllo del 18/11, prima che la
+         usasse in Italia. «Portami alla farmacia» non e' un nome: se un
+         tester ha segnato «farmacia Corsetti» a 2,5 km, questo passo la
+         sceglierebbe e si fermerebbe qui, davanti alla farmacia vera a
+         centocinquanta metri. E' l'errore del 6/11 («la farmacia piu'
+         vicina era a 107 km»), rientrato da un'altra porta.
+         Per un TIPO ci pensa gia' il cercatore qui sotto, che mette
+         insieme i nostri, i punti dei tester col tipo nel nome e quelli
+         della mappa, e sceglie il piu' vicino di tutti. Qui si resta ai
+         NOMI: «il palazzetto dello sport», «il bar di Mario». */
+      var UN_TIPO = /\b(farmaci\w*|commissariat\w*|pronto soccorso|metropolitan\w*|metro|stazion\w*|fermat\w*|supermercat\w*|bagn[oi]|bancomat|ufficio postale|bar|ristorant\w*)\b/i;
       var VICINO_TESTER = 3000;
       var loro0 = null, dLoro = Infinity;
-      dagliAltri.qui(qui.lat, qui.lon, VICINO_TESTER).forEach(function (x) {
+      (UN_TIPO.test(cerca) ? [] : dagliAltri.qui(qui.lat, qui.lon, VICINO_TESTER)).forEach(function (x) {
         var n = String((x && (x.n || x.nome)) || '');
         if (!n || !x.lat || /\bnon\b/i.test(n)) return;
         if (n.toLowerCase().indexOf(cerca) < 0 && !posti.somiglia(n, cerca)) return;
