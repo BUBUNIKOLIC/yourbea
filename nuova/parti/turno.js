@@ -116,6 +116,15 @@ function Turno(o) {
      L'eco si guarda PRIMA, perche' «Qui c'e' il percorso Venafro — il
      centro» lo dice lei.
      ============================================================ */
+  /* ---------- E SENZA «QUI» NON PASSA, PER SCELTA SUA ---------- 19/11/2026
+     Oggi a Latina ne sono andate perse quattro su cinque, e avevo
+     aperto la porta anche a chi comincia con «c'e'» e basta. Vince:
+     «secondo me bisogna dire Yourbea qui c'e'...» — «yourbea o
+     simili». Quindi si torna indietro: una segnalazione la riconosce
+     il «qui c'e'», oppure il nome davanti. Le quattro perse di oggi le
+     salva l'altra meta' della correzione, cioe' il nome scritto come
+     lo scrive davvero il riconoscitore («per beh», «erbe»).
+     NON si riapre questa porta senza che lo chieda lui. */
   var SEGNALAZIONE = /\bqu[ia]\b.{0,24}?\b(?:c['\u2019]?[e\u00e8]|ce|ci sono|ci stanno|sta|stanno|e|\u00e8)\s+\S/i;
   /* ---------- «PORTAMI AL PALAZZETTO» E' PER LEI ---------- 17/11/2026
      Riga, la sera. Il quaderno, due righe attaccate:

@@ -243,7 +243,16 @@
     }
   });
 
-  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|bea';
+  /* ---------- COME LA SCRIVE DAVVERO IL RICONOSCITORE ---------- 19/11/2026
+     Latina. Due segnalazioni perse perche' il nome era arrivato cosi':
+       16:23:17  SENTITO: Per beh fermata Laurentina Lorenzoni
+       16:23:53  SENTITO: Erbe a numero civico 580 più numero 55
+     «rube» c'era (e infatti «Rubeis qui c'e'…» e' passata), «erbe» e
+     «per beh» no. Non si indovinano: si aggiungono quelle che il
+     quaderno ha scritto davvero. Stanno in fondo perche' sono parole
+     italiane vere — valgono solo in testa alla frase (NOME_RE) o in
+     coda (NOME_DIETRO), mai in mezzo (NOME_IN_MEZZO non le ha). */
+  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|rubeis|bea|erbe|per beh|perbea|urbe\u00e0';
   /* IL VIGILE DEL TURNO — Yourbea 2.0 (parti/turno.js). Decide lui chi
      parla e quando il microfono ascolta: le 9 regole approvate da Vince
      il 7/11. La voce gli chiede il permesso; ogni frase sentita, da
@@ -2412,15 +2421,41 @@
          dei civici degli ultimi cento metri.
      ============================================================ */
   var civicoDettoDaSolo = '';
+  var perchePocoCivico = '';
+  /* ---------- UNO SOLO IN VENTISETTE MINUTI ---------- 19/11/2026
+     Latina: «devi mettere qualche numero civico in più» — ed e' la terza
+     volta che lo chiede (11/11, 12/11, oggi). Nel quaderno di oggi c'e'
+     UNA riga «CIVICO da solo» in ventisette minuti, e intorno la mappa
+     ne aveva fino a trenta.
+     Il conto dei quarantacinque secondi non c'entra: in ventisette
+     minuti ci stanno trentasei occasioni. A fermarlo e' il battito —
+     uno sguardo ogni VENTI secondi — che cade quasi sempre mentre lei
+     sta parlando (oggi ha parlato 125 volte), e allora si perde il
+     giro intero. Adesso guarda ogni cinque secondi: il pavimento dei
+     quarantacinque resta, ma appena c'e' un silenzio il numero esce.
+     E quando non esce, il quaderno dice perche' — cosi' la prossima
+     volta non si indovina. */
   setInterval(function () {
     if (!acceso || modo !== 'servizi') return;
-    if (guida.meta()) return;
+    var fermato = '';
+    if (guida.meta()) fermato = 'ti sto portando da qualche parte';
     var s = posizione.leggi();
-    if (!s.pronto || s.fermo || !aPiediOra()) return;
-    if (Date.now() - ultimoCivico < 45000) return;
-    if (voce.staParlando() || voce.inCoda().length || staAspettando()) return;
+    if (!fermato && !s.pronto) fermato = 'non so ancora dove sei';
+    if (!fermato && s.fermo) fermato = 'sei fermo';
+    if (!fermato && !aPiediOra()) fermato = 'non sei a piedi';
+    if (!fermato && Date.now() - ultimoCivico < 45000) fermato = 'ne ho detto uno da poco';
+    if (!fermato && (voce.staParlando() || staAspettando())) fermato = 'sto parlando';
+    if (fermato) {
+      /* si scrive solo quando cambia, se no sono dodici righe al minuto */
+      if (fermato !== perchePocoCivico) { perchePocoCivico = fermato; diario('CIVICO: niente — ' + fermato); }
+      return;
+    }
     var civ = ilCivicoQui({ lat: s.lat, lon: s.lon });
-    if (!civ) return;
+    if (!civ) {
+      if (perchePocoCivico !== 'qui non ne conosco') { perchePocoCivico = 'qui non ne conosco'; diario('CIVICO: niente — qui non ne conosco'); }
+      return;
+    }
+    perchePocoCivico = '';
     if (String(civ.n) === civicoDettoDaSolo) return;
     civicoDettoDaSolo = String(civ.n);
     ultimoCivico = Date.now();
@@ -2428,7 +2463,7 @@
     dillo({ tipo: 'strada', livello: 'cenno',
             testo: civ.via ? ('Siamo a ' + civ.via + ' ' + civ.n + '.')
                            : ('Siamo al numero ' + civ.n + '.') });
-  }, 20000);
+  }, 5000);
 
   /* IL SEGNO DI VITA. Chi non vede non può dare un'occhiata allo schermo
      per sapere se l'app sta ancora lavorando: se tace per minuti, non sa
