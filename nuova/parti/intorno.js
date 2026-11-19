@@ -399,6 +399,50 @@ function Intorno(opzioni) {
   }
 
   /* ---------- 4. IL PERCORSO A PIEDI ---------- */
+  /* ---------- UNA SVOLTA SI MISURA, NON SI CREDE ---------- 19/11/2026
+     Vince, dopo Latina: «mi diceva tra 80 passi gira a destra» su una
+     strada dritta, e «walhalla non e' precisissima — per un cieco».
+     Ha ragione, e il rimedio non e' fidarsi meno a parole: e' guardare
+     il TRACCIATO. Valhalla manda anche la linea del percorso, punto per
+     punto. Allora, in ogni manovra, si confronta la direzione dei venti
+     metri PRIMA con quella dei venti metri DOPO: se cambia di meno di
+     venticinque gradi, non e' una svolta, e' una curva della strada.
+     A chi vede non cambia niente — guarda e tira dritto. A chi non vede
+     «gira a destra» e' un ordine: gira, e finisce in una traversa o
+     contro un muro. Venticinque gradi sono larghi apposta: una svolta
+     vera in citta' e' sessanta gradi o piu'. */
+  /* i metri fra due punti: qui dentro non c'era un misuratore, e per
+     questa regola serve. E' la stessa formula del resto dell'app. */
+  function metriFra(a, b) {
+    var R = 6371000, r = Math.PI / 180;
+    var x = Math.sin((b.lat - a.lat) * r / 2) * Math.sin((b.lat - a.lat) * r / 2) +
+            Math.cos(a.lat * r) * Math.cos(b.lat * r) *
+            Math.sin((b.lon - a.lon) * r / 2) * Math.sin((b.lon - a.lon) * r / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+  }
+  function versoFra(a, b) {
+    var r = Math.PI / 180;
+    var dl = (b.lon - a.lon) * r;
+    var la1 = a.lat * r, la2 = b.lat * r;
+    var y = Math.sin(dl) * Math.cos(la2);
+    var x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  }
+  function quantoGira(pts, i, quanti) {
+    if (!pts || i <= 0 || i >= pts.length - 1) return null;
+    var metri = quanti || 20;
+    var a = i, b = i;
+    var fatti = 0;
+    while (a > 0 && fatti < metri) { fatti += metriFra(pts[a - 1], pts[a]); a--; }
+    fatti = 0;
+    while (b < pts.length - 1 && fatti < metri) { fatti += metriFra(pts[b], pts[b + 1]); b++; }
+    if (a === i || b === i) return null;
+    var prima = versoFra(pts[a], pts[i]);
+    var dopo = versoFra(pts[i], pts[b]);
+    var d = Math.abs(((dopo - prima + 540) % 360) - 180);
+    return d;
+  }
+
   function decodi(s) {
     var pts = [], i = 0, lat = 0, lon = 0, b, sh, res;
     while (i < s.length) {
@@ -515,6 +559,16 @@ function Intorno(opzioni) {
            piu' del nome: sotto i quindici metri non e' una svolta,
            qualunque cosa ci sia scritto. I gradini restano sempre. */
         if (k && metri < 15 && !gradini) return;
+        /* e qui si misura: una «svolta» che sul tracciato non gira non
+           si dice (vedi «UNA SVOLTA SI MISURA, NON SI CREDE»). */
+        if (k && /\b(?:svolta|svoltare|gira|girare)\b/i.test(testo) && !gradini) {
+          var gradi = quantoGira(pts, m.begin_shape_index || 0);
+          if (gradi !== null && gradi < 25) {
+            diario('PERCORSO: «' + testo.slice(0, 40) + '» gira di ' + Math.round(gradi) +
+                   ' gradi: non e una svolta, la salto');
+            return;
+          }
+        }
         if (svolte.length && svolte[svolte.length - 1].testo === testo) return;  // Valhalla la spezza in due
         /* ---------- LA STESSA VIA NON SI SVOLTA DUE VOLTE ---------- 31/10/2026
            Dallo stesso percorso: n. 3 «Svolta a sinistra su Via Fratelli
