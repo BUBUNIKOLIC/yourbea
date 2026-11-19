@@ -84,6 +84,23 @@ function Guida(opzioni) {
     try { return ilRiferimento(sv.lat, sv.lon) || ''; } catch (e) { return ''; }
   }
   var ARRIVATO = o.arrivato || 22;
+  /* ---------- VICINO ALLA META LE SVOLTE SI SPENGONO ---------- 19/11/2026
+     Latina, davanti alla Farmacia Corsetti. Quindici secondi prima di
+     dire che era arrivato:
+
+       16:29:31  Continua così per 25 passi, 20 metri. Poi puoi svoltare a destra
+       16:29:37  Adesso, alla fermata Aeronautica/Montagne Rocciose: svolta a destra
+       16:29:52  Sei arrivato: Farmacia Corsetti, Viale dell'Aeronautica
+
+     Vince: «un cieco avrebbe girato a destra, io no». La farmacia era a
+     una ventina di metri, sulla stessa strada, e la svolta era quella
+     DOPO la farmacia: il percorso di Valhalla non finisce alla porta,
+     continua lungo la via. Chi vede l'insegna si ferma; chi non vede
+     esegue, e gira dentro una traversa.
+     Dentro gli ultimi quaranta metri, quindi, la meta viene prima di
+     qualunque manovra: non si dice piu' nessuna svolta, si dice solo
+     quanto manca — e poi «sei arrivato». */
+  var QUASI = o.quasi || 40;
   var FILO = o.filo || 20000;        // non si tace mai piu' di venti secondi
   var FUORI = o.fuori || 45;                // quanto ci si può scostare dal tracciato
   var FUORI_DA = o.fuoriDa || 15000;        // e per quanto, prima di dirlo
@@ -562,6 +579,38 @@ function Guida(opzioni) {
   }
 
   /* passo(): si chiama a ogni posizione nuova mentre si va verso la meta. */
+  /* ---------- «SEI ARRIVATO ALLA FARMACIA CORSETTI» ---------- 19/11/2026
+     Parole di Vince, dopo la camminata: «sarebbe opportuno dire sei
+     arrivato alla farmacia corsetti». Prima diceva «Sei arrivato:
+     Farmacia Corsetti, Viale dell'Aeronautica» — coi due punti, che
+     detti da una voce sintetica non si sentono, e col nome buttato li'
+     come un'etichetta.
+     La preposizione si mette solo quando si sa che parola e': farmacia
+     e' femminile, bar e' maschile, ospedale vuole «all'». Se il nome
+     non comincia con una di queste parole non si indovina — meglio il
+     due punti di «sei arrivato al Cavour». */
+  var FEMMINILI = 'farmacia|fermata|stazione|chiesa|basilica|banca|scuola|biblioteca|posta|questura|caserma|clinica|cattedrale|galleria|torre|villa|pasticceria|gelateria|tabaccheria|edicola|palestra|piscina|libreria|macelleria|panetteria|salumeria|pizzeria|trattoria|osteria|birreria|cartoleria|profumeria|gioielleria|lavanderia|parrucchieria';
+  var MASCHILI = 'bar|ristorante|supermercato|mercato|museo|teatro|cinema|parco|giardino|stadio|palazzetto|palazzo|ponte|porto|comune|municipio|commissariato|distributore|bancomat|negozio|forno|bagno|parcheggio|campo|centro';
+  var VOCALE = 'ospedale|ufficio|aeroporto|istituto|albergo|asilo|archivio|ambulatorio';
+  function allaMeta(nome) {
+    var t = String(nome || '').trim();
+    var prima = t.split(/[\s,]+/)[0] || '';
+    var sbassa = prima.toLowerCase()
+      .replace(/[\u00e0\u00e1]/g, 'a').replace(/[\u00e8\u00e9]/g, 'e');
+    var resto = t.slice(prima.length);
+    if (new RegExp('^(?:' + FEMMINILI + ')$').test(sbassa)) return 'alla ' + sbassa + resto;
+    if (new RegExp('^(?:' + MASCHILI + ')$').test(sbassa)) return 'al ' + sbassa + resto;
+    if (new RegExp('^(?:' + VOCALE + ')$').test(sbassa)) return 'all\'' + sbassa + resto;
+    /* una via e una piazza non si «raggiungono»: ci si arriva DENTRO */
+    if (/^(?:via|viale|piazza|piazzale|corso|largo|vicolo|strada|lungotevere)$/.test(sbassa)) {
+      return 'in ' + sbassa + resto;
+    }
+    return ': ' + t;
+  }
+
+  /* «Sei arrivato: X» non vuole lo spazio davanti ai due punti */
+  function conUnoSpazio(t) { return /^:/.test(t) ? t : ' ' + t; }
+
   function passo(qui, adesso, s) {
     if (!meta) return null;
     var d = dist(qui.lat, qui.lon, meta.lat, meta.lon);
@@ -582,7 +631,25 @@ function Guida(opzioni) {
       var accanto = s && s.accanto ? ' Accanto c\'è ' + s.accanto + '.' : '';
       meta = null; svolte = []; prossima = 0; preavvisata = -1; linea = [];
       return { tipo: 'arrivato', livello: 'emergenza',
-               testo: 'Sei arrivato: ' + n + (dove ? ', ' + dove : '') + '.' + accanto };
+               testo: 'Sei arrivato' + conUnoSpazio(allaMeta(n)) + (dove ? ', ' + dove : '') + '.' + accanto };
+    }
+    /* GLI ULTIMI QUARANTA METRI SONO DELLA META, non delle manovre.
+       (vedi «VICINO ALLA META LE SVOLTE SI SPENGONO», 19/11/2026) */
+    if (d < QUASI) {
+      if (adesso - ultimoAvviso < FILO) return null;   // non piu' di una ogni venti secondi
+      ultimoAvviso = adesso;
+      /* QUANTO MANCA SI CONTA SULLA STRADA, non in linea d'aria — e' la
+         differenza fra un navigatore e una bussola. Dietro l'angolo i
+         due numeri non c'entrano niente l'uno con l'altro: trenta metri
+         in linea d'aria possono essere novanta di marciapiede. */
+      var resta = d;
+      if (avanzamento && avanzamento.quantoELungo() > 0) {
+        avanzamento.dove(qui.lat, qui.lon);
+        var sullaStrada = avanzamento.quantoManca();
+        if (sullaStrada > 0 && sullaStrada < d * 3) resta = sullaStrada;
+      }
+      return { tipo: 'manca', livello: 'guida',
+               testo: 'Ci sei quasi: ' + meta.n + ', ' + passi(resta) + '.' };
     }
     /* COL MOTORE DELL'AVANZAMENTO non serve indovinare niente: la
        prossima svolta e' la prima che sta piu' avanti di dove sei, e

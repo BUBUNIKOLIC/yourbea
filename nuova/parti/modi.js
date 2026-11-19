@@ -121,6 +121,12 @@ function Modi(opzioni) {
   var COME_STAI = ['Come stai?', 'Come va?', 'Tutto bene?', 'Come te la passi?'];
   var BENTORNATO = ['Bentornato', 'Rieccoci', 'Di nuovo qui'];
   var CONGEDI = ['A dopo', 'Ci sentiamo', 'Quando vuoi sono qui', 'Alla prossima'];
+  /* ---------- CHIAMATA PER NOME ---------- 19/11/2026
+     «quando chiamo yourbea la app potrebbe dire: dimmi — per segnalare
+     che l'orecchio e' pronto» (Vince). Varia come gli altri saluti: una
+     risposta sempre identica, sentita venti volte al giorno, diventa un
+     suono e smette di dire «ti sto ascoltando». */
+  var DIMMI = ['Dimmi', 'Dimmi pure', 'Ti ascolto', 'Sono qui'];
 
   function oraDelGiorno(h) {
     if (h >= 5 && h < 13) return 'mattina';
@@ -174,9 +180,13 @@ function Modi(opzioni) {
     return sceglie(CONGEDI, 'congedo') + (nome ? ', ' + nome : '') + '.';
   }
 
+  /* dimmi(): la risposta a chi la chiama per nome. Dice due cose in una
+     parola: ti ho sentito, e il microfono e' aperto. */
+  function dimmi() { return sceglie(DIMMI, 'dimmi') + '.'; }
+
   return { veste: veste, attacco: attacco, colNome: colNome,
            conNome: conNome, ilNome: ilNome,
-           saluto: saluto, comeSta: comeSta, congedo: congedo,
+           saluto: saluto, comeSta: comeSta, congedo: congedo, dimmi: dimmi,
            oraDelGiorno: oraDelGiorno };
 }
 

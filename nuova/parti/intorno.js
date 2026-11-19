@@ -433,6 +433,19 @@ function Intorno(opzioni) {
     /* «sulla passerella» e' la traduzione di Valhalla per footway: a
        piedi, in citta', quello e' il marciapiede. */
     [/\bsulla passerella\b/gi, 'sul marciapiede'],
+    /* ---------- «MANTIENI LA DRITTO» ---------- 19/11/2026
+       Latina, alle 16:25:22 e alle 16:25:32:
+         «Adesso: mantieni la dritto per imboccare Piazzale Giulio Douhet»
+       Quattro volte in una camminata. Non e' un difetto nostro: e'
+       l'italiano di Valhalla, che per «keep straight» scrive «mantieni
+       la dritto» tenendosi l'articolo di «mantieni la destra». Scritto
+       fa ridere; detto a chi non vede, in mezzo a un incrocio, fa
+       dubitare dell'indicazione — e un attimo di dubbio su un
+       attraversamento e' esattamente quello che non ci si puo'
+       permettere. Si dice come lo direbbe una persona. */
+    [/\bmantieni la dritto\b/gi, 'continua dritto'],
+    [/\bmantenere la dritto\b/gi, 'continuare dritto'],
+    [/\btieni la dritto\b/gi, 'continua dritto'],
     [/\bla passerella\b/gi, 'il marciapiede'],
     [/\bsu the\b/gi, 'su'],
     /* «su l'attraversamento» non si dice: l'articolo davanti a vocale

@@ -769,9 +769,80 @@
     voce.interrotta();
   };
 
+  /* ---------- DOPO UN'INTERRUZIONE L'ORECCHIO VA RIFATTO ---------- 19/11/2026
+     Latina, il quaderno di oggi. Fino alle 16:23 il microfono sentiva
+     tutto: 36 pezzi in sei minuti, le frasi arrivate intere. Poi, alle
+     16:24:02:
+
+         — torno in primo piano —
+         audio: iOS dice interruzione (non decido niente qui)
+         audio: interruzione finita, riconfermo la sessione
+         VOCE: l'audio e' tornato, riprendo
+         MICROFONO: acceso (la pagina vuole ascoltare)
+
+     e da li' in poi, per VENTI MINUTI, zero pezzi. Non uno vuoto: zero.
+     L'orecchio veniva riconfigurato 136 volte (pezzi da 2 secondi, da 5
+     secondi, avanti e indietro) e non consegnava niente. Vince: «dopo le
+     prime segnalazioni e' diventata muta e sorda».
+
+     IL PERCHE', nel guscio: alla fine dell'interruzione fa
+         if vuoleAscoltare && orecchio == nil { apriMicrofono() }
+     e l'orecchio NON era nil — era vivo come oggetto e morto come
+     motore audio, perche' iOS gli aveva tolto l'ingresso. Cosi' non lo
+     rifaceva nessuno. E la guardia della sordita' non scattava: quella
+     conta i pezzi VUOTI, e di pezzi non ne arrivava nemmeno uno.
+     Il silenzio totale era invisibile a tutti e due.
+
+     QUI SI RIMEDIA DALLA PAGINA, che e' l'unica parte che si aggiorna
+     da sola: chiudere e riaprire l'ascolto fa fare al guscio
+     spegni()+accendi(), e accendi() si costruisce un registratore
+     nuovo. Il guscio va corretto lo stesso — e' li' il difetto — ma
+     quello richiede un build col telefono attaccato.
+     Il freno dei trenta secondi non e' prudenza: far ripartire il
+     registratore genera un'altra notifica di interruzione, ed e'
+     l'anello infinito del 10/11 (98 pezzi vuoti in un'ora). */
+  var quandoRifattoLOrecchio = 0, riprovePerLOrecchio = {};
+  function rifaiLOrecchio(perche) {
+    /* SI GUARDA micChiuso, NON ascoltoVoluto — e non e' un dettaglio.
+       `ascoltoVoluto` si mette a true solo nel ramo del browser:
+       apriAscolto(), dentro il guscio, esce alla riga di
+       `window.urbeaAscolta` e non ci arriva mai. Sul telefono resta
+       false per sempre, cioe' esattamente dove serve questa
+       riparazione non sarebbe mai partita. `micChiuso` invece dice la
+       stessa cosa in tutt'e due i mondi: la pagina vuole ascoltare o
+       no. (Visto provandola, non leggendola.) */
+    /* e se proprio adesso la pagina tiene il microfono chiuso perche'
+       sta parlando, non si rinuncia: si riprova fra due secondi. Senza
+       questo, un'interruzione che capita mentre lei parla lascia
+       l'orecchio morto come prima (visto al banco: la prima chiamata
+       cadeva proprio cosi'). */
+    if (micChiuso) {
+      if ((riprovePerLOrecchio[perche] || 0) >= 5) {
+        diario('ORECCHIO: non lo rifaccio, il microfono resta chiuso apposta');
+        return;
+      }
+      riprovePerLOrecchio[perche] = (riprovePerLOrecchio[perche] || 0) + 1;
+      diario('ORECCHIO: sta parlando, lo rifaccio fra due secondi');
+      setTimeout(function () { rifaiLOrecchio(perche); }, 2000);
+      return;
+    }
+    riprovePerLOrecchio[perche] = 0;
+    var adesso = Date.now();
+    if (adesso - quandoRifattoLOrecchio < 30000) {
+      diario('ORECCHIO: rifatto da poco, lascio stare (' + perche + ')');
+      return;
+    }
+    quandoRifattoLOrecchio = adesso;
+    diario('ORECCHIO RIFATTO: ' + perche);
+    try { chiudiAscolto(); } catch (e) {}
+    /* e si riapre comunque: chiudiAscolto() ha appena messo micChiuso a
+       true, quindi riguardarlo qui vorrebbe dire non riaprire mai. */
+    setTimeout(function () { try { apriAscolto(); } catch (e) {} }, 400);
+  }
   window.urbeaAudioTornato = function () {
     turno.interruzioneFinisce();     // regola 7: finita l'interruzione si riprende
     try { voce.riprendi(); } catch (e) {}
+    rifaiLOrecchio('l\'audio e\' tornato dopo un\'interruzione');
   };
   /* ============================================================
      QUANTO E' LUNGO IL TUO PASSO, misurato e non supposto
@@ -3194,8 +3265,31 @@
     dov:1, dove:1, aperta:1, aperto:1, aperte:1, turno:1, notturna:1, chiama:1, chiamare:1, serve:1,
     bisogno:1, vai:1, vado:1, cerca:1, trova:1, mostrami:1, qualche:1, quale:1, mia:1, mio:1, sto:1,
     male:1, nostra:1, solita:1, solito:1, adesso:1, ora:1, presto:1 };
+  /* ---------- IL SUO NOME NON E' IL NOME DELLA FARMACIA ---------- 19/11/2026
+     Latina, il quaderno delle 16:20 e delle 16:21:
+
+         SENTITO: Urbe farmacia Perroni
+         CERCO farmacia col nome «urbe perroni»: 0 su 15
+         PARLA: Non trovo la farmacia urbe perroni qui vicino.
+
+         SENTITO: Urbe portami farmacia corsetti
+         CERCO farmacia col nome «urbe corsetti»: 0 su 16
+         GUIDA: 2 svolte per Farmacia Perroni      <- quella sbagliata
+
+     Chiamandola per nome — «Urbe», come si fa — il nome restava dentro
+     la richiesta e diventava parte di quello che cercava. La seconda
+     volta non e' solo un «non trovo»: ha chiesto Corsetti e l'app l'ha
+     portato da Perroni.
+     Si toglie SOLO se sta davanti: e' li' che uno la chiama. Dentro la
+     frase no, perche' nella lista dei nomi ci sono parole vere —
+     «europea», «curve», «bea» — e «portami alla farmacia Europea» deve
+     restare la farmacia Europea. */
+  var NOME_DAVANTI = new RegExp('^\\s*(?:' + NOMI + ')\\b[\\s,.’\']*', 'i');
+  function senzaIlNomeDavanti(testo) {
+    return String(testo || '').replace(NOME_DAVANTI, '');
+  }
   function ilNomeOltreIlTipo(cerca, tipo) {
-    return String(cerca || '').toLowerCase().replace(tipo, ' ').split(/[\s,.'’]+/)
+    return senzaIlNomeDavanti(cerca).toLowerCase().replace(tipo, ' ').split(/[\s,.'’]+/)
       .filter(function (w) { return w.length >= 3 && !NON_NOMI[w] && !TIPI_DETTI[w]; });
   }
   function portamiA(cosa, eCasa, giaRiprovato) {
@@ -4763,6 +4857,22 @@
     var grezzo = String(testo || '').trim();
     if (!t) return false;
     if (!soloComandi) diario('COMANDO: ' + perIlDiario(t).slice(0, 60));
+    /* ---------- IL NOME DA SOLO VUOLE UN «DIMMI» ---------- 19/11/2026
+       «quando chiamo yourbea la app potrebbe dire: dimmi — per segnalare
+       che l'orecchio e' pronto» (Vince).
+       Chi non vede non ha modo di sapere se il microfono sta ascoltando:
+       finora, chiamandola per nome e basta, non succedeva niente, e
+       l'unico modo di scoprire se ti sentiva era dire tutta la frase e
+       vedere se rispondeva. Oggi, dopo i venti minuti da sorda, questa
+       e' anche la prova che l'orecchio e' vivo: una parola, e lei
+       risponde. */
+    if (!soloComandi && !senzaIlNomeDavanti(grezzo).trim()) {
+      diario('CHIAMATA: mi ha chiamato per nome, dico «dimmi»');
+      voce.parla(modi.dimmi ? modi.dimmi() : 'Dimmi.',
+                 { livello: voce.GUIDA, ancheSeUguale: true });
+      apriAscolto();
+      return true;
+    }
     /* ha(): o il nome di un gruppo di PAROLE, o le frasi scritte lì per lì —
        si usano tutt'e due gli stili qui sotto. Scritta che accettava solo i
        gruppi, `ha('portami a casa', ...)` cercava il gruppo «portami a casa»,
@@ -5287,7 +5397,10 @@
         if (!trovata) continue;
         /* se ha detto anche un NOME — «stazione Laurentina» — si cerca
            quello, che e' piu' preciso di «la piu' vicina». */
-        var conNome = t.replace(/^(.*?)(portami|accompagnami|andiamo|voglio andare|devo andare|cerco|trovami)\s+(a|al|alla|allo|ai|alle|in|verso)?\s*/i, '');
+        /* e anche qui il nome davanti si toglie: vedi «IL SUO NOME NON E'
+           IL NOME DELLA FARMACIA», 19/11 */
+        var conNome = senzaIlNomeDavanti(t)
+          .replace(/^(.*?)(portami|accompagnami|andiamo|voglio andare|devo andare|cerco|trovami)\s+(a|al|alla|allo|ai|alle|in|verso)?\s*/i, '');
         diario('CHIESTO: ' + c.cerca + (conNome && conNome.length > c.cerca.length + 3 ? ' — «' + conNome + '»' : ' (la piu vicina)'));
         portamiA(conNome && conNome.length > c.cerca.length + 3 ? conNome : c.cerca);
         return true;

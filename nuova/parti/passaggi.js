@@ -219,29 +219,54 @@ function Passaggi(opzioni) {
      da cercare in un tratto di strada, non in un punto — e dice la cosa
      utile: fai attenzione.
      ============================================================ */
-  var NON_PRECISO = o.nonPreciso || ', nell\'arco di 20 o 30 metri: presta attenzione, o chiedi a qualcuno dov\u2019\u00e8';
+  /* ---------- 19/11/2026, DOPO LA CAMMINATA DI LATINA ----------
+     «a breve incontrerai un attraversamento pedonale nell'arco di 10/20
+     metri... chiedi» — «oppure gli scivoli» (Vince).
+     Due cose cambiano. Il tratto si stringe da 20-30 a 10-20 metri: oggi
+     il telefono dava ±6 metri di media su 194 letture (due sole sopra i
+     20), e un tratto piu' stretto e' piu' utile se e' vero. E l'attacco
+     non e' piu' un'etichetta ma un verbo: «a breve incontrerai».
+     I PASSI CI SONO ANCORA. Avevo tolto anche quelli, pensando che
+     «fra 20 passi» e un tratto di dieci-venti metri si
+     contraddicessero; Vince: «i passi puoi farli». E ha ragione: i
+     passi dicono quando cominciare a cercare, il tratto dice quanto e'
+     largo il punto in cui cercarlo. Sono due cose diverse. */
+  var NON_PRECISO = o.nonPreciso || ', nell\'arco di 10 o 20 metri: presta attenzione, o chiedi a qualcuno dov\u2019\u00e8';
 
   /* comeSiChiama(): di un avviso conta cos'e' e cosa ha, non il nome. */
-  function dettagli(p) {
+  /* `senzaArco` serve a inArrivo: il lato va detto subito dopo la cosa,
+     se no si sente «o chiedi a qualcuno dov'e' davanti a te», che
+     sembra una frase sola e non si capisce piu' niente. */
+  function dettagli(p, senzaArco) {
+    var ARCO = senzaArco ? '' : NON_PRECISO;
     if (p.cosa === 'attraversamento') {
       var pezzi = [];
       if (p.suona) pezzi.push('col semaforo acustico');
       else if (p.semaforo) pezzi.push('col semaforo');
       else pezzi.push('senza semaforo');
       if (p.tattile) pezzi.push('col percorso tattile');
-      return 'un attraversamento ' + pezzi.join(', ') + NON_PRECISO;
+      return 'un attraversamento ' + pezzi.join(', ') + ARCO;
     }
     if (p.cosa === 'scalini') {
       return (p.quanti ? p.quanti + ' scalini' : 'degli scalini') +
              (p.corrimano ? ', col corrimano' : '');
     }
     if (p.cosa === 'scivolo del marciapiede') {
-      return 'lo scivolo del marciapiede' + (p.tattile ? ', col percorso tattile' : '');
+      /* «oppure gli scivoli» (Vince, 19/11): lo scivolo si cerca coi
+         piedi come l'attraversamento, e il punto sulla mappa vale
+         quanto quello — cioe' un tratto, non un punto. */
+      return 'lo scivolo del marciapiede' + (p.tattile ? ', col percorso tattile' : '') + ARCO;
     }
     if (p.cosa === 'paletto' || p.cosa === 'dissuasore') return 'un paletto';
     if (p.cosa === 'ascensore') return 'un ascensore';
     if (p.cosa === 'scala mobile') return 'una scala mobile';
     return p.nome || p.cosa;
+  }
+
+  /* per quali cose il tratto va detto: quelle che si cercano coi piedi
+     e che il punto sulla mappa non azzecca al metro. */
+  function arcoSeServe(p) {
+    return (p.cosa === 'attraversamento' || p.cosa === 'scivolo del marciapiede') ? NON_PRECISO : '';
   }
 
   /* inArrivo(): quello che hai davanti e che devi sapere PRIMA. */
@@ -271,8 +296,8 @@ function Passaggi(opzioni) {
     var parteSua = daCheParte(qui, mig, s.direzione, s.direzioneBuona);
     return {
     tipo: 'passaggio', livello: 'guida', avviso: true, cosa: mig,
-             testo: 'Fra ' + inPassi(dmin) + ', ' + dettagli(mig) +
-                    conLaParte(parteSua) + '.' };
+             testo: 'Fra ' + inPassi(dmin) + ' incontrerai ' + dettagli(mig, true) +
+                    conLaParte(parteSua) + arcoSeServe(mig) + '.' };
   }
 
   /* prossimo(): la cosa che stai passando adesso, o null. */
