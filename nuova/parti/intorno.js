@@ -522,6 +522,24 @@ function Intorno(opzioni) {
      sempre chi ha vinto e di quanto, cosi' si conta invece di
      discuterne. Nel browser Apple non c'e' e si usa Valhalla: e' la
      stessa app, due mondi diversi. */
+  /* ---------- PRIMA SI GUARDA, POI SI CAMBIA ---------- 20/11/2026
+     Vince: «se Valhalla e' piu' precisa teniamo Valhalla — non vorrei
+     che facessimo, come sempre, dei passi indietro».
+     Ha ragione, e il mio metro era debole: stavo scegliendo il piu'
+     CORTO, che non vuol dire il piu' giusto. I venti percorsi misurati
+     dicono che Apple e' molto meno chiacchierone, ma nessuno dei due
+     e' stato camminato.
+     Quindi adesso l'app chiede tutt'e due e USA VALHALLA, quella di
+     sempre: non si puo' tornare indietro da dove si e'. Di Apple
+     scrive solo i numeri nel quaderno, a ogni percorso vero:
+
+       PERCORSO: Valhalla 952 m in 19 passi — Apple avrebbe detto
+       794 m in 6 (non lo uso ancora, guardo e basta)
+
+     Dopo una camminata o due si leggono i numeri sui percorsi SUOI, e
+     allora si decide con qualcosa di misurato. Per accenderlo si
+     cambia una riga: APPLE_COMANDA = true. */
+  var APPLE_COMANDA = false;
   var QUANTO_PIU_LUNGO = 1.4;
   function percorsoDiApple(da, a) {
     if (typeof window === 'undefined' || !window.urbeaSaIlPercorso || !window.urbeaPercorso) {
@@ -568,6 +586,12 @@ function Intorno(opzioni) {
         var v = due[0], ap = due[1];
         if (!ap) { if (v) diario('PERCORSO: solo Valhalla, ' + v.metri + ' m'); return v; }
         if (!v) { diario('PERCORSO: solo Apple, ' + ap.metri + ' m'); return ap; }
+        if (!APPLE_COMANDA) {
+          diario('PERCORSO: Valhalla ' + v.metri + ' m in ' + v.svolte.length +
+                 ' passi — Apple avrebbe detto ' + ap.metri + ' m in ' + ap.svolte.length +
+                 ' (non lo uso ancora, guardo e basta)');
+          return v;
+        }
         if (ap.metri > v.metri * QUANTO_PIU_LUNGO) {
           diario('PERCORSO: Apple ' + ap.metri + ' m contro Valhalla ' + v.metri +
                  ' m: troppo lungo, tengo Valhalla');
