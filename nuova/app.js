@@ -3269,7 +3269,15 @@
        mettersi sulla porta e dire «casa è qui». */
     voce.parla(eCasa
       ? 'Questo indirizzo non lo trovo sulla mappa. Facciamo così: quando sei a casa, fermati sulla porta e dimmi «casa è qui». Me lo segno esatto, e da quel momento ti ci porto sempre.'
-      : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città.",
+      /* ---------- E SI DICE CHE SI PUO' CHIEDERE ALTRO ---------- 20/11/2026
+         «se chiedo una strada e yourbea risponde che non ha capito,
+         potrebbe essere utile: chiedimi qualche altra cosa» —
+         «camminata libera, indirizzo vicino, passare a turismo»
+         (Vince). Oggi, dopo due indirizzi non trovati, e' rimasta ad
+         aspettare una ripetizione: chi non vede non sa che puo'
+         cambiare discorso, perche' nessuno glielo dice. Le tre vie
+         d'uscita si dicono, cosi' nessuno resta chiuso in una domanda. */
+      : "Questo indirizzo non l'ho trovato. Se puoi, ripetimelo con la città. Oppure chiedimi un'altra cosa: camminata libera, un posto qui vicino, i numeri civici e le fermate, o passiamo al turismo.",
       { livello: voce.GUIDA, ancheSeUguale: true });
     /* E SE CHIEDO DI RIPETERLO, DEVO ASCOLTARE LA RISPOSTA. 02/11,
        14:44:39: subito dopo questa frase lui ha detto «Via dei Corazzieri
@@ -5510,6 +5518,12 @@
       return true;
     }
     if (ha('negozi')) { diciINegozi(); return true; }
+    /* prima i due insieme, se no «civico» se lo prende tutto */
+    if (ha('civici e le fermate', 'civici e fermate', 'numeri civici e le fermate',
+            'numeri civici e fermate', 'civico e la fermata', 'civico e fermata',
+            'dimmi le fermate', 'le fermate', 'fermate vicine', 'fermate qui')) {
+      diciCiviciEFermate(); return true;
+    }
     if (ha('civico')) { diciIlCivico(); return true; }
     if (ha('intorno')) { diciIntorno(); return true; }
     if (CHIUDI_TUTTO.test(t) && !NON_CHIUDE.test(t)) { chiudiTutto(); return true; }
@@ -5749,6 +5763,45 @@
       dillo({ tipo: 'dove', livello: 'guida',
               testo: v.civico ? ('Sei davanti al civico ' + v.civico + ' di ' + v.via + '.')
                               : ('Sei in ' + v.via + ', ma il numero civico qui non è segnato sulla mappa.') });
+    });
+  }
+
+  /* ---------- I CIVICI E LE FERMATE, QUANDO LI CHIEDE ---------- 20/11/2026
+     «dimmi i numeri civici e le fermate — così un cieco riesce ad
+     orientarsi» (Vince). Sono le due cose che non si muovono e che
+     dicono dove sei davvero: il numero sotto il portone e la fermata
+     all'angolo. Un monumento puo' essere dall'altra parte della
+     piazza, un negozio puo' aver chiuso; il civico e la fermata no.
+     Si dicono INSIEME e su richiesta, senza riposi: una domanda non e'
+     una chiacchiera dell'app. */
+  function diciCiviciEFermate() {
+    var s = posizione.leggi();
+    if (!s.pronto) { voce.parla('Non so ancora dove sei.', { livello: voce.GUIDA, ancheSeUguale: true }); return; }
+    var qui = { lat: s.lat, lon: s.lon };
+    /* le fermate: le piu' vicine, con quanto distano */
+    var vicine = [];
+    (SERVIZI.punti || []).forEach(function (p) {
+      if (!p || !p.nome || !fermate.eUnaFermata(p)) return;
+      var d = posizione.dist(qui.lat, qui.lon, p.lat, p.lon);
+      if (d > 400) return;
+      vicine.push({ n: p.nome, m: d });
+    });
+    vicine.sort(function (a, b) { return a.m - b.m; });
+    vicine = vicine.slice(0, 3);
+    intorno.strada(qui.lat, qui.lon).then(function (v) {
+      var pezzi = [];
+      if (v && v.via && v.civico) pezzi.push('Sei davanti al civico ' + v.civico + ' di ' + v.via);
+      else if (v && v.via) pezzi.push('Sei in ' + v.via + ', il numero civico qui non è segnato');
+      if (vicine.length) {
+        var f = vicine.map(function (x) {
+          return x.n + ', ' + (laDistanza ? laDistanza.inMetri(x.m) : 'a ' + Math.round(x.m) + ' metri');
+        });
+        pezzi.push((vicine.length === 1 ? 'La fermata più vicina è ' : 'Le fermate più vicine: ') + f.join('; '));
+      } else {
+        pezzi.push('Qui intorno non ho fermate segnate');
+      }
+      diario('CIVICI E FERMATE: ' + (v && v.civico ? v.civico : 'nessun civico') + ', ' + vicine.length + ' fermate');
+      dillo({ tipo: 'dove', livello: 'guida', chiesto: true, testo: pezzi.join('. ') + '.' });
     });
   }
 

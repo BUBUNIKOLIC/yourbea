@@ -504,7 +504,83 @@ function Intorno(opzioni) {
     return t;
   }
 
+  /* ---------- DUE NAVIGATORI, E SI TIENE IL MIGLIORE ---------- 20/11/2026
+     Misurato su venti percorsi veri in giro per l'Italia: per gli
+     stessi tragitti Valhalla annuncia 157 svolte dove Apple ne annuncia
+     96, e quarantanove manovre sotto i quindici metri dove Apple ne fa
+     sei. A Latina, dalla piazza al PalaBianchini: Apple 794 metri in
+     SEI passi, Valhalla 952 metri in DICIANNOVE manovre, fra cui
+     «svolta a destra sulla passerella» per tredici metri e «continua su
+     Piazza del Popolo» per cinque. A chi non vede quelle sono tredici
+     ordini in piu' da eseguire.
+     Ma fuori citta' Apple sbaglia di grosso: da Latina Scalo al centro
+     manda per dieci chilometri di strade di campagna (Strada Acque
+     Alte, Strada della Cava, Strada del Gionco) al posto di quattro,
+     perche' evita le strade senza marciapiede.
+     Quindi non si sostituisce niente: si chiedono tutt'e due, e si
+     tiene Apple SOLO se non e' molto piu' lungo. Il quaderno scrive
+     sempre chi ha vinto e di quanto, cosi' si conta invece di
+     discuterne. Nel browser Apple non c'e' e si usa Valhalla: e' la
+     stessa app, due mondi diversi. */
+  var QUANTO_PIU_LUNGO = 1.4;
+  function percorsoDiApple(da, a) {
+    if (typeof window === 'undefined' || !window.urbeaSaIlPercorso || !window.urbeaPercorso) {
+      return Promise.resolve(null);
+    }
+    try {
+      return Promise.resolve(window.urbeaPercorso(da, a)).then(function (r) {
+        if (!r || !r.passi || !r.passi.length) return null;
+        var pts = (r.linea || []).map(function (c) { return { lat: c[0], lon: c[1] }; });
+        /* DOVE STA OGNI MANOVRA SULLA LINEA. Apple non manda l'indice
+           del punto, manda i metri di ogni passo: si cammina sulla
+           linea sommando i metri, e dove finisce il passo prima comincia
+           la manovra dopo. Senza questo le svolte avrebbero coordinate
+           zero, cioe' in mezzo al golfo di Guinea, e il motore
+           dell'avanzamento direbbe qualunque cosa. */
+        var lungo = [0];
+        for (var q = 1; q < pts.length; q++) lungo.push(lungo[q - 1] + metriFra(pts[q - 1], pts[q]));
+        function puntoA(m) {
+          if (!pts.length) return { lat: 0, lon: 0 };
+          for (var q = 0; q < lungo.length; q++) if (lungo[q] >= m) return pts[q];
+          return pts[pts.length - 1];
+        }
+        var svolte = [];
+        var fatti = 0;
+        r.passi.forEach(function (p, k) {
+          var testo = String(p.testo || '').trim();
+          var dove = puntoA(fatti);
+          fatti += (p.metri || 0);
+          if (!testo) return;
+          if (/^(destinazione raggiunta|sei arrivat)/i.test(testo)) return;
+          if (k && (p.metri || 0) < 15 && !/gradin|scalin|scala/i.test(testo)) return;
+          svolte.push({ testo: testo, metri: Math.round(p.metri || 0),
+                        lat: dove.lat, lon: dove.lon });
+        });
+        if (!svolte.length) return null;
+        return { svolte: svolte, metri: Math.round(r.metri || 0), linea: pts, chi: 'Apple' };
+      }, function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+
   function percorso(da, a) {
+    return Promise.all([percorsoDiValhalla(da, a), percorsoDiApple(da, a)])
+      .then(function (due) {
+        var v = due[0], ap = due[1];
+        if (!ap) { if (v) diario('PERCORSO: solo Valhalla, ' + v.metri + ' m'); return v; }
+        if (!v) { diario('PERCORSO: solo Apple, ' + ap.metri + ' m'); return ap; }
+        if (ap.metri > v.metri * QUANTO_PIU_LUNGO) {
+          diario('PERCORSO: Apple ' + ap.metri + ' m contro Valhalla ' + v.metri +
+                 ' m: troppo lungo, tengo Valhalla');
+          return v;
+        }
+        diario('PERCORSO: Apple ' + ap.metri + ' m in ' + ap.svolte.length +
+               ' passi, Valhalla ' + v.metri + ' m in ' + v.svolte.length +
+               ': tengo Apple');
+        return ap;
+      });
+  }
+
+  function percorsoDiValhalla(da, a) {
     var corpo = {
       locations: [{ lat: da.lat, lon: da.lon }, { lat: a.lat, lon: a.lon }],
       costing: 'pedestrian',
