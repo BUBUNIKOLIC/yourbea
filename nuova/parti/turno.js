@@ -96,7 +96,21 @@ function Turno(o) {
      Dal banco sul telefono: «Io e bea firmati». La parola che DEVE
      funzionare sempre non puo' cadere per una lettera: si accettano le
      storpiature che il riconoscitore scrive davvero. */
-  var SILENZIO = /^(?:(?:ok|ehi|io|e|ho|oh)\s+){0,2}(?:yourbea|urbea|urbe|bea|rube)?\s*(?:zitto|zitta|zitti|silenzio|basta|fermati|firmati|fermato|fermate|fermami|ferma|fermi)[.!]?$/i;
+  /* ---------- «ORMEA FERMATI» NON L'HA FERMATA ---------- 20/11/2026
+     Latina, sullo scooter. Due volte ha provato a fermarla e due volte
+     non e' arrivato niente:
+       13:52:52  SENTITO: Ruben affermati   → buttata
+       13:55:14  SENTITO: Ormea fermati     → buttata
+     Qui dentro c'era una COPIA della lista dei nomi — «yourbea|urbea|
+     urbe|bea|rube» — scritta a mano e ferma a settimane fa, mentre
+     quella vera (NOMI, in app.js) nel frattempo era cresciuta. Una
+     copia invecchia in silenzio: e' lo stesso difetto che ieri ha fatto
+     perdere due segnalazioni. Adesso la lista e' UNA SOLA.
+     E «affermati» entra fra le storpiature di «fermati»: il
+     riconoscitore attacca la coda del nome alla parola dopo. Fermarla
+     e' il comando che non puo' mai fallire. */
+  var SILENZIO = new RegExp('^(?:(?:ok|ehi|io|e|ho|oh)\\s+){0,2}(?:' + NOMI + ')?[,\\s]*' +
+    '(?:zitto|zitta|zitti|silenzio|basta|fermati|affermati|fermati|firmati|fermato|fermate|fermami|ferma|fermi)[.!]?$', 'i');
 
   /* ============================================================
      «QUI C'E' …» E' UNA SEGNALAZIONE, ANCHE SENZA IL NOME — 8/11/2026

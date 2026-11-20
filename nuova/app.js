@@ -252,7 +252,7 @@
      quaderno ha scritto davvero. Stanno in fondo perche' sono parole
      italiane vere — valgono solo in testa alla frase (NOME_RE) o in
      coda (NOME_DIETRO), mai in mezzo (NOME_IN_MEZZO non le ha). */
-  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|rubeis|bea|erbe|per beh|perbea|urbe\u00e0';
+  var NOMI = 'yourbea|yourbe|your bea|urbea|urbe|eubea|europea|curve|curbe|jurbea|iurbea|rube|rubeis|ormea|urmea|ruben|u bea|bea|erbe|per beh|perbea|urbe\u00e0';
   /* IL VIGILE DEL TURNO — Yourbea 2.0 (parti/turno.js). Decide lui chi
      parla e quando il microfono ascolta: le 9 regole approvate da Vince
      il 7/11. La voce gli chiede il permesso; ogni frase sentita, da
