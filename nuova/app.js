@@ -1455,7 +1455,7 @@
     if (!elenco.length) return;
     diario('GIRO: mi porto avanti con ' + elenco.length + ' quadretti');
     elenco.forEach(function (q) {
-      ['negozi', 'cultura'].forEach(function (dove) {
+      ['negozi', 'cultura', 'pedoni'].forEach(function (dove) {
         fetch('dati/' + dove + '/' + q + '.json' + VER).catch(function () {});
       });
     });
@@ -1483,6 +1483,16 @@
        nessun'altra mappa del mondo: qui entra fra i punti della zona e
        da quel momento l'app lo dice come dice gli altri.
        ============================================================ */
+    voluti.filter(function (q) { return PEDONI[q] === undefined; }).forEach(function (q) {
+      PEDONI[q] = null;
+      fetch('dati/pedoni/' + q + '.json' + VER).then(function (r) {
+        return r.ok ? r.json() : [];
+      }).then(function (roba) {
+        PEDONI[q] = roba || [];
+        if (roba && roba.length) diario('PEDONI: ' + roba.length + ' punti nel quadretto ' + q);
+        rifaiNostri(voluti);
+      }).catch(function () { PEDONI[q] = []; });
+    });
     voluti.filter(function (q) { return CONTRIBUTI[q] === undefined; }).forEach(function (q) {
       CONTRIBUTI[q] = null;
       fetch('dati/contributi/' + q + '.json' + VER).then(function (r) {
@@ -1567,6 +1577,49 @@
     return (p.lat || 0).toFixed(5) + ',' + (p.lon || 0).toFixed(5) + '|' + (p.n || '');
   }
 
+  /* ---------- GLI ATTRAVERSAMENTI SUL TELEFONO ---------- 20/11/2026
+     Fino a oggi attraversamenti, scivoli e percorso tattile si
+     chiedevano a OpenStreetMap in diretta, un quadretto alla volta:
+     senza rete non esistevano, e sono la cosa che serve di piu' a chi
+     non vede. Scaricata l'Italia intera (2,1 GB) e tenuto solo quello
+     che serve: 841.442 punti in 41.388 quadretti, 34,8 MB — meno dei
+     negozi, che ne pesano 44.
+       attraversamenti 711.821   scivoli 72.658   semafori 32.887
+       dossi 16.199              percorso tattile 7.877
+     Le chiavi sono corte perche' vanno moltiplicate per 841 mila:
+       t 1 attraversamento, 2 scivolo, 3 tattile, 4 semaforo, 5 dosso
+       s col semaforo   u che suona   z con le strisce
+       p col percorso tattile         b lo scivolo si passa
+     Quello che arriva dalla rete NON si butta: si tiene pure, perche'
+     la mappa viva e' piu' fresca di questa. Due volte lo stesso
+     attraversamento non si dicono: ci pensa gia' chi li racconta, che
+     tiene il piu' vicino. */
+  var PEDONI = {};
+  function pedoneInPunto(x) {
+    var p = { lat: x.lat, lon: x.lon, dalTelefono: true };
+    if (x.t === 1) {
+      p.cosa = 'attraversamento';
+      if (x.s) p.semaforo = true;
+      if (x.u) { p.semaforo = true; p.suona = true; }
+      if (x.z) p.strisce = true;
+      if (x.p) p.tattile = true;
+    } else if (x.t === 2) {
+      p.cosa = 'scivolo del marciapiede';
+      if (x.p) p.tattile = true;
+      p.servizio = p.cosa;
+    } else if (x.t === 3) {
+      p.cosa = 'percorso tattile'; p.servizio = p.cosa;
+    } else if (x.t === 4) {
+      /* un semaforo da solo non e' un attraversamento: si dice solo se
+         suona, che a chi non vede e' l'unica cosa che cambia qualcosa */
+      if (!x.u) return null;
+      p.cosa = 'attraversamento'; p.semaforo = true; p.suona = true;
+    } else {
+      return null;                       // i dossi non servono a chi cammina
+    }
+    return p;
+  }
+
   function rifaiNostri(voluti) {
     var tutti = [];
     voluti.forEach(function (q) {
@@ -1574,6 +1627,12 @@
       /* e i contributi dei tester, messi in forma di punto come gli altri:
          `t` e' il tipo, e per gli attraversamenti il semaforo e il tattile
          sono quelli che contano. */
+      if (PEDONI[q] && PEDONI[q].length) {
+        PEDONI[q].forEach(function (x) {
+          var p = pedoneInPunto(x);
+          if (p) tutti.push(p);
+        });
+      }
       if (CONTRIBUTI[q] && CONTRIBUTI[q].length) {
         CONTRIBUTI[q].forEach(function (c) {
           var p = { lat: c.lat, lon: c.lon, cosa: COME_SI_CHIAMA[c.t] || c.t,
@@ -4404,7 +4463,16 @@
       });
       prendiQuadretti(s);
       intorno.servizi(s.lat, s.lon).then(function (v) {
-        if (!v) return;
+        /* ---------- SENZA RETE NON SI RESTA MUTI ---------- 20/11/2026
+           Da oggi attraversamenti, scivoli e percorso tattile stanno sul
+           telefono (841.442 punti, dati/pedoni). Ma qui si entrava solo
+           quando la mappa viva rispondeva: senza linea la promessa
+           falliva, SERVIZI restava quello di prima e quei punti non
+           arrivavano a nessuno — cioe' proprio nel caso per cui li
+           abbiamo scaricati.
+           Adesso, se la rete non c'e', si fa lo stesso con quello che
+           abbiamo in tasca: i quadretti e i punti dei tester. */
+        if (!v) v = { punti: [], aree: [], alberi: [], soloDalTelefono: true };
         /* SOLO QUELLI INTORNO. Dario, provandola a Napoli: «non è al
            massimo fluida». Una causa certa era qui: i quadretti portano
            novecento luoghi e la mappa viva centosessanta punti, e si
@@ -4422,6 +4490,10 @@
         if (deiTester.length) {
           v.punti = negozi.unisci(v.punti || [], deiTester);
           diario('DAGLI ALTRI: ' + deiTester.length + ' punti dei tester qui intorno');
+        }
+        if (v.soloDalTelefono) {
+          diario('MAPPA: niente rete — vado con quello che ho in tasca, ' +
+                 (v.punti || []).length + ' punti');
         }
         SERVIZI = v;
         /* appena si sa cosa c'è intorno, lo si dice: è la cosa che a chi non
